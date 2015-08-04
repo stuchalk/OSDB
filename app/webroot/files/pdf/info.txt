@@ -1,0 +1,3 @@
+PDF files from Springer go here.
+- For each publication there should be a directory that is the id of the publication
+- PDFs of a publication are saved in the publication directory with the name Springer assigned

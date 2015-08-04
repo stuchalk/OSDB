@@ -1,0 +1,111 @@
+Property Type: [HMSD1221] HEAT OF MIXING AND SOLUTION
+State:
+Two-component system, single-phase fluid or two-phase fluid-fluid
+Pure component 1, gas or supercritical fluid
+Pure component 2, gas or supercritical fluid
+Parameters:
+P/Pa,
+Pressure
+T/K,
+Temperature
+Mole fraction of component 1
+Variables:
+x1/-,
+Molar excess enthalpy
+HE/J mol-1,
+Method:
+Direct calorimetric measurement of HE at variable x1 and constant P and T
+
+File Number: LB0024
+Components:
+
+1. CH4, Methane [74-82-8]
+2. C4H10, Butane [106-97-8]
+
+P/103Pa = 101.325
+T/K = 277.0
+x1
+HE/J mol-1
+0.209000
+0.273000
+0.333000
+0.427000
+0.476000
+0.569000
+0.610000
+0.674000
+0.730000
+
+32.50
+36.90
+43.00
+49.90
+51.20
+49.20
+47.10
+41.80
+36.70
+
+P/103Pa = 101.325
+T/K = 328.7
+x1
+HE/J mol-1
+0.357000
+0.422000
+0.475000
+0.498000
+0.557000
+0.578000
+0.580000
+0.617000
+0.620000
+0.653000
+0.659000
+0.676000
+0.709000
+0.743000
+0.799000
+
+28.60
+30.40
+30.60
+30.00
+30.40
+29.20
+30.00
+28.30
+28.50
+28.10
+26.30
+27.40
+26.20
+22.20
+19.70
+
+HE/J mol-1
+64.
+
+P/103Pa = 101.325; T/K = 277.0
+P/103Pa = 101.325; T/K = 328.7
+48.
+
+32.
+
+16.
+
+0.
+0.50
+
+x1
+
+Uncertainties: σ (x1) = 0.00200; σrel
+= 0.02
+See SELF for the totality of data
+Hutchings, D. J.; Lewis, E. J.; Wormald, C. J. Excess enthalpies of mixtures of methane + each of the n-alkanes from ethane to
+n-octane J. Chem. Thermodyn. 1978, 10, 559-566
+(HE)
+
+Landolt-Börnstein
+New Series IV/10B
+
+
