@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<?php echo $this->Html->charset(); ?>
-	<title>Springer Materials: <?php echo $title_for_layout; ?></title>
+	<title>OSDB</title>
 	<?php
 		echo $this->Html->meta('icon');
 		echo $this->Html->css('cake.generic');
