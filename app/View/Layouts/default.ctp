@@ -20,7 +20,7 @@
 	<div id="container">
 		<div id="header">
             <div style="float: left;width: 80%;">
-                <h1>ChemExtractor: PDF Extraction of Chemical Property Data</h1>
+                <h1>The Open Spectral Database</h1>
             </div>
             <div style="float: right;">
                 <?php
