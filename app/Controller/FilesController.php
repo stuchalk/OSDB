@@ -5,7 +5,7 @@
  */
 class FilesController extends AppController {
 
-    public $uses = ['File','Publication','Propertytype','Activity','TextFile'];
+    public $uses = ['File','Substance','Identifier','Technique'];
 
     /**
      * beforeFilter function
@@ -23,65 +23,63 @@ class FilesController extends AppController {
     {
         if($this->request->is('post'))
         {
-            // Get data on uploaded file
-            if (!empty($this->request->params['requested'])) {
-                $uploadedFile=$this->request->params['File'];
-            } else {
-                $uploadedFile=$this->request->data['File'];
-            }
+            $data=$this->request->data;
+            $data['File']['name']=$data['File']['file']['name'];
+            $data['File']['size']=$data['File']['file']['size'];
+            $data['File']['type']=$data['File']['file']['type'];
+            $tmpname=$data['File']['file']['tmp_name'];
+            unset($data['File']['file']);
 
-            debug($uploadedFile);exit;
+            // TODO: Mime type not correct for .jdx files
 
-            // Get the filename and filesize
-            $uploadedFile['filename']=$uploadedFile['file']['name'];
-            $uploadedFile['filesize']=$uploadedFile['file']['size'];
-
-            // Move file to storage location (based on extension)
-            $filename = $this->request->data['User']['file_name']['name'];
-            $extension = pathinfo($filename, PATHINFO_EXTENSION);
-
-            $path=WWW_ROOT."files".DS."pdf".DS.$uploadedFile['publication_id'];
-            $folder = new Folder($path,true,0777);
-            if (!empty($this->request->params['requested'])) {
-                rename($uploadedFile['file']['tmp_name'],$path.DS.$uploadedFile['filename']);
-            }else{
-                move_uploaded_file($uploadedFile['file']['tmp_name'],$path.DS.$uploadedFile['filename']);
-            }
-            // Get PDF version using Utility component function
-            $uploadedFile['pdf_version']=$this->Utils->pdfVersion($path.DS.$uploadedFile['filename']);
-            // Add URL to file on Springer website
-            $uploadedFile['url']="http://link.springer.com/chapter/10.1007/".str_replace(".pdf","",$uploadedFile['filename']);
-            // Clear File array
-            unset($uploadedFile['file']);
-            // Get publication code
-            $code=$this->File->getCode($uploadedFile['filename'], $uploadedFile['publication_id']);
-            $propertytype=$this->Propertytype->find('first', ['conditions'=>['Propertytype.code'=>$code]]);
-
-            if(!empty($propertytype)) {
-                $propertyid=$propertytype['Propertytype']['id'];
-            } else {
-                $this->Propertytype->create();
-                $newpropertytype=['Propertytype'=>['code'=>$code]];
-                $this->Propertytype->save($newpropertytype);
-                $propertyid=$this->Propertytype->id;
-
-            }
-            $uploadedFile['propertytype_id']=$propertyid;
-            $uploadedFile['format']=$this->File->format;
-            if(!isset($code)||$code===false){
-                if (!empty($this->request->params['requested'])) {
-                    return "File Missing Property Code";
-                }else {
-                    $this->Session->setFlash('File Missing Property Code');
-                    return $this->redirect('/Files/view/' . $this->File->id);
-                }
-            }
             // Add to database
-            $uploadedFile['File']=$uploadedFile;
             $this->File->create();
-            if(!$this->File->save($uploadedFile)){
+            if(!$this->File->save($data)){
                 debug($this->File->validationErrors); die();
             }
+            $id=str_pad($this->File->id,9,"0",STR_PAD_LEFT);
+
+            // Move file to storage location (based on extension)
+            $ext = pathinfo($data['File']['name'], PATHINFO_EXTENSION);
+            $path="files".DS.$ext;
+            $folder = new Folder(WWW_ROOT.$path,true,0777);
+            $path=$path.DS.$id.".".$ext;
+            move_uploaded_file($tmpname,WWW_ROOT.$path);
+            $this->File->saveField('path',"/".$path);
+
+            // Get version of format
+            if($ext=="jdx"||$ext=="dx") {
+                $file=file_get_contents(WWW_ROOT.$path);
+                // Detect line endings
+                if(stristr($file,"\r\n")) {
+                    $eol="\r\n";
+                } elseif(stristr($file,"\r")) {
+                    $eol="\r";
+                } elseif(stristr($file,"\n")) {
+                    $eol="\r";
+                }
+                // JCAMP version
+                list(,$temp)=explode("JCAMP-DX=",$file,2);
+                list($ver,)=explode(" ",$temp,2);
+                $this->File->saveField('version',$ver);
+                // JCAMP Data Type
+                list(,$temp)=explode("DATA TYPE=",$file,2);
+                list($type,)=explode($eol,$temp,2); // Must use ' here not "
+                if(stristr($type,"NMR")) {
+                    // Find nucleus
+                    list(, $temp) = explode("OBSERVE NUCLEUS=", $file, 2);
+                    list($nuc,) = explode($eol, $temp, 2); // Must use ' here not "
+                    $tech = $this->Technique->find('first', ['conditions' => ['matchstr' => str_replace("^", "", $nuc) . "NMR"]]);
+                }
+                $this->File->saveField('technique_id',$tech['Technique']['id']);
+
+            }
+
+            // Add substance_id
+            $sub=$this->Identifier->find('first',['conditions'=>['value'=>$data['File']['substance']]]);
+            debug($sub);exit;
+
+            // Capture activity
             $this->Activity->create();
             $activity=['Activity'=>[
                 'user_id'=>$this->Auth->user('id'),
@@ -91,13 +89,9 @@ class FilesController extends AppController {
                 'comment'=>'',
             ]];
             $this->Activity->save($activity);
-            // Redirect to view
-            if (!empty($this->request->params['requested'])) {
-                return true;
-            }else {
-                return $this->redirect('/Files/view/' . $this->File->id);
-            }
 
+            // Redirect to view
+            return $this->redirect('/files/view/' . $this->File->id);
         } else {
             // Get source_id here
         }

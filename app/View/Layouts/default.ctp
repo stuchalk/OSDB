@@ -41,7 +41,7 @@
             <div style="float: left;width: 80%;" ?>
                 <?php echo $this->fetch('content'); ?>
             </div>
-            <?php echo $this->element('navigation'); ?>
+            <?php //echo $this->element('navigation'); ?>
 
         </div>
 		<div id="footer">

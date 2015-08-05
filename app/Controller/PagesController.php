@@ -68,23 +68,6 @@ class PagesController extends AppController {
 			$title_for_layout = Inflector::humanize($path[$count - 1]);
 		}
 		$this->set(compact('page', 'subpage', 'title_for_layout'));
-        /**
-         * requests total counts.
-         */
-        $pubcount=$this->requestAction('/publications/totalfiles');
-        $this->set('pubcount',$pubcount);
-
-        $textfilecount=$this->requestAction('/textfiles/totalfiles');
-        $this->set('textfilecount',$textfilecount);
-
-        $filecount=$this->requestAction('/files/totalfiles');
-        $this->set('filecount',$filecount);
-
-        $dataseriescount=$this->requestAction('/dataseries/totalfiles');
-        $this->set('dataseriescount',$dataseriescount);
-
-        $datasetcount=$this->requestAction('/datasets/totalfiles');
-        $this->set('datasetcount',$datasetcount);
 
 		try {
 			$this->render(implode('/', $path));
