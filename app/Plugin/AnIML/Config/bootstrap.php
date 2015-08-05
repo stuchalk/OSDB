@@ -1,0 +1,1 @@
+<?php Inflector::rules('plural', array('irregular'=>array('Animl.core'=>'Animl.core','Animl.data'=>'Animl.data'))); ?>
