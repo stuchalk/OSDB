@@ -24,12 +24,15 @@
             </div>
             <div style="float: right;">
                 <?php
-                    if($this->Session->read('Auth')) {
-                        echo $this->Html->link('Logout','/users/logout');
-                    } else {
-                        echo $this->Html->link('Login','/users/login')."&nbsp;";
-                        echo $this->Html->link('Register','/users/register');
-                }
+				$ip=$this->request->host();
+				if($ip=="sds.coas.unf.edu") {
+					if($this->Session->read('Auth')) {
+						echo $this->Html->link('Logout','/users/logout');
+					} else {
+						echo $this->Html->link('Login','/users/login')."&nbsp;";
+						echo $this->Html->link('Register','/users/register');
+					}
+				}
                 ?>
             </div>
         </div>
@@ -42,7 +45,7 @@
 
         </div>
 		<div id="footer">
-			<?php echo "Chalk Group @ ".$this->Html->link("University of North Florida",'http://www.unf.edu/',array('target' =>'_blank'))." © 2015"; ?>
+			<?php echo "Chalk Group @ ".$this->Html->link("University of North Florida",'http://www.unf.edu/',['target' =>'_blank'])." © 2015"; ?>
 		</div>
 	</div>
 </body>

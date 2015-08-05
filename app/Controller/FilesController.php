@@ -1,11 +1,11 @@
 <?php
-set_time_limit(0);
+
 /**
  * Class FilesController
  */
 class FilesController extends AppController {
 
-    public $uses = array('File','Publication','Propertytype','Activity','TextFile');
+    public $uses = ['File','Publication','Propertytype','Activity','TextFile'];
 
     /**
      * beforeFilter function
@@ -23,16 +23,23 @@ class FilesController extends AppController {
     {
         if($this->request->is('post'))
         {
-            $uploadedFile=array();
+            // Get data on uploaded file
             if (!empty($this->request->params['requested'])) {
                 $uploadedFile=$this->request->params['File'];
-            }else{
+            } else {
                 $uploadedFile=$this->request->data['File'];
             }
+
+            debug($uploadedFile);exit;
+
             // Get the filename and filesize
             $uploadedFile['filename']=$uploadedFile['file']['name'];
             $uploadedFile['filesize']=$uploadedFile['file']['size'];
-            // Move PDF file to storage location
+
+            // Move file to storage location (based on extension)
+            $filename = $this->request->data['User']['file_name']['name'];
+            $extension = pathinfo($filename, PATHINFO_EXTENSION);
+
             $path=WWW_ROOT."files".DS."pdf".DS.$uploadedFile['publication_id'];
             $folder = new Folder($path,true,0777);
             if (!empty($this->request->params['requested'])) {
@@ -50,10 +57,8 @@ class FilesController extends AppController {
             $code=$this->File->getCode($uploadedFile['filename'], $uploadedFile['publication_id']);
             $propertytype=$this->Propertytype->find('first', ['conditions'=>['Propertytype.code'=>$code]]);
 
-            if(!empty($propertytype))
-            {
+            if(!empty($propertytype)) {
                 $propertyid=$propertytype['Propertytype']['id'];
-
             } else {
                 $this->Propertytype->create();
                 $newpropertytype=['Propertytype'=>['code'=>$code]];
@@ -94,11 +99,13 @@ class FilesController extends AppController {
             }
 
         } else {
-            $pubs=$this->Publication->find('list',['fields'=>['id','title']]);
-            $this->set('pubs',$pubs);
+            // Get source_id here
         }
     }
 
+    /**
+     * Add a whole bunch of files
+     */
     public function massUpload(){
         if($this->request->is('post')) {
             $zip = new ZipArchive;
@@ -145,6 +152,7 @@ class FilesController extends AppController {
 
     /**
      * View a file
+     * @param $id
      */
     public function view($id)
     {
@@ -154,6 +162,7 @@ class FilesController extends AppController {
 
     /**
      * Update a file
+     * @param $id
      */
     public function update($id)
     {
@@ -173,6 +182,7 @@ class FilesController extends AppController {
 
     /**
      * Delete a file
+     * @param $id
      */
     public function delete($id)
     {
@@ -192,12 +202,19 @@ class FilesController extends AppController {
         $this->set('pubs',$pubs);
     }
 
+    /**
+     * Count the files
+     * @return mixed
+     */
     public function totalfiles()
     {
         $data=$this->File->find('count');
         return $data;
     }
 
+    /**
+     * Processing
+     */
     public function processing()
     {
         $files=$this->File->find('list',['fields'=>['id','filename','publication_id'],'order'=>['id','filename']]);
