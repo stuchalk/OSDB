@@ -5,7 +5,7 @@
  */
 class FilesController extends AppController {
 
-    public $uses = ['File','Substance','Identifier','Technique'];
+    public $uses = ['File','Substance','Identifier','Technique','Pubchem.Chemical','Activity','Animl.Jcamp'];
 
     /**
      * beforeFilter function
@@ -32,6 +32,34 @@ class FilesController extends AppController {
 
             // TODO: Mime type not correct for .jdx files
 
+            // Create data array
+            $file2=file($tmpname, FILE_IGNORE_NEW_LINES);
+            $farray=$this->Jcamp->convert($file2);
+            debug($farray);exit;
+
+            // Add substance_id
+            if($data['File']['substance_id']=='') {
+                $sub=$this->Chemical->check($data['File']['substance']);
+                $this->Substance->create();
+                $s=['Substance'=>['name'=>$sub['IUPACName'],'formula'=>$sub['MolecularFormula'],'molweight'=>$sub['MolecularWeight']]];
+                $this->Substance->save($s);
+                $sid=$this->Substance->id;
+                $iarray=['CID'=>'pubchemId','CanonicalSMILES'=>'smiles','InChI'=>'inchi','InChIKey'=>'inchikey','IUPACName'=>'iupacname'];
+                foreach($iarray as $field=>$type) {
+                    $this->Identifier->create();
+                    $this->Identifier->save(['Identifier'=>['substance_id'=>$sid,'type'=>$type,'value'=>$sub[$field]]]);
+                    $this->Identifier->clear();
+                }
+                // Get synonyms
+                $syns=$this->Chemical->synonyms($sub['CID']);
+                foreach($syns as $syn) {
+                    $this->Identifier->create();
+                    $this->Identifier->save(['Identifier'=>['substance_id'=>$sid,'type'=>'name','value'=>$syn]]);
+                    $this->Identifier->clear();
+                }
+                $data['File']['substance_id']=$sid;
+            }
+
             // Add to database
             $this->File->create();
             if(!$this->File->save($data)){
@@ -48,8 +76,8 @@ class FilesController extends AppController {
             $this->File->saveField('path',"/".$path);
 
             // Get version of format
+            $file=file_get_contents(WWW_ROOT.$path);
             if($ext=="jdx"||$ext=="dx") {
-                $file=file_get_contents(WWW_ROOT.$path);
                 // Detect line endings
                 if(stristr($file,"\r\n")) {
                     $eol="\r\n";
@@ -72,12 +100,7 @@ class FilesController extends AppController {
                     $tech = $this->Technique->find('first', ['conditions' => ['matchstr' => str_replace("^", "", $nuc) . "NMR"]]);
                 }
                 $this->File->saveField('technique_id',$tech['Technique']['id']);
-
             }
-
-            // Add substance_id
-            $sub=$this->Identifier->find('first',['conditions'=>['value'=>$data['File']['substance']]]);
-            debug($sub);exit;
 
             // Capture activity
             $this->Activity->create();
@@ -86,14 +109,30 @@ class FilesController extends AppController {
                 'file_id'=>$this->File->id,
                 'step_num'=>1,
                 'type'=>'upload',
-                'comment'=>'',
+                'comment'=>''
             ]];
             $this->Activity->save($activity);
 
+            // Convert file to xml
+            // Convert file to jcampxml format (interim format as PHP array)
+            if($ext=="jdx"||$ext=="dx")
+            {
+
+
+                // Save XML
+                $path="files".DS."jcampxml".DS.str_replace(array('jdx','dx','DX'),'xml',$upload['name']);
+                $fp=fopen(WWW_ROOT.$path,'w');
+                fwrite($fp,$jcamp->makexml());
+                fclose($fp);
+
+                // Show XML
+                header("Location: /".$path);
+                exit;
+                $ldrs=$jcamp->getLdrs();
+            }
+
             // Redirect to view
             return $this->redirect('/files/view/' . $this->File->id);
-        } else {
-            // Get source_id here
         }
     }
 

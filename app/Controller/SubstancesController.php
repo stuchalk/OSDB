@@ -5,7 +5,7 @@
  */
 class SubstancesController extends AppController
 {
-    public $uses=['Substance','Identifier'];
+    public $uses=['Substance','Identifier','Pubchem.Chemical'];
 
     /**
      * beforeFilter function
@@ -84,6 +84,32 @@ class SubstancesController extends AppController
     {
         $data=$this->Substance->find('list',['fields'=>['id','name'],'order'=>['name']]);
         $this->set('data',$data);
+    }
+
+    /**
+     * Search pubchem via plugin...
+     * @param $name
+     */
+    public function pubchem($name)
+    {
+        $data=$this->Chemical->check($name);
+        debug($data);exit;
+    }
+
+    /**
+     * jQuery request with query variable
+     */
+    public function search()
+    {
+        $term=$this->request->query['term'];
+        $temp=$this->Identifier->find('all',['fields'=>['DISTINCT Identifier.substance_id','Substance.name'],'order'=>['Substance.name'],'conditions'=>['Identifier.value like'=>'%'.$term.'%'],'recursive'=>1]);
+        //$temp=$this->Substance->find('all',['fields'=>['id','name'],'order'=>['name'],'conditions'=>['name like'=>'%'.$term.'%'],'recursive'=>0]);
+        $data=[];
+        for($x=0;$x<count($temp);$x++) {
+            $data[$x]['id']=$temp[$x]['Identifier']['substance_id'];
+            $data[$x]['value']=$temp[$x]['Substance']['name'];
+        }
+        echo json_encode($data);exit;
     }
 }
 ?>

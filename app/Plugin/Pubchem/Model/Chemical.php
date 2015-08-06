@@ -34,6 +34,25 @@ class Chemical extends AppModel
     }
 
     /**
+     * Get a list of synonyms of a chemical
+     * @param $cid
+     * @return bool
+     */
+    public function synonyms($cid)
+    {
+        $HttpSocket = new HttpSocket();
+        $url=$this->path.'cid/'.$cid.'/synonyms/JSON';
+        //echo $url;exit;
+        $json=$HttpSocket->get($url);
+        //echo $json;exit;
+        $syns=json_decode($json['body'],true);
+        if(isset($syns['Fault'])):	return false;
+        else:						return $syns['InformationList']['Information'][0]['Synonym'];
+        endif;
+    }
+
+
+    /**
      * Get a property of a chemical
      * List of proprties available at
      * http://pubchem.ncbi.nlm.nih.gov/pug_rest/PUG_REST.html#_Toc409516770

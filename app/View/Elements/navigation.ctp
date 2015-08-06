@@ -2,7 +2,7 @@
 if($this->Session->read('Auth.User'))
 {
     ?>
-    <div style="float: right;width: 200px;border-left: 1px solid #666;padding-left: 10px;"?>
+    <div class="nav"?>
     <h2>Navigation</h2>
     <ul>
         <li><a href="<?php echo $this->Html->url('/') ?>">Home</a></li>

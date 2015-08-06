@@ -60,7 +60,7 @@ Cache::config('default', array('engine' => 'File'));
  *
  */
 
-Inflector::rules('plural', array('irregular' => array('constituent'=>'constituents','dataseries'=>'dataseries')));
+Inflector::rules('plural', array('irregular' => array('identifier'=>'identifiers','dataseries'=>'dataseries')));
 
 /**
  * Plugins need to be loaded manually, you can either load them one by one or all of them in a single call
@@ -72,6 +72,7 @@ Inflector::rules('plural', array('irregular' => array('constituent'=>'constituen
  *
  */
 CakePlugin::load('Pubchem'); // Loads all plugins at once
+CakePlugin::load('Animl'); // Loads all plugins at once
 
 /**
  * To prefer app translation over plugin translation, you can set

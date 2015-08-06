@@ -1,3 +1,4 @@
+<?php pr($data);exit; ?>
 <?php
 $file=$data['File'];
 $publication=$data['Publication'];

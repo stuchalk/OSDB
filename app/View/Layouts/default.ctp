@@ -8,6 +8,8 @@
 		echo $this->Html->meta('icon');
 		echo $this->Html->css('cake.generic');
 		echo $this->Html->css('jquery-ui');
+		echo $this->Html->css('jquery-ui.structure');
+		echo $this->Html->css('jquery-ui.theme');
 		echo $this->Html->script('jquery');
 		echo $this->Html->script('jquery-ui');
 		echo $this->Html->script('jqcake');
@@ -19,10 +21,10 @@
 <body>
 	<div id="container">
 		<div id="header">
-            <div style="float: left;width: 80%;">
+            <div class="left">
                 <h1>The Open Spectral Database</h1>
             </div>
-            <div style="float: right;">
+            <div class="right">
                 <?php
 				$ip=$this->request->host();
 				if($ip=="sds.coas.unf.edu") {
@@ -38,7 +40,7 @@
         </div>
 		<div id="content">
 			<?php echo $this->Session->flash(); ?>
-            <div style="float: left;width: 80%;" ?>
+            <div class="left" ?>
                 <?php echo $this->fetch('content'); ?>
             </div>
             <?php //echo $this->element('navigation'); ?>

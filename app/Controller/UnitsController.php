@@ -25,4 +25,11 @@ class UnitsController extends AppController
     }
 
 
+    public function regex()
+    {
+        $s="05 Nov 2007 17:38:45";
+        $r="/^([0-9]{1,2}) ([a-zA-Z]{3}) ([0-9]{4}) ([0-9]{2}):([0-9]{2}):([0-9]{2})/";
+        preg_match($r,$s,$m);
+        debug($m);exit;
+    }
 }

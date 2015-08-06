@@ -11,8 +11,8 @@ class File extends AppModel
     public $format=0;
 
     public $actsAs = ['Containable'];
-    public $belongsTo = ['Publication','Propertytype'];
-    public $hasMany = ['TextFile'];
+    public $belongsTo = ['Substance','Technique'];
+    public $hasOne = ['Dataset'];
 
     /*
      *function getCode

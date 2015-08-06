@@ -28,9 +28,33 @@ class Jcamp extends AnimlAppModel
      */
 	public function __construct($file)
 	{
+        parent::__construct($file);
 		$this->file=$file;
 	}
-	
+
+    /**
+     * Convert JCAMP file to array or XML
+     * @param $file
+     * @param string $format
+     * @return array|mixed
+     */
+    public function convert($file,$format="array")
+    {
+        // $file must me as array not string
+        $this->file=$file;
+        $this->clean();
+        $this->uncomment();
+        $this->ldrs();
+        $this->validate();
+        $this->standardize();
+        $this->decompress();
+        if($format=="xml") {
+            return $this->makexml();
+        } else {
+            return $this->ldrs();
+        }
+    }
+
 	// Getters
 
     /**
@@ -172,7 +196,8 @@ class Jcamp extends AnimlAppModel
 			{
 				// NMR, MS, EMR, Chrom(draft) parameters -> $this->params
 				list($ldr,$value)=explode("=",$line);
-				$ldr=strtoupper(substr($ldr,2));
+                $value=trim($value); // Remove extra spaces
+                $ldr=strtoupper(substr($ldr,2));
 				$params[substr($ldr,1)]=trim($value);
 				// Set the prev LDR for the next iteration
 				$prev=$ldr;
@@ -181,6 +206,7 @@ class Jcamp extends AnimlAppModel
 			{
 				// Find the LDRs
 				list($ldr,$value)=explode("=",$line);
+                $value=trim($value); // Remove extra spaces
 				$ldr=strtoupper(substr($ldr,2));
 				if($prev=="PAGE")
 				{
@@ -240,16 +266,26 @@ class Jcamp extends AnimlAppModel
 			// TODO: Need to complete this
 		}
         // Convert TIME and DATE to DATETIME
-        if(isset($ldrs['DATE'])) {
-            list($y,$m,$d)=explode("/",$ldrs['DATE']);
-        } else {
-            $y=$m=$d=0;
-        }
+        // Detect data format (may contain time)
+        $y=$m=$d=$h=$m=$s=0;
         if(isset($ldrs['TIME'])) {
             list($h,$n,$s)=explode(":",$ldrs['TIME']);
-        } else {
-            $h=$n=$s=0;
         }
+        if(isset($ldrs['DATE'])) {
+            $ldrs['DATE']=preg_replace("/ +/"," ",$ldrs['DATE']);
+            if(preg_match("/^([0-9]{1,2}) ([a-zA-Z]{3}) ([0-9]{4}) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/",$ldrs['DATE'],$p)) {
+                $d=$p[1];$m=$p[2];$y=$p[3];$h=$p[4];$n=$p[5];$s=$p[6];
+            } else if(preg_match("/^([a-zA-Z]{3}) ([0-9]{1,2}) ([0-9]{4}) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/",$ldrs['DATE'],$p)) {
+                $m=$p[1];$d=$p[2];$y=$p[3];$h=$p[4];$n=$p[5];$s=$p[6];
+            } else if(preg_match("/^([0-9]{1,2}) ([a-zA-Z]{3}) ([0-9]{4})$/",$ldrs['DATE'],$p)) {
+                $d=$p[1];$m=$p[2];$y=$p[3];
+            } else if(preg_match("/^([a-zA-Z]{3}) ([0-9]{1,2}) ([0-9]{4})$/",$ldrs['DATE'],$p)) {
+                $m=$p[1];$d=$p[2];$y=$p[3];
+            } else {
+                list($y,$m,$d)=explode("/",$ldrs['DATE']);
+            }
+        }
+        if(is_string($m)) { $m = date('m',strtotime($m)); }
         $ldrs['DATETIME']=date(DATE_ATOM,mktime($h,$n,$s,$m,$d,$y));
         unset($ldrs['DATE']);unset($ldrs['TIME']);
 		// Save info
@@ -463,7 +499,7 @@ class Jcamp extends AnimlAppModel
         if(isset($ldrs['XYDATA'])) {
             foreach($this->ldrs['DATA'] as $dataset)
             {
-                // TO DO: make this selectable for different types of data constructs
+                // TODO: make this selectable for different types of data constructs
                 // First verify compression is what is indicated
                 // Concat data string to work out compression
                 $all=$asdftype=$temp="";
@@ -738,6 +774,7 @@ class Jcamp extends AnimlAppModel
                 if(!isset($ldrs['MINY']))		{ $errors['E28']="(Set ".$set.") MINY not in original file (taken from y data points)"; $ldrs['MINY']=min($data); }
                 if(min($data)!=$ldrs['MINY'])	{ $errors['E29']="(Set ".$set.") MINY (".$ldrs['MINY'].") does not match point found (".min($data).")"; }
                 // Save data
+                debug($data);
                 $ldrs['DATA'][$set]['pro']=$data;
                 $set++;
             }

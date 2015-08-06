@@ -39,6 +39,17 @@ class ChemicalsController extends AppController
     }
 
     /**
+     * Get the synonyms of a chemical from PubChem
+     * @param $cid
+     */
+    public function synonyms($cid)
+    {
+        $data=$this->Chemical->synonyms($cid);
+        $this->set('data',$data);
+        $this->render('display');
+    }
+
+    /**
      * Check Pubchem for a chemical
      * @param $name
      * @param $cas
