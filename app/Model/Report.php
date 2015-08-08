@@ -8,9 +8,7 @@ App::uses('ClassRegistry', 'Utility');
  */
 class Report extends AppModel
 {
-    public $hasOne = ['Dataset'=>
-        ['dependent' => true]
-    ];
+    public $hasOne = ['Dataset'=> ['dependent' => true]];
 
-    public $belongsTo = ['Publication'];
+    public $belongsTo = ['Publication','User'];
 }

@@ -9,6 +9,6 @@ App::uses('ClassRegistry', 'Utility');
 class Quantity extends AppModel
 {
 
-    public $hasAndBelongsToMany = ['Unit'];
+    public $hasMany = ['Unit'];
 
 }

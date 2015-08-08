@@ -9,7 +9,9 @@ App::uses('ClassRegistry', 'Utility');
 class Unit extends AppModel
 {
 
-	public $hasAndBelongsToMany = ['Quantity', 'Parameter','Variable'];
+	public $belongsTo = ['Quantity'];
+
+	public $hasAndBelongsToMany = ['Parameter','Variable'];
 
 }
 ?>

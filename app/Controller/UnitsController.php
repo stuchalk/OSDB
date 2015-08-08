@@ -32,4 +32,11 @@ class UnitsController extends AppController
         preg_match($r,$s,$m);
         debug($m);exit;
     }
+
+    public function jsona()
+    {
+        $data=file_get_contents(WWW_ROOT.'/scidata_spectrum.txt');
+        //debug($data);exit;
+        echo "<pre>";json_decode("[".$data."]");echo "</pre>";exit;
+    }
 }

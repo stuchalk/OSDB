@@ -15,7 +15,7 @@ class File extends AppModel
     public $hasOne = ['Dataset'];
 
     /*
-     *function getCode
+     * function getCode
      * Gets the property type code from a file that has already been transferred to the pdf folder
      * @parameter $filename: The name of the file to extract the property type code from
      * @parameter $publicationID: ID of the publication in string format
@@ -51,5 +51,33 @@ class File extends AppModel
         } else {
             throw new Exception($filename.": File Not Found");
         }
+    }
+
+    public function getChem($name)
+    {
+        $Chm = ClassRegistry::init('Pubchem.Chemical');
+        $Sub = ClassRegistry::init('Substance');
+        $Idn = ClassRegistry::init('Identifier');
+
+        $nih=$Chm->check($name);
+        $Sub->create();
+        $s=['Substance'=>['name'=>$nih['IUPACName'],'formula'=>$nih['MolecularFormula'],'molweight'=>$nih['MolecularWeight']]];
+        $Sub->save($s);
+        $sid=$Sub->id;
+        $iarray=['CID'=>'pubchemId','CanonicalSMILES'=>'smiles','InChI'=>'inchi','InChIKey'=>'inchikey','IUPACName'=>'iupacname'];
+        foreach($iarray as $field=>$type) {
+            $Idn->create();
+            $Idn->save(['Identifier'=>['substance_id'=>$sid,'type'=>$type,'value'=>$nih[$field]]]);
+            $Idn->clear();
+        }
+        // Get synonyms
+        $syns=$Chm->synonyms($nih['CID']);
+        foreach($syns as $syn) {
+            $Idn->create();
+            $Idn->save(['Identifier'=>['substance_id'=>$sid,'type'=>'name','value'=>$syn]]);
+            $Idn->clear();
+        }
+        return $sid;
+        //debug($sub);exit;
     }
 }

@@ -7,6 +7,8 @@ class User extends AppModel
     public $name="User";
     public $virtualFields=array('fullname'=>'CONCAT(firstname," ",lastname)');
 
+    public $hasMany=['Report'];
+
     public $validate = array(
         'username' => array(
             'required' => array(
