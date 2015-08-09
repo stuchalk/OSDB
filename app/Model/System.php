@@ -11,4 +11,18 @@ class System extends AppModel
     public $hasAndBelongsToMany = ['Substance'];
 
     public $hasMany = ['Dataset'];
+
+    /**
+     * General function to add a new system
+     * @param $data
+     * @return integer
+     */
+    public function add($data)
+    {
+        $model='System';
+        $this->create();
+        $ret=$this->save([$model=>$data]);
+        $this->clear();
+        return $ret[$model];
+    }
 }

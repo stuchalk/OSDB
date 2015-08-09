@@ -3,23 +3,21 @@ App::uses('AppModel', 'Model');
 App::uses('ClassRegistry', 'Utility');
 
 /**
- * Class Report
- * Report model
+ * Class Sample
+ * System model
  */
-class Report extends AppModel
+class Sample extends AppModel
 {
-    public $hasOne = ['Dataset'=> ['dependent' => true]];
-
-    public $belongsTo = ['Publication','User'];
+    public $hasOne = ['Dataset','System'];
 
     /**
-     * General function to add a new report
+     * General function to add a new sample
      * @param $data
      * @return integer
      */
     public function add($data)
     {
-        $model='Report';
+        $model='Sample';
         $this->create();
         $ret=$this->save([$model=>$data]);
         $this->clear();

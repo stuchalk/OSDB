@@ -8,7 +8,7 @@ App::uses('ClassRegistry', 'Utility');
  */
 class Dataset extends AppModel
 {
-    public $hasOne=['Methodology'];
+    public $hasOne=['Methodology','Context'];
 
     public $hasMany = [
         'Dataseries'=> [
@@ -21,4 +21,18 @@ class Dataset extends AppModel
         ]];
 
     public $belongsTo = ['Propertytype','System','Reference','File','Report'];
+
+    /**
+     * General function to add a new system
+     * @param $data
+     * @return integer
+     */
+    public function add($data)
+    {
+        $model='Dataset';
+        $this->create();
+        $ret=$this->save([$model=>$data]);
+        $this->clear();
+        return $ret[$model];
+    }
 }

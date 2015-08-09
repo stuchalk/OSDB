@@ -8,7 +8,7 @@
 
 class SystemsController extends AppController {
 
-    public $uses=['System'];
+    public $uses=['System','SubstancesSystem'];
 
     /**
      * beforeFilter function
@@ -37,5 +37,12 @@ class SystemsController extends AppController {
         $this->set('data',$data);
     }
 
+    public function findsys()
+    {
+        $subid1="00001";$subid2="00003";
+        debug($subid1);debug($subid2);
+        $data=$this->SubstancesSystem->findUnique([$subid1,$subid2]);
+        debug($data);exit;
+    }
 
 }

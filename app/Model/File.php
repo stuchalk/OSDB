@@ -53,6 +53,11 @@ class File extends AppModel
         }
     }
 
+    /**
+     * Using Pubchem, get the metadata about the compounds
+     * @param $name
+     * @return mixed
+     */
     public function getChem($name)
     {
         $Chm = ClassRegistry::init('Pubchem.Chemical');
@@ -60,24 +65,32 @@ class File extends AppModel
         $Idn = ClassRegistry::init('Identifier');
 
         $nih=$Chm->check($name);
-        $Sub->create();
-        $s=['Substance'=>['name'=>$nih['IUPACName'],'formula'=>$nih['MolecularFormula'],'molweight'=>$nih['MolecularWeight']]];
-        $Sub->save($s);
-        $sid=$Sub->id;
+        $sub=$Sub->add(['name'=>ucfirst(strtolower($name)),'formula'=>$nih['MolecularFormula'],'molweight'=>$nih['MolecularWeight']]);
+        $sid=$sub['id'];
         $iarray=['CID'=>'pubchemId','CanonicalSMILES'=>'smiles','InChI'=>'inchi','InChIKey'=>'inchikey','IUPACName'=>'iupacname'];
         foreach($iarray as $field=>$type) {
-            $Idn->create();
-            $Idn->save(['Identifier'=>['substance_id'=>$sid,'type'=>$type,'value'=>$nih[$field]]]);
-            $Idn->clear();
+            $Idn->add(['substance_id'=>$sid,'type'=>$type,'value'=>$nih[$field]]);
         }
         // Get synonyms
         $syns=$Chm->synonyms($nih['CID']);
         foreach($syns as $syn) {
-            $Idn->create();
-            $Idn->save(['Identifier'=>['substance_id'=>$sid,'type'=>'name','value'=>$syn]]);
-            $Idn->clear();
-        }
+            $Idn->add(['substance_id'=>$sid,'type'=>'name','value'=>$syn]);
+       }
         return $sid;
         //debug($sub);exit;
+    }
+
+    /**
+     * General function to add a new file
+     * @param $data
+     * @return integer
+     */
+    public function add($data)
+    {
+        $model='File';
+        $this->create();
+        $ret=$this->save([$model=>$data]);
+        $this->clear();
+        return $ret[$model];
     }
 }
