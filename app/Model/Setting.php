@@ -9,6 +9,6 @@ App::uses('ClassRegistry', 'Utility');
 class Setting extends AppModel
 {
 
-    public $belongsTo = ['Dataset'];
+    public $belongsTo = ['Measurement'];
 
 }

@@ -40,7 +40,7 @@ class ReportsController extends AppController
      */
     public function view($id)
     {
-        $data=$this->Report->find('first',['conditions'=>['Report.id'=>$id],'recursive'=>2]);
+        $data=$this->Report->find('first',['conditions'=>['Report.id'=>$id],'recursive'=>4]);
         $this->set('data',$data);
     }
 

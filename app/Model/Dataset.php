@@ -8,6 +8,8 @@ App::uses('ClassRegistry', 'Utility');
  */
 class Dataset extends AppModel
 {
+    public $hasOne=['Methodology'];
+
     public $hasMany = [
         'Dataseries'=> [
             'foreignKey' => 'dataset_id',

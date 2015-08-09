@@ -6,7 +6,7 @@
  * Time: 10:03 AM
  */
 
-class Jcamp extends AppModel {
+class Jcampldr extends AppModel {
 
     public $belongsTo=['Property'];
 

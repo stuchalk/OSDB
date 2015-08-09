@@ -5,7 +5,8 @@
  */
 class FilesController extends AppController {
 
-    public $uses = ['File','Dataset','Substance','Jcamp','Propertytype','SubstancesSystem','Report','System','Identifier','Technique','Pubchem.Chemical','Activity','Animl.Jcamp'];
+    public $uses = ['File','Dataset','Substance','Methodology','Measurement','Setting','Jcampldr','Propertytype',
+        'SubstancesSystem', 'Report','System','Identifier','Technique','Pubchem.Chemical','Activity','Animl.Jcamp'];
 
     /**
      * beforeFilter function
@@ -36,6 +37,8 @@ class FilesController extends AppController {
             $file2=file($tmpname, FILE_IGNORE_NEW_LINES);
             $jarray=$this->Jcamp->convert($file2);
 
+            //debug($jarray);exit;
+
             // Create technique related variables from data in jarray
             $techstr="an unknown";
             if(isset($jarray['PARAMS']['OBSERVENUCLEUS'])) {
@@ -47,28 +50,30 @@ class FilesController extends AppController {
                 $techcode=$jarray['PARAMS']['OBSERVENUCLEUS']."NMR";
             }
 
-            debug($jarray);exit;
+            // Get main substance_id
+            if($data['File']['substance_id']=='') {
+                $chm=$data['File']['substance'];
+                $sid1=$this->File->getChem($chm); // Adds substance if it does not exist
+                $data['File']['substance_id']=$sid1;
+            } else {
+                $sid1=$data['File']['substance_id'];
+            }
 
-            // Add solvent into substances to then make system
+            echo "SID1: ".$sid1."<br />";
+
+            // Add solvent into substances if there is one
             $sid2="";
             if(isset($jarray['PARAMS']['SOLVENTNAME'])) {
                 $sol=$jarray['PARAMS']['SOLVENTNAME'];
                 $sub2=$this->Identifier->find('first',['conditions'=>['value like'=>'%'.$sol.'%']]);
                 if(empty($sub2)) {
-                    $sid2=$this->File->getChem($sol);
+                    $sid2=$this->File->getChem($sol); // Adds substance if it does not exist
                 } else {
                     $sid2=$sub2['Identifier']['substance_id'];
                 }
             }
 
-            // Add substance_id
-            if($data['File']['substance_id']=='') {
-                $chm=$data['File']['substance'];
-                $sid1=$this->File->getChem($chm);
-                $data['File']['substance_id']=$sid1;
-            } else {
-                $sid1=$data['File']['substance_id'];
-            }
+            echo "SID2: ".$sid2."<br />";
 
             // Add system
             $names=$this->Substance->find('list',['fields'=>['id','name'],'conditions'=>['id in'=>[$sid1,$sid2]]]);
@@ -81,37 +86,44 @@ class FilesController extends AppController {
             $sys['description']="Solution prepared for ".$techstr." analysis";
             $sys['type']="Single phase liquid"; // TODO add MAS check
             $this->System->create();
-            $this->System->save(['System'=>$sys]);
+            $system=$this->System->save(['System'=>$sys]);
             $sysid=$this->System->id;
+
+            debug($system);
+
+            // Add substances_systems entries
             $this->SubstancesSystem->create();
-            $this->SubstancesSystem->save(['SubstancesSystem'=>['substance_id'=>$sid1,'system_id'=>$sysid]]);
+            $ssjoin1=$this->SubstancesSystem->save(['SubstancesSystem'=>['substance_id'=>$sid1,'system_id'=>$sysid]]);
             if($sid2!="") {
                 $this->SubstancesSystem->clear();
                 $this->SubstancesSystem->create();
-                $this->SubstancesSystem->save(['SubstancesSystem'=>['substance_id'=>$sid2,'system_id'=>$sysid]]);
+                $ssjoin2=$this->SubstancesSystem->save(['SubstancesSystem'=>['substance_id'=>$sid2,'system_id'=>$sysid]]);
             }
 
-            // Add report
-            // Report is the representation of the data on the website
-            $rpt['user_id']=$this->Auth->user('id');
+            debug($ssjoin1);debug($ssjoin2);
+
+            // Add report - the representation of the data on the website
+            $rpt['user_id']=$this->Auth->user('id'); // TODO add check for other sources (publication or website)
             $rpt['title']=$jarray['TITLE'];
             $rpt['description']=$tech." spectrum of ".$jarray['TITLE'];
-            $rpt['comment']="Upload of a JCAMP file by ".$this->Auth->user('fullname').". ORIGIN: ".$jarray['ORIGIN'].". OWNER:".$jarray['OWNER'];
+            $rpt['comment']="Upload of a JCAMP file by ".$this->Auth->user('fullname').". ORIGIN: ".$jarray['ORIGIN'].". OWNER: ".$jarray['OWNER'];
             $this->Report->create();
-            $this->Report->save(['Report'=>$rpt]);
+            $report=$this->Report->save(['Report'=>$rpt]);
             $rptid=$this->Report->id;
+
+            debug($report);
 
             // PropertyType is the type of spectrum it is, look up in table to get id
             $pro=$this->Propertytype->find('first',['conditions'=>['code'=>$techcode]]);
             $proid=$pro['Propertytype']['id'];
 
-            // Add File
+            // Add the file information
             $this->File->create();
-            if(!$this->File->save($data)){
-                debug($this->File->validationErrors); die();
-            }
+            $file=$this->File->save($data);
             $filid=$this->File->id;
             $pathid=str_pad($this->File->id,9,"0",STR_PAD_LEFT);
+
+            debug($file);
 
             // Move file to storage location (based on extension)
             $ext = pathinfo($data['File']['name'], PATHINFO_EXTENSION);
@@ -121,30 +133,15 @@ class FilesController extends AppController {
             move_uploaded_file($tmpname,WWW_ROOT.$path);
             $this->File->saveField('path',"/".$path);
 
-            // Get version of format
+            // Get version of format and technique type and add to file data
             $file=file_get_contents(WWW_ROOT.$path);
             if($ext=="jdx"||$ext=="dx") {
-                // Detect line endings
-                if(stristr($file,"\r\n")) {
-                    $eol="\r\n";
-                } elseif(stristr($file,"\r")) {
-                    $eol="\r";
-                } elseif(stristr($file,"\n")) {
-                    $eol="\r";
-                }
                 // JCAMP version
                 list(,$temp)=explode("JCAMP-DX=",$file,2);
                 list($ver,)=explode(" ",$temp,2);
                 $this->File->saveField('version',$ver);
                 // JCAMP Data Type
-                list(,$temp)=explode("DATA TYPE=",$file,2);
-                list($type,)=explode($eol,$temp,2); // Must use ' here not "
-                if(stristr($type,"NMR")) {
-                    // Find nucleus
-                    list(, $temp) = explode("OBSERVE NUCLEUS=", $file, 2);
-                    list($nuc,) = explode($eol, $temp, 2); // Must use ' here not "
-                    $tech = $this->Technique->find('first', ['conditions' => ['matchstr' => str_replace("^", "", $nuc) . "NMR"]]);
-                }
+                $tech = $this->Technique->find('first',['conditions'=>['matchstr'=>$techcode]]);
                 $this->File->saveField('technique_id',$tech['Technique']['id']);
             }
 
@@ -152,38 +149,38 @@ class FilesController extends AppController {
 
             // Add Dataset
             $set=['report_id'=>$rptid,'file_id'=>$filid,'system_id'=>$sysid,'propertytype_id'=>$proid];
+            $set['setType']="property_value";
+            $set['property']=$techprop;
+            if(isset($jarray['XYDATA'])) {
+                $set['format']=$jarray['XYDATA'];
+            } elseif (isset($jarray['XYPOINTS'])) {
+                $set['format']=$jarray['XYPOINTS'];
+            } elseif (isset($jarray['NTUPLES'])) {
+                $set['format']=$jarray['NTUPLES'];
+            } else {
+                $set['format']="unknown";
+            }
+            $set['format']=strtolower($set['format']);
+            $set['kind']="spectrum";
             $this->Dataset->create();
-            $this->Dataset->save(['Dataset'=>$set]);
+            $dataset=$this->Dataset->save(['Dataset'=>$set]);
             $setid=$this->Dataset->id;
 
-            // Distribute the data into the DB tables
+            debug($dataset);
 
-            // Annotation on dataset
-            // Defaults
-            $ann['set']['type']="property_value";
-            $ann['set']['property']=$techprop;
-            if(isset($jarray['XYDATA'])) {
-                $ann['set']['format']=$jarray['XYDATA'];
-            } elseif (isset($jarray['XYPOINTS'])) {
-                $ann['set']['format']=$jarray['XYPOINTS'];
-            } elseif (isset($jarray['NTUPLES'])) {
-                $ann['set']['format']=$jarray['NTUPLES'];
-            } else {
-                $ann['set']['format']="unknown";
-            }
-            $ann['set']['format']=strtolower($ann['set']['format']);
-            $ann['set']['kind']="spectrum";
+            // Add methodology
+            $this->Methodology->create();
+            $met=$this->Methodology->save(['Methodology'=>['dataset_id'=>$setid,'evaluation'=>"experimental",'aspects'=>'measurement']]);
+            $metid=$this->Methodology->id;
 
-            // Annotation on methodology
-            $ann['met']['evaluation']="experimental";
+            debug($met);
 
-            // Annotation on measurement
-            // NMR larmor frequency => Tesla
-            $nmr['1H']=["250"=>"38.376","300"=>"46.051","400"=>"61.401","500"=>"76.753"];
-            $nmr['13H']=["250"=>"62.860","300"=>"75.432","400"=>"100.576","500"=>"125.721"];
-
-            $ann['mea']['measurementType']="spectroscopic";
-            $ann['mea']['measurementMethod']=$techprop;
+            // Add measurement
+            $nmr['1H']=["250"=>"38.376","300"=>"46.051","400"=>"61.401","500"=>"76.753"];     // NMR larmor frequency => Tesla
+            $nmr['13H']=["250"=>"62.860","300"=>"75.432","400"=>"100.576","500"=>"125.721"];  // NMR larmor frequency => Tesla
+            $mea['methodology_id']=$metid;
+            $mea['techniqueType']="spectroscopic";
+            $mea['technique']=$techprop;
             if(isset($jarray['PARAMS']['OBSERVEFREQUENCY'])) {
                 $frq=round($jarray['PARAMS']['OBSERVEFREQUENCY'],0);
             } elseif(isset($jarray['PARAMS']['FIELD'])) {
@@ -195,30 +192,45 @@ class FilesController extends AppController {
                     }
                 }
             }
-            $ann['mea']['instrumentType']=$frq." MHz NMR";
-            $ann['mea']['instrument']=$jarray['SPECTROMETERDATASYSTEM'];
-            if(isset($jarray['DATAPROCESSING'])) {
-                // TODO
-            }
+            $mea['instrumentType']=$frq." MHz NMR";
+            $mea['instrument']=$jarray['SPECTROMETERDATASYSTEM'];
+            if(isset($jarray['DATAPROCESSING'])) { } // TODO
+            $this->Measurement->create();
+            $meas=$this->Measurement->save(['Measurement'=>$mea]);
+            $meaid=$this->Measurement->id;
 
-            // Add methodology and then settings
-            $this->Methodology->create();
-            $this->Methodology->save(['Methodology'=>['dataset_id'=>$setid,'aspects'=>['measurement']]]);
+            debug($meas);
 
+            // Add settings
             // Settings are from the PARAMS and BRUKER arrays
             $contain=['Property'=>['fields'=>['Property.name'],'Quantity'=>['fields'=>['Quantity.name','Quantity.si_unit'],'Unit'=>['fields'=>['Unit.symbol']]]]];
-            $fields=['Jcamp.arrayname','Jcamp.unit'];
-            $conditions=['scidata'=>'settings'];
-            $settings=$this->Jcamp->find('all',['fields'=>$fields,'conditions'=>$conditions,'contain'=>$contain]);
+            $settings=$this->Jcampldr->find('all',['fields'=>['Jcampldr.arrayname','Jcampldr.unit'],'conditions'=>['scidata'=>'settings'],'contain'=>$contain]);
             $params=array_merge($jarray['PARAMS'],$jarray['BRUKER']);
             foreach($settings as $s) {
-                if(isset($params[$s['Jcamp']['arrayname']])) {
-                    // Need property_id, value, unit
+                if(isset($params[$s['Jcampldr']['arrayname']])) {
+                    // Need methodology, property_id, number, unit_id, accuracy
+                    $number=$params[$s['Jcampldr']['arrayname']];
+                    $propid=$s['Property']['id'];
+                    $unit=$s['Jcampldr']['unit'];
+                    $unitid = null;
+                    if($unit!="") {
+                        $units = $s['Property']['Quantity']['Unit'];
+                        for ($x = 0; $x < count($units); $x++) {
+                            if ($units[$x]['symbol'] == $unit) {
+                                $unitid = $units[$x]['id'];
+                            }
+                        }
+                    }
+                    $acc=strlen(str_replace(".","",$number));
+                    $setn=['measurement_id'=>$meaid,'property_id'=>$propid,'unit_id'=>$unitid,'number'=>$number,'accuracy'=>$acc];
+                    $this->Setting->create();
+                    $setting=$this->Setting->save(['Setting'=>$setn]);
+                    $this->Setting->clear();
+                    debug($setting);
                 }
-
             }
 
-            debug($setid);exit;
+            exit;
 
             // Content of file is a dataset, multiple spectra, peak tables are dataseries
             // Reference is to the original file and user that uploaded it
