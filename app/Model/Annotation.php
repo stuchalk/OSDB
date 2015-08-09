@@ -3,22 +3,21 @@ App::uses('AppModel', 'Model');
 App::uses('ClassRegistry', 'Utility');
 
 /**
- * Class Setting
- * Setting model
+ * Class Sample
+ * System model
  */
-class Setting extends AppModel
+class Annotation extends AppModel
 {
-
-    public $belongsTo = ['Measurement'];
+    public $belongsTo = ['Dataset','Dataseries','Report','System','Methodology','Context'];
 
     /**
-     * General function to add a new setting
+     * General function to add a new annotation
      * @param $data
      * @return integer
      */
     public function add($data)
     {
-        $model='Setting';
+        $model='Annotation';
         $this->create();
         $ret=$this->save([$model=>$data]);
         $this->clear();

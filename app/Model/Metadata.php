@@ -1,28 +1,26 @@
 <?php
-
 App::uses('AppModel', 'Model');
+App::uses('ClassRegistry', 'Utility');
 
 /**
- * Class Measurement
+ * Class Metadata
+ * System model
  */
-class Measurement extends AppModel {
-
-    public $hasMany=['Setting'];
-
-    public $belongsTo=['Methodology'];
+class Metadata extends AppModel
+{
+    public $belongsTo = ['Annotation'];
 
     /**
-     * General function to add a new measurement
+     * General function to add a new metadata
      * @param $data
      * @return integer
      */
     public function add($data)
     {
-        $model='Measurement';
+        $model='Metadata';
         $this->create();
         $ret=$this->save([$model=>$data]);
         $this->clear();
         return $ret[$model];
     }
 }
-?>

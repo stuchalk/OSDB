@@ -11,7 +11,21 @@ class Data extends AppModel
     public $hasMany = ['Condition'=> [
         'foreignKey' => 'data_id',
         'dependent' => true,
-],];
+    ],];
 
-public $belongsTo = ['Dataset','Dataseries','Unit','Datapoint','Property'];
+    public $belongsTo = ['Dataset','Dataseries','Unit','Datapoint','Property'];
+
+    /**
+     * General function to add a new data
+     * @param $data
+     * @return integer
+     */
+    public function add($data)
+    {
+        $model='Data';
+        $this->create();
+        $ret=$this->save([$model=>$data]);
+        $this->clear();
+        return $ret[$model];
+    }
 }

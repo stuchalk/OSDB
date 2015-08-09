@@ -1,28 +1,26 @@
 <?php
-
 App::uses('AppModel', 'Model');
+App::uses('ClassRegistry', 'Utility');
 
 /**
- * Class Measurement
+ * Class Sample
+ * System model
  */
-class Measurement extends AppModel {
-
-    public $hasMany=['Setting'];
-
-    public $belongsTo=['Methodology'];
+class Activity extends AppModel
+{
+    public $hasOne = ['User'];
 
     /**
-     * General function to add a new measurement
+     * General function to add a new activity
      * @param $data
      * @return integer
      */
     public function add($data)
     {
-        $model='Measurement';
+        $model='Activity';
         $this->create();
         $ret=$this->save([$model=>$data]);
         $this->clear();
         return $ret[$model];
     }
 }
-?>

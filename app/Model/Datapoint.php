@@ -19,4 +19,18 @@ class Datapoint extends AppModel
         ]];
 
     public $belongsTo = ['Dataseries','Dataset'];
+
+    /**
+     * General function to add a new datapoint
+     * @param $data
+     * @return integer
+     */
+    public function add($data)
+    {
+        $model='Datapoint';
+        $this->create();
+        $ret=$this->save([$model=>$data]);
+        $this->clear();
+        return $ret[$model];
+    }
 }

@@ -6,7 +6,8 @@
 class FilesController extends AppController {
 
     public $uses = ['File','Dataset','Substance','Methodology','Measurement','Setting','Jcampldr','Propertytype',
-        'SubstancesSystem', 'Report','System','Identifier','Technique','Pubchem.Chemical','Activity','Animl.Jcamp'];
+                    'Sample','SubstancesSystem', 'Report','System','Identifier','Technique','Pubchem.Chemical','Unit',
+                    'Activity','Animl.Jcamp','Dataseries','Annotation','Metadata','Datapoint','Data','Condition','Property'];
 
     /**
      * beforeFilter function
@@ -25,9 +26,9 @@ class FilesController extends AppController {
         if($this->request->is('post'))
         {
             $data=$this->request->data;
-            $data['File']['name']=$data['File']['file']['name'];
-            $data['File']['size']=$data['File']['file']['size'];
-            $data['File']['type']=$data['File']['file']['type'];
+            $data['name']=$data['File']['file']['name'];
+            $data['size']=$data['File']['file']['size'];
+            $data['type']=$data['File']['file']['type'];
             $tmpname=$data['File']['file']['tmp_name'];
             unset($data['File']['file']);
 
@@ -37,7 +38,7 @@ class FilesController extends AppController {
             $file2=file($tmpname, FILE_IGNORE_NEW_LINES);
             $jarray=$this->Jcamp->convert($file2);
 
-            //debug($jarray);exit;
+            debug($jarray);exit;
 
             // Create technique related variables from data in jarray
             $techstr="an unknown";$tech=$techprop=$techid=$techcode="";
@@ -48,6 +49,16 @@ class FilesController extends AppController {
                 $techstr=$jarray['PARAMS']['OBSERVENUCLEUS']." NMR";
                 $techid="NMRSAMPLE";
                 $techcode=$jarray['PARAMS']['OBSERVENUCLEUS']."NMR";
+                if(strtolower($jarray['XUNITS'])=="hz") {
+                    $xlabel="Radiofrequency";
+                    $xpropid=$this->Property->field('id',['name'=>"Radiofrequency"]);
+                    $xunitid=$this->Unit->field('id',['symbol'=>"Hz"]);
+                }
+                if(strtolower($jarray['YUNITS'])=="arbitrary units") {
+                    $ylabel="Signal (Arbitrary Units)";
+                    $ypropid=$this->Property->field('id',['name'=>"Signal Strength"]);
+                    $yunitid=$this->Unit->field('id',['symbol'=>""]);
+                }
             }
 
             // Define contents first
@@ -116,27 +127,25 @@ class FilesController extends AppController {
             $proid=$pro['Propertytype']['id'];
 
             // Add the file information
+
             $file=$this->File->add($data);
             $filid=$file['id'];
             $pathid=str_pad($filid,9,"0",STR_PAD_LEFT);
 
 
             // Move file to storage location (based on extension)
-            $ext = pathinfo($data['File']['name'], PATHINFO_EXTENSION);
+            $ext = pathinfo($data['name'], PATHINFO_EXTENSION);
             if($ext=="jdx"||$ext=="dx") {
                 $path="files".DS."jdx";
                 $folder = new Folder(WWW_ROOT.$path,true,0777);
                 $path.=DS.$pathid.".jdx";
                 move_uploaded_file($tmpname,WWW_ROOT.$path);
-                $this->File->saveField('path',"/".$path);
+                $this->File->save(['id'=>$filid,'path'=>"/".$path]);
 
                 // Get version of format and technique type and add to file data
-                $file=file_get_contents(WWW_ROOT.$path);
-                list(,$temp)=explode("JCAMP-DX=",$file,2);
-                list($ver,)=explode(" ",$temp,2);
-                $this->File->saveField('version',$ver); // JCAMP version
+                $this->File->saveField('version',$jarray['JCAMPDX']); // JCAMP version
                 $tech = $this->Technique->find('first',['conditions'=>['matchstr'=>$techcode]]);
-                $file=$this->File->saveField('technique_id',$tech['Technique']['id']); // JCAMP Data Type
+                $file=$this->File->save(['id'=>$filid,'technique_id'=>$tech['Technique']['id']]); // JCAMP Data Type
 
                 // Save XML
                 $path="files".DS."xml";
@@ -185,7 +194,7 @@ class FilesController extends AppController {
             $methodology=$this->Methodology->add($met);
             $metid=$methodology['id'];
 
-            debug($methodology);exit;
+            debug($methodology);
 
             // Add measurement
             $nmr['1H']=["250"=>"38.376","300"=>"46.051","400"=>"61.401","500"=>"76.753"];     // NMR larmor frequency => Tesla
@@ -207,11 +216,10 @@ class FilesController extends AppController {
             $mea['instrumentType']=$frq." MHz NMR";
             $mea['instrument']=$jarray['SPECTROMETERDATASYSTEM'];
             if(isset($jarray['DATAPROCESSING'])) { } // TODO
-            $this->Measurement->create();
-            $meas=$this->Measurement->save(['Measurement'=>$mea]);
-            $meaid=$this->Measurement->id;
+            $measurement=$this->Measurement->add($mea);
+            $meaid=$measurement['id'];
 
-            debug($meas);
+            debug($measurement);
 
             // Add settings
             // Settings are from the PARAMS and BRUKER arrays
@@ -221,64 +229,101 @@ class FilesController extends AppController {
             foreach($settings as $s) {
                 if(isset($params[$s['Jcampldr']['arrayname']])) {
                     // Need methodology, property_id, number, unit_id, accuracy
-                    $number=$params[$s['Jcampldr']['arrayname']];
                     $propid=$s['Property']['id'];
                     $unit=$s['Jcampldr']['unit'];
-                    $unitid = null;
                     if($unit!="") {
+                        $unitid = null;
                         $units = $s['Property']['Quantity']['Unit'];
                         for ($x = 0; $x < count($units); $x++) {
                             if ($units[$x]['symbol'] == $unit) {
                                 $unitid = $units[$x]['id'];
                             }
                         }
+                        $number=$params[$s['Jcampldr']['arrayname']];
+                        $acc=strlen(str_replace(".","",$number));
+                        $setn=['measurement_id'=>$meaid,'property_id'=>$propid,'unit_id'=>$unitid,'number'=>$number,'accuracy'=>$acc];
+                    } else {
+                        $txt=$params[$s['Jcampldr']['arrayname']];
+                        $setn=['measurement_id'=>$meaid,'property_id'=>$propid,'text'=>$txt];
                     }
-                    $acc=strlen(str_replace(".","",$number));
-                    $setn=['measurement_id'=>$meaid,'property_id'=>$propid,'unit_id'=>$unitid,'number'=>$number,'accuracy'=>$acc];
-                    $this->Setting->create();
-                    $setting=$this->Setting->save(['Setting'=>$setn]);
-                    $this->Setting->clear();
+                    $setting=$this->Setting->add($setn);
                     debug($setting);
                 }
             }
+            // TODO make settings more sophisticated to be able to handles lrds that are text based arrays
+
+            foreach($jarray['DATA'] as $darray) {
+
+                // Add dataseries
+                $ser=['dataset_id'=>$set,'type'=>'spectrum','format'=>$set['format'],'level'=>'processed'];
+                $dataseries=$this->Dataseries->add(['Dataseries'=>$ser]);
+                $serid=$dataseries['id'];
+
+                debug($dataseries);
+
+                // Add annotation on dataseries or 'origin' class of metadata
+                $ann=['dataseries_id'=>$serid,'class'=>'origin','comment'=>'Origin metadata is about the original file'];
+                $annotation=$this->Annotation->add($ann);
+                $annid=$annotation['id'];
+
+                debug($annotation);
+
+                // Add the origin metadata
+                $metaarray=['filename:text'=>$data['name'],'filetype:text'=>'jcamp','version:text'=>$jarray['JCAMPDX'],
+                        'date:text'=>$jarray['DATETIME'],'owner:text'=>$jarray['OWNER'],'asdfType:text'=>$darray['asdftype'],
+                        'fileComments:json'=>json_encode($jarray['COMMENTS']),'conversionErrors:json'=>json_encode($jarray['ERRORS'])];
+                foreach($metaarray as $key=>$val) {
+                    list($field,$format)=explode(":",$key);
+                    $meta=$this->Metadata->add(['annotation_id'=>$annid,'field'=>$field,'value'=>$val,'format'=>$format]);
+                    debug($meta);
+                }
+
+                // Add descriptors to dataseries
+                $descs=['NPOINTS','FIRSTX','LASTX','MAXX','MINX','MAXY','MINY','XFACTOR','YFACTOR','FIRSTY','DELTAX'];
+                foreach($desc as $desc) {
+                    if(isset($jarray[$desc])) {
+                        // Quantity, property, value, unit, dataseries_id, title
+                        $descriptor=$this->Descriptor->add($des);
+                    }
+                }
+
+                // Add datapoint (only one as the two arrays will be stored a single row in table)
+                $dpt=['dataseries_id'=>$serid];
+                $point=$this->Datapoint->add($dpt);
+                $dptid=$point['id'];
+
+                debug($point);
+
+                // Split out the x and y values into separate arrays
+                $x=$y=[];
+                foreach($darray['pro'] as $x1=>$y1) { $x[]=$x1;$y[]=$y1; }
+
+
+                // Add condition to datapoint - this is the x axis data (independent)
+                $con=['datapoint_id'=>$dptid,'number'=>json_encode($x),'datatype'=>'array',
+                        'property_id'=>$xpropid,'title'=>$xlabel,'unit_id'=>$xunitid];
+                $condition=$this->Condition->add($con);
+
+                debug($condition);
+
+
+                // Add data to datapoint - this is the y axis data (dependent) as an array
+                $dat=['datapoint_id'=>$dptid,'number'=>json_encode($y),'datatype'=>'array',
+                    'property_id'=>$ypropid,'title'=>$ylabel,'unit_id'=>$yunitid];
+                $datarow=$this->Data->add($dat);
+                debug($datarow);
+
+                exit;
+            }
+
 
             exit;
-
-            // Content of file is a dataset, multiple spectra, peak tables are dataseries
-            // Reference is to the original file and user that uploaded it
-            // Add a Group
-
-
-
-            // Capture activity
-            $this->Activity->create();
-            $activity=['Activity'=>[
-                'user_id'=>$this->Auth->user('id'),
-                'file_id'=>$this->File->id,
-                'step_num'=>1,
-                'type'=>'upload',
-                'comment'=>''
-            ]];
-            $this->Activity->save($activity);
+            // Add activity
+            $act=['user_id'=>$this->Auth->user('id'),'file_id'=>$this->File->id,'step_num'=>1,'type'=>'upload'];
+            $activity=$this->Activity->add($act);
+            $actid=$activity['id'];
 
 
-            // Convert file to xml
-            // Convert file to jcampxml format (interim format as PHP array)
-            if($ext=="jdx"||$ext=="dx")
-            {
-
-
-                // Save XML
-                $path="files".DS."jcampxml".DS.str_replace(array('jdx','dx','DX'),'xml',$upload['name']);
-                $fp=fopen(WWW_ROOT.$path,'w');
-                fwrite($fp,$jcamp->makexml());
-                fclose($fp);
-
-                // Show XML
-                header("Location: /".$path);
-                exit;
-                $ldrs=$jcamp->getLdrs();
-            }
 
             // Redirect to view
             return $this->redirect('/files/view/' . $this->File->id);

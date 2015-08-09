@@ -63,7 +63,8 @@ Cache::config('default', array('engine' => 'File'));
 Inflector::rules('plural', ['irregular' => ['identifier'=>'identifiers',
 											'dataseries'=>'dataseries',
 											'methodology'=>'methodology',
-											'jcamp'=>'jcamp']]);
+											'jcamp'=>'jcamp',
+											'metadata'=>'metadata']]);
 
 /**
  * Plugins need to be loaded manually, you can either load them one by one or all of them in a single call
