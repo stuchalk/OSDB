@@ -8,7 +8,7 @@ App::uses('ClassRegistry', 'Utility');
  */
 class Dataset extends AppModel
 {
-    public $hasOne=['Methodology','Context'];
+    public $hasOne=['Methodology','Context','Sample'];
 
     public $hasMany = [
         'Dataseries'=> [
@@ -18,9 +18,10 @@ class Dataset extends AppModel
         ,'Data'=> [
             'foreignKey' => 'dataset_id',
             'dependent' => true,
-        ]];
+        ],
+        'Annotation'];
 
-    public $belongsTo = ['Propertytype','System','Reference','File','Report'];
+    public $belongsTo = ['Propertytype','Reference','File','Report'];
 
     /**
      * General function to add a new system

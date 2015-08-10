@@ -9,6 +9,8 @@ class Methodology extends AppModel {
 
     public $hasOne=['Measurement'];
 
+    public $hasMany=['Annotation'];
+
     /**
      * General function to add a new methodology
      * @param $data

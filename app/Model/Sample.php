@@ -10,6 +10,9 @@ class Sample extends AppModel
 {
     public $hasOne = ['Dataset','System'];
 
+    public $hasMany = ['Annotation'];
+
+
     /**
      * General function to add a new sample
      * @param $data

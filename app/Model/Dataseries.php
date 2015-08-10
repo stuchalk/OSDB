@@ -20,7 +20,8 @@ class Dataseries extends AppModel
         'Datapoint'=> [
             'foreignKey' => 'dataseries_id',
             'dependent' => true,
-        ]];
+        ],
+        'Annotation','Descriptor'];
 
     public $belongsTo = ['Dataset'];
 

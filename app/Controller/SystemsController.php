@@ -24,7 +24,8 @@ class SystemsController extends AppController {
      */
     public function view($id)
     {
-        $data=$this->System->find('first',['conditions'=>['System.id'=>$id],'recursive'=>3]);
+        $contain=['Substance'=>['fields'=>['name'],'Identifier'=>['fields'=>['type','value']]]];
+        $data=$this->System->find('first',['conditions'=>['System.id'=>$id],'contain'=>$contain,'recursive'=> -1]);
         $this->set('data',$data);
     }
 

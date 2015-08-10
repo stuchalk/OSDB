@@ -6,8 +6,9 @@
 class FilesController extends AppController {
 
     public $uses = ['File','Dataset','Substance','Methodology','Measurement','Setting','Jcampldr','Propertytype',
-                    'Sample','SubstancesSystem', 'Report','System','Identifier','Technique','Pubchem.Chemical','Unit',
-                    'Activity','Animl.Jcamp','Dataseries','Annotation','Metadata','Datapoint','Data','Condition','Property'];
+                    'Descriptor','Sample','SubstancesSystem', 'Report','System','Identifier','Technique',
+                    'Pubchem.Chemical','Unit','Activity','Animl.Jcamp','Dataseries','Annotation','Metadata',
+                    'Datapoint','Data','Condition','Property','Context','ContextsSystem'];
 
     /**
      * beforeFilter function
@@ -38,7 +39,7 @@ class FilesController extends AppController {
             $file2=file($tmpname, FILE_IGNORE_NEW_LINES);
             $jarray=$this->Jcamp->convert($file2);
 
-            debug($jarray);exit;
+            //debug($jarray);exit;
 
             // Create technique related variables from data in jarray
             $techstr="an unknown";$tech=$techprop=$techid=$techcode="";
@@ -92,9 +93,10 @@ class FilesController extends AppController {
             // Add system
             // Get system_id if the system already exists
             $sysid=$this->SubstancesSystem->findUnique([$sid1,$sid2]);
+            $names=$this->Substance->find('list',['fields'=>['id','name'],'conditions'=>['id in'=>[$sid1,$sid2]]]);
+            echo "Names: ";debug($names);
             echo "SYSID: ";debug($sysid);
             if(is_null($sysid)) {
-                $names=$this->Substance->find('list',['fields'=>['id','name'],'conditions'=>['id in'=>[$sid1,$sid2]]]);
                 if($sid2!="") {
                     $sys['name']=$names[$sid1]." and ".$names[$sid2];
                     $sys['description']="A mixture of two organic compounds";
@@ -127,11 +129,9 @@ class FilesController extends AppController {
             $proid=$pro['Propertytype']['id'];
 
             // Add the file information
-
             $file=$this->File->add($data);
             $filid=$file['id'];
             $pathid=str_pad($filid,9,"0",STR_PAD_LEFT);
-
 
             // Move file to storage location (based on extension)
             $ext = pathinfo($data['name'], PATHINFO_EXTENSION);
@@ -180,14 +180,41 @@ class FilesController extends AppController {
 
             debug($dataset);
 
+            // Add context
+            $con=['dataset_id'=>$setid,'discipline'=>'Chemistry','subdiscipline'=>'Analytical Chemistry','aspects'=>'system'];
+            $context=$this->Context->add($con);
+            $conid=$context['id'];
+
+            // Add system to context
+            $this->ContextsSystem->add(['context_id'=>$conid,'system_id'=>$sysid]);
+
             // Add sample
             $sam['identifier']=$techid;
-            $sam['description']="Solution prepared for ".$techstr." analysis";
+            $sam['title']="Solution of ".$names[$sid1]." in ".$names[$sid2];
+            $sam['description']="Prepared for ".$techstr." analysis";
             $sam['dataset_id']=$setid;
             $sam['system_id']=$sysid;
             $sample=$this->Sample->add($sam);
+            $samid=$sample['id'];
 
             debug($sample);
+
+            // Add annotation to sample if needed
+            $smeta=[];$anns=$this->Jcampldr->find('list',['fields'=>['id','arrayname'],'conditions'=>['scidata'=>'sample']]);
+            foreach($anns as $ann) { if(isset($jarray[$ann])) { $smeta[]=$ann; } }
+            if(!empty($smeta)) {
+                $samann=['sample_id'=>$samid,'class'=>'sample'];
+                $annotation=$this->Annotation->add($samann);
+                $annid=$annotation['id'];
+                foreach($smeta as $ann) {
+                    $field=$this->Jcampldr->field('title',['arrayname'=>$ann]);
+                    $unit=$this->Jcampldr->field('unit',['arrayname'=>$ann]);
+                    $value=$jarray[$ann];
+                    if(!empty($unit)) { $value.=" ".$unit; }
+                    $sammet=['annotation_id'=>$annid,'field'=>$field,'value'=>$value];
+                    $this->Metadata->add($sammet);
+                }
+            }
 
             // Add methodology
             $met=['dataset_id'=>$setid,'evaluation'=>"experimental",'aspects'=>'measurement'];
@@ -250,16 +277,28 @@ class FilesController extends AppController {
                     debug($setting);
                 }
             }
-            // TODO make settings more sophisticated to be able to handles lrds that are text based arrays
+            // TODO make settings more sophisticated to be able to handles ldrs that are text based arrays
 
             foreach($jarray['DATA'] as $darray) {
 
                 // Add dataseries
-                $ser=['dataset_id'=>$set,'type'=>'spectrum','format'=>$set['format'],'level'=>'processed'];
-                $dataseries=$this->Dataseries->add(['Dataseries'=>$ser]);
+                $ser=['dataset_id'=>$setid,'type'=>'spectrum','format'=>$set['format'],'level'=>'processed'];
+                $dataseries=$this->Dataseries->add($ser);
                 $serid=$dataseries['id'];
 
                 debug($dataseries);
+
+                // Add conditions on the dataseries if present
+                $conopts=['PATHLENGTH','PRESSURE','TEMPERATURE'];
+                foreach($conopts as $opt) {
+                    if(isset($jarray[$opt])) {
+                        $con=['dataseries_id'=>$serid,'number'=>$jarray[$opt]];
+                        $con['title']=$this->Jcampldr->field('title',['arrayname'=>$opt]);
+                        $con['property_id']=$this->Jcampldr->field('property_id',['arrayname'=>$opt]);
+                        $con['unit_id']=$this->Jcampldr->field('unit_id',['arrayname'=>$opt]);
+                        $this->$this->Condition->add($con);
+                    }
+                }
 
                 // Add annotation on dataseries or 'origin' class of metadata
                 $ann=['dataseries_id'=>$serid,'class'=>'origin','comment'=>'Origin metadata is about the original file'];
@@ -279,11 +318,21 @@ class FilesController extends AppController {
                 }
 
                 // Add descriptors to dataseries
-                $descs=['NPOINTS','FIRSTX','LASTX','MAXX','MINX','MAXY','MINY','XFACTOR','YFACTOR','FIRSTY','DELTAX'];
-                foreach($desc as $desc) {
+                $descs=['NPOINTS','FIRSTX','LASTX','MAXX','MINX','MAXY','MINY','XFACTOR','YFACTOR','FIRSTY','DELTAX','RESOLUTION'];
+                foreach($descs as $desc) {
                     if(isset($jarray[$desc])) {
-                        // Quantity, property, value, unit, dataseries_id, title
+                        // property_id, value, unit, dataseries_id, title
+                        $des['property_id']=$this->Jcampldr->field('property_id',['ldr'=>$desc]);
+                        $des['title']=$this->Jcampldr->field('title',['ldr'=>$desc]);
+                        $des['dataseries_id']=$serid;
+                        $des['number']=$jarray[$desc];
+                        if(in_array($desc,['FIRSTX','LASTX','MAXX','MINX','XFACTOR','DELTAX'])) {
+                            $des['unitid']=$xunitid;
+                        } elseif(in_array($desc,['MAXY','MINY','YFACTOR'])) {
+                            $des['unitid']=$yunitid;
+                        }
                         $descriptor=$this->Descriptor->add($des);
+                        debug($descriptor);
                     }
                 }
 
@@ -296,11 +345,11 @@ class FilesController extends AppController {
 
                 // Split out the x and y values into separate arrays
                 $x=$y=[];
-                foreach($darray['pro'] as $x1=>$y1) { $x[]=$x1;$y[]=$y1; }
+                foreach($darray['pro'] as $x1=>$y1) { $x[]=(float) $x1;$y[]=(float) $y1; }
 
 
                 // Add condition to datapoint - this is the x axis data (independent)
-                $con=['datapoint_id'=>$dptid,'number'=>json_encode($x),'datatype'=>'array',
+                $con=['datapoint_id'=>$dptid,'number'=>json_encode($x),'datatype'=>'json',
                         'property_id'=>$xpropid,'title'=>$xlabel,'unit_id'=>$xunitid];
                 $condition=$this->Condition->add($con);
 
@@ -308,25 +357,19 @@ class FilesController extends AppController {
 
 
                 // Add data to datapoint - this is the y axis data (dependent) as an array
-                $dat=['datapoint_id'=>$dptid,'number'=>json_encode($y),'datatype'=>'array',
+                $dat=['datapoint_id'=>$dptid,'number'=>json_encode($y),'datatype'=>'json',
                     'property_id'=>$ypropid,'title'=>$ylabel,'unit_id'=>$yunitid];
                 $datarow=$this->Data->add($dat);
                 debug($datarow);
 
-                exit;
             }
 
-
-            exit;
             // Add activity
             $act=['user_id'=>$this->Auth->user('id'),'file_id'=>$this->File->id,'step_num'=>1,'type'=>'upload'];
             $activity=$this->Activity->add($act);
-            $actid=$activity['id'];
-
-
 
             // Redirect to view
-            return $this->redirect('/files/view/' . $this->File->id);
+            $this->redirect('/reports/view/' . $rptid);
         }
     }
 

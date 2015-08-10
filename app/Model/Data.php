@@ -13,7 +13,7 @@ class Data extends AppModel
         'dependent' => true,
     ],];
 
-    public $belongsTo = ['Dataset','Dataseries','Unit','Datapoint','Property'];
+    public $belongsTo = ['Dataset','Unit','Datapoint','Property'];
 
     /**
      * General function to add a new data

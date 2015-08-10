@@ -9,7 +9,7 @@ App::uses('ClassRegistry', 'Utility');
 class Setting extends AppModel
 {
 
-    public $belongsTo = ['Measurement'];
+    public $belongsTo = ['Measurement','Property','Unit'];
 
     /**
      * General function to add a new setting

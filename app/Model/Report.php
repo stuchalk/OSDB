@@ -12,6 +12,8 @@ class Report extends AppModel
 
     public $belongsTo = ['Publication','User'];
 
+    public $hasMany = ['Annotation'];
+
     /**
      * General function to add a new report
      * @param $data

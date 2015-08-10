@@ -1,8 +1,8 @@
 <?php
-//pr($data);
+pr($data);exit;
 $system=$data['System'];
 $substance=$data['Substance'];
-$dataset=$data['Dataset'];
+$dataset=$data['Context']['Dataset'];
 ?>
 
 <h2>System</h2>

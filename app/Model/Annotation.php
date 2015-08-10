@@ -10,6 +10,7 @@ class Annotation extends AppModel
 {
     public $belongsTo = ['Dataset','Dataseries','Report','System','Methodology','Context'];
 
+    public $hasMany = ['Metadata'];
     /**
      * General function to add a new annotation
      * @param $data

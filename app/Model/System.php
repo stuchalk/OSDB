@@ -8,9 +8,9 @@ App::uses('ClassRegistry', 'Utility');
  */
 class System extends AppModel
 {
-    public $hasAndBelongsToMany = ['Substance'];
+    public $hasAndBelongsToMany = ['Substance','Context'];
 
-    public $hasMany = ['Dataset'];
+    public $hasMany=['Annotation'];
 
     /**
      * General function to add a new system

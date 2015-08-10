@@ -13,7 +13,22 @@ class Context extends AppModel
 
     public $belongsTo = ['Dataset'];
 
-    public $hasOne=['System','Material','Computer'];
+    public $hasAndBelongsToMany=['System'];
+    //public $hasAndBelongsToMany=['System','Material','Computer'];
 
-    public $hasMany=['Condition'];
+    public $hasMany=['Parameter','Annotation'];
+
+    /**
+     * General function to add a new context
+     * @param $data
+     * @return integer
+     */
+    public function add($data)
+    {
+        $model='Context';
+        $this->create();
+        $ret=$this->save([$model=>$data]);
+        $this->clear();
+        return $ret[$model];
+    }
 }
