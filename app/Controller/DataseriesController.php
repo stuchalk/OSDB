@@ -18,13 +18,18 @@ class DataseriesController extends AppController
 
     /**
      * View a property type
+     * @param integer $id
      */
     public function view($id)
     {
-        $data=$this->Dataseries->find('first',['conditions'=>['Dataseries.id'=>$id],'recursive'=>4]);
+        $data=$this->Dataseries->find('first',['conditions'=>['id'=>$id],'recursive'=>4]);
         $this->set('Dataseries',$data);
     }
 
+    /**
+     * Count the # of files
+     * @return mixed
+     */
     public function totalfiles()
     {
         $data=$this->Dataseries->find('count');
@@ -32,5 +37,3 @@ class DataseriesController extends AppController
     }
 
 }
-
-?>

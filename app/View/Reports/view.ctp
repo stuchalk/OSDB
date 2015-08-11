@@ -82,11 +82,12 @@ $ser=$set['Dataseries'];
 
 <!-- Process data -->
 <?php
-$xstr=$spectrum['Datapoint'][0]['Condition'][0]['number'];
-$xs=json_decode($xstr);
-pr($xs);
+$xs=json_decode($spectrum['Datapoint'][0]['Condition'][0]['number']);
 $ys=json_decode($spectrum['Datapoint'][0]['Data'][0]['number']);
 $xy=[];
+foreach($xs as $x) {
+
+}
 ?>
 
 <div class="right">

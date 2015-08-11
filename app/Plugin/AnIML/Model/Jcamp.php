@@ -46,12 +46,13 @@ class Jcamp extends AnimlAppModel
         $this->uncomment();
         $this->ldrs();
         $this->validate();
-        $this->standardize();
-        $this->decompress();
-        if($format=="xml") {
+		$this->standardize();
+		$this->decompress();
+		//debug($this->ldrs());exit;
+		if($format=="xml") {
             return $this->makexml();
         } else {
-            return $this->ldrs();
+			return $this->getAll();
         }
     }
 
@@ -71,6 +72,19 @@ class Jcamp extends AnimlAppModel
      * Get Data
      */
     public function getData() 	{ return $this->ldrs['DATA']; }
+
+	/**
+	 * Get all data
+	 * ldrs, data, errors, params, bruker
+	 */
+	public function getAll() {
+		$data=$this->ldrs;
+		$data['PARAMS']=$this->params;
+		$data['BRUKER']=$this->bruker;
+		$data['COMMENTS']=$this->comments;
+		$data['ERRORS']=$this->errors;
+		return $data;
+	}
 
 	// Methods
 
@@ -143,7 +157,9 @@ class Jcamp extends AnimlAppModel
 			}
 		}
 		$this->file=$output;
-		$this->comments=$comments;
+        if($comments['freeform']=="") { unset($comments['freeform']); }
+        if($comments['in_data']=="") { unset($comments['in_data']); }
+        $this->comments=$comments;
 		return $comments;
 	}
 
@@ -267,7 +283,7 @@ class Jcamp extends AnimlAppModel
 		}
         // Convert TIME and DATE to DATETIME
         // Detect data format (may contain time)
-        $y=$m=$d=$h=$m=$s=0;
+        $y=$m=$d=$h=$n=$s=0;
         if(isset($ldrs['TIME'])) {
             list($h,$n,$s)=explode(":",$ldrs['TIME']);
         }
@@ -373,11 +389,13 @@ class Jcamp extends AnimlAppModel
 	{
 		$ldrs=$this->ldrs;
 		$errors=[];
+		$dtypes=['uvvis'=>'UV/VIS SPECTRUM','ir'=>'IR SPECTRUM','mass'=>'MASS SPECTRUM','nmr'=>'NMR SPECTRUM','flow'=>'FLOW ANALYSIS'];
 		// Run error checks for each of the techniques and set defualt values if appropriate
 		if($ldrs['DATATYPE']=="UV/VIS SPECTRUM"||$ldrs['DATATYPE']=="UV-VIS SPECTRUM"||$ldrs['DATATYPE']=="UV/VISIBLE SPECTRUM"||$ldrs['DATATYPE']=="UV-VISIBLE SPECTRUM")
 		{
 			// Standardize the DATATYPE string
-			$ldrs['DATATYPE']=Configure::read('jcamp.datatypes.uvvis');
+			//$ldrs['DATATYPE']=Configure::read('jcamp.datatypes.uvvis'); // This should work put config needs to be fixed
+			$ldrs['DATATYPE']=$dtypes['uvvis'];
 			// Other LDRs that must be present UV/Vis spectra are XUNITS,YUNITS,FIRSTX,LASTX,XFACTOR,YFACTOR,XYDATA,NPOINTS,FIRSTY
 			if(!isset($ldrs['XUNITS'])||!isset($ldrs['YUNITS'])||!isset($ldrs['FIRSTX'])||!isset($ldrs['LASTX'])||!isset($ldrs['XFACTOR'])||!isset($ldrs['YFACTOR'])||(!isset($ldrs['XYDATA'])&&!isset($ldrs['PEAKTABLE']))||!isset($ldrs['NPOINTS'])||!isset($ldrs['FIRSTY']))
 			{
@@ -397,7 +415,8 @@ class Jcamp extends AnimlAppModel
 		elseif($ldrs['DATATYPE']=="FLOW ANALYSIS"||$ldrs['DATATYPE']=="FLOW INJECTION ANALYSIS")
 		{
 			// Standardize the DATATYPE string
-			$ldrs['DATATYPE']=Configure::read('jcamp.datatypes.flow');
+			//$ldrs['DATATYPE']=Configure::read('jcamp.datatypes.flow'); // This should work put config needs to be fixed
+			$ldrs['DATATYPE']=$dtypes['flow'];
 			// Other LDRs that must be present for UV/Vis spectra are XUNITS,YUNITS,FIRSTX,LASTX,XFACTOR,YFACTOR,XYDATA,NPOINTS,FIRSTY
 			if(!isset($ldrs['XUNITS'])||!isset($ldrs['YUNITS'])||!isset($ldrs['FIRSTX'])||!isset($ldrs['LASTX'])||!isset($ldrs['XFACTOR'])||!isset($ldrs['YFACTOR'])||(!isset($ldrs['XYDATA'])&&!isset($ldrs['PEAKTABLE']))||!isset($ldrs['NPOINTS'])||!isset($ldrs['FIRSTY']))
 			{
@@ -414,7 +433,8 @@ class Jcamp extends AnimlAppModel
 		elseif($ldrs['DATATYPE']=="INFRARED SPECTRUM"||$ldrs['DATATYPE']=="IR SPECTRUM"||$ldrs['DATATYPE']=="FT-IR SPECTRUM"||$ldrs['DATATYPE']=="FTIR SPECTRUM"||$ldrs['DATATYPE']=="FT-IR"||$ldrs['DATATYPE']=="FTIR")
 		{
 			// Standardize the DATATYPE string
-			$ldrs['DATATYPE']=Configure::read('jcamp.datatypes.ir');
+			//$ldrs['DATATYPE']=Configure::read('jcamp.datatypes.ir'); // This should work put config needs to be fixed
+			$ldrs['DATATYPE']=$dtypes['ir'];
 			// Other LDRs that must be present for IR or UV/Vis spectra are XUNITS,YUNITS,FIRSTX,LASTX,XFACTOR,YFACTOR,XYDATA,NPOINTS,FIRSTY
 			if(!isset($ldrs['XUNITS'])||!isset($ldrs['YUNITS'])||!isset($ldrs['FIRSTX'])||!isset($ldrs['LASTX'])||!isset($ldrs['XFACTOR'])||!isset($ldrs['YFACTOR'])||(!isset($ldrs['XYDATA'])&&!isset($ldrs['PEAKTABLE']))||!isset($ldrs['NPOINTS'])||!isset($ldrs['FIRSTY'])|!isset($ldrs['RESOLUTION']))
 			{
@@ -432,7 +452,8 @@ class Jcamp extends AnimlAppModel
 		elseif($ldrs['DATATYPE']=="MASS SPECTRUM"||$ldrs['DATATYPE']=="MASSSPECTRUM"||$ldrs['DATATYPE']=="MASS SPEC"||$ldrs['DATATYPE']=="MS")
 		{
 			// Standardize the DATATYPE string
-			$ldrs['DATATYPE']=Configure::read('jcamp.datatypes.mass');
+			//$ldrs['DATATYPE']=Configure::read('jcamp.datatypes.mass'); // This should work put config needs to be fixed
+			$ldrs['DATATYPE']=$dtypes['ms'];
 			// Other LDRs that must be present for MS spectra are XUNITS,YUNITS,FIRSTX,LASTX,XFACTOR,YFACTOR,XYDATA,NPOINTS,FIRSTY,DATACLASS
 			if(!isset($ldrs['XUNITS'])||!isset($ldrs['YUNITS'])||!isset($ldrs['FIRSTX'])||!isset($ldrs['LASTX'])||!isset($ldrs['XFACTOR'])||!isset($ldrs['YFACTOR'])||!isset($ldrs['DATACLASS'])||!isset($ldrs['NPOINTS'])||!isset($ldrs['FIRSTY']))
 			{
@@ -462,7 +483,8 @@ class Jcamp extends AnimlAppModel
 		elseif($ldrs['DATATYPE']=="NMR SPECTRUM"||$ldrs['DATATYPE']=="NMR")
 		{
 			// Standardize the DATATYPE string
-			$ldrs['DATATYPE']=Configure::read('jcamp.datatypes.nmr');
+			// $ldrs['DATATYPE']=Configure::read('jcamp.datatypes.nmr'); // This should work put config needs to be fixed
+			$ldrs['DATATYPE']=$dtypes['nmr'];
 			// Other LDRs that must be present for IR or UV/Vis spectra are XUNITS,YUNITS,FIRSTX,LASTX,XFACTOR,YFACTOR,XYDATA,NPOINTS,FIRSTY
 			if(!isset($ldrs['XUNITS'])||!isset($ldrs['YUNITS'])||!isset($ldrs['FIRSTX'])||!isset($ldrs['LASTX'])||!isset($ldrs['XFACTOR'])||!isset($ldrs['YFACTOR'])||(!isset($ldrs['XYDATA'])&&!isset($ldrs['PEAKTABLE']))||!isset($ldrs['NPOINTS'])||!isset($ldrs['FIRSTY']))
 			{
@@ -514,8 +536,13 @@ class Jcamp extends AnimlAppModel
                 foreach(['@','a','b','c','d','e','f','g','h','i'] as $char) { if(stristr($all,$char))	{ $asdftype.="SQZ";break; } }
                 if((stristr($all,"+")||stristr($all,"-"))&&(!stristr($all," +")||!stristr($all," -")))  { $asdftype.="PAC"; }
                 if(stristr($all," ")||stristr($all,","))												{ $asdftype.="FIX"; }
-                if($asdftype=="")	{ $errors[$set]['E07']="Cannot identify compression of data from data (dataset ".$set.")"; }
-                $dataset['asdftype']=$asdftype;$ldrs['DATA'][$set]['asdftype']=$asdftype;
+                if($asdftype=="") {
+					$errors['E07']="Cannot identify compression of data from data (dataset ".$set.")";
+				}
+				if($asdftype!="FIX"&&$asdftype!="") {
+					$errors['E08']="(Set ".$set.") NOTE: Compression format detected as ".$asdftype;
+				}
+				$dataset['asdftype']=$asdftype;$ldrs['DATA'][$set]['asdftype']=$asdftype;
                 // Set up variables
                 $prevx=round($ldrs['FIRSTX']/$ldrs['XFACTOR']);  // This is the unscaled value
                 $prevy=round($ldrs['FIRSTY']/$ldrs['YFACTOR']);  // This is the unscaled value
@@ -540,13 +567,14 @@ class Jcamp extends AnimlAppModel
                     //if(stristr($temp2,"?")) { echo $temp."<br>"; }
                     // Convert duplicates
                     if(stristr($dataset['asdftype'],"DUP")) { $temp=$this->jcampdup($temp); }
-                    //if(stristr($temp2,"?")) { echo $temp."<br>"; }
+					//if(stristr($temp2,"?")) { echo $temp."<br>"; }
                     // Add spaces to PAC signs
                     if(stristr($dataset['asdftype'],"PAC")) { $temp=$this->jcamppac($temp); }
                     //if(stristr($temp2,"?")) { echo $temp."<br>"; }
                     // Remove ? and extra space from FIX format data
                     if(stristr($dataset['asdftype'],"FIX")) { $temp=$this->jcampfix($temp); }
-                    //if(stristr($temp2,"?")) { echo $temp."<br>"; }
+					//echo $temp."<br>";
+					//if(stristr($temp2,"?")) { echo $temp."<br>"; }
                     // Split off X point
                     list($xpart,$temp)=explode(" ",$temp,2);
                     // Clean up Y string
@@ -556,7 +584,7 @@ class Jcamp extends AnimlAppModel
                     //echo 'X: '.$xpart.' Ys: '.$temp."<br>";
                     // Change differences into real values
                     if(stristr($dataset['asdftype'],"DIF")) { $temp=$this->jcampadd($temp); }
-                    //echo $temp."<br>";
+                    //echo "<pre>".$line.") ".$temp." (".count(explode(" ",$temp)).")</pre><br>";
                     //if(stristr($temp2,"?")) { echo $temp."<br><br>"; }
                     // Generate array of y values
                     $yarray=explode(" ",$temp);
@@ -620,7 +648,7 @@ class Jcamp extends AnimlAppModel
                         {
                             //echo "<pre>";print_r($yarray);echo "</pre>";
                             $dp=strlen($ldrs['FIRSTX'])-(strpos($ldrs['FIRSTX'],'.')+1);
-                            $errors['E35']="(Set ".$set.", line ".$line.") Mismatch in X values (missing data?) (DIFF: ".$diff.")".sprintf("%1\$.".$dp."f",$prevx+($prevycount*$ldrs['DELTAX'])).":".sprintf("%1\$.".$dp."f",$xpart);
+                            $errors['E35']="(Set ".$set.", line ".$line.") Mismatch in X values (missing data?) (DIFF: ".$diff.") ".sprintf("%1\$.".$dp."f",$prevx+($prevycount*$ldrs['DELTAX'])).":".sprintf("%1\$.".$dp."f",$xpart);
                             // Add to the $yarray to pad for missing numbers
                             $prevycount=count($yarray);
                             $yarray=array_pad($yarray,-1*abs(($prevx-$xpart)/$ldrs['DELTAX']),'?');
@@ -672,10 +700,12 @@ class Jcamp extends AnimlAppModel
                 if(!isset($ldrs['FIRSTY']))
                 {
                     $errors['E24']="(Set ".$set.") FIRSTY not in original file (taken from y data points)";
-                    if(stristr($actualfirsty,".")):	$dp=strlen($actualfirsty)-strpos($actualfirsty,'.')-1;
+                    if(stristr($actualfirsty,".")) {
+                        $dp=strlen($actualfirsty)-strpos($actualfirsty,'.')-1;
                         $ldrs['FIRSTY']=sprintf("%1\$.".$dp."f",$actualfirsty/$ldrs['YFACTOR']);
-                    else:							$ldrs['FIRSTY']=sprintf("%1\$u",$actualfirsty/$ldrs['YFACTOR']);
-                    endif;
+                    } else {
+                        $ldrs['FIRSTY']=sprintf("%1\$u",$actualfirsty/$ldrs['YFACTOR']);
+                    }
                 }
                 // Can't rely on ##DELTAX being present as it is not required in JCAMP, so calculate it here...
                 if(isset($ldrs['XYDATA'])&&!isset($ldrs['DELTAX']))	{ $ldrs['DELTAX']=($ldrs['LASTX']-$ldrs['FIRSTX'])/($ldrs['NPOINTS']-1); }
@@ -716,6 +746,7 @@ class Jcamp extends AnimlAppModel
                     list($temp,)=explode("E",strtoupper($ldrs['FIRSTY']));
                     $ydp=strlen($temp)-strpos($temp,'.')-1;
                 elseif(stristr($ldrs['FIRSTY'],".")):
+                    $ldrs['FIRSTY']=trim($ldrs['FIRSTY'],"0"); // Remove trailing zeros from FIRSTY
                     $ydp=strlen($ldrs['FIRSTY'])-strpos($ldrs['FIRSTY'],'.')-1;
                 else:
                     $ydp=1000;
@@ -735,6 +766,7 @@ class Jcamp extends AnimlAppModel
                     list($temp,)=explode("E",strtoupper($ldrs['YFACTOR']));
                     $fdp=strlen($temp)-strpos($temp,'.')-1;
                 elseif(stristr($ldrs['YFACTOR'],".")):
+                    $ldrs['YFACTOR']=trim($ldrs['YFACTOR'],"0"); // Remove trailing zeros from YFACTOR
                     $fdp=strlen($ldrs['YFACTOR'])-strpos($ldrs['YFACTOR'],'.')-1;
                 else:
                     $fdp=1000; // Assumes exact integer
@@ -744,23 +776,28 @@ class Jcamp extends AnimlAppModel
                     $yformat="%.".min($ydp,$fdp)."E";
                 elseif(stristr($ldrs['FIRSTY'],".")||stristr($ldrs['YFACTOR'],".")):
                     $yformat="%.".min($ydp,$fdp)."f";
+                    //$yformat="%.".$ydp."f"; // Forcing dp for y points to be based on FIRSTY after trailing zeros removed
                 else:
                     $yformat="%d";
                 endif;
                 // Build the XY array
+                $ldrs['DELTAX']=trim($ldrs['DELTAX'],"0"); // Remove trailing zeros from DELTAX
                 for($x=0;$x<count($all_ys);$x++)
                 {
                     if($x==0)
                     {
                         // Check that the first data point matches up
                         $y=sprintf($yformat,($all_ys[0]*$ldrs['YFACTOR']));
-                        if($y!=$ldrs['FIRSTY'])	{ $errors['E25']="(Set ".$set.") FIRSTY (".$ldrs['FIRSTY'].") does not match first Y point (".$y.")"; }
+                        if($y!=$ldrs['FIRSTY'])	{
+                            $errors['E25']="(Set ".$set.") FIRSTY (".$ldrs['FIRSTY'].") does not match first Y point (".$y.")";
+                        }
                     }
                     // sprintf used because the conversion of YFACTOR to a float causes it to have 50 decimal places which rounding won't deal with
-                    if($all_ys[$x]=="NaN"):		$data[sprintf($xformat,($actualfirstx+($x*$ldrs['DELTAX'])))]="NaN";
-                    else:
+                    if($all_ys[$x]=="NaN") {
+                        $data[sprintf($xformat,($actualfirstx+($x*$ldrs['DELTAX'])))]="NaN";
+                    } else {
                         $data[sprintf($xformat,($actualfirstx+($x*$ldrs['DELTAX'])))]=sprintf($yformat, ($all_ys[$x]*$ldrs['YFACTOR']));
-                    endif;
+                    }
                 }
                 // Check the FIRSTY consistency
                 $xs=array_keys($data);
@@ -774,9 +811,9 @@ class Jcamp extends AnimlAppModel
                 if(!isset($ldrs['MINY']))		{ $errors['E28']="(Set ".$set.") MINY not in original file (taken from y data points)"; $ldrs['MINY']=min($data); }
                 if(min($data)!=$ldrs['MINY'])	{ $errors['E29']="(Set ".$set.") MINY (".$ldrs['MINY'].") does not match point found (".min($data).")"; }
                 // Save data
-                debug($data);
                 $ldrs['DATA'][$set]['pro']=$data;
-                $set++;
+				//debug($ldrs);
+				$set++;
             }
         } elseif(isset($ldrs['PEAKTABLE'])) {
             foreach($ldrs['DATA'] as $dataset) {
@@ -807,21 +844,19 @@ class Jcamp extends AnimlAppModel
 
 	/**
      * Output xml file
+	 * @param array $data
+	 * @return xml
      */
-	public function makexml()
+	public function makexml($data=[])
 	{
 		$xmlstr="<?xml version='1.0' encoding='UTF-8'?><jcamp></jcamp>";
 		$jxml = new SimpleXMLElement($xmlstr);
 		// Record type of file
 		$jxml->addChild('type','jcamp');
-		$ldrs=$this->ldrs;
-		if(!empty($this->params))	{ $ldrs['params']=$this->params; }
-		if(!empty($this->bruker))	{ $ldrs['bruker']=$this->bruker; }
-		if(!empty($this->comments))	{ $ldrs['comments']=$this->comments; }
-		if(!empty($this->errors)):	$ldrs['errors']=$this->errors;
-		else:						$ldrs['errors']='none';
-		endif;
-		foreach($ldrs as $key=>$value)
+		if(empty($data)) {
+			$data=$this->getAll();
+		}
+		foreach($data as $key=>$value)
 		{
 			$key=strtolower($key);
 			if(!is_array($value))
@@ -873,7 +908,7 @@ class Jcamp extends AnimlAppModel
 
 	// Private methods
 
-    /**
+	/**
      * Process data that has been SQZ compressed
      * @param $line
      * @param string $split

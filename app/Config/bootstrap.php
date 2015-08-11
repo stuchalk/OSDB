@@ -23,7 +23,7 @@
  */
 
 // Setup a 'default' cache configuration for use in the application.
-Cache::config('default', array('engine' => 'File'));
+Cache::config('default', ['engine' => 'File']);
 
 /**
  * The settings below can be used to set additional paths to models, views and controllers.
@@ -75,8 +75,8 @@ Inflector::rules('plural', ['irregular' => ['identifier'=>'identifiers',
  * CakePlugin::load('DebugKit'); //Loads a single plugin named DebugKit
  *
  */
-CakePlugin::load('Pubchem'); // Loads all plugins at once
-CakePlugin::load('Animl'); // Loads all plugins at once
+CakePlugin::load('Pubchem');
+CakePlugin::load('Animl');
 
 /**
  * To prefer app translation over plugin translation, you can set
@@ -101,22 +101,11 @@ CakePlugin::load('Animl'); // Loads all plugins at once
  *
  * ));
  */
-Configure::write('Dispatcher.filters', array(
-	'AssetDispatcher',
-	'CacheDispatcher'
-));
+Configure::write('Dispatcher.filters', ['AssetDispatcher','CacheDispatcher']);
 
 /**
  * Configures default file logging options
  */
 App::uses('CakeLog', 'Log');
-CakeLog::config('debug', array(
-	'engine' => 'File',
-	'types' => array('notice', 'info', 'debug'),
-	'file' => 'debug',
-));
-CakeLog::config('error', array(
-	'engine' => 'File',
-	'types' => array('warning', 'error', 'critical', 'alert', 'emergency'),
-	'file' => 'error',
-));
+CakeLog::config('debug',['engine'=>'File','types'=>['notice','info','debug'],'file'=>'debug']);
+CakeLog::config('error',['engine'=>'File','types'=>['warning','error','critical','alert','emergency'],'file' => 'error']);

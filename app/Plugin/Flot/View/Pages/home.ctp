@@ -1,1 +1,0 @@
-<h2>This is Flot Home</h2>

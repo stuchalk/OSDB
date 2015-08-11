@@ -18,6 +18,7 @@ class DataController extends AppController
 
     /**
      * View a property type
+     * @param integer $id
      */
     public function view($id)
     {
@@ -26,5 +27,3 @@ class DataController extends AppController
     }
 
 }
-
-?>

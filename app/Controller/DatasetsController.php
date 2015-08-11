@@ -59,7 +59,10 @@ class DatasetsController extends AppController
         $this->set('data',$data);
     }
 
-
+    /**
+     * Count of the # of files
+     * @return mixed
+     */
     public function totalfiles()
     {
         $data=$this->Dataset->find('count');
@@ -67,5 +70,3 @@ class DatasetsController extends AppController
     }
 
 }
-
-?>

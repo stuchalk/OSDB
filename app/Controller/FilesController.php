@@ -42,7 +42,8 @@ class FilesController extends AppController {
             //debug($jarray);exit;
 
             // Create technique related variables from data in jarray
-            $techstr="an unknown";$tech=$techprop=$techid=$techcode="";
+            $techstr="an unknown";$xunitid=$yunitid=$xpropid=$ypropid=null;
+            $tech=$techprop=$techid=$techcode=$xlabel=$ylabel="";
             if(isset($jarray['PARAMS']['OBSERVENUCLEUS'])) {
                 $jarray['PARAMS']['OBSERVENUCLEUS']=str_replace("^","",$jarray['PARAMS']['OBSERVENUCLEUS']);
                 $tech="NMR";
@@ -73,9 +74,6 @@ class FilesController extends AppController {
                 $sid1=$data['File']['substance_id'];
             }
 
-            echo "SID1: ";debug($sid1);
-
-
             // Add solvent into substances if there is one
             $sid2="";
             if(isset($jarray['PARAMS']['SOLVENTNAME'])) {
@@ -88,14 +86,10 @@ class FilesController extends AppController {
                 }
             }
 
-            echo "SID2: ";debug($sid2);
-
             // Add system
             // Get system_id if the system already exists
             $sysid=$this->SubstancesSystem->findUnique([$sid1,$sid2]);
             $names=$this->Substance->find('list',['fields'=>['id','name'],'conditions'=>['id in'=>[$sid1,$sid2]]]);
-            echo "Names: ";debug($names);
-            echo "SYSID: ";debug($sysid);
             if(is_null($sysid)) {
                 if($sid2!="") {
                     $sys['name']=$names[$sid1]." and ".$names[$sid2];
@@ -108,9 +102,9 @@ class FilesController extends AppController {
                 $system=$this->System->add($sys);
                 $sysid=$system['id'];
                 // Add substances_systems entries
-                $ss1=$this->SubstancesSystem->add(['substance_id'=>$sid1,'system_id'=>$sysid]);
+                $this->SubstancesSystem->add(['substance_id'=>$sid1,'system_id'=>$sysid]);
                 if($sid2!="") {
-                    $ss2=$this->SubstancesSystem->add(['substance_id'=>$sid2,'system_id'=>$sysid]);
+                    $this->SubstancesSystem->add(['substance_id'=>$sid2,'system_id'=>$sysid]);
                 }
             }
 
@@ -122,7 +116,7 @@ class FilesController extends AppController {
             $report=$this->Report->add($rpt);
             $rptid=$report['id'];
 
-            debug($report);
+            //debug($report);
 
             // PropertyType is the type of spectrum it is, look up in table to get id
             $pro=$this->Propertytype->find('first',['conditions'=>['code'=>$techcode]]);
@@ -137,7 +131,7 @@ class FilesController extends AppController {
             $ext = pathinfo($data['name'], PATHINFO_EXTENSION);
             if($ext=="jdx"||$ext=="dx") {
                 $path="files".DS."jdx";
-                $folder = new Folder(WWW_ROOT.$path,true,0777);
+                new Folder(WWW_ROOT.$path,true,0777);
                 $path.=DS.$pathid.".jdx";
                 move_uploaded_file($tmpname,WWW_ROOT.$path);
                 $this->File->save(['id'=>$filid,'path'=>"/".$path]);
@@ -145,18 +139,18 @@ class FilesController extends AppController {
                 // Get version of format and technique type and add to file data
                 $this->File->saveField('version',$jarray['JCAMPDX']); // JCAMP version
                 $tech = $this->Technique->find('first',['conditions'=>['matchstr'=>$techcode]]);
-                $file=$this->File->save(['id'=>$filid,'technique_id'=>$tech['Technique']['id']]); // JCAMP Data Type
+                $this->File->save(['id'=>$filid,'technique_id'=>$tech['Technique']['id']]); // JCAMP Data Type
 
                 // Save XML
                 $path="files".DS."xml";
-                $folder = new Folder(WWW_ROOT.$path,true,0777);
+                new Folder(WWW_ROOT.$path,true,0777);
                 $path.=DS.$pathid.'.xml';
                 $fp=fopen(WWW_ROOT.$path,'w');
                 fwrite($fp,$this->Jcamp->makexml($jarray));
                 fclose($fp);
             }
 
-            debug($file);
+            //debug($file);
 
             // Add a Reference? TODO ?
 
@@ -178,7 +172,7 @@ class FilesController extends AppController {
             $dataset=$this->Dataset->add($set);
             $setid=$dataset['id'];
 
-            debug($dataset);
+            //debug($dataset);
 
             // Add context
             $con=['dataset_id'=>$setid,'discipline'=>'Chemistry','subdiscipline'=>'Analytical Chemistry','aspects'=>'system'];
@@ -197,7 +191,7 @@ class FilesController extends AppController {
             $sample=$this->Sample->add($sam);
             $samid=$sample['id'];
 
-            debug($sample);
+            //debug($sample);
 
             // Add annotation to sample if needed
             $smeta=[];$anns=$this->Jcampldr->find('list',['fields'=>['id','arrayname'],'conditions'=>['scidata'=>'sample']]);
@@ -221,14 +215,14 @@ class FilesController extends AppController {
             $methodology=$this->Methodology->add($met);
             $metid=$methodology['id'];
 
-            debug($methodology);
+            //debug($methodology);
 
             // Add measurement
             $nmr['1H']=["250"=>"38.376","300"=>"46.051","400"=>"61.401","500"=>"76.753"];     // NMR larmor frequency => Tesla
             $nmr['13H']=["250"=>"62.860","300"=>"75.432","400"=>"100.576","500"=>"125.721"];  // NMR larmor frequency => Tesla
             $mea['methodology_id']=$metid;
             $mea['techniqueType']="spectroscopic";
-            $mea['technique']=$techprop;
+            $mea['technique']=$techprop;$frq="?";
             if(isset($jarray['PARAMS']['OBSERVEFREQUENCY'])) {
                 $frq=round($jarray['PARAMS']['OBSERVEFREQUENCY'],0);
             } elseif(isset($jarray['PARAMS']['FIELD'])) {
@@ -246,7 +240,7 @@ class FilesController extends AppController {
             $measurement=$this->Measurement->add($mea);
             $meaid=$measurement['id'];
 
-            debug($measurement);
+            //debug($measurement);
 
             // Add settings
             // Settings are from the PARAMS and BRUKER arrays
@@ -286,7 +280,7 @@ class FilesController extends AppController {
                 $dataseries=$this->Dataseries->add($ser);
                 $serid=$dataseries['id'];
 
-                debug($dataseries);
+                //debug($dataseries);
 
                 // Add conditions on the dataseries if present
                 $conopts=['PATHLENGTH','PRESSURE','TEMPERATURE'];
@@ -305,7 +299,7 @@ class FilesController extends AppController {
                 $annotation=$this->Annotation->add($ann);
                 $annid=$annotation['id'];
 
-                debug($annotation);
+                //debug($annotation);
 
                 // Add the origin metadata
                 $metaarray=['filename:text'=>$data['name'],'filetype:text'=>'jcamp','version:text'=>$jarray['JCAMPDX'],
@@ -331,8 +325,7 @@ class FilesController extends AppController {
                         } elseif(in_array($desc,['MAXY','MINY','YFACTOR'])) {
                             $des['unitid']=$yunitid;
                         }
-                        $descriptor=$this->Descriptor->add($des);
-                        debug($descriptor);
+                        $this->Descriptor->add($des);
                     }
                 }
 
@@ -341,82 +334,29 @@ class FilesController extends AppController {
                 $point=$this->Datapoint->add($dpt);
                 $dptid=$point['id'];
 
-                debug($point);
+                //debug($point);
 
                 // Split out the x and y values into separate arrays
                 $x=$y=[];
                 foreach($darray['pro'] as $x1=>$y1) { $x[]=(float) $x1;$y[]=(float) $y1; }
 
-
                 // Add condition to datapoint - this is the x axis data (independent)
                 $con=['datapoint_id'=>$dptid,'number'=>json_encode($x),'datatype'=>'json',
                         'property_id'=>$xpropid,'title'=>$xlabel,'unit_id'=>$xunitid];
-                $condition=$this->Condition->add($con);
-
-                debug($condition);
-
+                $this->Condition->add($con);
 
                 // Add data to datapoint - this is the y axis data (dependent) as an array
                 $dat=['datapoint_id'=>$dptid,'number'=>json_encode($y),'datatype'=>'json',
                     'property_id'=>$ypropid,'title'=>$ylabel,'unit_id'=>$yunitid];
-                $datarow=$this->Data->add($dat);
-                debug($datarow);
-
+                $this->Data->add($dat);
             }
 
             // Add activity
             $act=['user_id'=>$this->Auth->user('id'),'file_id'=>$this->File->id,'step_num'=>1,'type'=>'upload'];
-            $activity=$this->Activity->add($act);
+            $this->Activity->add($act);
 
             // Redirect to view
             $this->redirect('/reports/view/' . $rptid);
-        }
-    }
-
-    /**
-     * Add a whole bunch of files
-     */
-    public function massUpload(){
-        if($this->request->is('post')) {
-            $zip = new ZipArchive;
-            $res = $zip->open($this->request->data['File']['file']['tmp_name']);
-            if ($res === TRUE) {
-                $zip->extractTo(WWW_ROOT.'temp'.DS.$this->request->data['File']['file']['name']);
-                $zip->close();
-                $dir=WWW_ROOT.'temp'.DS.$this->request->data['File']['file']['name'];
-                $files=scandir($dir);
-                foreach($files as $file){
-                    if(pathinfo($file, PATHINFO_EXTENSION) == "pdf") {
-                        $requestFile['File']=array();
-                        $requestFile['File']['file']['name']=pathinfo($file, PATHINFO_FILENAME).".pdf";;
-                        $requestFile['File']['file']['tmp_name']=WWW_ROOT.'temp'.DS.$this->request->data['File']['file']['name'].DS.$requestFile['File']['file']['name'];
-                        $requestFile['File']['file']['size']=filesize($requestFile['File']['file']['tmp_name']);
-                        $requestFile['File']['publication_id']=$this->request->data['File']['publication_id'];
-                        $requestFile['File']['num_systems']=$this->request->data['File']['num_systems'];
-                        $response=$this->requestAction('/Files/add',$requestFile);
-                        if($response!==true){
-                            echo "Failed :".$requestFile['File']['file']['name']."(".$response.")<br>";
-                        }else{
-                            echo "Added :".$requestFile['File']['file']['name']."<br>";
-                        }
-
-                        //unlink($requestFile['File']['file']['tmp_name']);
-                    }
-                }
-                if($dir!==""&&$dir!==Null) {
-                    $files = array_diff(scandir($dir), array('.', '..'));
-                    foreach ($files as $file) {
-                        unlink($dir . DS . $file);
-                    }
-                    rmdir($dir);
-                }
-                return $this->redirect('/Files/');
-            } else {
-                return $this->redirect('/Files/massUpload'.$this->File->id);
-            }
-        }else{
-            $pubs=$this->Publication->find('list',['fields'=>['id','title']]);
-            $this->set('pubs',$pubs);
         }
     }
 
@@ -457,8 +397,7 @@ class FilesController extends AppController {
     public function delete($id)
     {
         $this->File->delete($id);
-        return $this->redirect(['action' => 'index']);
-
+        $this->redirect(['action' => 'index']);
     }
 
     /**

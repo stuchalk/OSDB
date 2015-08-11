@@ -12,6 +12,9 @@
 		echo $this->Html->css('jquery-ui.theme');
 		echo $this->Html->script('jquery');
 		echo $this->Html->script('jquery-ui');
+		echo $this->Html->script('flot/jquery.flot');
+		echo $this->Html->script('flot/jquery.flot.axislabels');
+		echo $this->Html->script('flot/jquery.flot.labels');
 		echo $this->Html->script('jqcake');
 		echo $this->fetch('meta');
 		echo $this->fetch('css');
@@ -40,10 +43,9 @@
         </div>
 		<div id="content">
 			<?php echo $this->Session->flash(); ?>
-            <div class="left" ?>
-                <?php echo $this->fetch('content'); ?>
-            </div>
-            <?php //echo $this->element('navigation'); ?>
+			<?php echo $this->element('navigation'); ?>
+
+			<?php echo $this->fetch('content'); ?>
 
         </div>
 		<div id="footer">

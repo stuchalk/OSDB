@@ -72,5 +72,3 @@ class ConditionsController extends AppController
     }
 
 }
-?>
-
