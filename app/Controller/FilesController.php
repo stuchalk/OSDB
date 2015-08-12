@@ -33,8 +33,6 @@ class FilesController extends AppController {
             $tmpname=$data['File']['file']['tmp_name'];
             unset($data['File']['file']);
 
-            // TODO: Mime type not correct for .jdx files
-
             // Create data array
             $file2=file($tmpname, FILE_IGNORE_NEW_LINES);
             $jarray=$this->Jcamp->convert($file2);
@@ -98,7 +96,7 @@ class FilesController extends AppController {
                     $sys['name']=$names[$sid1];
                     $sys['description']="A pure organic compound";
                 }
-                $sys['type']="Single phase liquid"; // TODO add MAS check
+                $sys['type']="Single phase liquid";
                 $system=$this->System->add($sys);
                 $sysid=$system['id'];
                 // Add substances_systems entries
@@ -109,7 +107,7 @@ class FilesController extends AppController {
             }
 
             // Add report - the representation of the data on the website
-            $rpt['user_id']=$this->Auth->user('id'); // TODO add check for other sources (publication or website)
+            $rpt['user_id']=$this->Auth->user('id');
             $rpt['title']=$jarray['TITLE'];
             $rpt['description']=$tech." spectrum of ".$jarray['TITLE'];
             $rpt['comment']="Upload of a JCAMP file by ".$this->Auth->user('fullname').". ORIGIN: ".$jarray['ORIGIN'].". OWNER: ".$jarray['OWNER'];
@@ -152,7 +150,7 @@ class FilesController extends AppController {
 
             //debug($file);
 
-            // Add a Reference? TODO ?
+            // Add a Reference
 
             // Add Dataset
             $set=['report_id'=>$rptid,'file_id'=>$filid,'propertytype_id'=>$proid];
@@ -236,7 +234,7 @@ class FilesController extends AppController {
             }
             $mea['instrumentType']=$frq." MHz NMR";
             $mea['instrument']=$jarray['SPECTROMETERDATASYSTEM'];
-            if(isset($jarray['DATAPROCESSING'])) { } // TODO
+            if(isset($jarray['DATAPROCESSING'])) { } // Issue 7
             $measurement=$this->Measurement->add($mea);
             $meaid=$measurement['id'];
 
@@ -271,7 +269,6 @@ class FilesController extends AppController {
                     debug($setting);
                 }
             }
-            // TODO make settings more sophisticated to be able to handles ldrs that are text based arrays
 
             foreach($jarray['DATA'] as $darray) {
 
