@@ -10,6 +10,15 @@ class ReportsController extends AppController
     public $uses=['Report'];
 
     /**
+     * beforeFilter function
+     */
+    public function beforeFilter()
+    {
+        parent::beforeFilter();
+        $this->Auth->allow('view');
+    }
+
+    /**
      * List the properties
      */
     public function index()
@@ -60,10 +69,10 @@ class ReportsController extends AppController
                             'Descriptor'=>['fields'=>['title','number','text']],
                             'Annotation'=>['Metadata'=>['fields'=>['field','value','format']]],
                             'Datapoint'=>[
-                                'Data'=>['fields'=>['datatype','text','number','title'],
+                                'Data'=>['fields'=>['datatype','text','number','title','id'],
                                     'Property'=>['fields'=>['name']],
                                     'Unit'=>['fields'=>['name','symbol']]],
-                                'Condition'=>['fields'=>['datatype','text','number','title'],
+                                'Condition'=>['fields'=>['datatype','text','number','title','id'],
                                     'Property'=>['fields'=>['name']],
                                     'Unit'=>['fields'=>['name','symbol']]]]]]];
 

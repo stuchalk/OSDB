@@ -44,7 +44,6 @@ class ReferencesController extends AppController
             // Save data
             $this->Reference->create();
             $this->Reference->save(['Reference'=>$temp]);
-            echo $this->Reference->id.' created for Springer ID '.$temp['sid']."<br />";
             $this->Reference->clear();
         }
         exit;

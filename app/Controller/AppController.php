@@ -7,7 +7,7 @@ App::uses('File', 'Utility');
 App::uses('PhpReader', 'Configure');
 
 Configure::config('default', new PhpReader());
-Configure::load('springer','default');
+Configure::load('osdb','default');
 
 /**
  * Application Controller

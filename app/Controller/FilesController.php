@@ -154,7 +154,7 @@ class FilesController extends AppController {
 
             // Add Dataset
             $set=['report_id'=>$rptid,'file_id'=>$filid,'propertytype_id'=>$proid];
-            $set['setType']="property_value";
+            $set['setType']="property value";
             $set['property']=$techprop;
             if(isset($jarray['XYDATA'])) {
                 $set['format']=$jarray['XYDATA'];
@@ -327,7 +327,7 @@ class FilesController extends AppController {
                 }
 
                 // Add datapoint (only one as the two arrays will be stored a single row in table)
-                $dpt=['dataseries_id'=>$serid];
+                $dpt=['dataseries_id'=>$serid,'row_index'=>1];
                 $point=$this->Datapoint->add($dpt);
                 $dptid=$point['id'];
 
@@ -432,4 +432,3 @@ class FilesController extends AppController {
     }
 
 }
-?>

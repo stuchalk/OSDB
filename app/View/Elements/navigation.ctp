@@ -1,21 +1,10 @@
-<?php
-if($this->Session->read('Auth.User'))
-{
-    ?>
-    <div class="nav"?>
-    <h2>Navigation</h2>
+<div class="nav">
+    <h2>Links</h2>
     <ul>
-        <li><a href="<?php echo $this->Html->url('/') ?>">Home</a></li>
-        <li><a href="<?php echo $this->Html->url('/datasets/index'); ?>">Data Sets</a></li>
-        <li><a href="<?php echo $this->Html->url('/files/index'); ?>">Files </a></li>
-        <li><a href="<?php echo $this->Html->url('/files/processing'); ?>">Process Files </a></li>
-        <li><a href="<?php echo $this->Html->url('/propertytypes/index'); ?>">Property Types </a></li>
-        <li><a href="<?php echo $this->Html->url('/publications/index'); ?>">Publications </a></li>
-        <li><a href="<?php echo $this->Html->url('/substances/index'); ?>">Substances</a></li>
-        <li><a href="<?php echo $this->Html->url('/systems/index'); ?>">Systems</a></li>
-        <li><a href="<?php echo $this->Html->url('/textfiles/index'); ?>">Text Files</a></li>
+        <li><?php echo $this->Html->link('Home','/'); ?></li>
+        <li><?php echo $this->Html->link('Spectra','/reports'); ?></li>
+        <li><?php echo $this->Html->link('Substances','/substances'); ?></li>
+        <li><?php echo $this->Html->link('Systems','/systems'); ?></li>
+        <li><?php echo $this->Html->link('Techniques','/techniques'); ?></li>
     </ul>
-    </div>
-    <?php
-}
-?>
+</div>

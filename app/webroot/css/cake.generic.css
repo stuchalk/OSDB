@@ -50,7 +50,7 @@ h1 {
 	background:#fff;
 	color: #003D4C;
 	font-size: 150%;
-	margin-top: 0px;
+	margin-top: 0;
 	margin-bottom: 0.5em;
 }
 h2 {
@@ -752,19 +752,31 @@ pre {
 	height: 100px;
 }
 
+.leftheader {
+    float: left;
+    width: 75%;
+}
 .left {
     float: left;
-    width: 30%;
+    width: 300px;
+}
+.middle {
+    float: left;
+}
+.rightheader {
+    float: right;
+    width: 25%;
 }
 .right {
     float: right;
 }
-.clear {
-    clear: both;
-}
 .nav {
     float: right;
     width: 200px;
+    height: 100%;
     border-left: 1px solid #666666;
     padding-left: 10px;
+}
+.clear {
+    clear: both;
 }

@@ -1,14 +1,25 @@
 <h2>Substances</h2>
-
-<ul>
-    <?php
-    foreach($data as $id=>$name)
+<?php
+$chars=[];
+foreach($data as $char=>$iarray) { $chars[]=$char; }
+echo "<p>Click on a letter below to show substances starting with that letter</p>";
+echo "<p>";
+foreach($chars as $char)
+{
+    echo "<div onclick=\"showletter('".$char."')\" style='display: inline;cursor: pointer;'>".$char."</div>&nbsp;&nbsp;";
+}
+echo "</p>";
+$chars=array_keys($data);
+foreach($data as $char=>$iarray)
+{
+    if($char==$chars[0]):	echo "<div id='".$char."' class='letter' style='display: block;'>";
+    else:					echo "<div id='".$char."' class='letter' style='display: none;'>";
+    endif;
+    echo "<ul style='font-size: 12px;'>";
+    foreach($iarray as $pid=>$substance)
     {
-        echo "<li>".$this->Html->link($name,'/substances/view/'.$id).' (';
-        echo html_entity_decode($this->Html->link('Update','/substances/update/'.$id)).')</li>';
+        echo '<li>'.html_entity_decode($this->Html->link($substance,'/substances/view/'.$pid)).'</li>';
     }
-    ?>
-    <br>
-    <?php echo $this->Html->link("Add New Substance", ['action'=>'add']); ?>
-
-</ul>
+    echo "</ul></div>";
+}
+?>

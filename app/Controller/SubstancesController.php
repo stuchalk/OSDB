@@ -82,7 +82,7 @@ class SubstancesController extends AppController
      */
     public function index()
     {
-        $data=$this->Substance->find('list',['fields'=>['id','name'],'order'=>['name']]);
+        $data=$this->Substance->find('list',['fields'=>['id','name','first'],'order'=>['first','name']]);
         $this->set('data',$data);
     }
 
@@ -103,7 +103,6 @@ class SubstancesController extends AppController
     {
         $term=$this->request->query['term'];
         $temp=$this->Identifier->find('all',['fields'=>['DISTINCT Identifier.substance_id','Substance.name'],'order'=>['Substance.name'],'conditions'=>['Identifier.value like'=>'%'.$term.'%'],'recursive'=>1]);
-        //$temp=$this->Substance->find('all',['fields'=>['id','name'],'order'=>['name'],'conditions'=>['name like'=>'%'.$term.'%'],'recursive'=>0]);
         $data=[];
         for($x=0;$x<count($temp);$x++) {
             $data[$x]['id']=$temp[$x]['Identifier']['substance_id'];

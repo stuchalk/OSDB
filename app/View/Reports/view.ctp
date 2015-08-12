@@ -11,9 +11,7 @@ $sam=$set['Sample'];
 $ser=$set['Dataseries'];
 
 ?>
-<h2><?php echo $rpt['title']; ?></h2>
-<p><?php echo $rpt['description']; ?></p>
-
+<h2><?php echo $rpt['description']; ?></h2>
 <div class="left">
 <h3>Measurement Info</h3>
 <ul>
@@ -77,24 +75,15 @@ $ser=$set['Dataseries'];
 
     ?>
 <?php } ?>
-
 </div>
 
-<!-- Process data -->
-<?php
-$xs=json_decode($spectrum['Datapoint'][0]['Condition'][0]['number']);
-$ys=json_decode($spectrum['Datapoint'][0]['Data'][0]['number']);
-$xy=[];
-foreach($xs as $x) {
+<div class="middle">
+    <h3>Spectrum</h3>
+    <?php
+    $xsid=$ser[0]['Datapoint'][0]['Condition'][0]['id'];
+    $ysid=$ser[0]['Datapoint'][0]['Data'][0]['id'];
+    echo $this->element('flot',['xsid'=>$xsid,'ysid'=>$ysid]);
+    ?>
 
-}
-?>
-
-<div class="right">
-    <?php echo $this->element('flot'); ?>
+    <?php //pr($ser); ?>
 </div>
-
-<!-- Create data for flot -->
-<script language="JavaScript" type="text/javascript">
-    var data = [[  ]];
-</script>

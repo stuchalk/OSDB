@@ -24,10 +24,10 @@
 <body>
 	<div id="container">
 		<div id="header">
-            <div class="left">
+            <div class="leftheader">
                 <h1>The Open Spectral Database</h1>
             </div>
-            <div class="right">
+            <div class="rightheader">
                 <?php
 				$ip=$this->request->host();
 				if($ip=="sds.coas.unf.edu") {
@@ -44,9 +44,7 @@
 		<div id="content">
 			<?php echo $this->Session->flash(); ?>
 			<?php echo $this->element('navigation'); ?>
-
 			<?php echo $this->fetch('content'); ?>
-
         </div>
 		<div id="footer">
 			<?php echo "Chalk Group @ ".$this->Html->link("University of North Florida",'http://www.unf.edu/',['target' =>'_blank'])." © 2015"; ?>
