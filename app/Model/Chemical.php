@@ -13,7 +13,6 @@ class Chemical extends AppModel
 	public $belongsTo = ['Substance'];
 
     public $virtualFields=['first'=>"UPPER(SUBSTR(TRIM(LEADING '123456789' from Chemical.name),1,1))"];
-    // TODO Strip other leading characters
 
     /**
      * General function to add a new chemical

@@ -66,7 +66,9 @@ class File extends AppModel
         $Idn = ClassRegistry::init('Identifier');
 
         $nih=$Chm->check($name);
-        $sub=$Sub->add(['name'=>ucfirst(strtolower($name)),'formula'=>$nih['MolecularFormula'],'molweight'=>$nih['MolecularWeight']]);
+        preg_match('/[a-z]/i', $name, $match, PREG_OFFSET_CAPTURE);
+        $first=strtoupper($name[$match[0][1]]); // Gets the first alphanumeric char in name
+        $sub=$Sub->add(['name'=>ucfirst(strtolower($name)),'formula'=>$nih['MolecularFormula'],'molweight'=>$nih['MolecularWeight'],'first'=>$first]);
         $sid=$sub['id'];
         $iarray=['CID'=>'pubchemId','CanonicalSMILES'=>'smiles','InChI'=>'inchi','InChIKey'=>'inchikey','IUPACName'=>'iupacname'];
         foreach($iarray as $field=>$type) {

@@ -15,8 +15,8 @@ if(isset($data['ridata']))
 	$datasets=[];
 	foreach($ris as $ri)
 	{
-		if(!isset($datasets[$ri['temperature']]))						{ $datasets[$ri['temperature']]=array(); }
-		if(!isset($datasets[$ri['temperature']][$ri['wavelength']]))	{ $datasets[$ri['temperature']][$ri['wavelength']]=array(); }
+		if(!isset($datasets[$ri['temperature']]))						{ $datasets[$ri['temperature']]=[]; }
+		if(!isset($datasets[$ri['temperature']][$ri['wavelength']]))	{ $datasets[$ri['temperature']][$ri['wavelength']]=[]; }
 		$datasets[$ri['temperature']][$ri['wavelength']][]=$ri['value'];
 		echo "<tr><td>".$ri['value']."</td><td>".$ri['temperature']."</td><td>".$ri['wavelength']."</td><td>".$ri['book']."</td></tr>";
 	}

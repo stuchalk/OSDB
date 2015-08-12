@@ -2,7 +2,7 @@
 <?php //pr($data); ?>
 <?php //pr($formula); ?>
 <?php
-$chars=array();
+$chars=[];
 foreach($data as $char=>$iarray) { $chars[]=$char; }
 echo "<p>Click on a letter below to show chemicals starting with that letter</p>";
 echo "<p>";
