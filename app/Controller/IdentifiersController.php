@@ -24,7 +24,6 @@ class IdentifiersController extends AppController
     public function index()
     {
         $data=$this->Identifier->find('list',['fields'=>['Parameter.id','base'],'order'=>['base']]);
-        //echo "<pre>";print_r($data);echo "</pre>";exit;
         $this->set('data',$data);
     }
 
@@ -39,6 +38,10 @@ class IdentifiersController extends AppController
         $this->set('data',$data);
     }
 
+    /**
+     * Search for a substance using one of its identifiers
+     * @param $term
+     */
     public function search($term)
     {
         $data=$this->Identifier->find('all',['fields'=>['DISTINCT Identifier.substance_id','Substance.name'],'order'=>['Substance.name'],'conditions'=>['Identifier.value like'=>'%'.$term.'%'],'recursive'=>1]);

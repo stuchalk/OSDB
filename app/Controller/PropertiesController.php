@@ -4,7 +4,6 @@
  * Class PropertiesController
  * Actions related to dealing with chemical properties
  * @author Stuart Chalk <schalk@unf.edu>
- *
  */
 class PropertiesController extends AppController
 {

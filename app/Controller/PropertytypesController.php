@@ -63,7 +63,6 @@ class PropertytypesController extends AppController
     public function view($id)
     {
         $data=$this->Propertytype->find('first',['conditions'=>['Propertytype.id'=>$id],'recursive'=>3]);
-        //echo "<pre>";print_r($data);echo "</pre>";exit;
         $this->set('data',$data);
     }
 
@@ -72,8 +71,7 @@ class PropertytypesController extends AppController
      */
     public function update($id)
     {
-        if(!empty($this->request->data))
-        {
+        if(!empty($this->request->data)) {
             $states=implode(",",$this->request->data['Propertytype']['states']);
             $phases=implode(",",$this->request->data['Propertytype']['phases']);
             $this->request->data['Propertytype']['states']=$states;

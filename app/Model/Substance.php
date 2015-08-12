@@ -1,11 +1,12 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: n00002621
- * Date: 5/28/15
- * Time: 10:03 AM
- */
+App::uses('AppModel', 'Model');
+App::uses('ClassRegistry', 'Utility');
 
+/**
+ * Class Substance
+ * Substance model
+ * A substance is the asbtract representation of a chemical compound
+ */
 class Substance extends AppModel {
 
     public $hasMany=['Identifier'];
@@ -14,7 +15,7 @@ class Substance extends AppModel {
 
     /**
      * General function to add a new substance
-     * @param $data
+     * @param array $data
      * @return integer
      */
     public function add($data)

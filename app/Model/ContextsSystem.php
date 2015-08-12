@@ -1,17 +1,17 @@
 <?php
-
 App::uses('AppModel', 'Model');
 App::uses('ClassRegistry', 'Utility');
 
 /**
  * Class ContextsSystem
+ * Join table between contexts and systems
  */
 class ContextsSystem extends AppModel
 {
 
     /**
      * General function to add a new context
-     * @param $data
+     * @param array $data
      * @return integer
      */
     public function add($data)
@@ -22,4 +22,5 @@ class ContextsSystem extends AppModel
         $this->clear();
         return $ret[$model];
     }
+
 }

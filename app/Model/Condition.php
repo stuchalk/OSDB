@@ -5,14 +5,15 @@ App::uses('ClassRegistry', 'Utility');
 /**
  * Class Condition
  * Condition model
+ * Conditions are values of other properties controlled or measured when a peice of data is collected
  */
 class Condition extends AppModel
 {
-    public $belongsTo = ['Data','Dataseries','Unit','Property','Datapoint'];
+    public $belongsTo = ['Data','Dataseries','Datapoint','Property','Unit'];
 
     /**
      * General function to add a new condition
-     * @param $data
+     * @param array $data
      * @return integer
      */
     public function add($data)

@@ -1,18 +1,19 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: n00002621
- * Date: 5/28/15
- * Time: 10:03 AM
- */
+App::uses('AppModel', 'Model');
+App::uses('ClassRegistry', 'Utility');
 
+/**
+ * Class Identifier
+ * Identifier model
+ * Identifiers are metadata that identify substances (specifically)
+ */
 class Identifier extends AppModel {
 
     public $belongsTo=['Substance'];
 
     /**
      * General function to add a new identifier
-     * @param $data
+     * @param array $data
      * @return integer
      */
     public function add($data)

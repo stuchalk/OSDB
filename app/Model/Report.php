@@ -5,6 +5,7 @@ App::uses('ClassRegistry', 'Utility');
 /**
  * Class Report
  * Report model
+ * A report is any publication about a dataset: the original article or a review article
  */
 class Report extends AppModel
 {
@@ -16,7 +17,7 @@ class Report extends AppModel
 
     /**
      * General function to add a new report
-     * @param $data
+     * @param array $data
      * @return integer
      */
     public function add($data)

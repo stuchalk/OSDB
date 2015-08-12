@@ -1,9 +1,12 @@
 <?php
-
 App::uses('AppModel', 'Model');
+App::uses('ClassRegistry', 'Utility');
 
 /**
  * Class Methodology
+ * Methodology Model
+ * Methodology is a description of how the experiment/calculation was setup
+ * These are discipline/experiment specific
  */
 class Methodology extends AppModel {
 
@@ -13,7 +16,7 @@ class Methodology extends AppModel {
 
     /**
      * General function to add a new methodology
-     * @param $data
+     * @param array $data
      * @return integer
      */
     public function add($data)

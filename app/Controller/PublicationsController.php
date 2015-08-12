@@ -1,12 +1,11 @@
 <?php
-// echo "<pre>";print_r($this->request->data);echo "</pre>";exit;
 
 /**
  * Class PublicationsController
  */
 class PublicationsController extends AppController {
 
-    public $uses=array('Publication');
+    public $uses=['Publication'];
 
     /**
      * beforeFilter function
@@ -32,17 +31,15 @@ class PublicationsController extends AppController {
      */
     public function add()
     {
-        if($this->request->is('post'))
-        {
+        if($this->request->is('post')) {
             $this->Publication->create();
             if($this->Publication->save($this->request->data)) {
                 $this->Session->setFlash('The publication has been added');
-                $this->redirect(array('action' => 'index'));
+                $this->redirect(['action' => 'index']);
             } else {
                 $this->Session->setFlash('The publication could not be added.');
             }
         }
-
     }
 
     /**
@@ -65,7 +62,7 @@ class PublicationsController extends AppController {
             $this->Publication->id=$id;
             if($this->Publication->save($this->request->data)) {
                 $this->Session->setFlash('The publication has been updated');
-                $this->redirect(array('action' => 'index'));
+                $this->redirect(['action' => 'index']);
             } else {
                 $this->Session->setFlash('The publication could not be updated.');
             }
@@ -73,7 +70,7 @@ class PublicationsController extends AppController {
         } else {
             $data=$this->Publication->find('first',['conditions'=>['id'=>$id]]);
             $this->set('data',$data['Publication']);
-            $this->set('args',array('id'=>$id));
+            $this->set('args',['id'=>$id]);
         }
     }
 
@@ -87,11 +84,13 @@ class PublicationsController extends AppController {
         $this->redirect("/publications/");
     }
 
+    /**
+     * Publication count pubs function
+     * @return mixed
+     */
     public function totalfiles()
     {
         $data=$this->Publication->find('count');
         return $data;
     }
 }
-
-?>

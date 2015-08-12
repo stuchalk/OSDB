@@ -4,7 +4,8 @@ App::uses('ClassRegistry', 'Utility');
 
 /**
  * Class Sample
- * System model
+ * Sample model
+ * A sample is a particular instance of a system, solution, or material
  */
 class Sample extends AppModel
 {
@@ -12,10 +13,9 @@ class Sample extends AppModel
 
     public $hasMany = ['Annotation'];
 
-
     /**
      * General function to add a new sample
-     * @param $data
+     * @param array $data
      * @return integer
      */
     public function add($data)

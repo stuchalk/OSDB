@@ -6,6 +6,9 @@
  * Time: 9:59 AM
  */
 
+/**
+ * Class SystemsController
+ */
 class SystemsController extends AppController {
 
     public $uses=['System','SubstancesSystem'];
@@ -38,6 +41,9 @@ class SystemsController extends AppController {
         $this->set('data',$data);
     }
 
+    /**
+     * Testing function
+     */
     public function findsys()
     {
         $subid1="00001";$subid2="00003";

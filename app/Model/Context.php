@@ -1,12 +1,12 @@
 <?php
-
 App::uses('AppModel', 'Model');
 App::uses('ClassRegistry', 'Utility');
 
 /**
  * Class Context
- * TextFile model
- * test
+ * Context model
+ * Contexts are the description of the conditions (from any perspective) under which a measurement is made
+ * These are discipline/experiment specific
  */
 class Context extends AppModel
 {
@@ -16,11 +16,11 @@ class Context extends AppModel
     public $hasAndBelongsToMany=['System'];
     //public $hasAndBelongsToMany=['System','Material','Computer'];
 
-    public $hasMany=['Parameter','Annotation'];
+    public $hasMany=['Annotation'];
 
     /**
      * General function to add a new context
-     * @param $data
+     * @param array $data
      * @return integer
      */
     public function add($data)

@@ -5,6 +5,8 @@ App::uses('ClassRegistry', 'Utility');
 /**
  * Class System
  * System model
+ * A system is the aggregate of a number of substances (the components) together
+ * It is an abstract concept and samples are physical instances of a system
  */
 class System extends AppModel
 {
@@ -14,7 +16,7 @@ class System extends AppModel
 
     /**
      * General function to add a new system
-     * @param $data
+     * @param array $data
      * @return integer
      */
     public function add($data)
@@ -25,4 +27,5 @@ class System extends AppModel
         $this->clear();
         return $ret[$model];
     }
+
 }

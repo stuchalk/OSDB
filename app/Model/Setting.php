@@ -5,6 +5,7 @@ App::uses('ClassRegistry', 'Utility');
 /**
  * Class Setting
  * Setting model
+ * Settings are values of parameters relative to instrument properties
  */
 class Setting extends AppModel
 {
@@ -13,7 +14,7 @@ class Setting extends AppModel
 
     /**
      * General function to add a new setting
-     * @param $data
+     * @param array $data
      * @return integer
      */
     public function add($data)
@@ -24,4 +25,5 @@ class Setting extends AppModel
         $this->clear();
         return $ret[$model];
     }
+
 }

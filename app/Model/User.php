@@ -1,33 +1,43 @@
 <?php
-
 App::uses('AppModel', 'Model');
+App::uses('ClassRegistry', 'Utility');
 App::uses('SimplePasswordHasher', 'Controller/Component/Auth');
+
+/**
+ * Class User
+ * User model
+ * Person using the software
+ */
 class User extends AppModel
 {
-    public $name="User";
-    public $virtualFields=array('fullname'=>'CONCAT(firstname," ",lastname)');
+
+    public $virtualFields=['fullname'=>'CONCAT(firstname," ",lastname)'];
 
     public $hasMany=['Report'];
 
-    public $validate = array(
-        'username' => array(
-            'required' => array(
-                'rule' => array('notEmpty'),
+    public $validate = [
+        'username' => [
+            'required' => [
+                'rule' => ['notEmpty'],
                 'message' => 'A username is required'
-            )
-        ),
-        'password' => array(
-            'required' => array(
-                'rule' => array('notEmpty'),
+            ]
+        ],
+        'password' => [
+            'required' => [
+                'rule' => ['notEmpty'],
                 'message' => 'A password is required'
-            )
-        )
-    );
+            ]
+        ]
+    ];
 
-    public function beforeSave($options = array())
+    /**
+     * beforeSave function
+     * @param array $options
+     * @return bool
+     */
+    public function beforeSave($options=[])
     {
-        if (isset($this->data[$this->alias]['password']))
-        {
+        if(isset($this->data[$this->alias]['password'])) {
             $passwordHasher = new SimplePasswordHasher();
             $this->data[$this->alias]['password'] = $passwordHasher->hash($this->data[$this->alias]['password']);
         }

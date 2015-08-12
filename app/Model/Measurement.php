@@ -1,9 +1,12 @@
 <?php
-
 App::uses('AppModel', 'Model');
+App::uses('ClassRegistry', 'Utility');
 
 /**
  * Class Measurement
+ * Measurement model
+ * Measurement contains information about the equipment/instrumentation
+ * used in the experiment, include the settings for such
  */
 class Measurement extends AppModel {
 
@@ -13,7 +16,7 @@ class Measurement extends AppModel {
 
     /**
      * General function to add a new measurement
-     * @param $data
+     * @param array $data
      * @return integer
      */
     public function add($data)
@@ -25,4 +28,3 @@ class Measurement extends AppModel {
         return $ret[$model];
     }
 }
-?>

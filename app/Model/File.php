@@ -4,22 +4,24 @@ App::uses('ClassRegistry', 'Utility');
 
 /**
  * Class File
- * File model Testing
+ * File model
+ * The representation of a file that contained the data
  */
 class File extends AppModel
 {
     public $format=0;
 
-    public $actsAs = ['Containable'];
     public $belongsTo = ['Substance','Technique'];
+
     public $hasOne = ['Dataset'];
 
-    /*
+    /**
      * function getCode
      * Gets the property type code from a file that has already been transferred to the pdf folder
-     * @parameter $filename: The name of the file to extract the property type code from
-     * @parameter $publicationID: ID of the publication in string format
-     * @return $propertyID: returned the found property id if it exist.
+     * @param string $filename: The name of the file to extract the property type code from
+     * @param string $publicationID: ID of the publication in string format
+     * @return integer $propertyID: returned the found property id if it exist.
+     * @throws Exception
      */
     public function getCode($filename,$publicationID){
         $fileToExtract=WWW_ROOT.'files'.DS.'pdf'.DS.$publicationID.DS.$filename;// find the path to the file name
@@ -34,7 +36,6 @@ class File extends AppModel
             }else{
                 $pdfToTextPath=Configure::read("pdftotextPath.mac");
             }
-            $status=0;
             $this->format = 0;
             $str=shell_exec($pdfToTextPath.' -layout -r 300 -H 1000 -W 4000 "'. $fileToExtract.'" -'); //run the extraction
             preg_match("!Property Type: \[(.*)\]!",$str,$matches); //general match
@@ -82,7 +83,7 @@ class File extends AppModel
 
     /**
      * General function to add a new file
-     * @param $data
+     * @param array $data
      * @return integer
      */
     public function add($data)
@@ -93,4 +94,5 @@ class File extends AppModel
         $this->clear();
         return $ret[$model];
     }
+
 }

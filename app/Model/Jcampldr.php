@@ -1,11 +1,12 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: n00002621
- * Date: 5/28/15
- * Time: 10:03 AM
- */
+App::uses('AppModel', 'Model');
+App::uses('ClassRegistry', 'Utility');
 
+/**
+ * Class Jcampldr
+ * Jcampldr model
+ * Accesses the JCAMP LDRs efined in the various published IUPAC standards
+ */
 class Jcampldr extends AppModel {
 
     public $belongsTo=['Property'];

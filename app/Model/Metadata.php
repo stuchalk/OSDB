@@ -4,7 +4,9 @@ App::uses('ClassRegistry', 'Utility');
 
 /**
  * Class Metadata
- * System model
+ * Metadata model
+ * Metadata (in this context) are name value pairs used in the annotation
+ * of different parts of the data model (see Annotation model)
  */
 class Metadata extends AppModel
 {
@@ -12,7 +14,7 @@ class Metadata extends AppModel
 
     /**
      * General function to add a new metadata
-     * @param $data
+     * @param array $data
      * @return integer
      */
     public function add($data)
@@ -23,4 +25,5 @@ class Metadata extends AppModel
         $this->clear();
         return $ret[$model];
     }
+
 }

@@ -7,7 +7,7 @@ App::uses('Reader', 'Vendor');
  */
 class MaterialsController extends AppController {
 
-	public $uses=array('Material','Ridata','Reader');
+	public $uses=['Material','Ridata','Reader'];
 
     /**
      * Function to ingest data file into the system
@@ -15,31 +15,28 @@ class MaterialsController extends AppController {
      */
 	public function ingest()
 	{
-		//echo "<pre>";print_r($this->data);echo("</pre>");exit;
 		if(!empty($this->data))
 		{
 			$file=$this->data['Material']['file'];
 			
-			if($file['type']=="text/plain")
-			{
+			if($file['type']=="text/plain") {
 				// Identify type of file to process
 				$text=file($file['tmp_name'],FILE_IGNORE_NEW_LINES);
-				if(stristr($text[0],'refractive')):
-					unset($text[0]);$data=$this->Ridata->ingest($text,$file['name']);
-				else:
-					echo "Property type unknown";exit;
-				endif;
+				if(stristr($text[0],'refractive')) {
+                    unset($text[0]);$data=$this->Ridata->ingest($text,$file['name']);
+                } else {
+                    echo "Property type unknown";exit;
+                }
 
 				// Get statistics from tables
-				$stats=array();
-				$stats['data']=$this->Ridata->find('count',array('conditions'=>array('Ridata.book'=>$file['name'])));
+				$stats=[];
+				$stats['data']=$this->Ridata->find('count',['conditions'=>['Ridata.book'=>$file['name']]]);
 				$stats['comps']=count($data);
 				$stats['lines']=count($text);
 				
 				// Chemicals list
-				$comps=array();
-				foreach($data as $comp)
-				{
+				$comps=[];
+				foreach($data as $comp) {
 					$comps[]=$comp['comp'][0].": ".$comp['comp'][2];
 				}
 				
@@ -55,7 +52,6 @@ class MaterialsController extends AppController {
 				$this->set('stats',$stats);
 				$this->set('comps',$comps);
 				$this->render('ingestdone');
-				//echo "<pre>";print_r($data);echo "</pre>";exit;
 			}
 			else
 			{
@@ -144,115 +140,96 @@ class MaterialsController extends AppController {
          * )
          */
 
-        $config=array(
-            "Rules"=>array(
-                1=>array(
-                    1=>array(
-                        "pattern"=>'^(\d+)',
+        $config=[
+            "Rules"=>[
+                1=>[
+                    1=>["pattern"=>'^(\d+)',
                         "ACTION"=>"STORE",
                         "FAILURE"=>"NEXTLINE",
                         "valuename"=>"id",
-                    ),
-                    2=>array(
-                        "pattern"=>'(( \w+)+)',
+                    ],
+                    2=>["pattern"=>'(( \w+)+)',
                         "ACTION"=>"STORE",
                         "FAILURE"=>"EXCEPTION",
                         "error"=>"Chemical formula not found",
                         "valuename"=>"chemical",
                         "required"=>true,
-                    ),
-                    3=>array(
-                        "pattern"=>'(( [A-Za-z0-9-\)\(\]\[]+)+)',
+                    ],
+                    3=>["pattern"=>'(( [A-Za-z0-9-\)\(\]\[]+)+)',
                         "ACTION"=>"STORE",
                         "FAILURE"=>"EXCEPTION",
                         "error"=>"Chemical name not found",
                         "valuename"=>"chemicalName",
                         'matchIndex'=>2,
-                    ),
-                    4=>array(
-                        "pattern"=>'(( [A-Za-z0-9-\)\(\]\[]+)+)',
+                    ],
+                    4=>["pattern"=>'(( [A-Za-z0-9-\)\(\]\[]+)+)',
                         "ACTION"=>"STORE",
                         "FAILURE"=>"STORE",
                         "valuename"=>"CAS",
                         'matchIndex'=>3,
-                    ),
-                ),
-                2=>array(
-                    //Get the four headers
-                    1=>array(
-                        "pattern"=>'(( [A-Za-z0-9]+)+([A-Za-z0-9\/]+)*)',
+                    ]
+                ],
+                2=>[//Get the four headers
+                    1=>["pattern"=>'(( [A-Za-z0-9]+)+([A-Za-z0-9\/]+)*)',
                         "ACTION"=>"STOREALLASHEADER",
                         "FAILURE"=>"NEXTLINE",
-                    ),
-                ),
-                3=>array(
-                    1=>array(
-                        "pattern"=>'(-?[0-9.]+)',
+                    ]
+                ],
+                3=>[
+                    1=>["pattern"=>'(-?[0-9.]+)',
                         "ACTION"=>"STORE",
                         "FAILURE"=>"NEXTLINE",
                         "matchMethod"=>"preg_match",
-                        "headerIndex"=>1,
-                    ),
-                    2=>array(
-                        "pattern"=>'(-?[0-9.]+) +\|( ){1,3}(-?[0-9.]+)',
+                        "headerIndex"=>1
+                    ],
+                    2=>["pattern"=>'(-?[0-9.]+) +\|( ){1,3}(-?[0-9.]+)',
                         "ACTION"=>"STORE",
                         "FAILURE"=>"STORE",
                         "headerIndex"=>2,
                         "matchMethod"=>"preg_match",
-                        'matchIndex'=>3,
-                    ),
-                    3=>array(
-                        "pattern"=>'(-?[0-9.]+) +\|.+\|( ){1,3}(-?[0-9.]+)',
+                        'matchIndex'=>3
+                    ],
+                    3=>["pattern"=>'(-?[0-9.]+) +\|.+\|( ){1,3}(-?[0-9.]+)',
                         "ACTION"=>"STORE",
                         "FAILURE"=>"STORE",
                         "headerIndex"=>3,
                         "matchMethod"=>"preg_match",
                         'matchIndex'=>3
-                    ),
-                    4=>array(
-                        "pattern"=>'(-?[0-9.]+) +\|.+\|([0-9A-Za-z.]+)',
+                    ],
+                    4=>["pattern"=>'(-?[0-9.]+) +\|.+\|([0-9A-Za-z.]+)',
                         "ACTION"=>"STORE",
                         "FAILURE"=>"STORE",
                         "error"=>"Reference not found",
                         "headerIndex"=>4,
                         "matchMethod"=>"preg_match",
                         'matchIndex'=>2
-                    ),
-                    5=>array(
-                        "pattern"=>'(-?[0-9.]+) +\|.+\|([0-9A-Za-z.]+) ([0-9A-Za-z.\)]+)',
+                    ],
+                    5=>["pattern"=>'(-?[0-9.]+) +\|.+\|([0-9A-Za-z.]+) ([0-9A-Za-z.\)]+)',
                         "ACTION"=>"STORE",
                         "FAILURE"=>"STORE",
                         "matchMethod"=>"preg_match",
                         "valuename"=>"comment",
                         'matchIndex'=>3,
                         "notAnomaly"=>true,
-                    ),
-                ),
-                4=>array(
-                    //repeat last until end
-                    1=>array(
-                        "pattern"=>'(-?[0-9A-Za-z.]+)+',
+                    ]
+                ],
+                4=>[//repeat last until end
+                    1=>["pattern"=>'(-?[0-9A-Za-z.]+)+',
                         "ACTION"=>"USELASTLINEUNTIL",
                         "FAILURE"=>"SKIP",
-                    ),
-                ),
-                5=>array(
-                    //repeat last until end
-                    1=>array(
-                        "pattern"=>'(.+)',
+                    ]
+                ],
+                5=>[//repeat last until end
+                    1=>["pattern"=>'(.+)',
                         "ACTION"=>"STORE",
                         "FAILURE"=>"END",
                         "valuename"=>"commentLine",
-                    ),
-                    2=>array(
-                        "ACTION"=>"END",
-                    ),
-                ),
-
-            ),
+                    ],
+                    2=>["ACTION"=>"END"]
+                ]
+            ],
             "skipblank"=>false
-
-        );
+        ];
         $reader->SetConfig($config);
         $reader->LoadFile('files/10478514_7.txt');
         //$reader->LoadFile('D:\Chalk\Dropbox\Shared\Springer\10478514_sources\10478514_7.txt');
@@ -276,9 +253,7 @@ class MaterialsController extends AppController {
             unset($array['commentLine']);
             var_dump($array);
             echo $reader->line."<br>";
-
             $chemicals++;
-
         }
 
         echo $chemicals." Have Been Recorded<br>";
@@ -288,5 +263,3 @@ class MaterialsController extends AppController {
         }
 	}
 }
-
-?>

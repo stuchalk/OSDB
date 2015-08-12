@@ -4,7 +4,6 @@
  * Class ParametersController
  * Actions related to dealing with parameters
  * @author Stuart Chalk <schalk@unf.edu>
- *
  */
 class ParametersController extends AppController
 {
@@ -24,7 +23,6 @@ class ParametersController extends AppController
     public function index()
     {
         $data=$this->Parameter->find('list',['fields'=>['Parameter.id','base'],'order'=>['base']]);
-        //echo "<pre>";print_r($data);echo "</pre>";exit;
         $this->set('data',$data);
     }
 
@@ -35,7 +33,6 @@ class ParametersController extends AppController
     public function view($id)
     {
         $data=$this->Parameter->find('first',['conditions'=>['Parameter.id'=>$id],'recursive'=>3]);
-        echo "<pre>";print_r($data);echo "</pre>";exit;
         $this->set('data',$data);
     }
 

@@ -4,7 +4,6 @@
  * Class ReportController
  * Actions related to reports
  * @author Stuart Chalk <schalk@unf.edu>
- *
  */
 class ReportsController extends AppController
 {

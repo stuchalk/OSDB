@@ -18,7 +18,6 @@ class JcampldrsController extends AppController {
         $jarray['PARAMS']=['OBSERVEFREQUENCY'=>'300.03180','ACQUISITIONTIME'=>'3.42098'];
         $jarray['BRUKER']=['OBSERVENUCLEUS'=>'^1H'];
         $params=array_merge($jarray['PARAMS'],$jarray['BRUKER']);
-        //debug($settings);exit;
 
         foreach($settings as $s) {
             if(isset($params[$s['Jcampldr']['arrayname']])) {

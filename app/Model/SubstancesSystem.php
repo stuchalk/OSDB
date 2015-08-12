@@ -4,13 +4,16 @@ App::uses('ClassRegistry', 'Utility');
 
 /**
  * Class SubstancesSystem
- * System model
+ * SubstancesSystem model
+ * Join table for substances that make up the components of systems
  */
 class SubstancesSystem extends AppModel
 {
+
     /**
      * Find unique system based on substances
-     * @param $subs
+     * System must contain all of an only the number of substances provided
+     * @param array $subs
      * @return array|null
      */
     public function findUnique($subs)
@@ -27,10 +30,9 @@ class SubstancesSystem extends AppModel
         foreach($s as $z) {
             if(in_array($z,$c)) {
                 return $z;
-            } else {
-                return null;
             }
         }
+        return null;
     }
 
     /**

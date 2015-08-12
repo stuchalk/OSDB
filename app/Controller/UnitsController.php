@@ -8,6 +8,18 @@
  */
 class UnitsController extends AppController
 {
+
+    public $uses=['Unit'];
+
+    /**
+     * beforeFilter function
+     */
+    public function beforeFilter()
+    {
+        parent::beforeFilter();
+        $this->Auth->allow();
+    }
+
     /**
      * List the quantities
      * @param $qid - quantityID
@@ -24,7 +36,9 @@ class UnitsController extends AppController
         $this->set('data',$data);
     }
 
-
+    /**
+     * Regex test function
+     */
     public function regex()
     {
         $s="05 Nov 2007 17:38:45";
@@ -33,10 +47,13 @@ class UnitsController extends AppController
         debug($m);exit;
     }
 
+    /**
+     * JSON test function
+     */
     public function jsona()
     {
         $data=file_get_contents(WWW_ROOT.'/scidata_spectrum.txt');
-        //debug($data);exit;
         echo "<pre>";json_decode("[".$data."]");echo "</pre>";exit;
     }
+
 }

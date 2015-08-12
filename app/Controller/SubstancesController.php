@@ -112,4 +112,3 @@ class SubstancesController extends AppController
         echo json_encode($data);exit;
     }
 }
-?>

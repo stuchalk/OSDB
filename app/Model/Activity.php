@@ -3,8 +3,8 @@ App::uses('AppModel', 'Model');
 App::uses('ClassRegistry', 'Utility');
 
 /**
- * Class Sample
- * System model
+ * Class Activity
+ * Activity model
  */
 class Activity extends AppModel
 {
