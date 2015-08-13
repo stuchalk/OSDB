@@ -128,7 +128,7 @@ class FilesController extends AppController {
             // Move file to storage location (based on extension)
             $ext = pathinfo($data['name'], PATHINFO_EXTENSION);
             if($ext=="jdx"||$ext=="dx") {
-                $path="files".DS."jdx";
+                $path="download".DS."jdx";
                 new Folder(WWW_ROOT.$path,true,0777);
                 $path.=DS.$pathid.".jdx";
                 move_uploaded_file($tmpname,WWW_ROOT.$path);
@@ -140,7 +140,7 @@ class FilesController extends AppController {
                 $this->File->save(['id'=>$filid,'technique_id'=>$tech['Technique']['id']]); // JCAMP Data Type
 
                 // Save XML
-                $path="files".DS."xml";
+                $path="download".DS."xml";
                 new Folder(WWW_ROOT.$path,true,0777);
                 $path.=DS.$pathid.'.xml';
                 $fp=fopen(WWW_ROOT.$path,'w');
@@ -305,7 +305,7 @@ class FilesController extends AppController {
                 foreach($metaarray as $key=>$val) {
                     list($field,$format)=explode(":",$key);
                     $meta=$this->Metadata->add(['annotation_id'=>$annid,'field'=>$field,'value'=>$val,'format'=>$format]);
-                    debug($meta);
+                    //debug($meta);
                 }
 
                 // Add descriptors to dataseries

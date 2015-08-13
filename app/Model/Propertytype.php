@@ -10,7 +10,7 @@ App::uses('ClassRegistry', 'Utility');
  */
 class Propertytype extends AppModel
 {
-    public $belongsTo = ['Property','Propertygroup','Ruleset'];
+    public $belongsTo = ['Property','Propertygroup'];
 
     public $hasMany = ['Parameter','Variable'];
 

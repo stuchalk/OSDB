@@ -53,6 +53,7 @@ class ReportsController extends AppController
         $contain=['Publication'=>['fields'=>['title']],
                     'User'=>['fields'=>['fullname']],
                     'Dataset'=>['fields'=>['property','kind'],
+                        'File'=>['fields'=>['id']],
                         'Sample'=>['fields'=>['title','description'],
                             'Annotation'=>['Metadata'=>['fields'=>['field','value','format']]]],
                         'Methodology'=>['fields'=>['evaluation','aspects'],
@@ -65,7 +66,7 @@ class ReportsController extends AppController
                             'System'=>['fields'=>['id','name','description','type'],
                                 'Substance'=>['fields'=>['name','formula'],
                                     'Identifier'=>['fields'=>['type','value'],'conditions'=>['type'=>['inchi','inchikey','iupacname']]]]]],
-                        'Dataseries'=>['fields'=>['type','format','level'],
+                        'Dataseries'=>['fields'=>['type','format','level','processedType'],
                             'Descriptor'=>['fields'=>['title','number','text']],
                             'Annotation'=>['Metadata'=>['fields'=>['field','value','format']]],
                             'Datapoint'=>[
@@ -94,6 +95,15 @@ class ReportsController extends AppController
             $data=$this->Report->find('first',['conditions'=>['Report.id'=>$id]]);
             $this->set('data',$data);
         }
+
+    }
+
+    /**
+     * Generates the data in SciData JSON-LD
+     * @param $id
+     */
+    public function scidata($id)
+    {
 
     }
 
