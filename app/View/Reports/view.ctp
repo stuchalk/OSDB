@@ -13,10 +13,17 @@ $ser=$set['Dataseries'];
 $flot=[];
 ?>
 <h2><?php echo $rpt['description']; ?></h2>
+
+<?php if(isset($met['Measurement'])) { ?>
 <div class="left">
-<h3>Measurement Info</h3>
-<ul>
+    <h3>Measurement Info</h3>
+    <ul>
     <?php
+        if($mea['technique']=="Mass Spectrometry") {
+            $flot['tech']="ms";
+        } elseif($mea['technique']=="Nuclear Magnetic Resonance") {
+            $flot['tech']='nmr';
+        }
         $meta=['instrumentType','instrument','vendor'];
         foreach($meta as $m) {
             if(!empty(str_replace("?","",$mea[$m]))) { echo "<li>".$mea[$m]."</li>"; }
@@ -25,14 +32,16 @@ $flot=[];
             $sets=$mea['Setting'];
             foreach($sets as $set) {
                 (empty($set['text'])) ? $value=$set['number'] : $value=$set['text']; // So that zeroes are not lost
-                if($set['Property']['name']=="Observe Frequency") { $flot['freq']=$value; }
-                if($set['Property']['name']=="Observe Nucleus") { $flot['nuc']=$value; }
+                $name=$set['Property']['name'];
+                if($name=="Observe Frequency") { $flot['freq']=$value; }
+                if($name=="Observe Nucleus") { $flot['nuc']=$value; }
                 (!empty($set['Unit'])) ? $unit=" ".$set['Unit']['symbol'] : $unit="";
-                echo "<li>".$set['Property']['name'].": ".$value.$unit."</li>";
+                echo "<li>".$name.": ".$value.$unit."</li>";
             }
         }
     ?>
 </ul>
+<?php } ?>
 
 <?php if(isset($sam['title'])&&!empty($sam['title'])) { ?>
     <h3>Sample Info</h3>
@@ -56,9 +65,13 @@ $flot=[];
                 echo "<h3>File Info</h3>";
                 echo "<ul>";
                 foreach ($ann['Metadata'] as $m) {
-                    if($m['field']=="fileComments") { $comments=$m['value'];continue; }
-                    if($m['field']=="conversionErrors") { $errors=$m['value'];continue; }
-                    echo "<li>".ucfirst($m['field']).": ".$m['value']."</li>";
+                    if($m['field']=="fileComments")         { $comments=$m['value'];continue; }
+                    if($m['field']=="conversionErrors")     { $errors=$m['value'];continue; }
+                    if($m['field']=="date") {
+                        echo "<li>".ucfirst($m['field']).": ".date("M j, Y",strtotime($m['value']))."</li>";
+                    } else {
+                        echo "<li>".ucfirst($m['field']).": ".$m['value']."</li>";
+                    }
                 }
                 echo "</ul>";
             }
@@ -75,6 +88,7 @@ $flot=[];
             echo "<li>Native Format: Chemical Shift</li>";
         }
         foreach ($spectrum['Descriptor'] as $d) {
+            $value=0;
             (empty($d['text'])) ? $value=$d['number'] : $value=$d['text']; // So that zeroes are not lost
             if(stristr($d['title'],"points"))    { $flot['points']=$value; }
             if(stristr($d['title'],"maximum x")) { $value=number_format(round($value/$scale),0);$flot['maxx']=$value; }
@@ -104,5 +118,5 @@ $flot=[];
     <p>Download the data as one of the following formats</p>
     <?php echo $this->Html->link('JCAMP file','/download/jdx/'.$file['id'].'.jdx'); ?> •
     <?php echo $this->Html->link('JCAMP in XML','/download/xml/'.$file['id'].'.xml'); ?> •
-    <?php echo $this->Html->link('SciData (JSON-LD)','/report/scidata/'.$rpt['id']); ?>
+    <?php echo $this->Html->link('SciData (JSON-LD)','/reports/scidata/'.$rpt['id']); ?>
 </div>

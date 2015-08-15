@@ -13,7 +13,7 @@ App::uses('ClassRegistry', 'Utility');
  */
 class Descriptor extends AppModel
 {
-    public $belongsTo = ['Dataset','Dataseries'];
+    public $belongsTo = ['Dataset','Dataseries','Property','Unit'];
 
     /**
      * General function to add a new descriptor

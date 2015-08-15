@@ -64,7 +64,8 @@ Inflector::rules('plural', ['irregular' => ['identifier'=>'identifiers',
 											'dataseries'=>'dataseries',
 											'methodology'=>'methodology',
 											'jcamp'=>'jcamp',
-											'metadata'=>'metadata']]);
+											'metadata'=>'metadata',
+                                            'search'=>'search']]);
 
 /**
  * Plugins need to be loaded manually, you can either load them one by one or all of them in a single call

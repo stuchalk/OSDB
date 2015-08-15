@@ -7,7 +7,7 @@
 // JCAMP converter evaluates what file type is being processed and then defines DATATYPE as below
 $config['jcamp']['datatypes']=[ 'uvvis'=>'UV/VIS SPECTRUM',
                                 'ir'=>'IR SPECTRUM',
-                                'mass'=>'MASS SPECTRUM',
+                                'ms'=>'MASS SPECTRUM',
                                 'nmr'=>'NMR SPECTRUM',
                                 'flow'=>'FLOW ANALYSIS'];
 

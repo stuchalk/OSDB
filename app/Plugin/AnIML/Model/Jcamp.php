@@ -46,10 +46,9 @@ class Jcamp extends AnimlAppModel
         $this->uncomment();
         $this->ldrs();
         $this->validate();
-		$this->standardize();
-		$this->decompress();
-		//debug($this->ldrs());exit;
-		if($format=="xml") {
+        $this->standardize();
+        $this->decompress();
+        if($format=="xml") {
             return $this->makexml();
         } else {
 			return $this->getAll();
@@ -389,7 +388,7 @@ class Jcamp extends AnimlAppModel
 	{
 		$ldrs=$this->ldrs;
 		$errors=[];
-		$dtypes=['uvvis'=>'UV/VIS SPECTRUM','ir'=>'IR SPECTRUM','mass'=>'MASS SPECTRUM','nmr'=>'NMR SPECTRUM','flow'=>'FLOW ANALYSIS'];
+		$dtypes=['uvvis'=>'UV/VIS SPECTRUM','ir'=>'IR SPECTRUM','ms'=>'MASS SPECTRUM','nmr'=>'NMR SPECTRUM','flow'=>'FLOW ANALYSIS'];
 		// Run error checks for each of the techniques and set defualt values if appropriate
 		if($ldrs['DATATYPE']=="UV/VIS SPECTRUM"||$ldrs['DATATYPE']=="UV-VIS SPECTRUM"||$ldrs['DATATYPE']=="UV/VISIBLE SPECTRUM"||$ldrs['DATATYPE']=="UV-VISIBLE SPECTRUM")
 		{
@@ -817,10 +816,15 @@ class Jcamp extends AnimlAppModel
             }
         } elseif(isset($ldrs['PEAKTABLE'])) {
             foreach($ldrs['DATA'] as $dataset) {
-                // Get the list of peak data
+                // Concatenate the list of peak data
                 $points="";
                 foreach($dataset['raw'] as $line) {
                     $points.=" ".$line;
+                }
+                // Clean the points string
+                $points=str_replace("  "," ",$points);
+                if(stristr($points,", ")) {
+                    $points=str_replace(", ",",",$points);
                 }
                 // Split data apart
                 $xys=explode(" ",trim($points));

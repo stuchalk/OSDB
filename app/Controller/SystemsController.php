@@ -46,9 +46,11 @@ class SystemsController extends AppController {
      */
     public function findsys()
     {
-        $subid1="00001";$subid2="00003";
-        debug($subid1);debug($subid2);
-        $data=$this->SubstancesSystem->findUnique([$subid1,$subid2]);
+        $sid1="00001";$sid2="";
+        debug($sid1);debug($sid2);
+        $sarray=[$sid1];
+        if($sid2!="") { $sarray[]=$sid2; }
+        $data=$this->SubstancesSystem->findUnique($sarray);
         debug($data);exit;
     }
 

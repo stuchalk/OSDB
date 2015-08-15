@@ -1,11 +1,44 @@
 <?php
-    // $config has a lot of data about the spectrum in it
-    $w=600;$h=400;
-    $scale=floor($config['points']/$w);
+    //pr($config);//exit;
+    // Set up defaults
+    $w=600;$h=400;$ticksize=1;$tform="";$xlabel="";$ylabel="";
+    $lines="true";$bars="false";$points="false";
     $url="/osdb/data/flot/".$config['xsid']."/".$config['ysid'];
+
+    // Now add technique specific changes
+    if($config['tech']=='nmr') {
+        if(isset($config['freq'])) {
+            $scale=floor($config['points']/$w);
+            $url.="/0/0/".$scale."/nmrppm/".$config['freq'];
+        }
+        $tform=", transform: function (v) { return -v; } ";
+        $xlabel="Chemical Shift (ppm)";
+        $ylabel="Arbitrary Units";
+    } elseif($config['tech']=='ms') {
+        $lines="false";$bars="true";$points="false";
+        $xlabel="Mass-to-Charge Ratio (m/z)";
+        $ylabel="Relative Abundance";
+    }
+
+    // Scale the x-axis
     $range=$config['maxx']-$config['minx'];
-    $ticksize=1;
-    //pr($config);
+    if($range<10) {
+        $ticksize=1;
+    } elseif($range<20) {
+        $ticksize=2;
+    } elseif($range<50) {
+        $ticksize=5;
+    } elseif($range<100) {
+        $ticksize=10;
+    } elseif($range<200) {
+        $ticksize=20;
+    } elseif($range<500) {
+        $ticksize=50;
+    } elseif($range<1000) {
+        $ticksize=100;
+    } else {
+        $ticksize=1000;
+    }
 ?>
 <script type="text/javascript">
     $(function() {
@@ -21,18 +54,26 @@
         $("button.fetchSeries").click(function () {
 
             options = {
-                lines: { show: true },
-                points: { show: false },
+                lines: { show: <?php echo $lines; ?> },
+                points: { show: <?php echo $points; ?> },
+                bars: { show: <?php echo $bars; ?> },
+                axisLabels: { show: true },
                 xaxis: { tickDecimals: 0,
-                    tickSize: <?php echo $ticksize; ?>,
-                    transform: function (v) { return -v; }
-                },
+                    tickSize: <?php echo $ticksize; ?>
+                    <?php echo $tform; ?>},
                 yaxis: { min: <?php echo $config['miny']; ?> },
                 grid: { show: true,
                     color: ["#DDDDDD"],
                     clickable: true,
                     margin: { top: 20, bottom: 20, left: 20, right: 20 }
-                }
+                },
+                xaxes: [{
+                    axisLabel: '<?php echo $xlabel; ?>',
+                }],
+                yaxes: [{
+                    position: 'left',
+                    axisLabel: '<?php echo $ylabel; ?>',
+                }]
             };
 
             data = [];
@@ -84,5 +125,4 @@
 </script>
 
 <div id="placeholder" style="width:<?php echo $w; ?>px;height:<?php echo $h; ?>px;border: 1px solid #BBBBBB;box-shadow: 10px 10px 5px #BBBBBB;"></div>
-<p>&nbsp;</p>
-<button class="fetchSeries" id="<?php echo $url."/0/0/".$scale."/nmrppm/".$config['freq']; ?>" style="display: none;"></button>
+<button class="fetchSeries" id="<?php echo $url; ?>" style="display: none;"></button>

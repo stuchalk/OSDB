@@ -42,7 +42,7 @@ class FilesController extends AppController {
             // Create technique related variables from data in jarray
             $techstr="an unknown";$xunitid=$yunitid=$xpropid=$ypropid=null;
             $tech=$techprop=$techid=$techcode=$xlabel=$ylabel="";
-            if(isset($jarray['PARAMS']['OBSERVENUCLEUS'])) {
+            if($jarray['DATATYPE']=="NMR SPECTRUM") {
                 $jarray['PARAMS']['OBSERVENUCLEUS']=str_replace("^","",$jarray['PARAMS']['OBSERVENUCLEUS']);
                 $tech="NMR";
                 $techprop="Nuclear Magnetic Resonance";
@@ -58,6 +58,22 @@ class FilesController extends AppController {
                     $ylabel="Signal (Arbitrary Units)";
                     $ypropid=$this->Property->field('id',['name'=>"Signal Strength"]);
                     $yunitid=$this->Unit->field('id',['symbol'=>""]);
+                }
+            } elseif($jarray['DATATYPE']=="MASS SPECTRUM") {
+                $tech="MS";
+                $techprop="Mass Spectrometry";
+                $techstr="MS";
+                $techid="MSSAMPLE";
+                $techcode="MS";
+                if(strtolower($jarray['XUNITS'])=="m/z") {
+                    $xlabel="Mass-to-Charge Ratio";
+                    $xpropid=$this->Property->field('id',['name'=>"Mass-to-Charge Ratio"]);
+                    $xunitid=null;
+                }
+                if(strtolower($jarray['YUNITS'])=="relative abundance") {
+                    $ylabel="Signal (Arbitrary Units)";
+                    $ypropid=$this->Property->field('id',['name'=>"Relative Abundance"]);
+                    $yunitid=null;
                 }
             }
 
@@ -86,7 +102,9 @@ class FilesController extends AppController {
 
             // Add system
             // Get system_id if the system already exists
-            $sysid=$this->SubstancesSystem->findUnique([$sid1,$sid2]);
+            $sarray=[$sid1];
+            if($sid2!="") { $sarray[]=$sid2; }
+            $sysid=$this->SubstancesSystem->findUnique($sarray);
             $names=$this->Substance->find('list',['fields'=>['id','name'],'conditions'=>['id in'=>[$sid1,$sid2]]]);
             if(is_null($sysid)) {
                 if($sid2!="") {
@@ -108,8 +126,13 @@ class FilesController extends AppController {
 
             // Add report - the representation of the data on the website
             $rpt['user_id']=$this->Auth->user('id');
-            $rpt['title']=$jarray['TITLE'];
-            $rpt['description']=$tech." spectrum of ".$jarray['TITLE'];
+            if($jarray['TITLE']!="") {
+                $rpt['title']=$jarray['TITLE'];
+            } else {
+                $rpt['title']="Untitled Spectrum";
+            }
+            $rpt['description']=$tech." spectrum of ".$names[$sid1];
+            $rpt['author']=$jarray['ORIGIN'];
             $rpt['comment']="Upload of a JCAMP file by ".$this->Auth->user('fullname').". ORIGIN: ".$jarray['ORIGIN'].". OWNER: ".$jarray['OWNER'];
             $report=$this->Report->add($rpt);
             $rptid=$report['id'];
@@ -162,6 +185,8 @@ class FilesController extends AppController {
                 $set['format']=$jarray['XYPOINTS'];
             } elseif (isset($jarray['NTUPLES'])) {
                 $set['format']=$jarray['NTUPLES'];
+            } elseif (isset($jarray['PEAKTABLE'])) {
+                $set['format']=$jarray['PEAKTABLE'];
             } else {
                 $set['format']="unknown";
             }
@@ -182,7 +207,11 @@ class FilesController extends AppController {
 
             // Add sample
             $sam['identifier']=$techid;
-            $sam['title']="Solution of ".$names[$sid1]." in ".$names[$sid2];
+            if($sid2!="") {
+                $sam['title']="Solution of ".$names[$sid1]." in ".$names[$sid2];
+            } else {
+                $sam['title']="Pure ".$names[$sid1];
+            }
             $sam['description']="Prepared for ".$techstr." analysis";
             $sam['dataset_id']=$setid;
             $sam['system_id']=$sysid;
@@ -220,20 +249,28 @@ class FilesController extends AppController {
             $nmr['13H']=["250"=>"62.860","300"=>"75.432","400"=>"100.576","500"=>"125.721"];  // NMR larmor frequency => Tesla
             $mea['methodology_id']=$metid;
             $mea['techniqueType']="spectroscopic";
-            $mea['technique']=$techprop;$frq="?";
-            if(isset($jarray['PARAMS']['OBSERVEFREQUENCY'])) {
-                $frq=round($jarray['PARAMS']['OBSERVEFREQUENCY'],0);
-            } elseif(isset($jarray['PARAMS']['FIELD'])) {
-                $field=round($jarray['PARAMS']['FIELD'],0);
-                foreach($nmr[$jarray['PARAMS']['OBSERVENUCLEUS']] as $freq=>$mf) {
-                    if($field==round($mf)) {
-                        $frq=$freq;
-                        break;
+            $mea['technique']=$techprop;
+            if($tech=="NMR") {
+                $frq="?";
+                if(isset($jarray['PARAMS']['OBSERVEFREQUENCY'])) {
+                    $frq=round($jarray['PARAMS']['OBSERVEFREQUENCY'],0);
+                } elseif(isset($jarray['PARAMS']['FIELD'])) {
+                    $field=round($jarray['PARAMS']['FIELD'],0);
+                    foreach($nmr[$jarray['PARAMS']['OBSERVENUCLEUS']] as $freq=>$mf) {
+                        if($field==round($mf)) {
+                            $frq=$freq;
+                            break;
+                        }
                     }
                 }
+                $mea['instrumentType']=$frq." MHz NMR";
+            } elseif($tech=="MS") {
+                $mea['instrumentType']="MS";
             }
-            $mea['instrumentType']=$frq." MHz NMR";
-            $mea['instrument']=$jarray['SPECTROMETERDATASYSTEM'];
+            $mea['instrument']="";
+            if(isset($jarray['SPECTROMETERDATASYSTEM'])) {
+                $mea['instrument']=$jarray['SPECTROMETERDATASYSTEM'];
+            }
             if(isset($jarray['DATAPROCESSING'])) { } // Issue 7
             $measurement=$this->Measurement->add($mea);
             $meaid=$measurement['id'];
@@ -304,7 +341,7 @@ class FilesController extends AppController {
                         'fileComments:json'=>json_encode($jarray['COMMENTS']),'conversionErrors:json'=>json_encode($jarray['ERRORS'])];
                 foreach($metaarray as $key=>$val) {
                     list($field,$format)=explode(":",$key);
-                    $meta=$this->Metadata->add(['annotation_id'=>$annid,'field'=>$field,'value'=>$val,'format'=>$format]);
+                    $this->Metadata->add(['annotation_id'=>$annid,'field'=>$field,'value'=>$val,'format'=>$format]);
                     //debug($meta);
                 }
 
@@ -312,15 +349,16 @@ class FilesController extends AppController {
                 $descs=['NPOINTS','FIRSTX','LASTX','MAXX','MINX','MAXY','MINY','XFACTOR','YFACTOR','FIRSTY','DELTAX','RESOLUTION'];
                 foreach($descs as $desc) {
                     if(isset($jarray[$desc])) {
+                        $jarray[$desc]=(float) $jarray[$desc]; // Cast string to float (removes trailing zeros)
                         // property_id, value, unit, dataseries_id, title
                         $des['property_id']=$this->Jcampldr->field('property_id',['ldr'=>$desc]);
                         $des['title']=$this->Jcampldr->field('title',['ldr'=>$desc]);
                         $des['dataseries_id']=$serid;
                         $des['number']=$jarray[$desc];
                         if(in_array($desc,['FIRSTX','LASTX','MAXX','MINX','XFACTOR','DELTAX'])) {
-                            $des['unitid']=$xunitid;
+                            $des['unit_id']=$xunitid;
                         } elseif(in_array($desc,['MAXY','MINY','YFACTOR'])) {
-                            $des['unitid']=$yunitid;
+                            $des['unit_id']=$yunitid;
                         }
                         $this->Descriptor->add($des);
                     }
@@ -374,7 +412,6 @@ class FilesController extends AppController {
     public function update($id)
     {
         if(!empty($this->request->data)) {
-            //echo "<pre>";print_r($this->request->data);echo "</pre>";exit;
             $this->File->id=$id;
             $this->File->save($this->request->data);
             $this->redirect(['action' => 'index']);
