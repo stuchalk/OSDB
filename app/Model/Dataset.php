@@ -13,11 +13,13 @@ App::uses('ClassRegistry', 'Utility');
  */
 class Dataset extends AppModel
 {
-    public $hasOne=['Methodology','Context','Sample'];
+    public $hasOne=['Methodology'=>['foreignKey'=>'dataset_id','dependent'=>true],
+                    'Context'=>['foreignKey'=>'dataset_id','dependent'=>true],
+                    'Sample'=>['foreignKey'=>'dataset_id','dependent'=>true]];
 
     public $hasMany = ['Dataseries'=>['foreignKey'=>'dataset_id','dependent'=>true],
-                        'Data'=>['foreignKey'=>'dataset_id','dependent'=>true],
-                        'Annotation'];
+                        'Datapoint'=>['foreignKey'=>'dataset_id','dependent'=>true],
+                        'Annotation'=>['foreignKey'=>'dataset_id','dependent'=>true]];
 
     public $belongsTo = ['Propertytype','Reference','File','Report'];
 

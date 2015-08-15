@@ -16,7 +16,7 @@ class Context extends AppModel
     public $hasAndBelongsToMany=['System'];
     //public $hasAndBelongsToMany=['System','Material','Computer'];
 
-    public $hasMany=['Annotation'];
+    public $hasMany=['Annotation'=>['foreignKey'=>'context_id','dependent'=>true]];
 
     /**
      * General function to add a new context

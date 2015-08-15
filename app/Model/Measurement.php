@@ -10,7 +10,8 @@ App::uses('ClassRegistry', 'Utility');
  */
 class Measurement extends AppModel {
 
-    public $hasMany=['Setting'];
+    public $hasMany=['Setting'=>['foreignKey'=>'measurement_id','dependent'=>true],
+                     'Annotation'=>['foreignKey'=>'measurement_id','dependent'=>true]];
 
     public $belongsTo=['Methodology'];
 

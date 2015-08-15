@@ -9,7 +9,7 @@ App::uses('ClassRegistry', 'Utility');
  */
 class Report extends AppModel
 {
-    public $hasOne = ['Dataset'=> ['dependent' => true]];
+    public $hasOne = ['Dataset'=> ['foreignKey'=>'report_id','dependent' => true]];
 
     public $belongsTo = ['Publication','User'];
 

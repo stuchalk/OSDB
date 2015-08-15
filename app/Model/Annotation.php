@@ -9,9 +9,9 @@ App::uses('ClassRegistry', 'Utility');
  */
 class Annotation extends AppModel
 {
-    public $belongsTo = ['Dataset','Dataseries','Report','System','Methodology','Context'];
+    public $belongsTo = ['Dataset','Dataseries','Report','System','Methodology','Measurement','Context','Sample'];
 
-    public $hasMany = ['Metadata'];
+    public $hasMany = ['Metadata'=>['foreignKey'=>'annotation_id','dependent'=>true]];
 
     /**
      * General function to add a new annotation

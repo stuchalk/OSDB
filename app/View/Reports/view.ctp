@@ -119,4 +119,5 @@ $flot=[];
     <?php echo $this->Html->link('JCAMP file','/download/jdx/'.$file['id'].'.jdx'); ?> •
     <?php echo $this->Html->link('JCAMP in XML','/download/xml/'.$file['id'].'.xml'); ?> •
     <?php echo $this->Html->link('SciData (JSON-LD)','/reports/scidata/'.$rpt['id']); ?>
+    <?php //pr($ser); ?>
 </div>

@@ -13,7 +13,7 @@ class File extends AppModel
 
     public $belongsTo = ['Substance','Technique'];
 
-    public $hasOne = ['Dataset'];
+    public $hasOne = ['Dataset'=>['foreignKey'=>'dataset_id','dependent'=>true]];
 
     /**
      * function getCode
@@ -79,7 +79,7 @@ class File extends AppModel
         foreach($syns as $syn) {
             $Idn->add(['substance_id'=>$sid,'type'=>'name','value'=>$syn]);
        }
-        return $sid;
+        return str_pad($sid,5,"0",STR_PAD_LEFT);
         //debug($sub);exit;
     }
 

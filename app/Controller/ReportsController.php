@@ -23,7 +23,7 @@ class ReportsController extends AppController
      */
     public function index()
     {
-        $data=$this->Report->find('list',['fields'=>['id','name'],'order'=>['name']]);
+        $data=$this->Report->find('list',['fields'=>['id','title'],'order'=>['title']]);
         $this->set('data',$data);
     }
 
@@ -265,7 +265,7 @@ class ReportsController extends AppController
                 for($m=0;$m<count($dat['Datapoint']);$m++) {
                     // Independent axis
                     $cond=$dat['Datapoint'][$m]['Condition'][0];
-                    debug($cond);
+                    //debug($cond);
                     $condj=[];
                     $condj['@id']="series/".($m+1)."/x";
                     $condj['quantity']=strtolower($cond['Property']['Quantity']['name']);
@@ -329,7 +329,7 @@ class ReportsController extends AppController
         // Rights
         $json['rights']=['@id'=>'rights'];
         $json['rights']['license']='http://creativecommons.org/publicdomain/zero/1.0/';
-        debug($json);exit;
+        //debug($json);exit;
 
         // OK turn it back into JSON-LD
         header("Content-Type: application/ld+json");

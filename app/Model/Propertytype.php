@@ -12,7 +12,7 @@ class Propertytype extends AppModel
 {
     public $belongsTo = ['Property','Propertygroup'];
 
-    public $hasMany = ['Parameter','Variable'];
+    public $hasMany = ['Parameter','Variable','Dataset'];
 
     /**
      * General function to add a new propertytype

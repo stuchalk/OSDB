@@ -16,7 +16,7 @@ class FilesController extends AppController {
     public function beforeFilter()
     {
         parent::beforeFilter();
-        $this->Auth->allow('totalfiles');
+        $this->Auth->allow('totalfiles','test');
     }
 
     /**
@@ -41,7 +41,7 @@ class FilesController extends AppController {
 
             // Create technique related variables from data in jarray
             $techstr="an unknown";$xunitid=$yunitid=$xpropid=$ypropid=null;
-            $tech=$techprop=$techid=$techcode=$xlabel=$ylabel="";
+            $tech=$techprop=$techid=$techcode=$xlabel=$ylabel="";$level="";$processed=null;
             if($jarray['DATATYPE']=="NMR SPECTRUM") {
                 $jarray['PARAMS']['OBSERVENUCLEUS']=str_replace("^","",$jarray['PARAMS']['OBSERVENUCLEUS']);
                 $tech="NMR";
@@ -50,9 +50,11 @@ class FilesController extends AppController {
                 $techid="NMRSAMPLE";
                 $techcode=$jarray['PARAMS']['OBSERVENUCLEUS']."NMR";
                 if(strtolower($jarray['XUNITS'])=="hz") {
+                    $xunit="Hz";
                     $xlabel="Radiofrequency";
                     $xpropid=$this->Property->field('id',['name'=>"Radiofrequency"]);
-                    $xunitid=$this->Unit->field('id',['symbol'=>"Hz"]);
+                    $xunitid=$this->Unit->field('id',['symbol'=>$xunit]);
+                    $level="processed";$processed="frequency";
                 }
                 if(strtolower($jarray['YUNITS'])=="arbitrary units") {
                     $ylabel="Signal (Arbitrary Units)";
@@ -66,14 +68,16 @@ class FilesController extends AppController {
                 $techid="MSSAMPLE";
                 $techcode="MS";
                 if(strtolower($jarray['XUNITS'])=="m/z") {
+                    $xunit="m/z";
                     $xlabel="Mass-to-Charge Ratio";
                     $xpropid=$this->Property->field('id',['name'=>"Mass-to-Charge Ratio"]);
-                    $xunitid=null;
+                    $xunitid=$this->Unit->field('id',['symbol'=>$xunit]);
+                    $level="raw";
                 }
                 if(strtolower($jarray['YUNITS'])=="relative abundance") {
                     $ylabel="Signal (Arbitrary Units)";
                     $ypropid=$this->Property->field('id',['name'=>"Relative Abundance"]);
-                    $yunitid=null;
+                    $yunitid=$this->Unit->field('id',['symbol'=>""]);
                 }
             }
 
@@ -105,7 +109,7 @@ class FilesController extends AppController {
             $sarray=[$sid1];
             if($sid2!="") { $sarray[]=$sid2; }
             $sysid=$this->SubstancesSystem->findUnique($sarray);
-            $names=$this->Substance->find('list',['fields'=>['id','name'],'conditions'=>['id in'=>[$sid1,$sid2]]]);
+            $names=$this->Substance->find('list',['fields'=>['id','name'],'conditions'=>['id in'=>$sarray]]);
             if(is_null($sysid)) {
                 if($sid2!="") {
                     $sys['name']=$names[$sid1]." and ".$names[$sid2];
@@ -159,8 +163,8 @@ class FilesController extends AppController {
 
                 // Get version of format and technique type and add to file data
                 $this->File->saveField('version',$jarray['JCAMPDX']); // JCAMP version
-                $tech = $this->Technique->find('first',['conditions'=>['matchstr'=>$techcode]]);
-                $this->File->save(['id'=>$filid,'technique_id'=>$tech['Technique']['id']]); // JCAMP Data Type
+                $tec=$this->Technique->find('first',['conditions'=>['matchstr'=>$techcode]]);
+                $this->File->save(['id'=>$filid,'technique_id'=>$tec['Technique']['id']]); // JCAMP Data Type
 
                 // Save XML
                 $path="download".DS."xml";
@@ -252,7 +256,7 @@ class FilesController extends AppController {
             $mea['technique']=$techprop;
             if($tech=="NMR") {
                 $frq="?";
-                if(isset($jarray['PARAMS']['OBSERVEFREQUENCY'])) {
+                if(isset($jarray['PARAMS']['OBSERVEFREQUENCY'])&&!empty($jarray['PARAMS']['OBSERVEFREQUENCY'])) {
                     $frq=round($jarray['PARAMS']['OBSERVEFREQUENCY'],0);
                 } elseif(isset($jarray['PARAMS']['FIELD'])) {
                     $field=round($jarray['PARAMS']['FIELD'],0);
@@ -303,14 +307,15 @@ class FilesController extends AppController {
                         $setn=['measurement_id'=>$meaid,'property_id'=>$propid,'text'=>$txt];
                     }
                     $setting=$this->Setting->add($setn);
-                    debug($setting);
+                    //debug($setting);
                 }
             }
 
+            // Add data
             foreach($jarray['DATA'] as $darray) {
 
                 // Add dataseries
-                $ser=['dataset_id'=>$setid,'type'=>'spectrum','format'=>$set['format'],'level'=>'processed'];
+                $ser=['dataset_id'=>$setid,'type'=>'spectrum','format'=>$set['format'],'level'=>$level,'processedType'=>$processed];
                 $dataseries=$this->Dataseries->add($ser);
                 $serid=$dataseries['id'];
 
@@ -468,4 +473,10 @@ class FilesController extends AppController {
         $this->set('pubs',$pubs);
     }
 
+    public function test()
+    {
+        $sarray=["(-)-(S)-Limonene"];
+        $resp=$this->SubstancesSystem->findUnique($sarray);
+        debug($resp);exit;
+    }
 }

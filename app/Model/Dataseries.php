@@ -12,7 +12,8 @@ class Dataseries extends AppModel
 {
     public $hasMany = ['Condition'=>['foreignKey'=>'dataseries_id','dependent' => true],
                         'Datapoint'=>['foreignKey'=>'dataseries_id','dependent' => true],
-                        'Annotation','Descriptor'];
+                        'Annotation'=>['foreignKey'=>'dataseries_id','dependent'=> true],
+                        'Descriptor'=>['foreignKey'=>'dataseries_id','dependent'=> true]];
 
     public $belongsTo = ['Dataset'];
 

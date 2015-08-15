@@ -547,8 +547,7 @@ class Jcamp extends AnimlAppModel
                 $prevy=round($ldrs['FIRSTY']/$ldrs['YFACTOR']);  // This is the unscaled value
                 $prevycount=0;
                 // Decompress - work on one line at a time
-                for($line=0;$line<count($raw);$line++)
-                {
+                for($line=0;$line<count($raw);$line++) {
                     // Clean up the dataset of any unwanted characters
                     //echo "LINE: ".$line."<br>";
                     $temp=$temp2=$raw[$line];
@@ -603,64 +602,49 @@ class Jcamp extends AnimlAppModel
                         // Remove the last (duplicate) value of the current line and use it to error check on the first one of the next line
                         if($line<(count($raw)-1)) { $prevy=array_pop($yarray); }
                     }
-                    if($line==1)
-                    {
+                    if($line==1) {
                         $calcdeltax=($xpart-$prevx)/$prevycount;
-                        if(!isset($ldrs['DELTAX']))
-                        {
-                            if(isset($ldrs['FIRSTX'])&&isset($ldrs['LASTX'])&&isset($ldrs['NPOINTS']))
-                            {
+                        if(!isset($ldrs['DELTAX'])) {
+                            if(isset($ldrs['FIRSTX'])&&isset($ldrs['LASTX'])&&isset($ldrs['NPOINTS'])) {
                                 $errors['E22']="(Set ".$set.") DELTAX not in original file (calculated from FIRSTX, LASTX, and NPOINTS)";
                                 $ldrs['DELTAX']=($ldrs['LASTX']-$ldrs['FIRSTX'])/($ldrs['NPOINTS']-1);
-                            }
-                            else
-                            {
+                            } else {
                                 $errors['E22']="(Set ".$set.") DELTAX not in original file (taken from x data points on the first two lines)";
                                 $ldrs['DELTAX']=$calcdeltax;
                                 $avgdeltax="yes";
                             }
-                        }
-                        else
-                        {
+                        } else {
                             $deltaxdiff=abs(($ldrs['DELTAX']-$calcdeltax)*100/$ldrs['DELTAX']);
-                            if($deltaxdiff>0.01)
-                            {
+                            if($deltaxdiff>0.01) {
                                 $errors['E35']="(Set ".$set.") DELTAX does not match calculated value (taken from x data points on the first two lines)";
                                 $ldrs['DELTAX']=$calcdeltax;
                                 $avgdeltax="yes";
                             }
                         }
                     }
-                    if($avgdeltax=="yes")
-                    {
+                    if($avgdeltax=="yes") {
                         // Calculate overall average deltax
                         $calcdeltax=($xpart-$prevx)/$prevycount;
                         $ldrs['DELTAX']=(($ldrs['DELTAX']*($line-1))+$calcdeltax)/$line;
                     }
-                    if($line>0)
-                    {
+                    if($line>0) {
                         // Calculate the difference between expected and actual X value ()
                         if($xpart!=0):  $diff=abs((($prevx+($prevycount*$ldrs['DELTAX'])) - $xpart)*100/$xpart);
                         else:           $diff=0;
                         endif;
-                        if($diff>0.01)
-                        {
-                            //echo "<pre>";print_r($yarray);echo "</pre>";
+                        if($diff>0.01) {
+                            //debug($yarray);
                             $dp=strlen($ldrs['FIRSTX'])-(strpos($ldrs['FIRSTX'],'.')+1);
                             $errors['E35']="(Set ".$set.", line ".$line.") Mismatch in X values (missing data?) (DIFF: ".$diff.") ".sprintf("%1\$.".$dp."f",$prevx+($prevycount*$ldrs['DELTAX'])).":".sprintf("%1\$.".$dp."f",$xpart);
                             // Add to the $yarray to pad for missing numbers
                             $prevycount=count($yarray);
                             $yarray=array_pad($yarray,-1*abs(($prevx-$xpart)/$ldrs['DELTAX']),'?');
                             //echo "<pre>";print_r($yarray);echo "</pre>";
-                        }
-                        else
-                        {
+                        } else {
                             //echo "DIFF: ".$diff."<br>";
                             $prevycount=count($yarray);
                         }
-                    }
-                    else
-                    {
+                    } else {
                         $prevycount=count($yarray);
                     }
                     $prevx=$xpart;
@@ -668,36 +652,35 @@ class Jcamp extends AnimlAppModel
                     $all_ys=array_merge($all_ys,$yarray);
                 }
                 // Set the number of DPs to a logical value if the DELTAX was calculated from the data
-                if($avgdeltax=="yes")
-                {
+                if($avgdeltax=="yes") {
                     $dp=strlen($ldrs['FIRSTX'])-strpos($ldrs['FIRSTX'],'.');
                     $ldrs['DELTAX']=sprintf("%1\$.".$dp."f",$ldrs['DELTAX']);
                 }
                 // Set the number of points if not set already
-                if(!isset($ldrs['NPOINTS']))			{ $errors['E22']="(Set ".$set.") NPOINTS not in original file (taken from y data points)"; $ldrs['NPOINTS']=count($all_ys); }
+                if(!isset($ldrs['NPOINTS'])) {
+                    $errors['E22']="(Set ".$set.") NPOINTS not in original file (taken from y data points)";
+                    $ldrs['NPOINTS']=count($all_ys);
+                }
                 // Check the number of data points against what it said in the file
-                if(count($all_ys)!=$ldrs['NPOINTS'])	{ $errors['E12']="(Set ".$set.") NPOINTS (".$ldrs['NPOINTS'].") does not match points found (".count($all_ys).")"; }
+                if(count($all_ys)!=$ldrs['NPOINTS']) {
+                    $errors['E12']="(Set ".$set.") NPOINTS (".$ldrs['NPOINTS'].") does not match points found (".count($all_ys).")";
+                }
                 // Set first data point values if not set
-                if(!isset($ldrs['FIRSTX']))
-                {
+                if(!isset($ldrs['FIRSTX'])) {
                     $errors['E23']="(Set ".$set.") FIRSTX not in original file (taken from x data points)";
-                    if(stristr($actualfirstx,".")):
+                    if(stristr($actualfirstx,".")) {
                         $dp=strlen($actualfirstx)-strpos($actualfirstx,'.')-1;
                         $ldrs['FIRSTX']= sprintf("%1\$.".$dp."f",$actualfirstx);
-                    else:
-                        if(isset($ldrs['DELTAX'])&&$ldrs['DELTAX']<1)
-                        {
-                            $dp=strlen($ldrs['DELTAX'])-strpos($ldrs['DELTAX'],'.')-1;
-                            $ldrs['FIRSTX']= sprintf("%1\$.".$dp."f",$actualfirstx);
+                    } else {
+                        if(isset($ldrs['DELTAX']) && $ldrs['DELTAX'] < 1) {
+                            $dp = strlen($ldrs['DELTAX']) - strpos($ldrs['DELTAX'], '.') - 1;
+                            $ldrs['FIRSTX'] = sprintf("%1\$." . $dp . "f", $actualfirstx);
+                        } else {
+                            $ldrs['FIRSTX'] = sprintf("%1\$u", $actualfirstx);
                         }
-                        else
-                        {
-                            $ldrs['FIRSTX']= sprintf("%1\$u",$actualfirstx);
-                        }
-                    endif;
+                    }
                 }
-                if(!isset($ldrs['FIRSTY']))
-                {
+                if(!isset($ldrs['FIRSTY'])) {
                     $errors['E24']="(Set ".$set.") FIRSTY not in original file (taken from y data points)";
                     if(stristr($actualfirsty,".")) {
                         $dp=strlen($actualfirsty)-strpos($actualfirsty,'.')-1;
@@ -707,7 +690,9 @@ class Jcamp extends AnimlAppModel
                     }
                 }
                 // Can't rely on ##DELTAX being present as it is not required in JCAMP, so calculate it here...
-                if(isset($ldrs['XYDATA'])&&!isset($ldrs['DELTAX']))	{ $ldrs['DELTAX']=($ldrs['LASTX']-$ldrs['FIRSTX'])/($ldrs['NPOINTS']-1); }
+                if(isset($ldrs['XYDATA'])&&!isset($ldrs['DELTAX']))	{
+                    $ldrs['DELTAX']=($ldrs['LASTX']-$ldrs['FIRSTX'])/($ldrs['NPOINTS']-1);
+                }
                 // Work out the correct way to quote X values (decimal places) based off of FIRSTX and DELTAX value
                 // How many decimals in FIRSTX?
                 if(stristr($ldrs['FIRSTX'],"E")):
@@ -781,10 +766,8 @@ class Jcamp extends AnimlAppModel
                 endif;
                 // Build the XY array
                 $ldrs['DELTAX']=trim($ldrs['DELTAX'],"0"); // Remove trailing zeros from DELTAX
-                for($x=0;$x<count($all_ys);$x++)
-                {
-                    if($x==0)
-                    {
+                for($x=0;$x<count($all_ys);$x++) {
+                    if($x==0) {
                         // Check that the first data point matches up
                         $y=sprintf($yformat,($all_ys[0]*$ldrs['YFACTOR']));
                         if($y!=$ldrs['FIRSTY'])	{
@@ -800,8 +783,7 @@ class Jcamp extends AnimlAppModel
                 }
                 // Check the FIRSTY consistency
                 $xs=array_keys($data);
-                if($ldrs['FIRSTX']!=$xs[0])
-                {
+                if($ldrs['FIRSTX']!=$xs[0]) {
                     $errors['E24']="(Set ".$set.") FIRSTX (".$ldrs['FIRSTX'].") does not match actual first x point (".$xs[0].")";
                 }
                 // Set the max/min y values if not set already

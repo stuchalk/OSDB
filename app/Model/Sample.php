@@ -11,7 +11,7 @@ class Sample extends AppModel
 {
     public $hasOne = ['Dataset','System'];
 
-    public $hasMany = ['Annotation'];
+    public $hasMany = ['Annotation'=>['foreignKey'=>'sample_id','dependent'=>true]];
 
     /**
      * General function to add a new sample

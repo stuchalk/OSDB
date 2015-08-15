@@ -12,7 +12,7 @@ class System extends AppModel
 {
     public $hasAndBelongsToMany = ['Substance','Context'];
 
-    public $hasMany=['Annotation'];
+    public $hasMany=['Annotation'=>['foreignKey'=>'system_id','dependent'=>true]];
 
     /**
      * General function to add a new system

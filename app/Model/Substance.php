@@ -9,7 +9,7 @@ App::uses('ClassRegistry', 'Utility');
  */
 class Substance extends AppModel {
 
-    public $hasMany=['Identifier'];
+    public $hasMany=['Identifier'=>['foreignKey'=>'substance_id','dependent'=>true]];
 
     public $hasAndBelongsToMany = ['System'];
 
