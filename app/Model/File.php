@@ -13,7 +13,9 @@ class File extends AppModel
 
     public $belongsTo = ['Substance','Technique'];
 
-    public $hasOne = ['Dataset'=>['foreignKey'=>'dataset_id','dependent'=>true]];
+    public $hasOne = ['Dataset'=>['foreignKey'=>'file_id','dependent'=>true]];
+
+    public $hasMany = ['Activity'=>['foreignKey'=>'file_id','dependent'=>true]];
 
     /**
      * function getCode

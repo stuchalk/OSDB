@@ -72,12 +72,30 @@ class FilesController extends AppController {
                     $xlabel="Mass-to-Charge Ratio";
                     $xpropid=$this->Property->field('id',['name'=>"Mass-to-Charge Ratio"]);
                     $xunitid=$this->Unit->field('id',['symbol'=>$xunit]);
-                    $level="raw";
                 }
                 if(strtolower($jarray['YUNITS'])=="relative abundance") {
                     $ylabel="Signal (Arbitrary Units)";
                     $ypropid=$this->Property->field('id',['name'=>"Relative Abundance"]);
                     $yunitid=$this->Unit->field('id',['symbol'=>""]);
+                    $level="raw";
+                }
+            } elseif($jarray['DATATYPE']=="IR SPECTRUM") {
+                $tech="IR";
+                $techprop="Infrared Spectroscopy";
+                $techstr="IR";
+                $techid="IRSAMPLE";
+                $techcode="IR";
+                if(strtolower($jarray['XUNITS'])=="1/cm") {
+                    $xunit="1/cm";
+                    $xlabel="Wavenumber";
+                    $xpropid=$this->Property->field('id',['name'=>"Wavenumber"]);
+                    $xunitid=$this->Unit->field('id',['symbol'=>$xunit]);
+                }
+                if(strtolower($jarray['YUNITS'])=="transmittance") {
+                    $ylabel="Transmittance";
+                    $ypropid=$this->Property->field('id',['name'=>"Transmittance"]);
+                    $yunitid=$this->Unit->field('id',['symbol'=>"%"]);
+                    $level="processed";$processed="transmittance";
                 }
             }
 
@@ -109,8 +127,13 @@ class FilesController extends AppController {
             $sarray=[$sid1];
             if($sid2!="") { $sarray[]=$sid2; }
             $sysid=$this->SubstancesSystem->findUnique($sarray);
-            $names=$this->Substance->find('list',['fields'=>['id','name'],'conditions'=>['id in'=>$sarray]]);
+            if(count($sarray)==1) {
+                $names=$this->Substance->find('list',['fields'=>['id','name'],'conditions'=>['id'=>$sid1]]);
+            } else {
+                $names=$this->Substance->find('list',['fields'=>['id','name'],'conditions'=>['id in'=>$sarray]]);
+            }
             if(is_null($sysid)) {
+                //echo "In conditional...";
                 if($sid2!="") {
                     $sys['name']=$names[$sid1]." and ".$names[$sid2];
                     $sys['description']="A mixture of two organic compounds";
@@ -130,11 +153,12 @@ class FilesController extends AppController {
 
             // Add report - the representation of the data on the website
             $rpt['user_id']=$this->Auth->user('id');
-            if($jarray['TITLE']!="") {
-                $rpt['title']=$jarray['TITLE'];
-            } else {
-                $rpt['title']="Untitled Spectrum";
-            }
+            //if($jarray['TITLE']!="") {
+            //    $rpt['title']=$jarray['TITLE'];
+            //} else {
+            //    $rpt['title']=$names[$sid1];
+            //}
+            $rpt['title']=$names[$sid1]." (".$techstr.")";
             $rpt['description']=$tech." spectrum of ".$names[$sid1];
             $rpt['author']=$jarray['ORIGIN'];
             $rpt['comment']="Upload of a JCAMP file by ".$this->Auth->user('fullname').". ORIGIN: ".$jarray['ORIGIN'].". OWNER: ".$jarray['OWNER'];
@@ -148,6 +172,9 @@ class FilesController extends AppController {
             $proid=$pro['Propertytype']['id'];
 
             // Add the file information
+            $data['user_id']=$this->Auth->user('id');
+            $data['substance_id']=$sid1;
+            $data['report_id']=$rptid;
             $file=$this->File->add($data);
             $filid=$file['id'];
             $pathid=str_pad($filid,9,"0",STR_PAD_LEFT);
@@ -268,8 +295,8 @@ class FilesController extends AppController {
                     }
                 }
                 $mea['instrumentType']=$frq." MHz NMR";
-            } elseif($tech=="MS") {
-                $mea['instrumentType']="MS";
+            } else {
+                $mea['instrumentType']=$tech;
             }
             $mea['instrument']="";
             if(isset($jarray['SPECTROMETERDATASYSTEM'])) {
@@ -306,7 +333,7 @@ class FilesController extends AppController {
                         $txt=$params[$s['Jcampldr']['arrayname']];
                         $setn=['measurement_id'=>$meaid,'property_id'=>$propid,'text'=>$txt];
                     }
-                    $setting=$this->Setting->add($setn);
+                    $this->Setting->add($setn);
                     //debug($setting);
                 }
             }
@@ -475,8 +502,9 @@ class FilesController extends AppController {
 
     public function test()
     {
-        $sarray=["(-)-(S)-Limonene"];
+        $sarray=["00001","00003"];
+        echo "SARRAY: ";debug($sarray);
         $resp=$this->SubstancesSystem->findUnique($sarray);
-        debug($resp);exit;
+        echo "RESP: ";debug($resp);exit;
     }
 }

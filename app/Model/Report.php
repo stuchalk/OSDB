@@ -9,11 +9,12 @@ App::uses('ClassRegistry', 'Utility');
  */
 class Report extends AppModel
 {
-    public $hasOne = ['Dataset'=> ['foreignKey'=>'report_id','dependent' => true]];
+    public $hasOne = ['Dataset'=> ['foreignKey'=>'report_id','dependent' => true],
+                        'File'=> ['foreignKey'=>'report_id','dependent' => true]];
 
     public $belongsTo = ['Publication','User'];
 
-    public $hasMany = ['Annotation'];
+    public $hasMany = ['Annotation'=> ['foreignKey'=>'report_id','dependent' => true]];
 
     /**
      * General function to add a new report
@@ -60,10 +61,10 @@ class Report extends AppModel
                         'Unit'=>['fields'=>['name','symbol']]],
                     'Annotation'=>['Metadata'=>['fields'=>['field','value','format']]],
                     'Datapoint'=>[
-                        'Data'=>['fields'=>['datatype','text','number','title','id'],
+                        'Data'=>['fields'=>['datatype','text','title','id'],
                             'Property'=>['fields'=>['name']],
                             'Unit'=>['fields'=>['name','symbol']]],
-                        'Condition'=>['fields'=>['datatype','text','number','title','id'],
+                        'Condition'=>['fields'=>['datatype','text','title','id'],
                             'Property'=>['fields'=>['name']],
                             'Unit'=>['fields'=>['name','symbol']]]]]]];
 

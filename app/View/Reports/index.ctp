@@ -1,4 +1,4 @@
-<h2>Data Reports</h2>
+<h2>Spectra</h2>
 <ul>
     <?php
     foreach($data as $id=>$name) {

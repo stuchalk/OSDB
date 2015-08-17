@@ -3,7 +3,11 @@
     // Set up defaults
     $w=600;$h=400;$ticksize=1;$tform="";$xlabel="";$ylabel="";
     $lines="true";$bars="false";$points="false";
-    $url="/osdb/data/flot/".$config['xsid']."/".$config['ysid'];
+    if($this->request->host()=="sds.coas.unf.edu") {
+        $url="/osdb/data/flot/".$config['xsid']."/".$config['ysid'];
+    } else {
+        $url="/data/flot/".$config['xsid']."/".$config['ysid'];
+    }
 
     // Now add technique specific changes
     if($config['tech']=='nmr') {
@@ -18,6 +22,12 @@
         $lines="false";$bars="true";$points="false";
         $xlabel="Mass-to-Charge Ratio (m/z)";
         $ylabel="Relative Abundance";
+    } elseif($config['tech']=='ir') {
+        $scale=floor($config['points']/$w);
+        $tform=", transform: function (v) { return -v; } ";
+        $xlabel="Wavenumber (1/cm)";
+        $ylabel="Transmission (%T)";
+        $url.="/0/0/".$scale;
     }
 
     // Scale the x-axis

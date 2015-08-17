@@ -49,6 +49,7 @@ class ReportsController extends AppController
     public function view($id)
     {
         $data=$this->Report->scidata($id);
+        //debug($data);exit;
         $this->set('data',$data);
     }
 
@@ -116,8 +117,9 @@ class ReportsController extends AppController
         $metj['aspects']=[];
 
         // Measurement
-        if(isset($met['Measurement'])&&!empty($mea['Measurement'])) {
+        if(isset($met['Measurement'])&&!empty($met['Measurement'])) {
             $mea=$met['Measurement'];
+            $meaj=[];
             $meaj['@id']='measurement';
             $opts=['techniqueType','technique','instrumentType','instrument','vendor'];
             foreach($opts as $opt) {

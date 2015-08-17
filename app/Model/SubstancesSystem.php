@@ -20,19 +20,23 @@ class SubstancesSystem extends AppModel
     {
         //debug($subs);
         $tmp1=$this->find('all',['fields'=>['system_id','COUNT(*) as total'],'group'=>['system_id HAVING (total = '.count($subs).')' ]]);
-        //debug($tmp1);
-        $c=[];
-        foreach($tmp1 as $x) { $c[]=$x['SubstancesSystem']['system_id']; }
-        $tmp2=$this->find('all',['fields'=>['DISTINCT system_id'],'conditions'=>['substance_id'=>$subs],'group'=>'system_id']);
-        //debug($tmp2);
-        $s=[];
-        foreach($tmp2 as $y) { $s[]=$y['SubstancesSystem']['system_id']; }
-        foreach($s as $z) {
-            if(in_array($z,$c)) {
-                return $z;
+        //echo "TEMP1: ";debug($tmp1);
+        $ret=null;
+        foreach($tmp1 as $x) {
+            $c=0;$sys=$x['SubstancesSystem']['system_id'];
+            foreach($subs as $sub) {
+                $tmp2=$this->find('all',['fields'=>['system_id'],'conditions'=>['substance_id'=>$sub,'system_id'=>$sys]]);
+                if(empty($tmp2)) {
+                    break;
+                } else {
+                    $c++;
+                }
+            }
+            if($c==count($subs)) {
+                $ret=$sys;break;
             }
         }
-        return null;
+        return $ret;
     }
 
     /**

@@ -16,17 +16,21 @@ $flot=[];
 
 <?php if(isset($met['Measurement'])) { ?>
 <div class="left">
-    <h3>Measurement Info</h3>
-    <ul>
     <?php
         if($mea['technique']=="Mass Spectrometry") {
             $flot['tech']="ms";
         } elseif($mea['technique']=="Nuclear Magnetic Resonance") {
             $flot['tech']='nmr';
+        } elseif($mea['technique']=="Infrared Spectroscopy") {
+            $flot['tech']='ir';
         }
-        $meta=['instrumentType','instrument','vendor'];
+    $marray=[];
+        if(strtolower($mea['instrumentType'])!=$flot['tech']) {
+            $marray[]=$mea['instrumentType'];
+        }
+        $meta=['instrument','vendor'];
         foreach($meta as $m) {
-            if(!empty(str_replace("?","",$mea[$m]))) { echo "<li>".$mea[$m]."</li>"; }
+            if(!empty(str_replace("?","",$mea[$m]))) { $marray[]=$mea[$m]; }
         }
         if(!empty($mea['Setting'])) {
             $sets=$mea['Setting'];
@@ -36,11 +40,18 @@ $flot=[];
                 if($name=="Observe Frequency") { $flot['freq']=$value; }
                 if($name=="Observe Nucleus") { $flot['nuc']=$value; }
                 (!empty($set['Unit'])) ? $unit=" ".$set['Unit']['symbol'] : $unit="";
-                echo "<li>".$name.": ".$value.$unit."</li>";
+                $marray[]=$name.": ".$value.$unit;
             }
         }
+        if(!empty($marray)) {
+            echo "<h3>Measurement Info</h3><ul>";
+            foreach($marray as $m) {
+                echo "<li>".$m."</li>";
+            }
+            echo "</ul>";
+        }
     ?>
-</ul>
+
 <?php } ?>
 
 <?php if(isset($sam['title'])&&!empty($sam['title'])) { ?>
@@ -89,10 +100,10 @@ $flot=[];
         }
         foreach ($spectrum['Descriptor'] as $d) {
             $value=0;
-            (empty($d['text'])) ? $value=$d['number'] : $value=$d['text']; // So that zeroes are not lost
+            (empty($d['text'])) ? $value=(float) $d['number'] : $value=$d['text']; // So that zeroes are not lost
             if(stristr($d['title'],"points"))    { $flot['points']=$value; }
-            if(stristr($d['title'],"maximum x")) { $value=number_format(round($value/$scale),0);$flot['maxx']=$value; }
-            if(stristr($d['title'],"minimum x")) { $value=number_format(round($value/$scale),0);$flot['minx']=$value; }
+            if(stristr($d['title'],"maximum x")) { $flot['maxx']=$value/$scale;$value=number_format(round($value/$scale),0); }
+            if(stristr($d['title'],"minimum x")) { $flot['minx']=$value/$scale;$value=number_format(round($value/$scale),0); }
             if(stristr($d['title'],"increment")) { $value=number_format($value/$scale,5); }
             if(stristr($d['title'],"first x"))   { $value=number_format($value/$scale,0); }
             if(stristr($d['title'],"last x"))    { $value=number_format($value/$scale,0); }
