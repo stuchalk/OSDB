@@ -21,9 +21,9 @@ $idnicetext=['inchi'=>'InChI String','inchikey'=>'InChi Key','casrn'=>'CASRN','p
 <?php foreach($system as $sys) {
         echo "<h4 style='margin-top: 0.5em;'>". $this->Html->link($sys['name'],'/systems/view/'.$sys['id'])."</h4>";
             foreach($sys['Context'] as $context){
-                $set=$context['Dataset'];
-                echo "<ul><li>". $this->Html->link($set['property'],'/datasets/view/'.$set['id'])."</li></ul>";
+                $rpt=$context['Dataset']['Report'];
+                echo "<ul><li>". $this->Html->link($rpt['title'],'/spectra/view/'.$rpt['id'])."</li></ul>";
         }
     }
 ?>
-<?php pr($system); ?>
+<?php //pr($system); ?>

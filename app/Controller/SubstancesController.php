@@ -42,7 +42,7 @@ class SubstancesController extends AppController
      */
     public function view($id)
     {
-        $data=$this->Substance->find('first',['conditions'=>['Substance.id'=>$id],'recursive'=>3]);
+        $data=$this->Substance->find('first',['conditions'=>['Substance.id'=>$id],'recursive'=>4]);
         $this->set('data',$data);
     }
 

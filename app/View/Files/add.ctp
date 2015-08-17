@@ -6,7 +6,7 @@
         }
 
         $( "#FileSubstance" ).autocomplete({
-            source: "/osdb/substances/search",
+            source: "<?php if($this->request->host()=="sds.coas.unf.edu") { echo "/osdb"; } ?>/substances/search",
             minLength: 2,
             select: function( event, ui ) {
                 log( ui.item ?

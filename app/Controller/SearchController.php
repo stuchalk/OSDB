@@ -39,8 +39,21 @@ class SearchController extends AppController
             $t=$tables[$s];$f=$fields[$s];
             $results[$t]=$this->{$t}->find('list',['fields'=>['id',$f],'conditions'=>[$f." like"=>'%'.$term.'%']]);
         }
-        debug($results);exit;
+        //debug($results);exit;
         $this->set('data',$results);
     }
 
+    /**
+     * Search by mass range
+     * @param $range
+     */
+    public function mass($range) {
+        if(stristr($range,"-")) {
+            list($low,$high)=explode("-",$range);
+        } else {
+            $low=$range-1;$high=$range+1;
+        }
+        $data=$this->Substance->find('list',['fields'=>['id','name','molweight'],'conditions'=>['molweight >'=>$low,'molweight <'=>$high]]);
+        $this->set('data',$data);
+    }
 }
