@@ -61,10 +61,10 @@ class Report extends AppModel
                         'Unit'=>['fields'=>['name','symbol']]],
                     'Annotation'=>['Metadata'=>['fields'=>['field','value','format']]],
                     'Datapoint'=>[
-                        'Data'=>['fields'=>['datatype','text','title','id'],
+                        'Data'=>['fields'=>['datatype','text','number','title','id'],
                             'Property'=>['fields'=>['name']],
                             'Unit'=>['fields'=>['name','symbol']]],
-                        'Condition'=>['fields'=>['datatype','text','title','id'],
+                        'Condition'=>['fields'=>['datatype','text','number','title','id'],
                             'Property'=>['fields'=>['name']],
                             'Unit'=>['fields'=>['name','symbol']]]]]]];
 
