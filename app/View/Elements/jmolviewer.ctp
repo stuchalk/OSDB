@@ -12,9 +12,9 @@ if(isset($chemicals))
     {
         $chem=$chemicals[$x];
         echo "<div id='chemical".$x."' class='chemical'>";
-        //echo $this->Html->image('http://cactus.nci.nih.gov/chemical/structure/'.$chem['inchi'].'/image?format=png&linewidth=2',array('alt'=>$chem['name']));
+        //echo $this->Html->image('http://cactus.nci.nih.gov/chemical/structure/'.$chem['inchikey'].'/image?format=png&linewidth=2',['alt'=>$chem['name']]);
         echo "<script type='text/javascript'>\n";
-        echo "  var Info".$x." = { color: '#000000', height: ".$size.", width: ".$size.", use: 'HTML5', defaultModel: '$".$chem['inchikey']."', j2sPath: '/sol/js/jsmol/j2s' };\n";
+        echo "  var Info".$x." = { color: '#000000', height: ".$size.", width: ".$size.", use: 'HTML5', defaultModel: '$".$chem['inchikey']."', j2sPath: '/osdb/js/jsmol/j2s' };\n";
         echo "  Jmol.getTMApplet('chem".$x."', Info".$x.");\n";
         echo "</script>\n";
         echo "<p>".$chem['name']."<br />\n";

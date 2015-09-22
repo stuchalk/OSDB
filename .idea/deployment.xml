@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="PublishConfigData" autoUpload="Always" serverName="GoDaddy (OSDB)">
-    <serverData>
-      <paths name="GoDaddy (OSDB)">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/public_html" local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-    </serverData>
     <option name="myAutoUpload" value="ALWAYS" />
   </component>
 </project>

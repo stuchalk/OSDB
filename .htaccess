@@ -2,4 +2,5 @@
 	RewriteEngine On
 	RewriteRule    ^$ app/webroot/    [L]
 	RewriteRule    (.*) app/webroot/$1 [L]
+	AddType chemical/x-jcamp-dx .jdx
 </IfModule>
