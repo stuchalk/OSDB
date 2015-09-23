@@ -13,7 +13,7 @@ class User extends AppModel
 
     public $virtualFields=['fullname'=>'CONCAT(firstname," ",lastname)'];
 
-    public $hasMany=['Report'];
+    public $hasMany=['Report','Collection'];
 
     public $validate = [
         'username' => [

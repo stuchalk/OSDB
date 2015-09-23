@@ -126,4 +126,12 @@ class UsersController extends AppController {
         }
     }
 
+    /**
+     * User dashboard
+     * @param $uid
+     */
+    public function dashboard($uid)
+    {
+        $data=$this->User->find('');
+    }
 }
