@@ -86,7 +86,7 @@ class UsersController extends AppController {
     }
 
     /**
-     * Delete  users
+     * Delete users
      * @param null $id
      */
     public function delete($id=null)
@@ -130,8 +130,10 @@ class UsersController extends AppController {
      * User dashboard
      * @param $uid
      */
-    public function dashboard($uid)
+    public function dashboard()
     {
-        $data=$this->User->find('');
+        $uid=$this->Auth->user('id');
+        $data=$this->User->find('first',['conditions'=>['id'=>$uid]]);
+        $this->set('data',$data);
     }
 }

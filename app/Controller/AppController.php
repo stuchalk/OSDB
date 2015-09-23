@@ -21,7 +21,7 @@ Configure::load('osdb','default');
 class AppController extends Controller {
 
     public $components = ['Utils','Email','RequestHandler','Session',
-                            'Auth' => ['loginRedirect' => ['controller' => 'pages','action' => 'display','home'],
+                            'Auth' => ['loginRedirect' => ['controller' => 'users','action' => 'dashboard'],
                                     'logoutRedirect' => ['controller' => 'pages','action' => 'display','home']]];
     public $helpers = ['Form','Html','Session','Time'];
 
