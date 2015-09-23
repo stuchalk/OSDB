@@ -260,8 +260,7 @@ class Jcamp extends JcampAppModel
 			if(isset($ldrs['END'])) { break; } // ignore anything after the END line
 		}
 		// Check for important LDRs
-		if(isset($ldrs['DATACLASS'])&&$ldrs['DATACLASS']=="XYDATA")
-		{
+		if(isset($ldrs['DATACLASS'])&&$ldrs['DATACLASS']=="XYDATA") {
 			if($this->asdftype=="")			{ $errors['E12']="No data format in file (defaulting to FIX)";$this->asdftype="FIX"; }
 			if(!isset($ldrs['NPOINTS']))	{ $errors['E30']="NPOINTS not defined in file (calculate using data)"; }
 			if(!isset($ldrs['FIRSTX']))		{ $errors['E31']="FIRSTX not defined in file (calculate using data)"; }
@@ -274,12 +273,13 @@ class Jcamp extends JcampAppModel
 			$xf=round($ldrs['XFACTOR']);$yf=round($ldrs['YFACTOR']);
 			if(($ldrs['XFACTOR']-$xf)==0) { $ldrs['XFACTOR']=round($ldrs['XFACTOR']); }
 			if(($ldrs['YFACTOR']-$yf)==0) { $ldrs['YFACTOR']=round($ldrs['YFACTOR']); }
-		}
-		elseif(isset($ldrs['DATACLASS'])&&$ldrs['DATACLASS']=="NTUPLES")
-		{
+		} elseif(isset($ldrs['DATACLASS'])&&$ldrs['DATACLASS']=="NTUPLES") {
 			if($this->asdftype=="")			{ $errors['E12']="No data format in file (defaulting to FIX)";$this->asdftype="FIX"; }
 			// TODO: Need to complete this
-		}
+		} elseif(isset($ldrs['DATACLASS'])&&$ldrs['DATACLASS']=="(X++(Y..Y))") {
+            if($this->asdftype=="")			{ $errors['E12']="No data format in file (defaulting to FIX)";$this->asdftype="FIX"; }
+            // TODO: Need to complete this
+        }
         // Convert TIME and DATE to DATETIME
         // Detect data format (may contain time)
         $y=$m=$d=$h=$n=$s=0;
@@ -288,13 +288,15 @@ class Jcamp extends JcampAppModel
         }
         if(isset($ldrs['DATE'])) {
             $ldrs['DATE']=preg_replace("/ +/"," ",$ldrs['DATE']);
-            if(preg_match("/^([0-9]{1,2}) ([a-zA-Z]{3}) ([0-9]{4}) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/",$ldrs['DATE'],$p)) {
+            if(preg_match("/^([0-9]{1,2}) ([a-zA-Z]{3}) ([0-9]{4}) ([0-9]{2}):([0-9]{2}):([0-9]{2})(\.[0-9]{2})?$/",$ldrs['DATE'],$p)) {
                 $d=$p[1];$m=$p[2];$y=$p[3];$h=$p[4];$n=$p[5];$s=$p[6];
-            } else if(preg_match("/^([a-zA-Z]{3}) ([0-9]{1,2}) ([0-9]{4}) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/",$ldrs['DATE'],$p)) {
+            } elseif(preg_match("%^([0-9]{1,2})/([0-9]{2})/([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})(\.[0-9]{2})?$%",$ldrs['DATE'],$p)) {
+				$d=$p[1];$m=$p[2];$y=$p[3];$h=$p[4];$n=$p[5];$s=$p[6];
+			}  elseif (preg_match("/^([a-zA-Z]{3}) ([0-9]{1,2}) ([0-9]{4}) ([0-9]{2}):([0-9]{2}):([0-9]{2})$/",$ldrs['DATE'],$p)) {
                 $m=$p[1];$d=$p[2];$y=$p[3];$h=$p[4];$n=$p[5];$s=$p[6];
-            } else if(preg_match("/^([0-9]{1,2}) ([a-zA-Z]{3}) ([0-9]{4})$/",$ldrs['DATE'],$p)) {
+            } elseif (preg_match("/^([0-9]{1,2}) ([a-zA-Z]{3}) ([0-9]{4})$/",$ldrs['DATE'],$p)) {
                 $d=$p[1];$m=$p[2];$y=$p[3];
-            } else if(preg_match("/^([a-zA-Z]{3}) ([0-9]{1,2}) ([0-9]{4})$/",$ldrs['DATE'],$p)) {
+            } elseif (preg_match("/^([a-zA-Z]{3}) ([0-9]{1,2}) ([0-9]{4})$/",$ldrs['DATE'],$p)) {
                 $m=$p[1];$d=$p[2];$y=$p[3];
             } else {
                 list($y,$m,$d)=explode("/",$ldrs['DATE']);

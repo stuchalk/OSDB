@@ -7,7 +7,7 @@ class FilesController extends AppController {
 
     public $uses = ['File','Dataset','Substance','Methodology','Measurement','Setting','Jcampldr','Propertytype',
                     'Descriptor','Sample','SubstancesSystem', 'Report','System','Identifier','Technique',
-                    'Pubchem.Chemical','Unit','Activity','Animl.Jcamp','Dataseries','Annotation','Metadata',
+                    'Pubchem.Chemical','Unit','Activity','Jcamp.Jcamp','Dataseries','Annotation','Metadata',
                     'Datapoint','Data','Condition','Property','Context','ContextsSystem'];
 
     /**

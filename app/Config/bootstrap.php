@@ -79,6 +79,7 @@ Inflector::rules('plural', ['irregular' => ['identifier'=>'identifiers',
  */
 CakePlugin::load('Pubchem');
 CakePlugin::load('Animl');
+CakePlugin::load('Jcamp');
 
 /**
  * To prefer app translation over plugin translation, you can set
