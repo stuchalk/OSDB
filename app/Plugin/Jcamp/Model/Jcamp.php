@@ -40,11 +40,11 @@ class Jcamp extends JcampAppModel
      */
     public function convert($file,$format="array")
     {
-        // $file must me as array not string
+        // $file must be as array not string
         $this->file=$file;
-        $this->clean();
-        $this->uncomment();
-        $this->ldrs();
+		$this->clean();
+		$this->uncomment();
+		$this->ldrs();
         $this->validate();
         $this->standardize();
         $this->decompress();
@@ -169,36 +169,29 @@ class Jcamp extends JcampAppModel
 	{
 		$prev="";$page=0;
 		$ldrs=$params=$bruker=$errors=[];
-		foreach($this->file as $key=>$line)
-		{
+		foreach($this->file as $key=>$line) {
 			// Types of lines in the file
 			// "##LDR="      - typical LDR line with ##KEY=VALUE format
 			// "##$ASDFFORM" - Ascii Squeezed Difference Format type
 			// "##$"         - NMR parameters (Bruker)
 			// "##."         - NMR, MS, IMS, Chrom(Draft) datatype parameters
 			// ""            - continuation lines with no ## before them -> must be concatenated with previous LDR
-			if(substr($line,0,3)=="##$")
-			{
+			if(substr($line,0,3)=="##$") {
 				// Find the data format
-				if(stristr($line,"ASDFFORM"))
-				{
+				if(stristr($line,"ASDFFORM")) {
 					// Get the data format
 					list(,$type)=explode("=",$line);
 					$type=strtoupper(trim($type));
 					if(in_array($type,$this->asdftypes)):	$this->asdftype=$type;
 					else:									$errors['E05']="Unknown data format: ".$type; // Defaults to FIX
 					endif;
-				}
-				elseif(stristr($line,"URL"))
-				{
+				} elseif(stristr($line,"URL")) {
 					// Get the data format
 					list(,$url)=explode("=",$line);
 					$ldrs['URL']=$url;
 					// Set the prev LDR for the next iteration
 					$prev='URL';
-				}
-				else
-				{
+				} else {
 					// Processing for Bruker parameters here -> $this->bruker
 					list($ldr,$value)=explode("=",$line);
 					$ldr=strtoupper(substr($ldr,2));
@@ -206,9 +199,7 @@ class Jcamp extends JcampAppModel
 					// Set the prev LDR for the next iteration
 					$prev=$ldr;
 				}
-			}
-			elseif(substr($line,0,3)=="##.")
-			{
+			} elseif(substr($line,0,3)=="##.") {
 				// NMR, MS, EMR, Chrom(draft) parameters -> $this->params
 				list($ldr,$value)=explode("=",$line);
                 $value=trim($value); // Remove extra spaces
@@ -216,21 +207,16 @@ class Jcamp extends JcampAppModel
 				$params[substr($ldr,1)]=trim($value);
 				// Set the prev LDR for the next iteration
 				$prev=$ldr;
-			}
-			elseif(substr($line,0,2)=="##")
-			{
+			} elseif(substr($line,0,2)=="##") {
 				// Find the LDRs
 				list($ldr,$value)=explode("=",$line);
                 $value=trim($value); // Remove extra spaces
 				$ldr=strtoupper(substr($ldr,2));
-				if($prev=="PAGE")
-				{
+				if($prev=="PAGE") {
 					// This is a part of the page information for a multiple page series
 					if($ldr=="NPOINTS")		{ $ldrs['DATA'][$page]['npoints']=$value; }
 					if($ldr=="DATATABLE")	{ $ldrs['DATA'][$page]['type']=$value; }
-				}
-				elseif($ldr=="XYDATA"||$ldr=="XYPOINTS"||$ldr=="PEAKTABLE"||$ldr=="PAGE"||$ldr=="PEAKASSIGNMENTS")
-				{
+				} elseif($ldr=="XYDATA"||$ldr=="XYPOINTS"||$ldr=="PEAKTABLE"||$ldr=="PAGE"||$ldr=="PEAKASSIGNMENTS") {
 					$page++;
 					$ldrs[$ldr]=trim($value);
 					if(!isset($ldrs['DATA'])) { $ldrs['DATA']=[]; }
@@ -239,16 +225,12 @@ class Jcamp extends JcampAppModel
 					endif;
 					// Set the prev LDR for the next iteration
 					$prev=$ldr;
-				}
-				else
-				{
+				} else {
 					$ldrs[$ldr]=trim($value);
 					// Set the prev LDR for the next iteration
 					$prev=$ldr;
 				}
-			}
-			else
-			{
+			} else {
 				// This is a continuation line therefore check what the previous LDR was to know what to do
 				$ldrarray=["TITLE","ORIGIN","OWNER","SPECTROMETERDATASYSTEM","INSTRUMENTPARAMETERS","SAMPLINGPROCEDURE","NAMES"];
 				if(in_array($prev,$ldrarray)):		$ldrs[$prev].=$line;

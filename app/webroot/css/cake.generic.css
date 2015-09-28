@@ -270,7 +270,7 @@ form {
 	clear: both;
 	margin-right: 20px;
 	padding: 0;
-	width: 300px;
+	width: 600px;
 }
 fieldset {
 	border: none;
@@ -758,24 +758,31 @@ pre {
 }
 .left {
     float: left;
-    width: 300px;
 }
 .middle {
     float: left;
 }
 .rightheader {
+    text-align: right;
     float: right;
     width: 25%;
 }
 .right {
     float: right;
+    width: 200px;
+    position: relative;
+    background-color: #dddddd;
 }
 .nav {
     float: right;
-    width: 200px;
+    width: 190px;
     height: 100%;
-    border-left: 1px solid #666666;
     padding-left: 10px;
+    border-left: 2px solid #666666;
+    position: absolute;
+    right: 0;
+    top: 0;
+    background-color: #dddddd;
 }
 .clear {
     clear: both;

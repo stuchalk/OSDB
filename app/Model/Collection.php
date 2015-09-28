@@ -14,7 +14,7 @@ class Collection extends AppModel
     public $hasAndBelongsToMany = ['Report'];
 
     /**
-     * General function to add a new annotation
+     * General function to add a new collection
      * @param array $data
      * @return integer
      */

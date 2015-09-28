@@ -5,7 +5,7 @@
  */
 class UsersController extends AppController {
 
-    public $uses=['User'];
+    public $uses=['User','Report'];
 
     /**
      * beforeFilter function
@@ -128,12 +128,13 @@ class UsersController extends AppController {
 
     /**
      * User dashboard
-     * @param $uid
      */
     public function dashboard()
     {
         $uid=$this->Auth->user('id');
         $data=$this->User->find('first',['conditions'=>['id'=>$uid]]);
         $this->set('data',$data);
+        $reps=$this->Report->bySubstance('user',$uid);
+        $this->set('reps',$reps);
     }
 }

@@ -31,6 +31,44 @@ class Report extends AppModel
     }
 
     /**
+     * Get reports sorted by substance
+     * Limit by user, collection
+     * @param null $field
+     * @param null $id
+     * @return array|null
+     */
+    public function bySubstance($field=null,$id=null)
+    {
+        $c=['Dataset'=>['fields'=>['id'],
+                    'Context'=>['fields'=>['id'],
+                        'System'=>['fields'=>['id'],
+                            'Substance'=>['fields'=>['id','name']]]]]];
+        $f=['Report.id','Report.title'];
+        $o=['Report.title'];
+        if($field=='user'&&!is_null($id)) {
+            $f=['Report.id','Report.title'];
+            $cn=['user_id'=>$id];
+            $reps=$this->find('all',['conditions'=>$cn,'fields'=>$f,'contain'=>$c,'order'=>$o,'recursive'=> -1]);
+        } else if($field=='col'&&!is_null($id)) {
+            $j=[['table'=>'collections_reports','alias'=>'CollectionsReport','type'=>'left','conditions'=>['Report.id = CollectionsReport.report_id'],
+                    ['table'=>'collections','alias'=>'Collection','type'=>'left','conditions'=>['CollectionsReport.collection_id = Collection.id']]]];
+            $cn=['CollectionsReport.collection_id'=>$id];
+            $reps=$this->find('all',['conditions'=>$cn,'fields'=>$f,'contain'=>$c,'order'=>$o,'joins'=>$j,'recursive'=> -1]);
+        } else {
+            $reps=$this->find('all',['fields'=>$f,'contain'=>$c]);
+        }
+        //debug($reps);exit;
+        $results=[];
+        foreach($reps as $rep) {
+            $analyte=$rep['Dataset']['Context']['System'][0]['Substance'][0]['name'];
+            preg_match("/\(([a-zA-Z0-9 ]*)\)/",$rep['Report']['title'],$matches);
+            $results[$analyte][$rep['Report']['id']]=$matches[1];
+        }
+        ksort($results);
+        return $results;
+    } // ,'Substance.name'
+
+    /**
      * Returns DB data so that it can be used to generate scidata json
      * @param $id
      * @return mixed

@@ -43,13 +43,18 @@
             </div>
         </div>
 		<div id="content">
-			<?php echo $this->Session->flash(); ?>
-			<?php echo $this->element('navigation'); ?>
-			<?php echo $this->fetch('content'); ?>
+            <div class="left">
+			    <?php echo $this->Session->flash(); ?>
+			    <?php echo $this->fetch('content'); ?>
+            </div>
+            <div class="right">
+                <?php echo $this->element('navigation'); ?>
+            </div>
         </div>
 		<div id="footer">
 			<?php echo "Chalk Group @ ".$this->Html->link("University of North Florida",'http://www.unf.edu/',['target' =>'_blank'])." © 2015"; ?>
 		</div>
+		<?php echo $this->element('sql_dump'); ?>
 	</div>
 </body>
 </html>

@@ -23,7 +23,8 @@ class ReportsController extends AppController
      */
     public function index()
     {
-        $data=$this->Report->find('list',['fields'=>['id','title'],'order'=>['title']]);
+        $data=$this->Report->bySubstance();
+        //$data=$this->Report->find('list',['fields'=>['id','title'],'order'=>['title']]);
         $this->set('data',$data);
     }
 
@@ -80,11 +81,11 @@ class ReportsController extends AppController
         $id="s".str_pad($id,9,"0",STR_PAD_LEFT);
         $rpt=$data['Report'];
         $set=$data['Dataset'];
-        $file=$set['File'];
-        $usr=$data['User'];
+        //$file=$set['File'];
+        //$usr=$data['User'];
         $met=$set['Methodology'];
         $con=$set['Context'];
-        $sam=$set['Sample'];
+        //$sam=$set['Sample'];
         $ser=$set['Dataseries'];
         $base="http://osdb.oinfo/json/".$id;
 

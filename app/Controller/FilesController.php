@@ -8,7 +8,7 @@ class FilesController extends AppController {
     public $uses = ['File','Dataset','Substance','Methodology','Measurement','Setting','Jcampldr','Propertytype',
                     'Descriptor','Sample','SubstancesSystem', 'Report','System','Identifier','Technique',
                     'Pubchem.Chemical','Unit','Activity','Jcamp.Jcamp','Dataseries','Annotation','Metadata',
-                    'Datapoint','Data','Condition','Property','Context','ContextsSystem'];
+                    'Datapoint','Data','Condition','Property','Context','ContextsSystem','Source'];
 
     /**
      * beforeFilter function
@@ -30,6 +30,7 @@ class FilesController extends AppController {
             $data['name']=$data['File']['file']['name'];
             $data['size']=$data['File']['file']['size'];
             $data['type']=$data['File']['file']['type'];
+            $source=$data['File']['source_id'];
             $tmpname=$data['File']['file']['tmp_name'];
             unset($data['File']['file']);
 
@@ -175,6 +176,7 @@ class FilesController extends AppController {
             $data['user_id']=$this->Auth->user('id');
             $data['substance_id']=$sid1;
             $data['report_id']=$rptid;
+            $data['source_id']=$source;
             $file=$this->File->add($data);
             $filid=$file['id'];
             $pathid=str_pad($filid,9,"0",STR_PAD_LEFT);
@@ -424,6 +426,9 @@ class FilesController extends AppController {
 
             // Redirect to view
             $this->redirect('/reports/view/' . $rptid);
+        } else {
+            $srcs=$this->Source->find('list',['fields'=>['id','name']]);
+            $this->set('srcs',$srcs);
         }
     }
 

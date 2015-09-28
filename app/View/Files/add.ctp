@@ -25,5 +25,6 @@ echo $this->Form->input('user_id', ['type' =>'hidden','value'=>$this->Session->r
 echo $this->Form->input('substance', ['type' =>'text','col'=>60,'label'=>'Compound','div'=>['class'=>'ui-widget']]);
 echo $this->Form->input('substance_id', ['type' =>'hidden','value'=>'']);
 echo $this->Form->input('file', ['type' =>'file','label'=>'File Upload']);
+echo $this->Form->input('source_id', ['type' =>'select','options'=>$srcs]);
 echo $this->Form->end('Add File');
 ?>

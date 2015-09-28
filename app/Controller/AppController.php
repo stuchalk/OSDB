@@ -25,4 +25,5 @@ class AppController extends Controller {
                                     'logoutRedirect' => ['controller' => 'pages','action' => 'display','home']]];
     public $helpers = ['Form','Html','Session','Time'];
 
+    public $actsAs = ['Containable'];
 }
