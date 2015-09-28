@@ -1,1 +1,0 @@
-<?php echo $this->element('right/flot',['data'=>$data]); ?>
