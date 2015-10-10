@@ -1,8 +1,8 @@
 <?php
-pr($data);exit;
+//pr($data);exit;
 $system=$data['System'];
 $substance=$data['Substance'];
-$dataset=$data['Context']['Dataset'];
+$contexts=$data['Context'];
 ?>
 
 <h2>System</h2>
@@ -15,8 +15,11 @@ $dataset=$data['Context']['Dataset'];
 <h3>Data Set</h3>
 <ul>
     <?php
-    foreach($dataset as $set){
-        echo "<li>".$this->Html->link($set['Propertytype']['method'],'/datasets/view/'.$set['id']) ."</li>";
+    foreach($contexts as $context)
+    {
+        $id=$context['Dataset']['id'];
+        $name=$context['Dataset']['Propertytype']['name'];
+        echo "<li>".$this->Html->link($name,'/reports/view/'.$id) ."</li>";
     }
 ?>
 </ul>
