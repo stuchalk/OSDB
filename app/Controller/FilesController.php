@@ -304,7 +304,9 @@ class FilesController extends AppController {
             if(isset($jarray['SPECTROMETERDATASYSTEM'])) {
                 $mea['instrument']=$jarray['SPECTROMETERDATASYSTEM'];
             }
-            if(isset($jarray['DATAPROCESSING'])) { } // Issue 7
+            if(isset($jarray['DATAPROCESSING'])) {
+                $mea['processing']=$jarray['DATAPROCESSING'];
+            }
             $measurement=$this->Measurement->add($mea);
             $meaid=$measurement['id'];
 
