@@ -54,7 +54,6 @@ h1 {
 	margin-bottom: 0.5em;
 }
 h2 {
-	background:#fff;
 	color: #E32;
 	font-family:'Gill Sans','lucida grande', helvetica, arial, sans-serif;
 	font-size: 190%;
@@ -758,6 +757,7 @@ pre {
 }
 .left {
     float: left;
+	width: 75%;
 }
 .middle {
     float: left;
@@ -786,4 +786,22 @@ pre {
 }
 .clear {
     clear: both;
+}
+
+div.chemical {
+	margin: 10px;
+	padding: 10px;
+	background-color: #dddddd;
+	width: 190px;
+}
+
+.float {
+    position:absolute;
+    top: 0;left: 0;
+    display: none;
+    border: 1px;
+    box-shadow: 5px 3px 3px #003d4c;
+    background-color: #dddddd;
+    width: 350px;
+    padding: 0 10px;
 }

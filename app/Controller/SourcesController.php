@@ -17,8 +17,30 @@ class SourcesController extends AppController
         $this->Auth->allow();
     }
 
+
+    public function add()
+    {
+        if($this->request->is('ajax')&&!empty($this->request->data)) {
+            //debug($this->request->data);exit;
+            $new=$this->Source->add($this->request->data['Source']);
+            if(isset($new['id'])) {
+                echo '{ "id": "'.$new['id'].'", "name": "'.$new['name'].'" }'; exit;
+            } else {
+                echo "failure"; exit;
+            }
+        }  elseif($this->request->is('post')) {
+            //debug($this->request->data);exit;
+            $this->Source->add($this->request->data['Source']);
+            $this->redirect('/users/dashboard');
+        } else {
+            $data = $this->Source->find('list',['fields'=>['name'],'order'=>['name']]);
+            $this->set('data',$data);
+            if($this->request->is('ajax')) { $this->layout='ajax'; }
+        }
+    }
+
     /**
-     * View a list of the collections
+     * View a list of the sources
      */
     public function index()
     {
@@ -27,7 +49,7 @@ class SourcesController extends AppController
     }
 
     /**
-     * View a particular collection
+     * View a particular source
      * @param $id
      */
     public function view($id)
@@ -36,4 +58,14 @@ class SourcesController extends AppController
         $this->set('data', $data);
     }
 
+    /**
+     * Check the value of field (jQuery)
+     * @param string $field
+     * @param string $value
+     */
+    public function check($field="",$value="")
+    {
+        $c = $this->Source->find('count',['fields'=>[$field],'conditions'=>[$field=>$value]]);
+        echo $c;exit;
+    }
 }
