@@ -336,9 +336,8 @@ class ReportsController extends AppController
 
         // OK turn it back into JSON-LD
         header("Content-Type: application/ld+json");
-        header('Content-Disposition: attachment; filename="'.$id.'.jsonld"');
+        header('Content-Disposition: attachment; filename="'.$id.'.json"');
         echo json_encode($json,JSON_UNESCAPED_UNICODE);exit;
-
 
     }
 

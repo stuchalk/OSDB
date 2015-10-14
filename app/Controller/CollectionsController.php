@@ -31,6 +31,9 @@ class CollectionsController extends AppController
         $this->set('data', $data);
     }
 
+    /**
+     * Add a collection
+     */
     public function add()
     {
         if($this->request->is('post')) {
@@ -42,7 +45,6 @@ class CollectionsController extends AppController
             $this->set('data',$data);
         }
     }
-
 
     /**
      * View a particular collection

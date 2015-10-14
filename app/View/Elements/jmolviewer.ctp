@@ -6,7 +6,7 @@
 if(isset($chemicals))
 {
     if(!isset($size)) { $size=190; }
-    echo "<div id='chemicals'>";
+    echo "<div id='chemicals' style='float: left;'>";
     for($x=0;$x<count($chemicals);$x++)
     {
         $chem=$chemicals[$x];
@@ -16,12 +16,12 @@ if(isset($chemicals))
         echo "  var Info".$x." = { color: '#000000', height: ".$size.", width: ".$size.", script: 'set appletProxy \"https://sds.coas.unf.edu/osdb/jmol/proxy\"', use: 'HTML5', defaultModel: '$".$chem['inchikey']."', j2sPath: '/osdb/js/jsmol/j2s' };\n";
         echo "  Jmol.getTMApplet('chem".$x."', Info".$x.");\n";
         echo "</script>\n";
-        echo "<p>".$chem['name']."<br />\n";
-        echo "View @ ";
+        echo "<p>View @ ";
         echo $this->Html->link('NIST','http://webbook.nist.gov/cgi/cbook.cgi?ID='.$chem['casrn'],['target'=>'_blank']).", ";
         echo $this->Html->link('ChemSpider','http://www.chemspider.com/Search.aspx?q='.$chem['inchi'],['target'=>'_blank']);
         echo "</p>";
         echo "</div>";
     }
-    echo "<div class='floatreset'></div></div>";
+    echo "</div>";
+    echo "<div class='clear'></div>";
 }
