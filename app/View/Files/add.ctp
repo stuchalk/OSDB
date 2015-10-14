@@ -22,6 +22,15 @@
             d.fadeIn("slow");
         });
 
+        $( "#FileSourceId").change(function() {
+            //alert($('#FileSourceId').val());
+            if( $('#FileSourceId').val()=='' ) {
+                $('#CollectionUrl').prop('disabled',false);
+            } else {
+                $('#CollectionUrl').prop('disabled',true);
+            }
+        });
+
         $( "#SourceAddForm" ).submit(function(e) {
             var $inputs = $( "#SourceAddForm").find(":input" );
             var values= {};
@@ -55,9 +64,10 @@
 <?php
 echo $this->Form->create('File', ['type' => 'file']);
 echo $this->Form->input('user_id', ['type' =>'hidden','value'=>$this->Session->read('Auth.User.id')]);
-echo $this->Form->input('substance', ['type' =>'text','col'=>60,'label'=>'Compound','div'=>['class'=>'ui-widget']]);
+echo $this->Form->input('substance', ['type' =>'text','size'=>60,'label'=>'Compound','div'=>['class'=>'ui-widget']]);
 echo $this->Form->input('substance_id', ['type' =>'hidden','value'=>'']);
 echo $this->Form->input('source_id', ['type' =>'select','options'=>[''=>'Choose']+$srcs,'label'=>"Source <span id='AddSource' style='cursor: pointer;'>+</span>"]);
+echo $this->Form->input('Collection.url', ['type' =>'text','size'=>80,'label'=>'URL']);
 echo $this->Form->input('file', ['type' =>'file','label'=>'File Upload']);
 echo $this->Form->end('Add File');
 echo "<div id='SourceDiv' class='float'>";
