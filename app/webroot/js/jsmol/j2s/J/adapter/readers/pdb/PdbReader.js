@@ -13,7 +13,6 @@ this.haveMappedSerials = false;
 this.isConnectStateBug = false;
 this.isLegacyModelType = false;
 this.gromacsWideFormat = false;
-this.isPQR = false;
 this.htFormul = null;
 this.htHetero = null;
 this.htSites = null;
@@ -53,6 +52,8 @@ this.atomTypeLen = 0;
 this.isCourseGrained = false;
 this.isbiomol = false;
 this.htGroup1 = null;
+this.maxLength = 80;
+this.pdbID = null;
 this.haveDoubleBonds = false;
 this.$cryst1 = 0;
 this.dataT = null;
@@ -126,7 +127,6 @@ if (this.ac > 0) this.applySymmetryAndSetTrajectory ();
 this.model (modelNo);
 if (this.isLegacyModelType || !isAtom) return true;
 }if (this.isMultiModel && !this.doProcessLines) {
-if (this.isConcatenated) this.checkDSSR ();
 return true;
 }if (isAtom) {
 this.getHeader = false;
@@ -168,21 +168,17 @@ case 16:
 this.formul ();
 return true;
 case 17:
-if (this.line.contains ("The B-factors in this file hold atomic radii")) {
-this.isPQR = true;
-return true;
-}if (this.line.contains ("This file does not adhere to the PDB standard")) {
-this.gromacsWideFormat = true;
-return true;
-}if (this.line.startsWith ("REMARK 350")) {
+if (this.line.startsWith ("REMARK 350")) {
 this.remark350 ();
 return false;
 }if (this.line.startsWith ("REMARK 290")) {
 this.remark290 ();
 return false;
+}if (this.line.contains ("This file does not adhere to the PDB standard")) {
+this.gromacsWideFormat = true;
 }if (this.getTlsGroups) {
 if (this.line.indexOf ("TLS DETAILS") > 0) return this.remarkTls ();
-}this.checkCurrentLineForScript ();
+}this.checkRemark ();
 return true;
 case 18:
 this.header ();
@@ -197,14 +193,12 @@ return true;
 case 22:
 this.seqAdv ();
 return true;
-default:
-this.checkDSSR ();
 }
 return true;
 });
-Clazz.defineMethod (c$, "checkDSSR", 
- function () {
-if (this.line.trim ().startsWith ("DSSR:") && this.asc.ac > 0) this.processDSSR (this, this.htGroup1);
+Clazz.defineMethod (c$, "checkRemark", 
+function () {
+this.checkCurrentLineForScript ();
 });
 Clazz.defineMethod (c$, "seqAdv", 
  function () {
@@ -306,17 +300,17 @@ Clazz.defineMethod (c$, "header",
  function () {
 if (this.lineLength < 8) return;
 this.appendLoadNote (this.line.substring (7).trim ());
-var pdbID = (this.lineLength >= 66 ? this.line.substring (62, 66).trim () : "");
-if (pdbID.length == 4) {
-this.asc.setCollectionName (pdbID);
+if (this.lineLength == 80) this.maxLength = 72;
+this.pdbID = (this.lineLength >= 66 ? this.line.substring (62, 66).trim () : "");
+if (this.pdbID.length == 4) {
+this.asc.setCollectionName (this.pdbID);
 this.asc.setInfo ("havePDBHeaderName", Boolean.TRUE);
 }if (this.lineLength > 50) this.line = this.line.substring (0, 50);
 this.asc.setInfo ("CLASSIFICATION", this.line.substring (7).trim ());
 });
 Clazz.defineMethod (c$, "title", 
  function () {
-if (this.lineLength > 72) this.line = this.line.substring (0, 72);
-if (this.lineLength >= 10) this.appendLoadNote (this.line.substring (10).trim ());
+if (this.lineLength > 10) this.appendLoadNote (this.line.substring (10, Math.min (this.maxLength, this.line.length)).trim ());
 });
 Clazz.defineMethod (c$, "compnd", 
  function (isSource) {
@@ -616,17 +610,7 @@ return false;
 }, "J.adapter.smarter.Atom,~N");
 Clazz.defineMethod (c$, "setAdditionalAtomParameters", 
 function (atom) {
-if (this.isPQR) {
-if (this.gromacsWideFormat) {
-atom.partialCharge = this.parseFloatRange (this.line, 60, 68);
-atom.radius = J.adapter.readers.pdb.PdbReader.fixRadius (this.parseFloatRange (this.line, 68, 76));
-} else {
-var tokens = this.getTokens ();
-var pt = tokens.length - 2 - (this.line.length > 75 ? 1 : 0);
-atom.partialCharge = this.parseFloatStr (tokens[pt++]);
-atom.radius = J.adapter.readers.pdb.PdbReader.fixRadius (this.parseFloatStr (tokens[pt]));
-}return;
-}var floatOccupancy;
+var floatOccupancy;
 if (this.gromacsWideFormat) {
 floatOccupancy = this.parseFloatRange (this.line, 60, 68);
 atom.bfactor = J.adapter.readers.pdb.PdbReader.fixRadius (this.parseFloatRange (this.line, 68, 76));
@@ -767,6 +751,7 @@ this.asc.checkSpecial = !isPDB;
 this.setModelPDB (isPDB);
 this.nUNK = this.nRes = 0;
 this.currentGroup3 = null;
+if (this.pdbID != null) this.asc.setAtomSetName (this.pdbID);
 });
 Clazz.defineMethod (c$, "cryst1", 
  function () {

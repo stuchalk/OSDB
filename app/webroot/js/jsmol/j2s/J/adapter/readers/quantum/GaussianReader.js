@@ -9,10 +9,18 @@ this.equivalentAtomSets = 0;
 this.stepNumber = 0;
 this.moModelSet = -1;
 this.namedSets = null;
+this.isHighPrecision = false;
+this.haveHighPrecision = false;
+this.allowHighPrecision = false;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.quantum, "GaussianReader", J.adapter.readers.quantum.MOReader);
 Clazz.prepareFields (c$, function () {
 this.namedSets =  new JU.BS ();
+});
+Clazz.defineMethod (c$, "initializeReader", 
+function () {
+this.allowHighPrecision = !this.checkAndRemoveFilterKey ("NOHP");
+Clazz.superCall (this, J.adapter.readers.quantum.GaussianReader, "initializeReader", []);
 });
 Clazz.overrideMethod (c$, "checkLine", 
 function () {
@@ -29,8 +37,9 @@ this.scanPoint = -1;
 if (this.scanPoint >= 0) this.scanPoint++;
 return true;
 }if (this.line.indexOf ("Input orientation:") >= 0 || this.line.indexOf ("Z-Matrix orientation:") >= 0 || this.line.indexOf ("Standard orientation:") >= 0) {
-if (!this.doGetModel (++this.modelNumber, null)) return this.checkLastModel ();
-this.equivalentAtomSets++;
+if (!this.doGetModel (++this.modelNumber, null)) {
+return this.checkLastModel ();
+}this.equivalentAtomSets++;
 JU.Logger.info (this.asc.atomSetCount + " model " + this.modelNumber + " step " + this.stepNumber + " equivalentAtomSet " + this.equivalentAtomSets + " calculation " + this.calculationNumber + " scan point " + this.scanPoint + this.line);
 this.readAtoms ();
 return false;
@@ -66,8 +75,23 @@ return true;
 ++this.calculationNumber;
 this.equivalentAtomSets = 0;
 return true;
+}if (this.line.startsWith (" Mulliken atomic spin densities:")) {
+this.getSpinDensities (11);
+return true;
+}if (this.line.startsWith (" Mulliken charges and spin densities:")) {
+this.getSpinDensities (21);
+return true;
 }return this.checkNboLine ();
 });
+Clazz.defineMethod (c$, "getSpinDensities", 
+ function (pt) {
+this.rd ();
+var data =  Clazz.newFloatArray (this.asc.getLastAtomSetAtomCount (), 0);
+for (var i = 0; i < data.length; i++) data[i] = this.parseFloatStr (this.rd ().substring (pt, pt + 10));
+
+this.asc.setAtomProperties ("spin", data, -1, false);
+this.appendLoadNote (data.length + " spin densities loaded into model " + (this.asc.iSet + 1));
+}, "~N");
 Clazz.defineMethod (c$, "readSCFDone", 
  function () {
 var tokens = JU.PT.getTokensAt (this.line, 11);
@@ -105,6 +129,7 @@ this.asc.setAtomSetEnergy (this.energyString, this.parseFloatStr (this.energyStr
 Clazz.defineMethod (c$, "readAtoms", 
 function () {
 this.asc.newAtomSet ();
+this.haveHighPrecision = false;
 if (this.energyKey.length != 0) this.asc.setAtomSetName (this.energyKey + " = " + this.energyString);
 this.asc.setAtomSetEnergy (this.energyString, this.parseFloatStr (this.energyString));
 var path = this.getTokens ()[0];
@@ -146,14 +171,14 @@ if (doSphericalF && oType.indexOf ("F") >= 0 || doSphericalD && oType.indexOf ("
 var nGaussians = this.parseIntStr (tokens[1]);
 slater[2] = this.gaussianCount;
 slater[3] = nGaussians;
-if (JU.Logger.debugging) JU.Logger.debug ("Slater " + this.shells.size () + " " + JU.Escape.eAI (slater));
+if (this.debugging) JU.Logger.debug ("Slater " + this.shells.size () + " " + JU.Escape.eAI (slater));
 this.shells.addLast (slater);
 this.gaussianCount += nGaussians;
 for (var i = 0; i < nGaussians; i++) {
 this.rd ();
 this.line = JU.PT.rep (this.line, "D ", "D+");
 tokens = this.getTokens ();
-if (JU.Logger.debugging) JU.Logger.debug ("Gaussians " + (i + 1) + " " + JU.Escape.eAS (tokens, true));
+if (this.debugging) JU.Logger.debug ("Gaussians " + (i + 1) + " " + JU.Escape.eAS (tokens, true));
 gdata.addLast (tokens);
 }
 }
@@ -198,7 +223,11 @@ var nThisLine = 0;
 var isNOtype = this.line.contains ("Natural Orbital");
 while (this.rd () != null && this.line.toUpperCase ().indexOf ("DENS") < 0) {
 var tokens;
-if (this.line.indexOf ("                    ") == 0) {
+if (this.line.indexOf ("eta Molecular Orbital Coefficients") >= 0) {
+this.addMOData (nThisLine, data, mos);
+nThisLine = 0;
+if (!this.filterMO ()) break;
+}if (this.line.indexOf ("                    ") == 0) {
 this.addMOData (nThisLine, data, mos);
 if (isNOtype) {
 tokens = this.getTokens ();
@@ -258,10 +287,17 @@ this.discardLinesUntilContains2 (key, ":");
 if (this.line == null && mustHave) throw ( new Exception ("No frequencies encountered"));
 while ((this.line = this.rd ()) != null && this.line.length > 15) {
 var symmetries = JU.PT.getTokens (this.rd ());
-var frequencies = JU.PT.getTokensAt (this.discardLinesUntilStartsWith (" Frequencies"), 15);
-var red_masses = JU.PT.getTokensAt (this.discardLinesUntilStartsWith (" Red. masses"), 15);
-var frc_consts = JU.PT.getTokensAt (this.discardLinesUntilStartsWith (" Frc consts"), 15);
-var intensities = JU.PT.getTokensAt (this.discardLinesUntilStartsWith (" IR Inten"), 15);
+this.discardLinesUntilContains (" Frequencies");
+this.isHighPrecision = (this.line.indexOf ("---") > 0);
+if (this.isHighPrecision ? !this.allowHighPrecision : this.haveHighPrecision) return;
+if (this.isHighPrecision && !this.haveHighPrecision) {
+this.appendLoadNote ("high precision vibrational modes enabled. Use filter 'NOHP' to disable.");
+this.haveHighPrecision = true;
+}var width = (this.isHighPrecision ? 22 : 15);
+var frequencies = JU.PT.getTokensAt (this.line, width);
+var red_masses = JU.PT.getTokensAt (this.discardLinesUntilContains (this.isHighPrecision ? "Reduced masses" : "Red. masses"), width);
+var frc_consts = JU.PT.getTokensAt (this.discardLinesUntilContains (this.isHighPrecision ? "Force constants" : "Frc consts"), width);
+var intensities = JU.PT.getTokensAt (this.discardLinesUntilContains (this.isHighPrecision ? "IR Intensities" : "IR Inten"), width);
 var iAtom0 = this.asc.ac;
 var ac = this.asc.getLastAtomSetAtomCount ();
 var frequencyCount = frequencies.length;
@@ -277,8 +313,9 @@ this.asc.setAtomSetModelProperty ("ReducedMass", red_masses[i] + " AMU");
 this.asc.setAtomSetModelProperty ("ForceConstant", frc_consts[i] + " mDyne/A");
 this.asc.setAtomSetModelProperty ("IRIntensity", intensities[i] + " KM/Mole");
 }
-this.discardLinesUntilContains (" AN ");
-this.fillFrequencyData (iAtom0, ac, ac, ignore, true, 0, 0, null, 0);
+this.discardLinesUntilContains (" Atom ");
+if (this.isHighPrecision) this.fillFrequencyData (iAtom0, ac, ac, ignore, false, 23, 10, null, 0);
+ else this.fillFrequencyData (iAtom0, ac, ac, ignore, true, 0, 0, null, 0);
 }
 }, "~S,~B");
 Clazz.defineMethod (c$, "readDipoleMoment", 

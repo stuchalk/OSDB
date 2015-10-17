@@ -63,7 +63,7 @@ this.addAtomXYZSymName (tokens, 1, J.adapter.smarter.AtomSetCollectionReader.get
 this.modelAtomCount++;
 }
 this.ac = this.asc.ac;
-if (JU.Logger.debugging) JU.Logger.debug (this.ac + " atoms read");
+if (this.debugging) JU.Logger.debug (this.ac + " atoms read");
 });
 Clazz.defineMethod (c$, "readAtomNames", 
  function () {
@@ -91,6 +91,6 @@ this.asc.addBond ( new J.adapter.smarter.Bond (sourceIndex, targetIndex, bondOrd
 nAtoms -= tokens.length;
 }}
 this.rd ();
-if (JU.Logger.debugging) JU.Logger.debug (this.asc.bondCount + " bonds read");
+if (this.debugging) JU.Logger.debug (this.asc.bondCount + " bonds read");
 }, "~N");
 });

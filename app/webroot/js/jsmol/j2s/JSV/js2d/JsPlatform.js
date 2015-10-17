@@ -66,9 +66,9 @@ function (context, size) {
 JSV.js2d.Display.renderScreenImage (this.viewer, context, size);
 }, "~O,~O");
 Clazz.overrideMethod (c$, "drawImage", 
-function (context, canvas, x, y, width, height) {
+function (context, canvas, x, y, width, height, isDTI) {
 JSV.js2d.Image.drawImage (context, canvas, x, y, width, height);
-}, "~O,~O,~N,~N,~N,~N");
+}, "~O,~O,~N,~N,~N,~N,~B");
 Clazz.overrideMethod (c$, "requestFocusInWindow", 
 function (canvas) {
 JSV.js2d.Display.requestFocusInWindow (canvas);

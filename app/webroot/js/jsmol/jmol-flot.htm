@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
 <!--
@@ -457,21 +458,21 @@ Plot 1:
 <label><input type="radio" name="chkplot1" value="Straightness(p)" title="Straightness calculated using a peptide plane frame" id="p1" onclick="doPlot()" />straightness(p)</label>
 <label><input type="radio" name="chkplot1" value="Straightness(c)" title="Straightness calculated using a C-alpha frame" id="c1" onclick="doPlot()" />straightness(c)</label>
 <label><input type="radio" name="chkplot1" value="Structure" id="_1" title="Helix, sheet, or turn structure" onclick="doPlot()" />structure</label>
-<br />
+<br>
 Plot 2: 
 <label><input type="radio" name="chkplot2" value="" id="none2" onclick="doPlot()" checked />none</label>
 <label><input type="radio" name="chkplot2" value="Straightness(p)" title="Straightness calculated using a peptide plane frame" id="p2" onclick="doPlot()" />straightness(p)</label>
 <label><input type="radio" name="chkplot2" value="Straightness(c)" title="Straightness calculated using a C-alpha frame" id="c2" onclick="doPlot()" />straightness(c)</label>
 <label><input type="radio" name="chkplot2" value="Straightness(r)" title="Straightness calculated using Ramachandran angles" id="r2" onclick="doPlot()" />straightness(r)</label>
 <label><input type="radio" name="chkplot2" value="Structure" title="Helix, sheet, or turn structure" id="_2" onclick="doPlot()" />structure</label>
-<br />
+<br>
 <a href="javascript:doPlotRamachandran()">Ramachandran Plot</a>
  <label><input type="checkbox" id="chkxy" onclick="doPlot()"  />Plot 1 vs 2</label> 
  <label><input type="checkbox" id="chkDSSP" onclick="doDSSP(checked)"  />DSSP</label> 
  <a href="javascript:doPrintAll()">print</a> 
-<br /><span id="linRegEqn"></span>
-<br />
-<br />
+<br><span id="linRegEqn"></span>
+<br>
+<br>
 show: 
 <a href="javascript:showJSON(theplot.getData())">data(JSON)</a>
 <a href="javascript:showTabbed(theplot.getData(),'data')">data(TAB)</a>

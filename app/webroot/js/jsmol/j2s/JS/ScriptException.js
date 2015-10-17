@@ -19,6 +19,10 @@ Clazz.defineMethod (c$, "getErrorMessageUntranslated",
 function () {
 return this.untranslated;
 });
+Clazz.overrideMethod (c$, "getMessage", 
+function () {
+return this.message;
+});
 Clazz.overrideMethod (c$, "toString", 
 function () {
 return this.message;

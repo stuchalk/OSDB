@@ -69,7 +69,7 @@ return (this.atom.vib == null || Float.isNaN (this.atom.vib.z) ? null : this.ato
 });
 Clazz.overrideMethod (c$, "getSeqID", 
 function () {
-return (this.atom.vib == null || !Float.isNaN (this.atom.vib.y) || this.atom.vib.z != 1095761940 ? 0 : Clazz.floatToInt (this.atom.vib.x));
+return (this.atom.vib == null || !Float.isNaN (this.atom.vib.y) || this.atom.vib.z != 1094713365 ? 0 : Clazz.floatToInt (this.atom.vib.x));
 });
 Clazz.overrideMethod (c$, "getBfactor", 
 function () {

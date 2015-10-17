@@ -82,7 +82,7 @@ default:
 return null;
 case 0:
 case 28:
-this.vwr.sm.syncSend (this.vwr.fullName + "JSpecView" + script.substring (11), ">", 0);
+this.vwr.sm.syncSend (this.vwr.fullName + "JSpecView" + script.substring (10), ">", 0);
 return null;
 case 21:
 if (this.vwr.isApplet) return null;

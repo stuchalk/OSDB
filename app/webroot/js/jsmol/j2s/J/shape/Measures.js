@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shape");
-Clazz.load (["J.api.JmolMeasurementClient", "J.shape.AtomShape", "JU.Lst"], "J.shape.Measures", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.PT", "JM.Measurement", "$.MeasurementData", "JU.BSUtil", "$.C", "$.Escape"], function () {
+Clazz.load (["J.api.JmolMeasurementClient", "J.shape.AtomShape", "JU.Lst"], "J.shape.Measures", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.PT", "$.SB", "JM.Measurement", "$.MeasurementData", "JU.BSUtil", "$.C", "$.Escape"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.bsSelected = null;
 this.strFormat = null;
@@ -57,7 +57,7 @@ return;
 }if ("pending" === propertyName) {
 this.mPending = value;
 if (this.mPending == null) return;
-if (this.mPending.count > 1) this.vwr.setStatusMeasuring ("measurePending", this.mPending.count, this.mPending.toVector (false).toString (), this.mPending.value);
+if (this.mPending.count > 1) this.vwr.setStatusMeasuring ("measurePending", this.mPending.count, J.shape.Measures.getMessage (this.mPending, false), this.mPending.value);
 return;
 }var isRefresh;
 if ((isRefresh = ("refresh" === propertyName)) || "refreshTrajectories" === propertyName) {
@@ -127,23 +127,23 @@ case 12291:
 this.defineAll (-2147483648, pt, true, false, false);
 this.setIndices ();
 break;
-case 1048589:
+case 1073742335:
 this.showHideM (pt, false);
 break;
-case 1048588:
+case 1073742334:
 this.showHideM (pt, true);
 break;
-case 1666189314:
-if (md.thisID != null) this.doAction (md, md.thisID, 1666189314);
+case 1665140738:
+if (md.thisID != null) this.doAction (md, md.thisID, 1665140738);
 break;
-case 1060866:
+case 12290:
 if (md.thisID == null) {
 this.deleteM (pt);
 } else {
 this.deleteO (md.thisID);
 }this.toggle (pt);
 break;
-case 269484114:
+case 268435538:
 this.toggle (pt);
 }
 return;
@@ -187,19 +187,19 @@ this.showHideM ( new JM.Measurement ().setPoints (this.ms, value, null, null), t
 }return;
 }if ("show" === propertyName) {
 if (Clazz.instanceOf (value, String)) {
-this.doAction (null, value, 135270926);
+this.doAction (null, value, 134222350);
 } else {
 this.showHideM ( new JM.Measurement ().setPoints (this.ms, value, null, null), false);
 }return;
 }if ("toggle" === propertyName) {
 if (Clazz.instanceOf (value, String)) {
-this.doAction (null, value, 269484114);
+this.doAction (null, value, 268435538);
 } else {
 this.toggle ( new JM.Measurement ().setPoints (this.ms, value, null, null));
 }return;
 }if ("toggleOn" === propertyName) {
 if (Clazz.instanceOf (value, String)) {
-this.doAction (null, value, 1048589);
+this.doAction (null, value, 1073742335);
 } else {
 this.toggleOn (value);
 }return;
@@ -233,10 +233,11 @@ if ("infostring".equals (property)) return this.getAllInfoAsString ();
 return null;
 }, "~S,~N");
 Clazz.defineMethod (c$, "clear", 
- function () {
+function () {
 if (this.measurementCount == 0) return;
 this.measurementCount = 0;
 this.measurements.clear ();
+this.mPending = null;
 this.vwr.setStatusMeasuring ("measureDeleted", -1, "all", 0);
 });
 Clazz.defineMethod (c$, "setColor", 
@@ -317,9 +318,9 @@ if (isDelete) return;
 var nPoints = m.count;
 for (var i = 1; i <= nPoints; i++) {
 var atomIndex = m.getAtomIndex (i);
-points.addLast (atomIndex >= 0 ? this.vwr.ms.getAtoms (1095763969, Integer.$valueOf (this.atoms[atomIndex].getAtomNumber ())) : m.getAtom (i));
+points.addLast (atomIndex >= 0 ? this.vwr.ms.getAtoms (1094715393, Integer.$valueOf (this.atoms[atomIndex].getAtomNumber ())) : m.getAtom (i));
 }
-this.define (( new JM.MeasurementData ().init (null, this.vwr, points)).set (this.tokAction, this.htMin, this.radiusData, this.strFormat, null, this.tickInfo, this.mustBeConnected, this.mustNotBeConnected, this.intramolecular, true, 0, 0, null), (isDelete ? 12291 : 1060866));
+this.define (( new JM.MeasurementData ().init (null, this.vwr, points)).set (this.tokAction, this.htMin, this.radiusData, this.strFormat, null, this.tickInfo, this.mustBeConnected, this.mustNotBeConnected, this.intramolecular, true, 0, 0, null), (isDelete ? 12291 : 12290));
 }, "~N,JM.Measurement,~B,~B,~B");
 Clazz.defineMethod (c$, "find", 
  function (m) {
@@ -344,8 +345,8 @@ this.deleteI (iThis);
 } else if (this.strFormat != null) {
 this.measurements.get (iThis).formatMeasurementAs (this.strFormat, null, true);
 } else {
-this.measurements.get (iThis).isHidden = (this.tokAction == 1048588);
-}} else if (this.tokAction == 1060866 || this.tokAction == 269484114) {
+this.measurements.get (iThis).isHidden = (this.tokAction == 1073742334);
+}} else if (this.tokAction == 12290 || this.tokAction == 268435538) {
 m.tickInfo = (this.tickInfo == null ? this.defaultTickInfo : this.tickInfo);
 this.defineMeasurement (-1, m, true);
 }}, "JM.Measurement");
@@ -361,12 +362,23 @@ return;
 }var measureNew =  new JM.Measurement ().setM (this.ms, m, value, (m.colix == 0 ? this.colix : m.colix), this.strFormat, this.measurementCount);
 if (!measureNew.$isValid) return;
 this.measurements.addLast (measureNew);
-this.vwr.setStatusMeasuring ("measureCompleted", this.measurementCount++, measureNew.toVector (false).toString (), measureNew.value);
+this.vwr.setStatusMeasuring ("measureCompleted", this.measurementCount++, J.shape.Measures.getMessage (measureNew, false), measureNew.value);
 }, "~N,JM.Measurement,~B");
+c$.getMessage = Clazz.defineMethod (c$, "getMessage", 
+ function (m, asBitSet) {
+var sb =  new JU.SB ();
+sb.append ("[");
+for (var i = 1; i <= m.count; i++) {
+if (i > 1) sb.append (", ");
+sb.append (m.getLabel (i, asBitSet, false));
+}
+sb.append ("]");
+return sb.toString ();
+}, "JM.Measurement,~B");
 Clazz.defineMethod (c$, "deleteI", 
  function (i) {
 if (i >= this.measurements.size () || i < 0) return;
-var msg = this.measurements.get (i).toVector (true).toString ();
+var msg = J.shape.Measures.getMessage (this.measurements.get (i), true);
 this.measurements.remove (i);
 this.measurementCount--;
 this.vwr.setStatusMeasuring ("measureDeleted", i, msg, 0);
@@ -378,25 +390,25 @@ var isWild = JU.PT.isWild (s);
 for (var i = this.measurements.size (); --i >= 0; ) {
 var m = this.measurements.get (i);
 if (m.thisID != null && (m.thisID.equalsIgnoreCase (s) || isWild && JU.PT.isMatch (m.thisID.toUpperCase (), s, true, true))) switch (tok) {
-case 1666189314:
+case 1665140738:
 m.mad = md.mad;
 break;
 case 12291:
-var msg = this.measurements.get (i).toVector (true).toString ();
+var msg = J.shape.Measures.getMessage (this.measurements.get (i), true);
 this.measurements.remove (i);
 this.measurementCount--;
 this.vwr.setStatusMeasuring ("measureDeleted", i, msg, 0);
 break;
-case 135270926:
+case 134222350:
 m.isHidden = false;
 break;
 case 12294:
 m.isHidden = true;
 break;
-case 269484114:
+case 268435538:
 m.isHidden = !m.isHidden;
 break;
-case 1048589:
+case 1073742335:
 m.isHidden = false;
 break;
 }

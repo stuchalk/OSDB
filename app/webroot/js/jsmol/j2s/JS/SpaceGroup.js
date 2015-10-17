@@ -31,21 +31,19 @@ this.isBilbao = false;
 Clazz.instantialize (this, arguments);
 }, JS, "SpaceGroup");
 c$.getNull = Clazz.defineMethod (c$, "getNull", 
-function (doInit) {
+function (doInit, doNormalize, doFinalize) {
 JS.SpaceGroup.getSpaceGroups ();
-return  new JS.SpaceGroup (null, doInit);
-}, "~B");
+var sg =  new JS.SpaceGroup (null, doInit);
+sg.doNormalize = doNormalize;
+if (doFinalize) sg.setFinalOperations (null, 0, 0, false);
+return sg;
+}, "~B,~B,~B");
 Clazz.makeConstructor (c$, 
  function (cifLine, doInit) {
 this.index = ++JS.SpaceGroup.sgIndex;
 this.init (doInit && cifLine == null);
 if (doInit && cifLine != null) this.buildSpaceGroup (cifLine);
 }, "~S,~B");
-Clazz.defineMethod (c$, "set", 
-function (doNormalize) {
-this.doNormalize = doNormalize;
-return this;
-}, "~B");
 Clazz.defineMethod (c$, "init", 
  function (addXYZ) {
 this.xyzList =  new java.util.Hashtable ();

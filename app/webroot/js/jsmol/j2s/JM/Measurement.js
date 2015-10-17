@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JM");
-Clazz.load (null, "JM.Measurement", ["java.lang.Float", "JU.Lst", "$.Measure", "$.PT", "$.SB", "J.atomdata.RadiusData", "J.c.VDW", "JM.LabelToken", "JU.Escape"], function () {
+Clazz.load (null, "JM.Measurement", ["java.lang.Float", "JU.Measure", "$.PT", "$.SB", "J.atomdata.RadiusData", "J.c.VDW", "JM.LabelToken", "JU.Escape"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.thisID = null;
 this.ms = null;
@@ -114,11 +114,11 @@ this.formatMeasurement (null);
 }, "~A");
 Clazz.defineMethod (c$, "getMeasurementScript", 
 function (sep, withModelIndex) {
-var str = "";
-var asScript = (sep.equals (" "));
-for (var i = 1; i <= this.count; i++) str += (i > 1 ? sep : " ") + this.getLabel (i, asScript, withModelIndex);
+var sb =  new JU.SB ();
+var asBitSet = (sep.equals (" "));
+for (var i = 1; i <= this.count; i++) sb.append (i > 1 ? sep : " ").append (this.getLabel (i, asBitSet, withModelIndex));
 
-return str;
+return sb.toString ();
 }, "~S,~B");
 Clazz.defineMethod (c$, "formatMeasurementAs", 
 function (strFormat, units, useDefault) {
@@ -256,14 +256,6 @@ Clazz.defineMethod (c$, "sameAs",
 function (i, j) {
 return this.sameAsIJ (this.countPlusIndices, this.pts, i, j);
 }, "~N,~N");
-Clazz.defineMethod (c$, "toVector", 
-function (asBitSet) {
-var V =  new JU.Lst ();
-for (var i = 1; i <= this.count; i++) V.addLast (this.getLabel (i, asBitSet, false));
-
-V.addLast (this.strMeasurement);
-return V;
-}, "~B");
 Clazz.defineMethod (c$, "getMeasurement", 
 function (pts) {
 if (this.countPlusIndices == null) return NaN;
@@ -291,7 +283,7 @@ return NaN;
 Clazz.defineMethod (c$, "getLabel", 
 function (i, asBitSet, withModelIndex) {
 var atomIndex = this.countPlusIndices[i];
-return (atomIndex < 0 ? (withModelIndex ? "modelIndex " + this.getAtom (i).mi + " " : "") + JU.Escape.eP (this.getAtom (i)) : asBitSet ? "(({" + atomIndex + "}))" : this.vwr.getAtomInfo (atomIndex));
+return (atomIndex < 0 ? (withModelIndex ? "modelIndex " + this.getAtom (i).mi + " " : "") + JU.Escape.eP (this.getAtom (i)) : asBitSet ? "({" + atomIndex + "})" : this.vwr.getAtomInfo (atomIndex));
 }, "~N,~B,~B");
 Clazz.defineMethod (c$, "setModelIndex", 
 function (modelIndex) {

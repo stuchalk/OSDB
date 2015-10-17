@@ -22,7 +22,7 @@ this.PX (parent, saxReader);
 }, "J.adapter.readers.xml.XmlReader,~O");
 Clazz.overrideMethod (c$, "processStartElement", 
 function (localName) {
-if (JU.Logger.debugging) JU.Logger.debug ("xmlmagres: start " + localName);
+if (this.debugging) JU.Logger.debug ("xmlmagres: start " + localName);
 if (!this.parent.continuing) return;
 if ("calculation".equals (localName)) {
 this.keepChars = true;
@@ -33,7 +33,7 @@ return;
 }}, "~S");
 Clazz.overrideMethod (c$, "processEndElement", 
 function (localName) {
-if (JU.Logger.debugging) JU.Logger.debug ("xmlmagres: end " + localName);
+if (this.debugging) JU.Logger.debug ("xmlmagres: end " + localName);
 while (true) {
 if ("calculation".equals (localName)) {
 break;

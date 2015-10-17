@@ -41,7 +41,7 @@ return false;
 });
 Clazz.defineMethod (c$, "readAtoms", 
  function () {
-this.asc.discardPreviousAtoms ();
+this.discardPreviousAtoms ();
 this.readLines (2);
 while (this.rd () != null && this.line.length >= 60 && this.line.charAt (2) != ' ') {
 var tokens = this.getTokens ();
@@ -107,7 +107,7 @@ sarray.addLast (sdata[i]);
 }
 this.moData.put ("shells", sarray);
 this.moData.put ("gaussians", garray);
-if (JU.Logger.debugging) {
+if (this.debugging) {
 JU.Logger.debug (sarray.size () + " slater shells read");
 JU.Logger.debug (this.gaussianCount + " gaussian primitives read");
 }});
@@ -150,7 +150,7 @@ for (var i = gdata.size (); --i >= 0; ) garray[i] = gdata.get (i);
 
 this.moData.put ("shells", sarray);
 this.moData.put ("gaussians", garray);
-if (JU.Logger.debugging) {
+if (this.debugging) {
 JU.Logger.debug (sarray.size () + " slater shells read");
 JU.Logger.debug (this.gaussianCount + " gaussian primitives read");
 }this.moData.put ("isNormalized", Boolean.TRUE);

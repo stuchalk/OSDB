@@ -1,6 +1,7 @@
 Clazz.declarePackage ("J.adapter.readers.quantum");
 Clazz.load (null, "J.adapter.readers.quantum.SpartanArchive", ["java.lang.Boolean", "$.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.PT", "$.V3", "J.adapter.readers.quantum.SpartanSmolReader", "J.adapter.smarter.AtomSetCollectionReader", "$.Bond", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
+this.modelCount = 0;
 this.ac = 0;
 this.bondData = null;
 this.moCount = 0;
@@ -30,17 +31,23 @@ function (infoLine, haveGeometryLine, ac0, doAddAtoms) {
 this.modelAtomCount = this.setInfo (infoLine);
 this.line = (haveGeometryLine ? "GEOMETRY" : "");
 var haveMOData = false;
+var skipping = false;
 while (this.line != null) {
 if (this.line.equals ("GEOMETRY")) {
+if (!this.r.doGetModel (++this.modelCount, null)) {
+this.readLine ();
+skipping = true;
+continue;
+}skipping = false;
 this.readAtoms (ac0, doAddAtoms);
 if (doAddAtoms && this.bondData.length > 0) this.addBonds (this.bondData, ac0);
 } else if (this.line.indexOf ("BASIS") == 0) {
 this.readBasis ();
 } else if (this.line.indexOf ("WAVEFUNC") == 0 || this.line.indexOf ("BETA") == 0) {
-if (this.r.doReadMolecularOrbitals) {
+if (this.r.doReadMolecularOrbitals && !skipping) {
 this.readMolecularOrbital ();
 haveMOData = true;
-}} else if (this.line.indexOf ("ENERGY") == 0) {
+}} else if (this.line.indexOf ("ENERGY") == 0 && !skipping) {
 this.readEnergy ();
 } else if (this.line.equals ("ENDARCHIVE") || this.endCheck != null && this.line.indexOf (this.endCheck) == 0) {
 break;

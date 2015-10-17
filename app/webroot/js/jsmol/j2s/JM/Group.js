@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JM");
-Clazz.load (["java.lang.Short", "JV.JC"], "JM.Group", ["java.util.Hashtable", "JU.BS", "$.Quat", "J.c.STR", "JU.BSUtil", "$.Escape", "$.Logger"], function () {
+Clazz.load (["JM.Structure", "java.lang.Short", "JV.JC"], "JM.Group", ["java.util.Hashtable", "JU.BS", "$.Quat", "J.c.STR", "JU.BSUtil", "$.Escape", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.chain = null;
 this.groupIndex = 0;
@@ -13,7 +13,7 @@ this.groupID = 0;
 this.selectedIndex = 0;
 this.shapeVisibilityFlags = 0;
 Clazz.instantialize (this, arguments);
-}, JM, "Group");
+}, JM, "Group", null, JM.Structure);
 Clazz.makeConstructor (c$, 
 function () {
 });
@@ -38,11 +38,19 @@ function (atomIndex) {
 if (this.bsAdded == null) this.bsAdded =  new JU.BS ();
 this.bsAdded.set (atomIndex);
 }, "~N");
-Clazz.defineMethod (c$, "setAtomBits", 
+Clazz.overrideMethod (c$, "setAtomBits", 
 function (bs) {
 bs.setBits (this.firstAtomIndex, this.lastAtomIndex + 1);
 if (this.bsAdded != null) bs.or (this.bsAdded);
 }, "JU.BS");
+Clazz.overrideMethod (c$, "setAtomBitsAndClear", 
+function (bs, bsOut) {
+bs.setBits (this.firstAtomIndex, this.lastAtomIndex + 1);
+bsOut.clearBits (this.firstAtomIndex, this.lastAtomIndex + 1);
+if (this.bsAdded != null) {
+bs.or (this.bsAdded);
+bsOut.andNot (this.bsAdded);
+}}, "JU.BS,JU.BS");
 Clazz.defineMethod (c$, "isSelected", 
 function (bs) {
 var pt = bs.nextSetBit (this.firstAtomIndex);
@@ -93,27 +101,43 @@ return -1;
 }, "J.c.STR,~N");
 Clazz.defineMethod (c$, "isProtein", 
 function () {
-return false;
+return (this.groupID >= 1 && this.groupID < 24);
 });
 Clazz.defineMethod (c$, "isNucleic", 
 function () {
-return false;
+return (this.groupID >= 24 && this.groupID < 42);
 });
 Clazz.defineMethod (c$, "isDna", 
 function () {
-return false;
+return this.isDnaByID ();
 });
 Clazz.defineMethod (c$, "isRna", 
 function () {
-return false;
+return this.isRnaByID ();
 });
 Clazz.defineMethod (c$, "isPurine", 
 function () {
-return false;
+return this.isPurineByID ();
+});
+Clazz.defineMethod (c$, "isPurineByID", 
+function () {
+return (this.isNucleic () && (153957 & (1 << (this.groupID - 24))) != 0);
 });
 Clazz.defineMethod (c$, "isPyrimidine", 
 function () {
-return false;
+return this.isPyrimidineByID ();
+});
+Clazz.defineMethod (c$, "isPyrimidineByID", 
+function () {
+return (this.isNucleic () && (108186 & (1 << (this.groupID - 24))) != 0);
+});
+Clazz.defineMethod (c$, "isRnaByID", 
+function () {
+return (this.isNucleic () && (196663 & (1 << (this.groupID - 24))) != 0);
+});
+Clazz.defineMethod (c$, "isDnaByID", 
+function () {
+return (this.isNucleic () && (65480 & (1 << (this.groupID - 24))) != 0);
 });
 Clazz.defineMethod (c$, "isCarbohydrate", 
 function () {
@@ -150,11 +174,17 @@ insCode = '\0';
 c$.getSeqcodeStringFor = Clazz.defineMethod (c$, "getSeqcodeStringFor", 
 function (seqcode) {
 if (seqcode == -2147483648) return null;
-return (seqcode & 127) == 0 ? "" + (seqcode >> 8) : "" + (seqcode >> 8) + '^' + String.fromCharCode (seqcode & 127);
+var s = "" + (seqcode >> 8);
+if ((seqcode & 127) != 0) s += "^" + String.fromCharCode (seqcode & 127);
+return s;
 }, "~N");
 Clazz.defineMethod (c$, "getInsertionCode", 
 function () {
 return (this.seqcode == -2147483648 ? '\0' : String.fromCharCode (this.seqcode & 127));
+});
+Clazz.defineMethod (c$, "getInsCode", 
+function () {
+return (this.seqcode & 127);
 });
 c$.getInsertionCodeFor = Clazz.defineMethod (c$, "getInsertionCodeFor", 
 function (seqcode) {
@@ -234,10 +264,10 @@ Clazz.defineMethod (c$, "isCrossLinked",
 function (g) {
 return false;
 }, "JM.Group");
-Clazz.defineMethod (c$, "getCrossLinkLead", 
-function (vReturn) {
+Clazz.defineMethod (c$, "getCrossLinkVector", 
+function (vReturn, crosslinkCovalent, crosslinkHBond) {
 return false;
-}, "JU.Lst");
+}, "JU.Lst,~B,~B");
 Clazz.defineMethod (c$, "isConnectedPrevious", 
 function () {
 return false;

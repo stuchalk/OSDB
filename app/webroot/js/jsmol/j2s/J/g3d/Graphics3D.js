@@ -255,19 +255,35 @@ Clazz.overrideMethod (c$, "applyAnaglygh",
 function (stereoMode, stereoColors) {
 switch (stereoMode) {
 case J.c.STER.REDCYAN:
-this.applyCyanAnaglyph ();
+for (var i = this.anaglyphLength; --i >= 0; ) {
+var blue = this.anaglyphChannelBytes[i] & 0x000000FF;
+var cyan = (blue << 8) | blue;
+this.pbuf[i] = this.pbuf[i] & 0xFFFF0000 | cyan;
+}
 break;
 case J.c.STER.CUSTOM:
-this.applyCustomAnaglyph (stereoColors);
+var color1 = stereoColors[0];
+var color2 = stereoColors[1] & 0x00FFFFFF;
+for (var i = this.anaglyphLength; --i >= 0; ) {
+var a = this.anaglyphChannelBytes[i] & 0x000000FF;
+a = (a | ((a | (a << 8)) << 8)) & color2;
+this.pbuf[i] = (this.pbuf[i] & color1) | a;
+}
 break;
 case J.c.STER.REDBLUE:
-this.applyBlueAnaglyph ();
+for (var i = this.anaglyphLength; --i >= 0; ) {
+var blue = this.anaglyphChannelBytes[i] & 0x000000FF;
+this.pbuf[i] = (this.pbuf[i] & 0xFFFF0000) | blue;
+}
 break;
 case J.c.STER.REDGREEN:
-this.applyGreenAnaglyph ();
+for (var i = this.anaglyphLength; --i >= 0; ) {
+var green = (this.anaglyphChannelBytes[i] & 0x000000FF) << 8;
+this.pbuf[i] = (this.pbuf[i] & 0xFFFF0000) | green;
+}
 break;
+case J.c.STER.DTI:
 case J.c.STER.DOUBLE:
-break;
 case J.c.STER.NONE:
 break;
 }
@@ -279,38 +295,6 @@ this.anaglyphLength = this.windowWidth * this.windowHeight;
 if (this.anaglyphChannelBytes == null || this.anaglyphChannelBytes.length != this.anaglyphLength) this.anaglyphChannelBytes =  Clazz.newByteArray (this.anaglyphLength, 0);
 for (var i = this.anaglyphLength; --i >= 0; ) this.anaglyphChannelBytes[i] = this.pbuf[i];
 
-});
-Clazz.defineMethod (c$, "applyCustomAnaglyph", 
-function (stereoColors) {
-var color1 = stereoColors[0];
-var color2 = stereoColors[1] & 0x00FFFFFF;
-for (var i = this.anaglyphLength; --i >= 0; ) {
-var a = this.anaglyphChannelBytes[i] & 0x000000FF;
-a = (a | ((a | (a << 8)) << 8)) & color2;
-this.pbuf[i] = (this.pbuf[i] & color1) | a;
-}
-}, "~A");
-Clazz.defineMethod (c$, "applyGreenAnaglyph", 
-function () {
-for (var i = this.anaglyphLength; --i >= 0; ) {
-var green = (this.anaglyphChannelBytes[i] & 0x000000FF) << 8;
-this.pbuf[i] = (this.pbuf[i] & 0xFFFF0000) | green;
-}
-});
-Clazz.defineMethod (c$, "applyBlueAnaglyph", 
-function () {
-for (var i = this.anaglyphLength; --i >= 0; ) {
-var blue = this.anaglyphChannelBytes[i] & 0x000000FF;
-this.pbuf[i] = (this.pbuf[i] & 0xFFFF0000) | blue;
-}
-});
-Clazz.defineMethod (c$, "applyCyanAnaglyph", 
-function () {
-for (var i = this.anaglyphLength; --i >= 0; ) {
-var blue = this.anaglyphChannelBytes[i] & 0x000000FF;
-var cyan = (blue << 8) | blue;
-this.pbuf[i] = this.pbuf[i] & 0xFFFF0000 | cyan;
-}
 });
 Clazz.overrideMethod (c$, "releaseScreenImage", 
 function () {

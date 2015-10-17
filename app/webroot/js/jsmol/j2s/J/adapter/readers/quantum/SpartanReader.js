@@ -31,11 +31,9 @@ Clazz.defineMethod (c$, "readAtoms",
  function () {
 this.discardLinesUntilBlank ();
 while (this.rd () != null && (this.parseIntRange (this.line, 0, 3)) > 0) {
-var elementSymbol = this.parseTokenRange (this.line, 4, 6);
-var atomName = this.parseTokenRange (this.line, 7, 13);
 var atom = this.asc.addNewAtom ();
-atom.elementSymbol = elementSymbol;
-atom.atomName = atomName;
+atom.elementSymbol = this.parseTokenRange (this.line, 4, 6);
+atom.atomName = this.parseTokenRange (this.line, 7, 13);
 this.setAtomCoordXYZ (atom, this.parseFloatRange (this.line, 17, 30), this.parseFloatRange (this.line, 31, 44), this.parseFloatRange (this.line, 45, 58));
 }
 });

@@ -148,11 +148,11 @@ throw e;
 Clazz.defineMethod (c$, "readArchiveHeader", 
  function () {
 var modelInfo = this.rd ();
-if (JU.Logger.debugging) JU.Logger.debug (modelInfo);
+if (this.debugging) JU.Logger.debug (modelInfo);
 if (modelInfo.indexOf ("Error:") == 0) return false;
 this.asc.setCollectionName (modelInfo);
 this.modelName = this.rd ();
-if (JU.Logger.debugging) JU.Logger.debug (this.modelName);
+if (this.debugging) JU.Logger.debug (this.modelName);
 this.rd ();
 return true;
 });

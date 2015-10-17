@@ -34,8 +34,8 @@ return 0;
 }if (cr.asc.iSet < 0) cr.asc.newAtomSet ();
 cr.parseLoopParametersFor ("_atom_site", J.adapter.readers.cif.MSCifRdr.modulationFields);
 var tok;
-if (cr.fieldOf[8] != -1) {
-cr.fieldOf[5] = cr.fieldOf[6] = cr.fieldOf[7] = -1;
+if (cr.key2col[8] != -1) {
+cr.key2col[5] = cr.key2col[6] = cr.key2col[7] = -1;
 }while (cr.parser.getData ()) {
 var ignore = false;
 var type_id = null;
@@ -45,7 +45,7 @@ var pt =  Clazz.newDoubleArray (-1, [NaN, NaN, NaN]);
 var c = NaN;
 var w = NaN;
 var fid = null;
-var n = cr.parser.getFieldCount ();
+var n = cr.parser.getColumnCount ();
 for (var i = 0; i < n; ++i) {
 switch (tok = this.fieldProperty (cr, i)) {
 case 1:
@@ -269,9 +269,9 @@ var m =  new JU.Matrix (null, dim, dim);
 var a = m.getArray ();
 var key;
 var p;
-var n = cr.parser.getFieldCount ();
+var n = cr.parser.getColumnCount ();
 for (; i < n; ++i) {
-if ((p = this.fieldProperty (cr, i)) < 0 || !(key = cr.parser.getField (p)).contains (term)) continue;
+if ((p = this.fieldProperty (cr, i)) < 0 || !(key = cr.parser.getColumnName (p)).contains (term)) continue;
 var tokens = JU.PT.split (key, "_");
 var r = cr.parseIntStr (tokens[tokens.length - 2]);
 var c = cr.parseIntStr (tokens[tokens.length - 1]);
@@ -281,7 +281,7 @@ return m;
 }, "J.adapter.readers.cif.CifReader,~S,~N,~N");
 Clazz.defineMethod (c$, "fieldProperty", 
  function (cr, i) {
-return ((this.field = cr.parser.getLoopData (i)).length > 0 && this.field.charAt (0) != '\0' ? cr.propertyOf[i] : -1);
+return ((this.field = cr.parser.getColumnData (i)).length > 0 && this.field.charAt (0) != '\0' ? cr.col2key[i] : -1);
 }, "J.adapter.readers.cif.CifReader,~N");
 Clazz.defineStatics (c$,
 "FWV_ID", 0,

@@ -44,7 +44,7 @@ if (mads == null) return false;
 var atoms = vectors.atoms;
 var colixes = vectors.colixes;
 var needTranslucent = false;
-this.vectorScale = this.vwr.getFloat (1649410049);
+this.vectorScale = this.vwr.getFloat (1648361473);
 if (this.vectorScale < 0) this.vectorScale = 1;
 this.vectorSymmetry = this.vwr.getBoolean (603979973);
 this.vectorsCentered = this.vwr.getBoolean (603979972);
@@ -135,7 +135,7 @@ this.tm.transformPtScrT3 (this.pointVectorEnd, this.screenVectorEnd);
 this.tm.transformPtScrT3 (this.pointArrowHead, this.screenArrowHead);
 }}if (!this.standardVector) {
 this.tm.transformPtScrT3 (this.pointVectorEnd, this.screenVectorEnd);
-this.tm.transformPtScrT3 (this.pointVectorStart, this.screenVectorEnd);
+this.tm.transformPtScrT3 (this.pointVectorStart, this.screenVectorStart);
 if (this.drawCap) this.pointArrowHead.add2 (this.pointVectorEnd, this.headOffsetVector);
  else this.pointArrowHead.setT (this.pointVectorEnd);
 this.tm.transformPtScrT3 (this.pointArrowHead, this.screenArrowHead);

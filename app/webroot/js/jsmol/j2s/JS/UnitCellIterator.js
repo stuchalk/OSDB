@@ -138,6 +138,7 @@ Clazz.overrideMethod (c$, "getPosition",
 function () {
 var a = this.getAtom ();
 if (JU.Logger.debugging) JU.Logger.info ("draw ID p_" + this.nFound + " " + this.p + " //" + a + " " + this.t);
+if (this.p.distanceSquared (a) < 0.0001) return a;
 var p =  new JU.Point3fi ();
 p.setT (this.p);
 p.i = a.i;

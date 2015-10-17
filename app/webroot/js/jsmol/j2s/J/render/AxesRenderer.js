@@ -20,7 +20,7 @@ var axes = this.shape;
 var mad = this.vwr.getObjectMad (1);
 if (mad == 0 || !this.g3d.checkTranslucent (false)) return false;
 var isXY = (axes.axisXY.z != 0);
-if (!isXY && this.tm.isNavigating () && this.vwr.getBoolean (603979889)) return false;
+if (!isXY && this.tm.isNavigating () && this.vwr.getBoolean (603979890)) return false;
 this.imageFontScaling = this.vwr.imageFontScaling;
 if (this.vwr.areAxesTainted ()) {
 var f = axes.font3d;

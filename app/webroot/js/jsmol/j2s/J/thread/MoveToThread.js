@@ -149,10 +149,11 @@ if (this.floatSecondsTotal > 0) this.vwr.setInMotion (true);
 mode = 0;
 break;
 case 0:
-if (this.stopped || ++this.iStep >= this.totalSteps) {
+if (this.stopped || this.iStep >= this.totalSteps) {
 mode = -2;
 break;
-}if (this.dRot.x != 0) this.transformManager.rotateXRadians (this.radiansXStep, null);
+}this.iStep++;
+if (this.dRot.x != 0) this.transformManager.rotateXRadians (this.radiansXStep, null);
 if (this.dRot.y != 0) this.transformManager.rotateYRadians (this.radiansYStep, null);
 if (this.dRot.z != 0) this.transformManager.rotateZRadians (this.radiansZStep);
 if (this.dZoom != 0) this.transformManager.zoomToPercent (this.zoomPercent0 + this.dZoom * this.iStep / this.totalSteps);
@@ -160,7 +161,10 @@ if (this.dTrans.x != 0) this.transformManager.translateToPercent ('x', this.tran
 if (this.dTrans.y != 0) this.transformManager.translateToPercent ('y', this.transY + this.dTrans.y * this.iStep / this.totalSteps);
 if (this.dTrans.z != 0) this.transformManager.translateToPercent ('z', this.dTrans.z * this.iStep / this.totalSteps);
 if (this.dSlab != 0) this.transformManager.slabToPercent (Clazz.doubleToInt (Math.floor (this.slab + this.dSlab * this.iStep / this.totalSteps)));
-var timeSpent = (System.currentTimeMillis () - this.startTime);
+if (this.iStep == this.totalSteps) {
+mode = -2;
+break;
+}var timeSpent = (System.currentTimeMillis () - this.startTime);
 var timeAllowed = this.iStep * this.timePerStep;
 if (timeSpent < timeAllowed) {
 this.vwr.requestRepaintAndWait ("moveThread");

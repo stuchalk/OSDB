@@ -8,6 +8,7 @@ this.screens3f = null;
 this.scrVib = null;
 this.vibs = false;
 this.bsSelected = null;
+this.showNumbers = false;
 Clazz.instantialize (this, arguments);
 }, J.renderspecial, "PolyhedraRenderer", J.render.ShapeRenderer);
 Clazz.overrideMethod (c$, "render", 
@@ -18,6 +19,7 @@ this.drawEdges = polyhedra.drawEdges;
 this.bsSelected = (this.vwr.getSelectionHalosEnabled () ? this.vwr.bsA () : null);
 this.g3d.addRenderer (1073742182);
 this.vibs = (this.ms.vibrations != null && this.tm.vibrationOn);
+this.showNumbers = this.vwr.getTestFlag (3);
 var needTranslucent = false;
 for (var i = polyhedra.polyhedronCount; --i >= 0; ) if (polyhedrons[i].isValid && this.render1 (polyhedrons[i])) needTranslucent = true;
 
@@ -41,7 +43,7 @@ this.screens3f =  new Array (vertices.length);
 for (var i = vertices.length; --i >= 0; ) this.screens3f[i] =  new JU.P3 ();
 
 }var sc = this.screens3f;
-var planes = p.faces;
+var planes = p.triangles;
 for (var i = vertices.length; --i >= 0; ) {
 var atom = (Clazz.instanceOf (vertices[i], JM.Atom) ? vertices[i] : null);
 if (atom == null) {
@@ -53,6 +55,10 @@ this.scrVib = this.tm.transformPtVib (atom, this.ms.vibrations[atom.i]);
 sc[i].set (this.scrVib.x, this.scrVib.y, this.scrVib.z);
 } else {
 this.tm.transformPt3f (atom, sc[i]);
+}if (this.showNumbers) {
+this.g3d.setC (4);
+this.g3d.drawStringNoSlab ("" + i, null, Clazz.floatToInt (sc[i].x), Clazz.floatToInt (sc[i].y), Clazz.floatToInt (sc[i].z) - 30, 0);
+this.g3d.setC (colix);
 }}
 this.isAll = (this.drawEdges == 1 || this.bsSelected != null);
 this.frontOnly = (this.drawEdges == 2);

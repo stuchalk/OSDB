@@ -54,13 +54,13 @@ var vwr = d[3];
 var i = ai[0];
 var slen = ai[1];
 var tok = st[i].tok;
-i = (tok == 269484096 ? i + 1 : i + 2);
+i = (tok == 268435520 ? i + 1 : i + 2);
 if (i >= slen) return false;
 var s = st[i].value.toString ().toUpperCase ();
 var type = ";PS;BEGIN;SCREEN;UVMAP;".indexOf (";" + s + ";");
 i = J.shapecgo.CGOMesh.addItems (i, st, slen, data, vwr);
 if (type == 0) {
-if (i + 5 >= slen || st[i + 1].tok != 135270408) return false;
+if (i + 5 >= slen || st[i + 1].tok != 134221834) return false;
 if (!J.shapecgo.CGOMesh.parseEPSData (st[i + 3].value.toString (), data)) return false;
 i += 5;
 }ai[0] = i;
@@ -100,7 +100,7 @@ var tok;
 var t;
 for (var j = i; j < slen; j++) {
 switch (tok = (t = st[j]).tok) {
-case 269484097:
+case 268435521:
 i = j;
 j = slen;
 continue;

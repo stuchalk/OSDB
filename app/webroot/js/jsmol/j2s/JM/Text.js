@@ -1,7 +1,7 @@
 Clazz.declarePackage ("JM");
 Clazz.load (["JM.Object2d"], "JM.Text", ["javajs.awt.Font", "JU.PT", "J.shape.Shape", "JU.Txt", "JV.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
-this.textUnformatted = null;
+this.isEcho = false;
 this.doFormatText = false;
 this.lines = null;
 this.font = null;
@@ -14,6 +14,7 @@ this.offsetY = 0;
 this.textWidth = 0;
 this.textHeight = 0;
 this.text = null;
+this.textUnformatted = null;
 this.widths = null;
 this.vwr = null;
 this.image = null;
@@ -42,34 +43,32 @@ this.vwr = vwr;
 this.boxXY =  Clazz.newFloatArray (5, 0);
 }, "JV.Viewer");
 c$.newLabel = Clazz.defineMethod (c$, "newLabel", 
-function (vwr, font, text, colix, bgcolix, align, scalePixelsPerMicron, value) {
+function (vwr, font, text, colix, bgcolix, align, scalePixelsPerMicron) {
 var t =  new JM.Text (vwr);
-t.set (font, colix, align, true, scalePixelsPerMicron, value);
+t.set (font, colix, align, true, scalePixelsPerMicron);
 t.setText (text);
 t.bgcolix = bgcolix;
 return t;
-}, "JV.Viewer,javajs.awt.Font,~S,~N,~N,~N,~N,~A");
+}, "JV.Viewer,javajs.awt.Font,~S,~N,~N,~N,~N");
 c$.newEcho = Clazz.defineMethod (c$, "newEcho", 
 function (vwr, font, target, colix, valign, align, scalePixelsPerMicron) {
-JM.Text.isEcho = true;
 var t =  new JM.Text (vwr);
-t.set (font, colix, align, false, scalePixelsPerMicron, null);
+t.isEcho = true;
+t.set (font, colix, align, false, scalePixelsPerMicron);
 t.target = target;
-if (target.equals ("error")) valign = 0;
 t.valign = valign;
 t.z = 2;
 t.zSlab = -2147483648;
 return t;
 }, "JV.Viewer,javajs.awt.Font,~S,~N,~N,~N,~N");
 Clazz.defineMethod (c$, "set", 
- function (font, colix, align, isLabelOrHover, scalePixelsPerMicron, value) {
+ function (font, colix, align, isLabelOrHover, scalePixelsPerMicron) {
 this.scalePixelsPerMicron = scalePixelsPerMicron;
 this.isLabelOrHover = isLabelOrHover;
 this.colix = colix;
 this.align = align;
-this.pymolOffset = value;
 this.setFont (font, isLabelOrHover);
-}, "javajs.awt.Font,~N,~N,~B,~N,~A");
+}, "javajs.awt.Font,~N,~N,~B,~N");
 Clazz.defineMethod (c$, "getFontMetrics", 
  function () {
 this.descent = this.font.getDescent ();
@@ -88,9 +87,8 @@ if (this.image != null) this.getFontMetrics ();
 this.image = null;
 if (text != null && text.length == 0) text = null;
 if (this.text != null && this.text.equals (text)) return;
-this.text = text;
-this.textUnformatted = text;
-this.doFormatText = (JM.Text.isEcho && text != null && (text.indexOf ("%{") >= 0 || text.indexOf ("@{") >= 0));
+this.text = this.textUnformatted = text;
+this.doFormatText = (this.isEcho && text != null && (text.indexOf ("%{") >= 0 || text.indexOf ("@{") >= 0));
 if (!this.doFormatText) this.recalc ();
 }, "~S");
 Clazz.defineMethod (c$, "setImage", 
@@ -141,11 +139,6 @@ this.textHeight = this.lines.length * this.lineHeight;
 this.boxWidth = this.textWidth + (this.fontScale >= 2 ? 16 : 8);
 this.boxHeight = this.textHeight + (this.fontScale >= 2 ? 16 : 8);
 });
-Clazz.defineMethod (c$, "formatText", 
-function () {
-this.text = (JM.Text.isEcho ? JU.Txt.formatText (this.vwr, this.textUnformatted) : this.textUnformatted);
-this.recalc ();
-});
 Clazz.defineMethod (c$, "setPosition", 
 function (scalePixelsPerMicron, imageFontScaling, isAbsolute, boxXY) {
 if (boxXY == null) boxXY = this.boxXY;
@@ -153,8 +146,10 @@ if (boxXY == null) boxXY = this.boxXY;
 this.setWindow (this.vwr.gdata.width, this.vwr.gdata.height, scalePixelsPerMicron);
 if (scalePixelsPerMicron != 0 && this.scalePixelsPerMicron != 0) this.setFontScale (scalePixelsPerMicron / this.scalePixelsPerMicron);
  else if (this.fontScale != imageFontScaling) this.setFontScale (imageFontScaling);
-if (this.doFormatText) this.formatText ();
-var dx = this.offsetX * imageFontScaling;
+if (this.doFormatText) {
+this.text = (this.isEcho ? JU.Txt.formatText (this.vwr, this.textUnformatted) : this.textUnformatted);
+this.recalc ();
+}var dx = this.offsetX * imageFontScaling;
 var dy = this.offsetY * imageFontScaling;
 this.xAdj = (this.fontScale >= 2 ? 8 : 4);
 this.yAdj = this.ascent - this.lineHeight + this.xAdj;
@@ -168,13 +163,14 @@ var dz = (pz < 0 ? -1 : 1) * Math.max (0, Math.abs (pz) - 1) * pixelsPerAngstrom
 this.z -= Clazz.floatToInt (dz);
 pixelsPerAngstrom = this.vwr.tm.scaleToScreen (this.z, 1000);
 dx = this.getPymolXYOffset (this.pymolOffset[1], this.textWidth, pixelsPerAngstrom);
-dy = -this.getPymolXYOffset (-this.pymolOffset[2], this.ascent - this.descent, pixelsPerAngstrom);
-this.xAdj = (this.fontScale >= 2 ? 8 : 4);
-this.yAdj = 0;
-dy += this.descent;
+var dh = this.ascent - this.descent;
+dy = -this.getPymolXYOffset (-this.pymolOffset[2], dh, pixelsPerAngstrom) - Clazz.doubleToInt ((this.textHeight + dh) / 2);
+if (this.pymolOffset[0] == 1) {
+dy -= this.descent;
+}this.xAdj = (this.fontScale >= 2 ? 8 : 4);
+this.yAdj = -this.descent;
 boxXY[0] = this.movableX - this.xAdj;
 boxXY[1] = this.movableY - this.yAdj;
-this.y0 = this.movableY - dy - this.descent;
 isAbsolute = true;
 this.boxYoff2 = -2;
 } else {
@@ -312,6 +308,4 @@ function (s) {
 s.append ("  " + J.shape.Shape.getFontCommand ("echo", this.font));
 if (this.scalePixelsPerMicron > 0) s.append (" " + (10000 / this.scalePixelsPerMicron));
 }, "JU.SB");
-Clazz.defineStatics (c$,
-"isEcho", false);
 });

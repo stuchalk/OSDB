@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JM");
-Clazz.load (null, "JM.ProteinStructure", ["java.util.Hashtable", "JU.P3", "$.V3", "JU.Logger"], function () {
+Clazz.load (["JM.Structure"], "JM.ProteinStructure", ["java.util.Hashtable", "JU.P3", "$.V3", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.type = null;
 this.subtype = null;
@@ -10,15 +10,15 @@ this.strandCount = 0;
 this.nRes = 0;
 this.apolymer = null;
 this.monomerIndexFirst = 0;
+this.monomerIndexLast = 0;
 this.axisA = null;
 this.axisB = null;
 this.axisUnitVector = null;
 this.vectorProjection = null;
-this.monomerIndexLast = 0;
 this.segments = null;
 this.resMap = null;
 Clazz.instantialize (this, arguments);
-}, JM, "ProteinStructure");
+}, JM, "ProteinStructure", null, JM.Structure);
 Clazz.defineMethod (c$, "setupPS", 
 function (apolymer, type, monomerIndex, monomerCount) {
 this.strucNo = ++JM.ProteinStructure.globalStrucNo;
@@ -115,13 +115,18 @@ function () {
 this.axisA = null;
 this.segments = null;
 });
-Clazz.defineMethod (c$, "getAtoms", 
+Clazz.overrideMethod (c$, "setAtomBits", 
 function (bs) {
 var ms = this.apolymer.monomers;
 for (var i = this.monomerIndexFirst; i <= this.monomerIndexLast; i++) ms[i].setAtomBits (bs);
 
-return bs;
 }, "JU.BS");
+Clazz.overrideMethod (c$, "setAtomBitsAndClear", 
+function (bs, bsOut) {
+var ms = this.apolymer.monomers;
+for (var i = this.monomerIndexFirst; i <= this.monomerIndexLast; i++) ms[i].setAtomBitsAndClear (bs, bsOut);
+
+}, "JU.BS,JU.BS");
 Clazz.defineMethod (c$, "findMonomer", 
 function (bsAtoms, isFirst) {
 var ms = this.apolymer.monomers;

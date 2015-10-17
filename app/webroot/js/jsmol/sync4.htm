@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
 <script type="text/javascript" src=js/JSmol.full.js></script>
@@ -48,26 +49,26 @@ function doLoad() {
 
 <td id=tdA>
 <script>jmolApplet(200,"load data/1crn.pdb;cartoon on;color cartoon structure;javascript \"sync(1)\" ", "A")</script>
-<br/>File-derived structure
+<br>File-derived structure
 </td>
 <td id=tdB>
 <script>
 
 jmolApplet(200,"load data/1crn.pdb;calculate structure;cartoon on;color cartoon structure;javascript \"sync(2)\" ", "B");
 </script>
-<br/>Jmol-derived structure
+<br>Jmol-derived structure
 </td></tr>
 <tr>
 
 <td>
 <script>jmolApplet(200,"load data/1crn.pdb;spacefill off;javascript \"sync(3)\" ", "C")</script>
-<br/>wireframe (independently rotatable follower)
+<br>wireframe (independently rotatable follower)
 </td>
 <td>
 <script>
 jmolApplet(200,"load data/1crn.pdb;spacefill on;javascript \"sync(4)\" ", "D");
 </script>
-<br/>spacefill  (independently rotatable follower)
+<br>spacefill  (independently rotatable follower)
 </td></tr>
 </table>
 

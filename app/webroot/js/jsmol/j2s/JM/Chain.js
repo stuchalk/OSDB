@@ -1,4 +1,5 @@
 Clazz.declarePackage ("JM");
+Clazz.load (["JM.Structure"], "JM.Chain", null, function () {
 c$ = Clazz.decorateAsClass (function () {
 this.model = null;
 this.chainID = 0;
@@ -6,10 +7,8 @@ this.chainNo = 0;
 this.groups = null;
 this.groupCount = 0;
 this.selectedGroupCount = 0;
-this.isDna = false;
-this.isRna = false;
 Clazz.instantialize (this, arguments);
-}, JM, "Chain");
+}, JM, "Chain", null, JM.Structure);
 Clazz.makeConstructor (c$, 
 function (model, chainID, chainNo) {
 this.model = model;
@@ -32,8 +31,14 @@ function (atomsDeleted, bsDeleted) {
 for (var i = 0; i < this.groupCount; i++) this.groups[i].fixIndices (atomsDeleted, bsDeleted);
 
 }, "~N,JU.BS");
-Clazz.defineMethod (c$, "setAtomBits", 
+Clazz.overrideMethod (c$, "setAtomBits", 
 function (bs) {
 for (var i = 0; i < this.groupCount; i++) this.groups[i].setAtomBits (bs);
 
 }, "JU.BS");
+Clazz.overrideMethod (c$, "setAtomBitsAndClear", 
+function (bs, bsOut) {
+for (var i = 0; i < this.groupCount; i++) this.groups[i].setAtomBitsAndClear (bs, bsOut);
+
+}, "JU.BS,JU.BS");
+});

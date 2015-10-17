@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
 <script type="text/javascript" src="JSmol.min.js"></script>
@@ -41,13 +42,13 @@ function sync() {
 <input type=checkbox id=drive onClick=sync() accessKey="1">Synchronize
 </form>
 <script>jmolApplet(200,"load data/1crn.pdb;cartoon on;color cartoon structure", "A")</script>
-<br/>File-derived structure
-<br/><br/><br/>
+<br>File-derived structure
+<br><br><br>
 <script>
 
 jmolApplet(200,"load data/1crn.pdb;calculate structure;cartoon on;color cartoon structure", "B");
 </script>
-<br/>Jmol-derived structure
+<br>Jmol-derived structure
 </td>
 <td>
 This page demonstrates how to synchronize applets in Jmol. 
@@ -64,9 +65,9 @@ function sync() {
 </pre>
 
 Alternatively, we could have used:
-<br /><br />
+<br><br>
 <code><a href='javascript:jmolScript("sync . ON;sync > SLAVE", "A")'>jmolScript("sync . ON;sync > SLAVE", "A")</a></code>
-<br /><br />
+<br><br>
 which would cause only the applet on the top to do the controlling, but allowed the bottom applet to be moved independently of that control.
 Also, if you open a <a href='javascript:jmolScript("console","A")'>console</a> on one, you can give commands to the other using something like:
 
@@ -81,14 +82,14 @@ Other options include "*" (all synchronized applets)
 and "." (only this applet, if it is synchronized).
 In addition, you can specify the applet by its extension, "A" or "B", or by its full name, "jmolAppletA" or "jmolAppletB" in this case.
 
-<br /><br />
+<br><br>
 Starting with Jmol 11.6, you can also use the <b>script</b> command with the APPLET option to send scripts to one or more applets. This operation is independent of the state of sync being ON or OFF.
 <pre>
 <code>
 <a href='javascript:jmolScript("script APPLET * \"background yellow\"","A")'>script APPLET * "background yellow"</a>
 </code>
 </pre>
-<br /><br />
+<br><br>
 Also new in Jmol 11.6, you can use the Jmol math script() function to get information from another applet. Simply indicate the target applet as a second parameter to the script command. For example, from Applet A's <a href='javascript:jmolScript("console","A")'>console</a>, type:
 <pre>
 <code>

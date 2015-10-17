@@ -228,7 +228,7 @@ if (j > 1) this.gaussians[i][5] += temp[i];
 for (var i = 0; i < this.gaussianCount; i++) {
 if (this.gaussians[i][1] == 0) this.gaussians[i][1] = this.gaussians[i][5];
 }
-if (JU.Logger.debugging) {
+if (this.debugging) {
 JU.Logger.debug (this.shells.size () + " slater shells read");
 JU.Logger.debug (this.gaussians.length + " gaussian primitives read");
 }});

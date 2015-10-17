@@ -136,10 +136,10 @@ if (bsAtoms == null || bsAtoms.get (monomer.leadAtomIndex)) {
 var a = monomer.getLeadAtom ();
 var id = monomer.getUniqueID ();
 if (isRamachandran) {
-if (ctype == 'S') monomer.setGroupParameter (1112539150, NaN);
-x = monomer.getGroupParameter (1112539145);
-y = monomer.getGroupParameter (1112539146);
-z = monomer.getGroupParameter (1112539144);
+if (ctype == 'S') monomer.setGroupParameter (1111490574, NaN);
+x = monomer.getGroupParameter (1111490569);
+y = monomer.getGroupParameter (1111490570);
+z = monomer.getGroupParameter (1111490568);
 if (z < -90) z += 360;
 z -= 180;
 if (Float.isNaN (x) || Float.isNaN (y) || Float.isNaN (z)) {
@@ -148,7 +148,7 @@ continue;
 }var angledeg = (writeRamachandranStraightness ? p.calculateRamachandranHelixAngle (m, qtype) : 0);
 var straightness = (calcRamachandranStraightness || writeRamachandranStraightness ? JM.BioExt.getStraightness (Math.cos (angledeg / 2 / 180 * 3.141592653589793)) : 0);
 if (ctype == 'S') {
-monomer.setGroupParameter (1112539150, straightness);
+monomer.setGroupParameter (1111490574, straightness);
 continue;
 }if (isDraw) {
 if (bsSelected != null && !bsSelected.get (a.getIndex ())) continue;
@@ -177,7 +177,7 @@ q = monomer.getQuaternion (qtype);
 if (q != null) {
 q.setRef (qref);
 qref = JU.Quat.newQ (q);
-}if (derivType == 2) monomer.setGroupParameter (1112539150, NaN);
+}if (derivType == 2) monomer.setGroupParameter (1111490574, NaN);
 if (q == null) {
 qprev = null;
 qref = null;
@@ -200,7 +200,7 @@ q = null;
 q = dq.rightDifference (dqprev);
 val1 = JM.BioExt.getQuaternionStraightness (id, dqprev, dq);
 val2 = JM.BioExt.get3DStraightness (id, dqprev, dq);
-(aprev.group).setGroupParameter (1112539150, useQuaternionStraightness ? val1 : val2);
+(aprev.group).setGroupParameter (1111490574, useQuaternionStraightness ? val1 : val2);
 }dqprev = dq;
 }aprev = anext;
 qprev = qnext;
@@ -322,8 +322,10 @@ bsCheck = JU.BSUtil.copy (bs1);
 bsCheck.or (bs2);
 }var atoms = ms.at;
 bsCheck.and (vwr.getModelUndeletedAtomsBitSet (m.modelIndex));
-for (var i = bsCheck.nextSetBit (0); i >= 0; i = bsCheck.nextSetBit (i + 1)) if (atoms[i].checkVisible () && atoms[i].atomID == 2 && atoms[i].group.groupID != 5) vCA.addLast (atoms[i]);
-
+for (var i = bsCheck.nextSetBit (0); i >= 0; i = bsCheck.nextSetBit (i + 1)) {
+var a = atoms[i];
+if (a.checkVisible () && a.atomID == 2 && a.group.groupID != 5 && atoms[i].group.leadAtomIndex >= 0) vCA.addLast (atoms[i]);
+}
 if (vCA.size () == 0) return 0;
 var struts = JM.BioExt.calculateStruts (ms, bs1, bs2, vCA, vwr.getFloat (570425408), vwr.getInt (553648184), vwr.getBoolean (603979955));
 var mad = Clazz.floatToShort (vwr.getFloat (570425406) * 2000);

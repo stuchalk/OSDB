@@ -6,6 +6,7 @@ this.manager = null;
 this.keyBuffer = "";
 this.isMouseDown = false;
 this.wheeling = false;
+this.modifiersDown = 0;
 this.xWhenPressed = 0;
 this.yWhenPressed = 0;
 this.modifiersWhenPressed10 = 0;
@@ -225,6 +226,8 @@ this.vwr.evalStringQuietSync (kb, false, true);
 Clazz.defineMethod (c$, "entry", 
  function (time, x, y, isExit) {
 this.wheeling = false;
+this.isMouseDown = false;
+this.modifiersDown = 0;
 this.manager.mouseEnterExit (time, x, y, isExit);
 }, "~N,~N,~N,~B");
 Clazz.defineMethod (c$, "clicked", 
@@ -235,7 +238,7 @@ this.manager.mouseAction (2, time, x, y, 1, modifiers);
 Clazz.defineMethod (c$, "moved", 
  function (time, x, y, modifiers) {
 this.clearKeyBuffer ();
-if (this.isMouseDown) this.manager.mouseAction (1, time, x, y, 0, J.awtjs2d.Mouse.applyLeftMouse (modifiers));
+if (this.isMouseDown) this.manager.mouseAction (1, time, x, y, 0, this.modifiersDown);
  else this.manager.mouseAction (0, time, x, y, 0, modifiers);
 }, "~N,~N,~N,~N");
 Clazz.defineMethod (c$, "wheeled", 
@@ -248,20 +251,22 @@ Clazz.defineMethod (c$, "pressed",
  function (time, x, y, modifiers, isPopupTrigger) {
 this.clearKeyBuffer ();
 this.isMouseDown = true;
+this.modifiersDown = modifiers;
 this.wheeling = false;
 this.manager.mouseAction (4, time, x, y, 0, modifiers);
 }, "~N,~N,~N,~N,~B");
 Clazz.defineMethod (c$, "released", 
  function (time, x, y, modifiers) {
 this.isMouseDown = false;
+this.modifiersDown = 0;
 this.wheeling = false;
 this.manager.mouseAction (5, time, x, y, 0, modifiers);
 }, "~N,~N,~N,~N");
 Clazz.defineMethod (c$, "dragged", 
  function (time, x, y, modifiers) {
 if (this.wheeling) return;
-if ((modifiers & 20) == 20) modifiers = modifiers & -5 | 2;
-this.manager.mouseAction (1, time, x, y, 0, modifiers);
+if ((this.modifiersDown & 20) == 20) this.modifiersDown = this.modifiersDown & -5 | 2;
+this.manager.mouseAction (1, time, x, y, 0, this.modifiersDown);
 }, "~N,~N,~N,~N");
 c$.applyLeftMouse = Clazz.defineMethod (c$, "applyLeftMouse", 
  function (modifiers) {

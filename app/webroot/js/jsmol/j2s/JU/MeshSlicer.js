@@ -33,7 +33,7 @@ function (slabObject, allowCap) {
 if (this.m.polygonCount0 < 0) return false;
 var m = this.m;
 var slabType = (slabObject[0]).intValue ();
-if (slabType == 1048587 || slabType == 1073741872) {
+if (slabType == 1073742333 || slabType == 1073741872) {
 if (m.bsSlabDisplay != null && (m.polygonCount0 != 0 || m.vertexCount0 != 0)) {
 m.pc = m.polygonCount0;
 m.vc = m.vertexCount0;
@@ -42,8 +42,8 @@ m.normixCount = (m.isTriangleSet ? m.pc : m.vc);
 m.bsSlabDisplay.setBits (0, (m.pc == 0 ? m.vc : m.pc));
 m.slabOptions =  new JU.SB ().append (m.meshType + " slab none");
 m.bsSlabGhost = null;
-m.slabMeshType = 1048587;
-}if (slabType == 1048587) return false;
+m.slabMeshType = 1073742333;
+}if (slabType == 1073742333) return false;
 }var slabbingObject = slabObject[1];
 var andCap = (slabObject[2]).booleanValue () && !(slabType == 1073741872);
 if (andCap && !allowCap) return false;
@@ -79,34 +79,34 @@ break;
 case 3:
 this.getIntersection (0, null, null, null, null, slabbingObject, null, andCap, false, 3, isGhost);
 break;
-case 135266319:
+case 134217750:
 var plane = slabbingObject;
 sb.append (JU.Escape.eP4 (plane));
-this.getIntersection (0, plane, null, null, null, null, null, andCap, false, 135266319, isGhost);
+this.getIntersection (0, plane, null, null, null, null, null, andCap, false, 134217750, isGhost);
 break;
-case 1614417948:
-case 1679429641:
+case 1747587102:
+case 1678381065:
 var box = slabbingObject;
 sb.append ("within ").append (JU.Escape.eAP (box));
 var faces = JU.BoxInfo.getFacesFromCriticalPoints (box);
 for (var i = 0; i < faces.length; i++) {
-this.getIntersection (0, faces[i], null, null, null, null, null, andCap, false, 135266319, isGhost);
+this.getIntersection (0, faces[i], null, null, null, null, null, andCap, false, 134217750, isGhost);
 }
 break;
-case 135270408:
+case 134221834:
 this.getIntersection (0, null, null, null, slabbingObject, null, null, false, false, 32, isGhost);
 break;
-case 135266325:
+case 134217759:
 case 1073742114:
 case 1073742018:
 var o = slabbingObject;
 var distance = (o[0]).floatValue ();
 switch (slabType) {
-case 135266325:
+case 134217759:
 var points = o[1];
 var bs = o[2];
 sb.append ("within ").appendF (distance).append (bs == null ? JU.Escape.e (points) : JU.Escape.e (bs));
-this.getIntersection (distance, null, points, null, null, null, null, andCap, false, 1276118018, isGhost);
+this.getIntersection (distance, null, points, null, null, null, null, andCap, false, 1275069443, isGhost);
 break;
 case 1073742114:
 if (m.vvs == null) return false;
@@ -355,7 +355,7 @@ break;
 case 64:
 d = val - distance;
 break;
-case 135266319:
+case 134217750:
 d = (v.dot (this.norm) + this.wPlane) / this.dPlane;
 break;
 default:
@@ -411,7 +411,7 @@ m.bsSlabGhost =  new JU.BS ();
 for (var i = 1; i < 27; i++) {
 vGammaToKPoint.setT (pts[i]);
 JU.Measure.getBisectingPlane (pts[0], vGammaToKPoint, ptTemp, vTemp, planeGammaK);
-this.getIntersection (1, planeGammaK, null, null, null, null, null, false, false, 135266319, true);
+this.getIntersection (1, planeGammaK, null, null, null, null, null, false, false, 134217750, true);
 bsMoved.clearAll ();
 mapEdge.clear ();
 for (var j = m.bsSlabGhost.nextSetBit (0); j >= 0; j = m.bsSlabGhost.nextSetBit (j + 1)) {

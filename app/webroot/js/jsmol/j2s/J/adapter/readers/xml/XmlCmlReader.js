@@ -129,11 +129,11 @@ for (var i = this.tokenCount; --i >= 0; ) this.bondArray[i].order = this.parseBo
 
 }if (this.atts.containsKey ("atomRef1")) {
 this.breakOutBondTokens (this.atts.get ("atomRef1"));
-for (var i = this.tokenCount; --i >= 0; ) this.bondArray[i].atomIndex1 = this.asc.getAtomIndex (this.tokens[i]);
+for (var i = this.tokenCount; --i >= 0; ) this.bondArray[i].atomIndex1 = this.getAtomIndex (this.tokens[i]);
 
 }if (this.atts.containsKey ("atomRef2")) {
 this.breakOutBondTokens (this.atts.get ("atomRef2"));
-for (var i = this.tokenCount; --i >= 0; ) this.bondArray[i].atomIndex2 = this.asc.getAtomIndex (this.tokens[i]);
+for (var i = this.tokenCount; --i >= 0; ) this.bondArray[i].atomIndex2 = this.getAtomIndex (this.tokens[i]);
 
 }} else if (name.equals ("atomarray")) {
 this.state = 7;
@@ -239,6 +239,10 @@ break;
 case 14:
 break;
 }
+}, "~S");
+Clazz.defineMethod (c$, "getAtomIndex", 
+ function (label) {
+return this.asc.getAtomIndex (this.isSerial ? label.substring (1) : label);
 }, "~S");
 Clazz.overrideMethod (c$, "processEndElement", 
 function (name) {

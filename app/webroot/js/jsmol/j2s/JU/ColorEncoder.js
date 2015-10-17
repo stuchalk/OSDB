@@ -137,7 +137,7 @@ return (this.argbsShapely == null ? this.argbsShapely = this.vwr.getJBR ().getAr
 });
 Clazz.defineMethod (c$, "getAmino", 
  function () {
-return (this.argbsAmino == null ? this.argbsAmino = this.vwr.getJBR ().getArgbs (3145730) : this.argbsAmino);
+return (this.argbsAmino == null ? this.argbsAmino = this.vwr.getJBR ().getArgbs (2097154) : this.argbsAmino);
 });
 Clazz.defineMethod (c$, "createColorScheme", 
 function (colorScheme, defaultToRoygb, isOverloaded) {

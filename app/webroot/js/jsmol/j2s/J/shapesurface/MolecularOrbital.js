@@ -61,7 +61,7 @@ var slabInfo = value;
 var tok = (slabInfo[0]).intValue ();
 this.moSlab = this.thisModel.get ("slab");
 if (this.moSlab == null) this.thisModel.put ("slab", this.moSlab =  new JU.Lst ());
-if (tok == 1048587) {
+if (tok == 1073742333) {
 this.moSlab = null;
 this.thisModel.remove ("slab");
 return;
@@ -169,7 +169,7 @@ this.$moLinearCombination = null;
 } else if ("token" === propertyName) {
 var tok = (value).intValue ();
 switch (tok) {
-case 1113198595:
+case 1112150019:
 case 1073742042:
 this.moDots = tok;
 break;

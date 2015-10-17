@@ -1,5 +1,6 @@
 // SwingJS.js
 
+// BH 7/24/2015 9:09:39 AM allows setting Info.resourcePath
 // BH 4/28/2015 10:15:32 PM adds getAppletHtml 
 // BH 4/2/2015 5:17:44 PM  adds SwingJS.getJavaResource(path)
 
@@ -17,10 +18,12 @@ if (typeof(SwingJS) == "undefined") {
 		return SwingJS._Applet._get(id, Info, checkOnly);
 	}
 
-  SwingJS.getJavaResource = function(path) {
-  System.out.println("getJavaResource " + path)
-		if (path.indexOf("http") != 0)
-      path = Jmol._applets[java.lang.Thread.currentThread().getName()].__Info.j2sPath + "/" + path
+  SwingJS.getJavaResource = function(path, isJavaPath) {
+		if (path.indexOf("http") != 0) {
+      var applet = Jmol._applets[java.lang.Thread.currentThread().getName()];
+      path = (!isJavaPath && applet.__Info.resourcePath || applet.__Info.j2sPath) + "/" + path
+      }      
+    System.out.println("Swingjs.js getJavaResource " + path)
     var s = Jmol._getFileData(path);
     if (s.indexOf("[Exception") == 0)
       return null; 

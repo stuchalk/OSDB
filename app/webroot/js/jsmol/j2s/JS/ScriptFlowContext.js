@@ -14,31 +14,39 @@ this.ptLine = 0;
 this.ptCommand = 0;
 this.forceEndIf = true;
 this.ident = null;
+this.addLine = 0;
+this.tok0 = 0;
+this.ichCommand = 0;
+this.line0 = 0;
 Clazz.instantialize (this, arguments);
 }, JS, "ScriptFlowContext");
 Clazz.makeConstructor (c$, 
-function (compiler, token, pt0, parent) {
+function (compiler, token, pt0, parent, ich, line0) {
 this.compiler = compiler;
 this.token = token;
+this.tok0 = token.tok;
 this.ident = token.value;
 this.pt0 = pt0;
+this.line0 = line0;
 this.parent = parent;
+this.ichCommand = ich;
 this.lineStart = this.ptLine = this.compiler.lineCurrent;
 this.commandStart = this.ptCommand = this.compiler.iCommand;
-}, "JS.ScriptCompiler,JS.ContextToken,~N,JS.ScriptFlowContext");
+}, "JS.ScriptCompiler,JS.ContextToken,~N,JS.ScriptFlowContext,~N,~N");
 Clazz.defineMethod (c$, "getBreakableContext", 
 function (nLevelsUp) {
 var f = this;
-while (f != null && (!JS.ScriptCompiler.isBreakableContext (f.token.tok) || nLevelsUp-- > 0)) f = f.getParent ();
+while (f != null && (!JS.ScriptCompiler.isBreakableContext (f.token.tok) || nLevelsUp-- > 0)) f = f.parent;
 
 return f;
 }, "~N");
 Clazz.defineMethod (c$, "checkForceEndIf", 
-function () {
-var test = this.forceEndIf && this.ptCommand < this.compiler.iCommand && this.ptLine == this.compiler.lineCurrent;
+function (offset) {
+if (this.ptCommand == this.compiler.iCommand && this.addLine > 0) this.addLine++;
+var test = this.forceEndIf && this.ptCommand < this.compiler.iCommand && this.ptLine + (this.addLine == 0 ? 0 : this.addLine + offset) == this.compiler.lineCurrent;
 if (test) this.forceEndIf = false;
 return test;
-});
+}, "~N");
 Clazz.defineMethod (c$, "setPt0", 
 function (pt0, isDefault) {
 this.pt0 = pt0;
@@ -54,10 +62,6 @@ this.ptCommand = this.compiler.iCommand + 1;
 Clazz.overrideMethod (c$, "toString", 
 function () {
 return "ident " + this.ident + " line " + this.lineStart + " command " + this.commandStart;
-});
-Clazz.defineMethod (c$, "getParent", 
-function () {
-return this.parent;
 });
 Clazz.defineMethod (c$, "path", 
 function () {

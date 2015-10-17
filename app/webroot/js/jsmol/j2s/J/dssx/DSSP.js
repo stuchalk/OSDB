@@ -206,7 +206,7 @@ for (var i = 0; i < n; i++) this.checkBulge (bridges.get (i), isAntiparallel, 1)
 }, "JU.Lst,~B");
 Clazz.defineMethod (c$, "checkBridge", 
  function (bridge, isAntiparallel, n1, n2) {
-var b = this.htBridges.get (bridge.a.getOffsetResidueAtom ("0", n1) + "-" + bridge.b.getOffsetResidueAtom ("0", n2));
+var b = this.htBridges.get (bridge.a.getOffsetResidueAtom ("\0", n1) + "-" + bridge.b.getOffsetResidueAtom ("\0", n2));
 return (b != null && bridge.addBridge (b, this.htLadders));
 }, "J.dssx.Bridge,~B,~N,~N");
 Clazz.defineMethod (c$, "checkBulge", 

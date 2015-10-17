@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JU");
-Clazz.load (["J.api.JmolAppletInterface", "$.JmolStatusListener"], "JU.GenericApplet", ["java.lang.Boolean", "java.net.URL", "java.util.Hashtable", "javajs.awt.Dimension", "JU.Lst", "$.PT", "$.SB", "J.c.CBK", "J.i18n.GT", "JU.Logger", "JV.JC", "$.Viewer"], function () {
+Clazz.load (["J.api.JmolAppletInterface", "$.JmolStatusListener"], "JU.GenericApplet", ["java.lang.Boolean", "java.net.URL", "java.util.Hashtable", "JU.Lst", "$.PT", "$.SB", "J.c.CBK", "J.i18n.GT", "JU.Logger", "JV.JC", "$.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.isJS = false;
 this.codeBase = null;
@@ -48,6 +48,8 @@ Clazz.defineMethod (c$, "initApplication",
  function () {
 this.vwrOptions.put ("applet", Boolean.TRUE);
 if (this.getJmolParameter ("statusListener") == null) this.vwrOptions.put ("statusListener", this);
+this.language = this.getJmolParameter ("language");
+if (this.language != null) this.vwrOptions.put ("language", this.language);
 this.viewer =  new JV.Viewer (this.vwrOptions);
 this.viewer.pushHoldRepaint ();
 var emulate = this.getValueLowerCase ("emulate", "jmol");
@@ -58,8 +60,6 @@ this.loading = true;
 for (var item, $item = 0, $$item = J.c.CBK.values (); $item < $$item.length && ((item = $$item[$item]) || true); $item++) this.setValue (item.name () + "Callback", null);
 
 this.loading = false;
-this.language = this.getJmolParameter ("language");
- new J.i18n.GT (this.viewer, this.language);
 if (this.language != null) System.out.print ("requested language=" + this.language + "; ");
 this.doTranslate = (!"none".equals (this.language) && this.getBooleanValue ("doTranslate", true));
 this.language = J.i18n.GT.getLanguage ();
@@ -500,7 +500,7 @@ throw mue;
 }, "~S");
 Clazz.overrideMethod (c$, "resizeInnerPanel", 
 function (data) {
-return  new javajs.awt.Dimension (0, 0);
+return  Clazz.newIntArray (-1, [this.viewer.getScreenWidth (), this.viewer.getScreenHeight ()]);
 }, "~S");
 c$.checkIn = Clazz.defineMethod (c$, "checkIn", 
 function (name, applet) {

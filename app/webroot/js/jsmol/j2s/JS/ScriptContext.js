@@ -20,6 +20,7 @@ this.isFunction = false;
 this.isJSThread = false;
 this.isStateScript = false;
 this.isTryCatch = false;
+this.forVars = null;
 this.iToken = 0;
 this.lineEnd = 2147483647;
 this.lineIndices = null;
@@ -88,12 +89,12 @@ if (aa == null) {
 this.pointers = null;
 return;
 }this.pointers =  Clazz.newIntArray (aa.length, 0);
-for (var i = this.pointers.length; --i >= 0; ) this.pointers[i] = aa[i][0].intValue;
+for (var i = this.pointers.length; --i >= 0; ) this.pointers[i] = (aa[i] == null ? -1 : aa[i][0].intValue);
 
 }, "~A");
 Clazz.defineMethod (c$, "restoreTokens", 
 function () {
-if (this.pointers != null) for (var i = this.pointers.length; --i >= 0; ) this.aatoken[i][0].intValue = this.pointers[i];
+if (this.pointers != null) for (var i = this.pointers.length; --i >= 0; ) if (this.aatoken[i] != null) this.aatoken[i][0].intValue = this.pointers[i];
 
 return this.aatoken;
 });

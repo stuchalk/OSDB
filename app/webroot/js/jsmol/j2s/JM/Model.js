@@ -42,6 +42,7 @@ this.frameDelay = 0;
 this.selectedTrajectory = -1;
 this.jmolData = null;
 this.jmolFrameType = null;
+this.pdbID = null;
 Clazz.instantialize (this, arguments);
 }, JM, "Model");
 Clazz.prepareFields (c$, function () {
@@ -124,13 +125,6 @@ if (chain.chainID == chainID) return chain;
 }
 return null;
 }, "~N");
-Clazz.defineMethod (c$, "getConformationBS", 
-function (conformationIndex, bsSelected) {
-if (conformationIndex > 0 && conformationIndex >= this.altLocCount) return null;
-var bsConformation = this.ms.vwr.getModelUndeletedAtomsBitSet (this.modelIndex);
-if (bsSelected != null) bsConformation.and (bsSelected);
-return (bsConformation.nextSetBit (0) < 0 ? null : bsConformation);
-}, "~N,JU.BS");
 Clazz.defineMethod (c$, "fixIndices", 
 function (modelIndex, nAtomsDeleted, bsDeleted) {
 this.fixIndicesM (modelIndex, nAtomsDeleted, bsDeleted);

@@ -2,11 +2,8 @@
 <ul>
     <?php
     foreach($data as $name=>$r) {
-        echo "<li>".$name." ";
-        foreach($r as $id=>$title) {
-            echo $this->Html->link($title,'/spectra/view/'.$id)." ";
-        }
-        echo "</li>";
+        echo $this->element('molspectra',['name'=>$name] + $r);
     }
     ?>
 </ul>
+<?php pr($data); ?>

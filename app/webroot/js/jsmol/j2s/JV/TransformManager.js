@@ -120,6 +120,8 @@ this.vibrationScale = 0;
 this.vibrationT = null;
 this.stereoMode = null;
 this.stereoColors = null;
+this.stereoDoubleDTI = false;
+this.stereoDoubleFull = false;
 this.stereoDegrees = NaN;
 this.stereoRadians = 0;
 this.stereoFrame = false;
@@ -620,22 +622,24 @@ Clazz.defineMethod (c$, "getSlabPercentSetting",
 function () {
 return this.slabPercentSetting;
 });
-Clazz.defineMethod (c$, "slabByPercentagePoints", 
-function (percentage) {
-this.slabPlane = null;
-this.slabPercentSetting += percentage;
-this.slabDepthChanged ();
-if (this.depthPercentSetting >= this.slabPercentSetting) this.depthPercentSetting = this.slabPercentSetting - 1;
-}, "~N");
 Clazz.defineMethod (c$, "slabDepthChanged", 
  function () {
 this.vwr.g.setI ("slab", this.slabPercentSetting);
 this.vwr.g.setI ("depth", this.depthPercentSetting);
 this.finalizeTransformParameters ();
 });
+Clazz.defineMethod (c$, "slabByPercentagePoints", 
+function (percentage) {
+this.slabPlane = null;
+if (percentage < 0 ? this.slabPercentSetting <= Math.max (0, this.depthPercentSetting) : this.slabPercentSetting >= 100) return;
+this.slabPercentSetting += percentage;
+this.slabDepthChanged ();
+if (this.depthPercentSetting >= this.slabPercentSetting) this.depthPercentSetting = this.slabPercentSetting - 1;
+}, "~N");
 Clazz.defineMethod (c$, "depthByPercentagePoints", 
 function (percentage) {
 this.depthPlane = null;
+if (percentage < 0 ? this.depthPercentSetting <= 0 : this.depthPercentSetting >= Math.min (100, this.slabPercentSetting)) return;
 this.depthPercentSetting += percentage;
 if (this.slabPercentSetting <= this.depthPercentSetting) this.slabPercentSetting = this.depthPercentSetting + 1;
 this.slabDepthChanged ();
@@ -644,6 +648,7 @@ Clazz.defineMethod (c$, "slabDepthByPercentagePoints",
 function (percentage) {
 this.slabPlane = null;
 this.depthPlane = null;
+if (percentage < 0 ? this.slabPercentSetting <= Math.max (0, this.depthPercentSetting) : this.depthPercentSetting >= Math.min (100, this.slabPercentSetting)) return;
 this.slabPercentSetting += percentage;
 this.depthPercentSetting += percentage;
 this.slabDepthChanged ();
@@ -1377,6 +1382,8 @@ Clazz.defineMethod (c$, "setStereoMode",
 function (stereoMode) {
 this.stereoColors = null;
 this.stereoMode = stereoMode;
+this.stereoDoubleDTI = (stereoMode === J.c.STER.DTI);
+this.stereoDoubleFull = (stereoMode === J.c.STER.DOUBLE);
 }, "J.c.STER");
 Clazz.defineMethod (c$, "setStereoDegrees", 
 function (stereoDegrees) {
@@ -1443,7 +1450,7 @@ switch (relativeTo) {
 case 96:
 pt1.add (this.vwr.ms.getAverageAtomPoint ());
 break;
-case 1679429641:
+case 1678381065:
 pt1.add (this.vwr.getBoundBoxCenter ());
 break;
 case 1073741826:

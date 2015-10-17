@@ -434,7 +434,7 @@ this.ms.addModulation (null, "F_" + j + "_coefs_", p, -1);
 Clazz.defineMethod (c$, "readM40Floats", 
  function () {
 if ((this.line = this.rd ()) == null || this.line.indexOf ("-------") >= 0) return (this.line = null);
-if (JU.Logger.debugging) JU.Logger.debug (this.line);
+if (this.debugging) JU.Logger.debug (this.line);
 this.parseM40Floats ();
 return this.line;
 });

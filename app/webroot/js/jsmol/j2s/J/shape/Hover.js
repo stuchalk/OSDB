@@ -17,7 +17,7 @@ this.isHover = true;
 var font3d = this.vwr.gdata.getFont3DFSS ("SansSerif", "Plain", 12);
 var bgcolix = JU.C.getColixS ("#FFFFC3");
 var colix = 4;
-this.currentObject = this.hoverText = JM.Text.newLabel (this.vwr, font3d, null, colix, bgcolix, 4, 0, null);
+this.currentObject = this.hoverText = JM.Text.newLabel (this.vwr, font3d, null, colix, bgcolix, 4, 0);
 this.hoverText.adjustForWindow = true;
 });
 Clazz.overrideMethod (c$, "setProperty", 

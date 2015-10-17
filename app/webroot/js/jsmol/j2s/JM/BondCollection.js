@@ -68,7 +68,7 @@ for (var iBond = 0; iBond < this.bondCount; ++iBond) {
 var bond = this.bo[iBond];
 var isSelected1 = bsAtoms.get (bond.atom1.i);
 var isSelected2 = bsAtoms.get (bond.atom2.i);
-if (( new Boolean (!bondSelectionModeOr & isSelected1 & isSelected2).valueOf ()) || ( new Boolean (bondSelectionModeOr & ( new Boolean (isSelected1 | isSelected2).valueOf ())).valueOf ())) bs.set (iBond);
+if (bondSelectionModeOr ? isSelected1 || isSelected2 : isSelected1 && isSelected2) bs.set (iBond);
 }
 return bs;
 }, "JU.BS,~B");
@@ -263,11 +263,19 @@ break;
 var bond;
 isAll = (bsBonds == null);
 i0 = (isAll ? this.bondCount - 1 : bsBonds.nextSetBit (0));
+var bsTest =  new JU.BS ();
 for (var i = i0; i >= 0; i = (isAll ? i - 1 : bsBonds.nextSetBit (i + 1))) {
 bond = this.bo[i];
 if (!bond.is (515) || this.bsAromaticDouble.get (i) || this.bsAromaticSingle.get (i)) continue;
+bsTest.set (i);
+if (bond.atom1.getElementNumber () == 8 || bond.atom2.getElementNumber () == 8) {
 if (!this.assignAromaticDouble (bond)) this.assignAromaticSingle (bond);
-System.out.println (bond + " " + bond.order);
+} else {
+bsTest.set (i);
+}}
+for (var i = bsTest.nextSetBit (0); i >= 0; i = bsTest.nextSetBit (i + 1)) {
+bond = this.bo[i];
+if (!this.assignAromaticDouble (bond)) this.assignAromaticSingle (bond);
 }
 for (var i = i0; i >= 0; i = (isAll ? i - 1 : bsBonds.nextSetBit (i + 1))) {
 bond = this.bo[i];
@@ -309,7 +317,7 @@ return false;
 Clazz.defineMethod (c$, "assignAromaticSingleForAtom", 
  function (atom, notBondIndex) {
 var bonds = atom.bonds;
-if (bonds == null || this.assignAromaticSingleHetero (atom)) return false;
+if (bonds == null) return false;
 for (var i = bonds.length; --i >= 0; ) {
 var bond = bonds[i];
 var bondIndex = bond.index;
@@ -323,7 +331,7 @@ Clazz.defineMethod (c$, "assignAromaticDoubleForAtom",
  function (atom) {
 var bonds = atom.bonds;
 if (bonds == null) return false;
-var haveDouble = this.assignAromaticSingleHetero (atom);
+var haveDouble = false;
 var lastBond = -1;
 for (var i = bonds.length; --i >= 0; ) {
 if (this.bsAromaticDouble.get (bonds[i].index)) haveDouble = true;
@@ -339,7 +347,18 @@ return false;
 }}
 return haveDouble;
 }, "JM.Atom");
-Clazz.defineMethod (c$, "assignAromaticSingleHetero", 
+Clazz.defineMethod (c$, "allowAromaticBond", 
+function (b) {
+if (this.assignAromaticMustBeSingle (b.atom1) || this.assignAromaticMustBeSingle (b.atom2)) return false;
+switch (b.getCovalentOrder ()) {
+case 1:
+case 2:
+return b.atom1.getCovalentBondCount () <= 3 && b.atom2.getCovalentBondCount () <= 3;
+default:
+return false;
+}
+}, "JM.Bond");
+Clazz.defineMethod (c$, "assignAromaticMustBeSingle", 
  function (atom) {
 var n = atom.getElementNumber ();
 switch (n) {
@@ -356,10 +375,11 @@ switch (n) {
 case 6:
 return (nAtoms == 4);
 case 7:
+return (atom.group.getNitrogenAtom () === atom || nAtoms == 3 && atom.getFormalCharge () < 1);
 case 8:
-return (nAtoms == 10 - n && atom.getFormalCharge () < 1);
+return (atom.group.getCarbonylOxygenAtom () !== atom && nAtoms == 2 && atom.getFormalCharge () < 1);
 case 16:
-return (nAtoms == 18 - n && atom.getFormalCharge () < 1);
+return (atom.group.groupID == 5 || nAtoms == 2 && atom.getFormalCharge () < 1);
 }
 return false;
 }, "JM.Atom");
@@ -404,14 +424,14 @@ var bs =  new JU.BS ();
 switch (tokType) {
 default:
 return this.getAtomBitsMDa (tokType, specInfo, bs);
-case 1678770178:
+case 1677721602:
 var bsBonds = specInfo;
 for (var i = bsBonds.nextSetBit (0); i >= 0; i = bsBonds.nextSetBit (i + 1)) {
 bs.set (this.bo[i].atom1.i);
 bs.set (this.bo[i].atom2.i);
 }
 return bs;
-case 1048585:
+case 1073742331:
 for (var i = this.bondCount; --i >= 0; ) if (this.bo[i].isAromatic ()) {
 bs.set (this.bo[i].atom1.i);
 bs.set (this.bo[i].atom2.i);
@@ -448,9 +468,10 @@ bsAtoms.set (bond.atom2.i);
 this.dBm (bs, false);
 return bsAtoms;
 }bond.setOrder (bondOrder | 131072);
+if (bond.atom1.getElementNumber () != 1 && bond.atom2.getElementNumber () != 1) {
 this.removeUnnecessaryBonds (bond.atom1, false);
 this.removeUnnecessaryBonds (bond.atom2, false);
-bsAtoms.set (bond.atom1.i);
+}bsAtoms.set (bond.atom1.i);
 bsAtoms.set (bond.atom2.i);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {

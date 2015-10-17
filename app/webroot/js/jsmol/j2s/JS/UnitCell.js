@@ -248,7 +248,7 @@ return this.unitCellMultiplier;
 Clazz.defineMethod (c$, "getUnitCellVectors", 
 function () {
 var m = this.matrixFractionalToCartesian;
-return  Clazz.newArray (-1, [JU.V3.newV (this.cartesianOffset), JU.V3.new3 (this.fix (m.m00), this.fix (m.m10), this.fix (m.m20)), JU.V3.new3 (this.fix (m.m01), this.fix (m.m11), this.fix (m.m21)), JU.V3.new3 (this.fix (m.m02), this.fix (m.m12), this.fix (m.m22))]);
+return  Clazz.newArray (-1, [JU.P3.newP (this.cartesianOffset), JU.P3.new3 (this.fix (m.m00), this.fix (m.m10), this.fix (m.m20)), JU.P3.new3 (this.fix (m.m01), this.fix (m.m11), this.fix (m.m21)), JU.P3.new3 (this.fix (m.m02), this.fix (m.m12), this.fix (m.m22))]);
 });
 Clazz.defineMethod (c$, "fix", 
  function (x) {

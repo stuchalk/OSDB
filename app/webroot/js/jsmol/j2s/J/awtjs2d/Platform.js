@@ -80,9 +80,9 @@ function (context, size) {
 J.awtjs2d.Display.renderScreenImage (this.vwr, context, size);
 }, "~O,~O");
 Clazz.overrideMethod (c$, "drawImage", 
-function (context, canvas, x, y, width, height) {
-J.awtjs2d.Display.drawImage (context, canvas, x, y, width, height);
-}, "~O,~O,~N,~N,~N,~N");
+function (context, canvas, x, y, width, height, isDTI) {
+J.awtjs2d.Display.drawImage (context, canvas, x, y, width, height, isDTI);
+}, "~O,~O,~N,~N,~N,~N,~B");
 Clazz.overrideMethod (c$, "requestFocusInWindow", 
 function (canvas) {
 J.awtjs2d.Display.requestFocusInWindow (canvas);

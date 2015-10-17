@@ -247,11 +247,11 @@ mo.put ("energy", Float.$valueOf (energy));
 if (symmetry != null) mo.put ("symmetry", symmetry);
 if (this.alphaBeta.length > 0) mo.put ("type", this.alphaBeta);
 this.setMO (mo);
-if (JU.Logger.debugging) {
+if (this.debugging) {
 JU.Logger.debug (coefs.length + " coefficients in MO " + this.orbitals.size ());
 }}this.line = l;
 }
-if (JU.Logger.debugging) JU.Logger.debug ("read " + this.orbitals.size () + " MOs");
+if (this.debugging) JU.Logger.debug ("read " + this.orbitals.size () + " MOs");
 this.setMOs ("eV");
 if (this.haveEnergy && this.doSort) this.sortMOs ();
 return false;

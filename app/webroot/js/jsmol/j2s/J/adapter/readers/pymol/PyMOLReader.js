@@ -566,7 +566,7 @@ if (this.isTrajectory && iState > 0) return null;
 var isNucleic = (J.adapter.readers.pymol.PyMOLReader.nucleic.indexOf (group3) >= 0);
 if (bsState != null) bsState.set (this.$ac);
 var label = J.adapter.readers.pymol.PyMOLReader.stringAt (a, 9);
-var ssType = J.adapter.readers.pymol.PyMOLReader.stringAt (a, 10);
+var ssType = J.adapter.readers.pymol.PyMOLReader.stringAt (a, 10).substring (0, 1);
 if (seqNo >= -1000 && (!ssType.equals (" ") || name.equals ("CA") || isNucleic)) {
 var bs = this.ssMapSeq.get (ssType);
 if (bs == null) this.ssMapSeq.put (ssType, bs =  new JU.BS ());
@@ -680,7 +680,8 @@ this.pymolScene.createShapeObjects (this.reps, this.allowSurface && !this.isHidd
 });
 Clazz.defineMethod (c$, "processMeshes", 
  function () {
-this.vwr.cachePut (this.pymolScene.surfaceInfoName, this.volumeData);
+var fileName = this.vwr.fm.getFilePath (this.pymolScene.surfaceInfoName, true, false);
+this.vwr.cachePut (fileName, this.volumeData);
 for (var i = this.mapObjects.size (); --i >= 0; ) {
 var obj = this.mapObjects.get (i);
 var objName = obj.get (obj.size () - 1).toString ();

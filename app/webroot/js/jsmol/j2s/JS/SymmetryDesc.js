@@ -397,7 +397,7 @@ pt.z = JS.SymmetryOperation.approxF (pt.z);
 }, "JU.T3");
 Clazz.defineMethod (c$, "getSymmetryInfo", 
 function (sym, iModel, iAtom, uc, xyz, op, pt, pt2, id, type, modelSet) {
-if (pt2 != null) return this.getSymmetryInfoString (sym, iModel, op, pt, pt2, (id == null ? "sym" : id), type == 1826248716 ? "label" : null, modelSet);
+if (pt2 != null) return this.getSymmetryInfoString (sym, iModel, op, pt, pt2, (id == null ? "sym" : id), type == 1825200146 ? "label" : null, modelSet);
 var isBio = uc.isBio ();
 var iop = op;
 var centering = null;
@@ -416,7 +416,7 @@ var opTemp = symTemp.getSpaceGroupOperation (i);
 if (!isBio) opTemp.centering = centering;
 var info;
 if (pt != null || iAtom >= 0) pt = JU.P3.newP (pt == null ? modelSet.at[iAtom] : pt);
-if (type == 135266320) {
+if (type == 134217751) {
 if (isBio) return "";
 symTemp.setUnitCell (uc.getUnitCellParams (), false);
 uc.toFractional (pt, false);
@@ -428,7 +428,7 @@ return sympt;
 }info = this.getDescription (opTemp, uc, pt, pt2, (id == null ? "sym" : id), modelSet);
 var ang = (info[9]).intValue ();
 switch (type) {
-case 135266306:
+case 1275068418:
 return info;
 case 1073742001:
 var sinfo =  Clazz.newArray (-1, [info[0], info[1], info[2], JU.Escape.eP (info[4]), JU.Escape.eP (info[5]), JU.Escape.eP (info[6]), JU.Escape.eP (info[7]), JU.Escape.eP (info[8]), "" + info[9], "" + JU.Escape.e (info[10])]);
@@ -436,7 +436,7 @@ return sinfo;
 case 1073741982:
 return info[0];
 default:
-case 1826248716:
+case 1825200146:
 return info[2];
 case 135176:
 return info[3];
@@ -444,12 +444,12 @@ case 1073742178:
 return info[5];
 case 12289:
 return info[6];
-case 135266320:
+case 134217751:
 return info[7];
 case 1073741854:
-case 135266319:
-return ((ang == 0) == (type == 135266319) ? info[8] : null);
-case 135266305:
+case 134217750:
+return ((ang == 0) == (type == 134217750) ? info[8] : null);
+case 134217729:
 return info[9];
 case 12:
 return info[10];
@@ -509,7 +509,7 @@ if (ops == null) {
 strOperations = "\n no symmetry operations";
 } else {
 isStandard = !isBio;
-if (isBio) sym.spaceGroup = (JS.SpaceGroup.getNull (false)).set (false);
+if (isBio) sym.spaceGroup = JS.SpaceGroup.getNull (false, false, false);
  else sym.setSpaceGroup (false);
 strOperations = "\n" + ops.length + " symmetry operations:";
 infolist =  new Array (ops.length);

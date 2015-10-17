@@ -33,7 +33,7 @@ for (var i = 0; i < this.slaterArray.length; i++) this.slaterArray[i] = this.sla
 }if (doScale) for (var i = 0; i < this.slaterArray.length; i++) {
 var sd = this.slaterArray[i];
 sd.coef *= this.scaleSlater (sd.x, sd.y, sd.z, sd.r, sd.zeta);
-if (JU.Logger.debugging) {
+if (this.debugging) {
 JU.Logger.debug ("SlaterReader " + i + ": " + sd.iAtom + " " + sd.x + " " + sd.y + " " + sd.z + " " + sd.r + " " + sd.zeta + " " + sd.coef);
 }}
 if (doSort) {

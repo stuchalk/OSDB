@@ -316,18 +316,18 @@ xyz = values[n++];
 break;
 }
 if (xyz != null) switch (tokType) {
-case 1146095626:
+case 1145047050:
 this.setAtomCoord (i, xyz.x, xyz.y, xyz.z);
 break;
-case 1146095627:
+case 1145047051:
 this.at[i].setFractionalCoordTo (xyz, true);
 this.taintAtom (i, 2);
 break;
-case 1146095629:
+case 1145047053:
 this.at[i].setFractionalCoordTo (xyz, false);
 this.taintAtom (i, 2);
 break;
-case 1146095631:
+case 1145047055:
 this.setAtomVibrationVector (i, xyz);
 break;
 }
@@ -380,97 +380,97 @@ if (n >= list.length) return;
 sValue = list[n++];
 }var atom = this.at[i];
 switch (tok) {
-case 1087375362:
+case 1086326786:
 this.taintAtom (i, 0);
 this.setAtomName (i, sValue);
 break;
-case 1095763969:
+case 1094715393:
 this.taintAtom (i, 13);
 this.setAtomNumber (i, iValue);
 break;
-case 1095761940:
+case 1094713365:
 this.taintAtom (i, 14);
 this.setAtomSeqID (i, iValue);
 break;
-case 1087375361:
+case 1086326785:
 this.taintAtom (i, 1);
 this.setAtomType (i, sValue);
 break;
-case 1112541185:
-case 1112541205:
+case 1111492609:
+case 1111492629:
 this.setAtomCoord (i, fValue, atom.y, atom.z);
 break;
-case 1112541186:
-case 1112541206:
+case 1111492610:
+case 1111492630:
 this.setAtomCoord (i, atom.x, fValue, atom.z);
 break;
-case 1112541187:
-case 1112541207:
+case 1111492611:
+case 1111492631:
 this.setAtomCoord (i, atom.x, atom.y, fValue);
 break;
-case 1112541202:
-case 1112541203:
-case 1112541204:
+case 1111492626:
+case 1111492627:
+case 1111492628:
 this.setVibrationVector2 (i, tok, fValue);
 break;
-case 1112541188:
-case 1112541189:
-case 1112541190:
+case 1111492612:
+case 1111492613:
+case 1111492614:
 atom.setFractionalCoord (tok, fValue, true);
 this.taintAtom (i, 2);
 break;
-case 1112541191:
-case 1112541192:
-case 1112541193:
+case 1111492615:
+case 1111492616:
+case 1111492617:
 atom.setFractionalCoord (tok, fValue, false);
 this.taintAtom (i, 2);
 break;
-case 1095763978:
-case 1087375365:
+case 1094715402:
+case 1086326789:
 this.setElement (atom, iValue);
 break;
-case 1632634891:
+case 1631586315:
 atom.setFormalCharge (iValue);
 this.taintAtom (i, 4);
 break;
-case 1114638362:
+case 1113589786:
 if (this.setHydrophobicity (i, fValue)) this.taintAtom (i, 5);
 break;
-case 1826248716:
-case 1288701959:
+case 1825200146:
+case 1287653388:
 this.vwr.shm.setAtomLabel (sValue, i);
 break;
-case 1129318401:
+case 1128269825:
 if (fValue < 2 && fValue > 0.01) fValue = 100 * fValue;
 if (this.setOccupancy (i, fValue)) this.taintAtom (i, 7);
 break;
-case 1112541195:
+case 1111492619:
 if (this.setPartialCharge (i, fValue)) this.taintAtom (i, 8);
 break;
-case 1112541194:
+case 1111492618:
 if (this.setBondingRadius (i, fValue)) this.taintAtom (i, 6);
 break;
-case 1666189314:
-case 1113200651:
+case 1665140738:
+case 1112152075:
 if (fValue < 0) fValue = 0;
  else if (fValue > 16) fValue = 16.1;
 atom.madAtom = (Clazz.floatToShort (fValue * 2000));
 break;
-case 1114638363:
+case 1113589787:
 this.vwr.slm.setSelectedAtom (atom.i, (fValue != 0));
 break;
-case 1112541196:
+case 1111492620:
 if (this.setBFactor (i, fValue)) this.taintAtom (i, 9);
 break;
-case 1095763987:
+case 1094715412:
 this.setAtomResno (i, iValue);
 this.taintAtom (i, 15);
 break;
-case 1095763991:
+case 1094715417:
 atom.setValence (iValue);
 this.taintAtom (i, 10);
 break;
-case 1649412120:
+case 1648363544:
 if (atom.setRadius (fValue)) this.taintAtom (i, 11);
  else this.untaint (i, 11);
 break;
@@ -480,11 +480,11 @@ return;
 }
 }
 switch (tok) {
-case 1114638363:
+case 1113589787:
 this.vwr.slm.setSelectedAtom (-1, false);
 break;
-case 1666189314:
-case 1113200651:
+case 1665140738:
+case 1112152075:
 this.vwr.setShapeSize (0, 2147483647, bs);
 }
 }, "JU.BS,~N,~N,~N,~S,~A,~A");
@@ -560,13 +560,13 @@ Clazz.defineMethod (c$, "setVibrationVector2",
 var v = this.getVibration (atomIndex, true);
 if (v == null) return;
 switch (tok) {
-case 1112541202:
+case 1111492626:
 v.x = fValue;
 break;
-case 1112541203:
+case 1111492627:
 v.y = fValue;
 break;
-case 1112541204:
+case 1111492628:
 v.z = fValue;
 break;
 }
@@ -918,6 +918,7 @@ if (n == 0) continue;
 var targetValence = this.aaRet[0];
 var hybridization = this.aaRet[2];
 var nBonds = this.aaRet[3];
+if (nBonds == 0 && atom.isHetero ()) continue;
 hAtoms[i] =  new Array (n);
 var hPt = 0;
 if (nBonds == 0) {
@@ -987,7 +988,7 @@ case 1:
 if (atomicNumber == 8 && atom === atom.group.getCarbonylOxygenAtom ()) {
 hAtoms[i] = null;
 continue;
-}if (this.getHybridizationAndAxes (i, atomicNumber, z, x, (hybridization == 2 || atomicNumber == 5 || atomicNumber == 7 && this.isAdjacentSp2 (atom) ? "sp2c" : "sp3d"), true, false) != null) {
+}if (this.getHybridizationAndAxes (i, atomicNumber, z, x, (hybridization == 2 || atomicNumber == 5 || atomicNumber == 7 && (atom.group.getNitrogenAtom () === atom || this.isAdjacentSp2 (atom)) ? "sp2c" : "sp3d"), true, false) != null) {
 pt = JU.P3.newP (z);
 pt.scaleAdd2 (dHX, z, atom);
 hAtoms[i][hPt++] = pt;
@@ -1492,55 +1493,55 @@ Clazz.defineMethod (c$, "getAtomBitsMDa",
 function (tokType, specInfo, bs) {
 var iSpec = (Clazz.instanceOf (specInfo, Integer) ? (specInfo).intValue () : 0);
 switch (tokType) {
-case 1087375362:
-case 1087375361:
-var isType = (tokType == 1087375361);
+case 1086326786:
+case 1086326785:
+var isType = (tokType == 1086326785);
 var names = "," + specInfo + ",";
 for (var i = this.ac; --i >= 0; ) {
 var s = (isType ? this.at[i].getAtomType () : this.at[i].getAtomName ());
 if (names.indexOf ("," + s + ",") >= 0) bs.set (i);
 }
 return bs;
-case 1095763969:
+case 1094715393:
 for (var i = this.ac; --i >= 0; ) if (this.at[i].getAtomNumber () == iSpec) bs.set (i);
 
 return bs;
-case 3145731:
+case 2097155:
 for (var i = this.ac; --i >= 0; ) if (this.at[i].getCovalentBondCount () > 0) bs.set (i);
 
 return bs;
-case 3145764:
-case 3145732:
-case 137363467:
-case 3145742:
-case 3145744:
-case 3145746:
-case 3145748:
-case 3145750:
-case 3145760:
+case 2097188:
+case 2097156:
+case 136314895:
+case 2097166:
+case 2097168:
+case 2097170:
+case 2097172:
+case 2097174:
+case 2097184:
 return (this.haveBioModels ? this.bioModelset.getAtomBitsBS (tokType, null, bs) : bs);
-case 1613758470:
+case 1612709894:
 for (var i = this.ac; --i >= 0; ) if (this.at[i].isHetero ()) bs.set (i);
 
 return bs;
-case 1613758476:
+case 1612709900:
 for (var i = this.ac; --i >= 0; ) if (this.at[i].getElementNumber () == 1) bs.set (i);
 
 return bs;
 case 1073741824:
 return this.getIdentifierOrNull (specInfo);
-case 3145741:
+case 2097165:
 for (var i = this.ac; --i >= 0; ) if (this.at[i].isLeadAtom ()) bs.set (i);
 
 return bs;
-case 1095761937:
-case 1641025539:
+case 1094713362:
+case 1639976963:
 return (this.haveBioModels ? this.bioModelset.getAtomBitsBS (tokType, specInfo, bs) : bs);
-case 1095763987:
+case 1094715412:
 for (var i = this.ac; --i >= 0; ) if (this.at[i].getResno () == iSpec) bs.set (i);
 
 return bs;
-case 1613758488:
+case 1612709912:
 var hs =  Clazz.newIntArray (2, 0);
 var a;
 for (var i = this.ac; --i >= 0; ) {
@@ -1559,12 +1560,12 @@ bs.set (hs[0]);
 bs.set (i);
 }}}
 return bs;
-case 1048607:
+case 1073742355:
 var spec = specInfo;
 for (var i = this.ac; --i >= 0; ) if (this.isAltLoc (this.at[i].altloc, spec)) bs.set (i);
 
 return bs;
-case 1048608:
+case 1073742356:
 var atomSpec = (specInfo).toUpperCase ();
 if (atomSpec.indexOf ("\\?") >= 0) atomSpec = JU.PT.rep (atomSpec, "\\?", "\1");
 var allowStar = atomSpec.startsWith ("?*");
@@ -1572,17 +1573,21 @@ if (allowStar) atomSpec = atomSpec.substring (1);
 for (var i = this.ac; --i >= 0; ) if (this.isAtomNameMatch (this.at[i], atomSpec, allowStar, allowStar)) bs.set (i);
 
 return bs;
-case 1048609:
+case 1073742357:
 return JU.BSUtil.copy (this.getChainBits (iSpec));
-case 1048612:
+case 1073742360:
 return this.getSpecName (specInfo);
-case 1048613:
+case 1073742361:
 for (var i = this.ac; --i >= 0; ) if (this.at[i].group.groupID == iSpec) bs.set (i);
 
 return bs;
-case 1048614:
+case 1073742362:
 return JU.BSUtil.copy (this.getSeqcodeBits (iSpec, true));
-case 1297090050:
+case 5:
+for (var i = this.ac; --i >= 0; ) if (this.at[i].group.getInsCode () == iSpec) bs.set (i);
+
+return bs;
+case 1296041474:
 for (var i = this.ac; --i >= 0; ) if (this.at[i].getSymOp () == iSpec) bs.set (i);
 
 return bs;
@@ -1592,35 +1597,35 @@ var bsInfo = specInfo;
 var i0 = bsInfo.nextSetBit (0);
 if (i0 < 0) return bs;
 switch (tokType) {
-case 1095766030:
+case 1094717454:
 bsTemp = JU.BSUtil.copy (bsInfo);
 for (var i = i0; i >= 0; i = bsTemp.nextSetBit (i + 1)) {
 bs.or ((this).am[this.at[i].mi].bsAtoms);
 bsTemp.andNot (bs);
 }
 return bs;
-case 1087373316:
+case 1086324740:
 bsTemp = JU.BSUtil.copy (bsInfo);
 for (var i = i0; i >= 0; i = bsTemp.nextSetBit (i + 1)) {
 this.at[i].group.chain.setAtomBits (bs);
 bsTemp.andNot (bs);
 }
 return bs;
-case 1087375365:
+case 1086326789:
 bsTemp =  new JU.BS ();
 for (var i = i0; i >= 0; i = bsInfo.nextSetBit (i + 1)) bsTemp.set (this.at[i].getElementNumber ());
 
 for (var i = this.ac; --i >= 0; ) if (bsTemp.get (this.at[i].getElementNumber ())) bs.set (i);
 
 return bs;
-case 1087373318:
+case 1086324742:
 bsTemp = JU.BSUtil.copy (bsInfo);
 for (var i = i0; i >= 0; i = bsTemp.nextSetBit (i + 1)) {
 this.at[i].group.setAtomBits (bs);
 bsTemp.andNot (bs);
 }
 return bs;
-case 1095761941:
+case 1094713366:
 bsTemp =  new JU.BS ();
 for (var i = i0; i >= 0; i = bsInfo.nextSetBit (i + 1)) bsTemp.set (this.at[i].atomSite);
 
@@ -1670,7 +1675,7 @@ switch (insCode) {
 case '?':
 for (var i = this.ac; --i >= 0; ) {
 var atomSeqcode = this.at[i].group.seqcode;
-if (!haveSeqNumber || seqNum == JM.Group.getSeqNumberFor (atomSeqcode) && JM.Group.getInsertionCodeFor (atomSeqcode) != 0) {
+if ((!haveSeqNumber || seqNum == JM.Group.getSeqNumberFor (atomSeqcode)) && JM.Group.getInsertionCodeFor (atomSeqcode) != 0) {
 bs.set (i);
 isEmpty = false;
 }}

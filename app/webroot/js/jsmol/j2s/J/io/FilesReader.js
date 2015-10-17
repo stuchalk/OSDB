@@ -38,7 +38,7 @@ this.atomSetCollection = this.vwr.getModelAdapter ().getAtomSetCollectionFromSet
 JU.Logger.error ("file ERROR: " + this.atomSetCollection);
 return;
 }if (!this.isAppend && !this.vwr.displayLoadErrors) this.vwr.zap (false, true, false);
-this.fm.setFileInfo ( Clazz.newArray (-1, [this.dataReaders == null ? "file[]" : "String[]"]));
+this.fm.setFileInfo ( Clazz.newArray (-1, [this.dataReaders == null ? this.fullPathNamesIn[0] : "String[]"]));
 });
 Clazz.overrideMethod (c$, "getBufferedReaderOrBinaryDocument", 
 function (i, forceBinary) {

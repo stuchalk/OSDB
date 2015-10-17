@@ -7,6 +7,7 @@
 // (local scope) Clazz_xxx, allowing them to be further compressed using
 // Google Closure Compiler in that same ANT task.
 
+// BH 9/19/2015 11:05:45 PM Float.isInfinite(), Float.isNaN(), Double.isInfinite(), Double.isNaN() all not implemented
 // BH 5/31/2015 5:53:04 PM Number.compareTo added
 // BH 5/21/2015 5:46:30 PM Number("0xFFFFFFFF") is not -1
 // BH 4/23/2015 9:08:59 AM xx.getComponentType() is nonfunctional. Array.newInstance now defines a wrapper for .getClass().getComponentType() that works  
@@ -597,12 +598,12 @@ Float.$valueOf=Float.prototype.$valueOf;
 
 Clazz.defineMethod(Float,"isNaN",
 function(num){
-return isNaN(num);
+return isNaN(arguments.length == 1 ? num : this.valueOf());
 },"Number");
 Float.isNaN=Float.prototype.isNaN;
 Clazz.defineMethod(Float,"isInfinite",
 function(num){
-return!isFinite(num);
+return!isFinite(arguments.length == 1 ? num : this.valueOf());
 },"Number");
 Float.isInfinite=Float.prototype.isInfinite;
 
@@ -645,12 +646,12 @@ Double.TYPE=Double.prototype.TYPE=Double;
 
 Clazz.defineMethod(Double,"isNaN",
 function(num){
-return isNaN(num);
+return isNaN(arguments.length == 1 ? num : this.valueOf());
 },"Number");
 Double.isNaN=Double.prototype.isNaN;
 Clazz.defineMethod(Double,"isInfinite",
 function(num){
-return!isFinite(num);
+return!isFinite(arguments.length == 1 ? num : this.valueOf());
 },"Number");
 Double.isInfinite=Double.prototype.isInfinite;
 

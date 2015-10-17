@@ -22,9 +22,9 @@ function () {
 this.readPRE = this.checkFilterKey ("PRE");
 var s;
 s = this.getFilter ("CA=");
-if (s != null) this.fracB = (1 - this.parseFloatStr (s.substring (1)));
+if (s != null) this.fracB = (1 - this.parseFloatStr (s));
 s = this.getFilter ("CB=");
-if (s != null) this.fracB = this.parseFloatStr (s.substring (1));
+if (s != null) this.fracB = this.parseFloatStr (s);
 s = this.getFilter ("LIST=");
 this.listKey = (s == null ? "HF" : s);
 this.listKeyCase = this.listKey;

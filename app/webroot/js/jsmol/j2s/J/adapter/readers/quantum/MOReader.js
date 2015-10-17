@@ -23,14 +23,20 @@ Clazz.instantialize (this, arguments);
 }, J.adapter.readers.quantum, "MOReader", J.adapter.readers.quantum.BasisFunctionReader);
 Clazz.overrideMethod (c$, "initializeReader", 
 function () {
-this.line = "\nNBOs in the AO basis:";
-this.getNBOs = this.filterMO ();
+this.line = "\nNBOs";
+this.getNBOs = (this.filter != null && this.filterMO ());
 this.line = "\nNBOCHARGES";
 this.getNBOCharges = (this.filter != null && this.filterMO ());
-if (this.filter == null) return;
-var f = JU.PT.rep (this.filter, "NBOCHARGES", "");
-if (f.length < 3) this.filter = null;
+this.checkAndRemoveFilterKey ("NBOCHARGES");
+if (this.filter != null && this.filter.length < 3) this.filter = null;
 });
+Clazz.defineMethod (c$, "checkAndRemoveFilterKey", 
+function (key) {
+if (!this.checkFilterKey (key)) return false;
+this.filter = JU.PT.rep (this.filter, key, "");
+if (this.filter.length == 0) this.filter = null;
+return true;
+}, "~S");
 Clazz.defineMethod (c$, "checkNboLine", 
 function () {
 if (this.getNBOs) {
@@ -66,7 +72,7 @@ if (tokens == null || tokens.length < 3 || Float.isNaN (charge = this.parseFloat
 JU.Logger.info ("Error reading NBO charges: " + this.line);
 return;
 }atoms[i].partialCharge = charge;
-if (JU.Logger.debugging) JU.Logger.debug ("Atom " + i + " using NBOcharge: " + charge);
+if (this.debugging) JU.Logger.debug ("Atom " + i + " using NBOcharge: " + charge);
 }
 JU.Logger.info ("Using NBO charges for Model " + this.asc.atomSetCount);
 });
@@ -112,7 +118,7 @@ var haveMOs = false;
 if (this.line.indexOf ("---") >= 0) this.rd ();
 while (this.rd () != null) {
 var tokens = this.getTokens ();
-if (JU.Logger.debugging) {
+if (this.debugging) {
 JU.Logger.debug (tokens.length + " --- " + this.line);
 }if (this.line.indexOf ("end") >= 0) break;
 if (this.line.indexOf (" ALPHA SET ") >= 0) {

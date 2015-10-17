@@ -84,35 +84,35 @@ info <a href="javascript:Jmol.showInfo(astex0, true)">show</a>
 <a href="javascript:Jmol.showInfo(astex0, false)">hide</a>
 
 </td><td valign=top>
-<br /><br /> 
+<br><br> 
 
 <span style=color:red>
 This page is only for debugging. It is a test of porting OpenAstexViewer to JavaScript and loads slowly because it is reading uncompressed individual files.
 As of July 24, 2014, OpenAstexViewer/HTML5 is loading small molecules
 from NCI and PubChem, reading PDB files from RCSB (San Diego), reading mmCIF files from EBI (Cambridge, UK), creating surfaces, and drawing bonds, atoms, and 
 cartoons.
-<br /><br /> 
+<br><br> 
 Use the search box to load a new molecule via one of the four databases. Enter commands into the text area and press EXECUTE to execute an <a target=_blank href=http://openastexviewer.net/web/scripting.html>OpenAstexViewer script command</a>.
    </span>
-<br /><br /> 
+<br><br> 
 <table cellpadding=5><tr><td valign=top>
 <a href="javascript:Jmol.script(astex0,'surface -solid true s red all;')">surface -solid true s red all;</a> (takes a few seconds)
-<br />
+<br>
 <a href="javascript:Jmol.script(astex0,'surface -solid false s orange all;')">surface -solid false s orange all;</a>
-<br />
+<br>
 <a href="javascript:Jmol.script(astex0,'display wide all;')">display wide all;</a>
-<br />
+<br>
 <a href="javascript:Jmol.script(astex0,'display sticks all;display lines none;')">display sticks all;display lines none;</a>
-<br />
+<br>
 <a href="javascript:Jmol.script(astex0,'clip 5;')">clip 5;</a>
 <a href="javascript:Jmol.script(astex0,'clip 10;')">clip 10;</a>
 <a href="javascript:Jmol.script(astex0,'clip 100;')">clip 100;</a>
-<br /><a href="javascript:Jmol.script(astex0,'secstruc all;schematic -name -colorbyss true &quot;ts&quot; all;')">secstruc all;schematic -name -colorbyss true 'ts' all;</a>
-<br /><a href="javascript:Jmol.script(astex0,'background white;')">background white;</a> 
+<br><a href="javascript:Jmol.script(astex0,'secstruc all;schematic -name -colorbyss true &quot;ts&quot; all;')">secstruc all;schematic -name -colorbyss true 'ts' all;</a>
+<br><a href="javascript:Jmol.script(astex0,'background white;')">background white;</a> 
 <a href="javascript:Jmol.script(astex0,'background black;')">background black;</a>
-<br />
-<br />Enter commands here, terminated with semicolons:
-<br /><textarea id=cmd style="width:500px;height:100px">molecule remove *; object remove *; molecule load test "http://www.ebi.ac.uk/pdbe/entry-files/pdb1d66.ent"</textarea><input type=button value="execute" onclick="javascript:Jmol.script(astex0,$('#cmd').val().replace(/\\n/g,';')+';')" />
+<br>
+<br>Enter commands here, terminated with semicolons:
+<br><textarea id=cmd style="width:500px;height:100px">molecule remove *; object remove *; molecule load test "http://www.ebi.ac.uk/pdbe/entry-files/pdb1d66.ent"</textarea><input type=button value="execute" onclick="javascript:Jmol.script(astex0,$('#cmd').val().replace(/\\n/g,';')+';')" />
 
 
 </td></tr></table>

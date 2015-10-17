@@ -35,17 +35,17 @@ var carbon1 = residue1.getCarbonylCarbonAtom ();
 var nitrogen2 = residue2.getNitrogenAtom ();
 var alphacarbon2 = residue2.getLeadAtom ();
 var carbon2 = residue2.getCarbonylCarbonAtom ();
-residue2.setGroupParameter (1112539145, JU.Measure.computeTorsion (carbon1, nitrogen2, alphacarbon2, carbon2, true));
-residue1.setGroupParameter (1112539146, JU.Measure.computeTorsion (nitrogen1, alphacarbon1, carbon1, nitrogen2, true));
-residue1.setGroupParameter (1112539144, JU.Measure.computeTorsion (alphacarbon1, carbon1, nitrogen2, alphacarbon2, true));
+residue2.setGroupParameter (1111490569, JU.Measure.computeTorsion (carbon1, nitrogen2, alphacarbon2, carbon2, true));
+residue1.setGroupParameter (1111490570, JU.Measure.computeTorsion (nitrogen1, alphacarbon1, carbon1, nitrogen2, true));
+residue1.setGroupParameter (1111490568, JU.Measure.computeTorsion (alphacarbon1, carbon1, nitrogen2, alphacarbon2, true));
 }, "JM.AminoMonomer,JM.AminoMonomer");
 Clazz.overrideMethod (c$, "calculateRamachandranHelixAngle", 
 function (m, qtype) {
-var psiLast = (m == 0 ? NaN : this.monomers[m - 1].getGroupParameter (1112539146));
-var psi = this.monomers[m].getGroupParameter (1112539146);
-var phi = this.monomers[m].getGroupParameter (1112539145);
-var phiNext = (m == this.monomerCount - 1 ? NaN : this.monomers[m + 1].getGroupParameter (1112539145));
-var psiNext = (m == this.monomerCount - 1 ? NaN : this.monomers[m + 1].getGroupParameter (1112539146));
+var psiLast = (m == 0 ? NaN : this.monomers[m - 1].getGroupParameter (1111490570));
+var psi = this.monomers[m].getGroupParameter (1111490570);
+var phi = this.monomers[m].getGroupParameter (1111490569);
+var phiNext = (m == this.monomerCount - 1 ? NaN : this.monomers[m + 1].getGroupParameter (1111490569));
+var psiNext = (m == this.monomerCount - 1 ? NaN : this.monomers[m + 1].getGroupParameter (1111490570));
 switch (qtype) {
 default:
 case 'p':
@@ -167,8 +167,8 @@ var structureTags =  Clazz.newCharArray (this.monomerCount, '\0');
 for (var i = 0; i < this.monomerCount - 1; ++i) {
 var leadingResidue = this.monomers[i];
 var trailingResidue = this.monomers[i + 1];
-var phi = trailingResidue.getGroupParameter (1112539145);
-var psi = leadingResidue.getGroupParameter (1112539146);
+var phi = trailingResidue.getGroupParameter (1111490569);
+var psi = leadingResidue.getGroupParameter (1111490570);
 if (this.isHelix (psi, phi)) {
 structureTags[i] = (phi < 0 && psi < 25 ? '4' : '3');
 } else if (this.isSheet (psi, phi)) {
@@ -177,7 +177,7 @@ structureTags[i] = 's';
 structureTags[i] = 't';
 } else {
 structureTags[i] = 'n';
-}if (JU.Logger.debugging) JU.Logger.debug ((0 + this.monomers[0].chain.chainID) + " aminopolymer:" + i + " " + trailingResidue.getGroupParameter (1112539145) + "," + leadingResidue.getGroupParameter (1112539146) + " " + structureTags[i]);
+}if (JU.Logger.debugging) JU.Logger.debug ((0 + this.monomers[0].chain.chainID) + " aminopolymer:" + i + " " + trailingResidue.getGroupParameter (1111490569) + "," + leadingResidue.getGroupParameter (1111490570) + " " + structureTags[i]);
 }
 for (var start = 0; start < this.monomerCount; ++start) {
 if (structureTags[start] == '4') {

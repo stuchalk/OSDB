@@ -49,7 +49,7 @@ switch (addRemove) {
 default:
 var bsAll = modelSet.getModelAtomBitSetIncludingDeleted (-1, false);
 this.bsHidden.or (bsAll);
-case 1276118017:
+case 1275069441:
 if (bs != null) this.bsHidden.andNot (bs);
 break;
 case 1073742119:
@@ -77,7 +77,7 @@ c$.setBitSet = Clazz.defineMethod (c$, "setBitSet",
 switch (addRemove) {
 default:
 bsWhat.clearAll ();
-case 1276118017:
+case 1275069441:
 if (bs != null) bsWhat.or (bs);
 break;
 case 1073742119:
@@ -106,8 +106,8 @@ Clazz.defineMethod (c$, "select",
 function (bs, addRemove, isQuiet) {
 if (bs == null) {
 this.selectAll (true);
-if (!this.vwr.getBoolean (1613758476)) this.excludeSelectionSet (this.vwr.ms.getAtoms (1613758476, null));
-if (!this.vwr.getBoolean (1613758470)) this.excludeSelectionSet (this.vwr.ms.getAtoms (1613758470, null));
+if (!this.vwr.getBoolean (1612709900)) this.excludeSelectionSet (this.vwr.ms.getAtoms (1612709900, null));
+if (!this.vwr.getBoolean (1612709894)) this.excludeSelectionSet (this.vwr.ms.getAtoms (1612709894, null));
 this.selectionChanged (false);
 } else {
 this.setSelectionSet (bs, addRemove);

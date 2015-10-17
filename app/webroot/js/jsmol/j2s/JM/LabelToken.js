@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JM");
-Clazz.load (null, "JM.LabelToken", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.PT", "$.SB", "$.T3", "JS.SV", "$.T", "JU.Edge"], function () {
+Clazz.load (null, "JM.LabelToken", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.PT", "$.SB", "$.T3", "JS.SV", "$.T", "JU.Edge", "JV.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.text = null;
 this.key = null;
@@ -132,8 +132,10 @@ return sb.toString ();
 c$.setToken = Clazz.defineMethod (c$, "setToken", 
  function (vwr, strFormat, lt, cch, chAtom, htValues) {
 var ich = lt.pt + 1;
-if (ich >= cch) return ich;
-var ch;
+if (ich >= cch) {
+lt.text = "%";
+return ich;
+}var ch;
 if (strFormat.charAt (ich) == '-') {
 lt.alignLeft = true;
 ++ich;
@@ -168,11 +170,14 @@ ich = cch;
 break;
 }var propertyName = strFormat.substring (ich, ichClose).toLowerCase ();
 if (propertyName.startsWith ("property_")) {
-lt.tok = 135270408;
-lt.data = vwr.getDataFloat (propertyName);
+lt.tok = 134221834;
+lt.data = vwr.getDataObj (propertyName, null, 1);
 } else if (propertyName.startsWith ("validation.")) {
 lt.tok = 1073742189;
-lt.data = vwr.getDataFloat ("property_" + propertyName.substring (11));
+lt.data = vwr.getDataObj ("property_" + propertyName.substring (11), null, 1);
+} else if (propertyName.startsWith ("unitid")) {
+lt.tok = 1073741974;
+lt.data = Integer.$valueOf (JV.JC.getUnitIDFlags (propertyName.substring (6)));
 } else {
 var token = JS.T.getTokenFromName (propertyName);
 if (token != null && JM.LabelToken.isLabelPropertyTok (token.tok)) lt.tok = token.tok;
@@ -184,20 +189,20 @@ if (ichCloseBracket < ich) {
 ich = cch;
 break;
 }var s = strFormat.substring (ich, ichCloseBracket);
-lt.data = vwr.getDataFloat (s);
+lt.data = vwr.getDataObj (s, null, 1);
 if (lt.data == null) {
-lt.data = vwr.getData (s);
-if (Clazz.instanceOf (lt.data, Array)) {
+lt.data = vwr.getDataObj (s, null, -1);
+if (lt.data != null) {
 lt.data = (lt.data)[1];
 if (Clazz.instanceOf (lt.data, String)) lt.data = JU.PT.split (lt.data, "\n");
 if (!(JU.AU.isAS (lt.data))) lt.data = null;
 }if (lt.data == null) {
-lt.tok = 1716520985;
+lt.tok = 1715472409;
 lt.data = s;
 } else {
-lt.tok = 135266306;
+lt.tok = 1275068418;
 }} else {
-lt.tok = 135270408;
+lt.tok = 134221834;
 }ich = ichCloseBracket + 1;
 break;
 default:
@@ -223,13 +228,16 @@ var floatT = NaN;
 var ptT = null;
 try {
 switch (t.tok) {
-case 1095761923:
+case 1094713347:
 strT = "" + (indices == null ? atom.i : indices[atom.i]);
 break;
-case 1766856708:
+case 1765808134:
 ptT = atom.atomPropertyTuple (vwr, t.tok, ptTemp);
 break;
-case 135270408:
+case 1073741974:
+strT = atom.getUnitID ((t.data).intValue ());
+break;
+case 134221834:
 case 1073742189:
 if (t.data != null) {
 floatT = (t.data)[atom.i];
@@ -247,7 +255,7 @@ strT += "," + o.get (i);
 }
 if (strT.length > 1) strT = strT.substring (1);
 }}}break;
-case 1716520985:
+case 1715472409:
 var data = vwr.ms.getInfo (atom.mi, t.data);
 var iatom = atom.i - vwr.ms.am[atom.mi].firstAtomIndex;
 var o = null;
@@ -268,77 +276,71 @@ ptT = o;
 } else {
 strT = o.toString ();
 }break;
-case 135266306:
+case 1275068418:
 if (t.data != null) {
 var sdata = t.data;
 strT = (atom.i < sdata.length ? sdata[atom.i] : "");
 }break;
-case 1632634891:
+case 1631586315:
 var formalCharge = atom.getFormalCharge ();
 strT = (formalCharge > 0 ? "" + formalCharge + "+" : formalCharge < 0 ? "" + -formalCharge + "-" : "");
 break;
-case 'g':
-strT = "" + atom.group.selectedIndex;
-break;
-case 1095766030:
+case 1094717454:
 strT = atom.getModelNumberForLabel ();
 break;
-case 'O':
-strT = atom.getSymmetryOperatorList (false);
-break;
-case 1129318401:
+case 1128269825:
 strT = "" + atom.atomPropertyInt (t.tok);
 break;
-case 'Q':
-floatT = atom.getOccupancy100 () / 100;
-break;
-case 1666189314:
+case 1665140738:
 floatT = atom.atomPropertyFloat (vwr, t.tok, ptTemp);
 break;
-case 'r':
-strT = atom.group.getSeqcodeString ();
-if (strT == null) strT = "1";
-break;
-case 1087373324:
+case 1086324749:
 strT = atom.group.getStructureId ();
 break;
-case 1095761942:
+case 1094713367:
 var id = atom.group.getStrucNo ();
 strT = (id <= 0 ? "" : "" + id);
 break;
-case 1112539150:
-if (Float.isNaN (floatT = atom.group.getGroupParameter (1112539150))) strT = "null";
+case 1111490574:
+if (Float.isNaN (floatT = atom.group.getGroupParameter (1111490574))) strT = "null";
 break;
-case 1112541202:
-case 1112541203:
-case 1112541204:
-case 1112539159:
-case 1112539160:
-case 1112539161:
-case 1112539162:
+case 1111492626:
+case 1111492627:
+case 1111492628:
+case 1111490583:
+case 1111490584:
+case 1111490585:
+case 1111490586:
 floatT = atom.atomPropertyFloat (vwr, t.tok, ptTemp);
 if (Float.isNaN (floatT)) strT = "";
 break;
-case 1641025539:
-case 1238369286:
+case 1086324747:
+case 1639976963:
+case 1237320707:
 strT = atom.atomPropertyString (vwr, t.tok);
 break;
-case 'W':
+case 1140850705:
 strT = atom.getIdentityXYZ (false, ptTemp);
 break;
+case 79:
+strT = atom.getSymmetryOperatorList (false);
+break;
+case 81:
+floatT = atom.getOccupancy100 () / 100;
+break;
 default:
-switch (t.tok & 1137704960) {
-case 1095761920:
+switch (t.tok & 1136656384) {
+case 1094713344:
 if (t.intAsFloat) floatT = atom.atomPropertyInt (t.tok);
  else strT = "" + atom.atomPropertyInt (t.tok);
 break;
-case 1112539136:
+case 1111490560:
 floatT = atom.atomPropertyFloat (vwr, t.tok, ptTemp);
 break;
-case 1087373312:
+case 1086324736:
 strT = atom.atomPropertyString (vwr, t.tok);
 break;
-case 1078984704:
+case 1077936128:
 ptT = atom.atomPropertyTuple (vwr, t.tok, ptTemp);
 if (ptT == null) strT = "";
 break;
@@ -374,8 +376,8 @@ return this.text;
 }}, "~N,~S,JU.T3");
 Clazz.defineStatics (c$,
 "labelTokenParams", "AaBbCcDEefGgIiLlMmNnOoPpQqRrSsTtUuVvWXxxYyyZzz%%%gqW",
-"labelTokenIds",  Clazz.newIntArray (-1, [1087373315, 1087375362, 1087375361, 1112541196, 1632634891, 1087373316, 1095761923, 1087373322, 1087375365, 1112539145, 1095761933, 'g', 1112541194, 1095763969, 1095761938, 1095763978, 1095766030, 1087373319, 1095761936, 1087373318, 'O', 1089470478, 1112541195, 1112539146, 'Q', 1129318401, 1095763987, 'r', 1095761941, 1087373316, 1112539150, 1112541196, 1087373321, 1112539151, 1649412120, 1146095631, 'W', 1112541188, 1112541185, 1112541205, 1112541189, 1112541186, 1112541206, 1112541190, 1112541187, 1112541207, 1115297793, 1113200642, 1113198595, 1113198596, 1113198597, 1113200646, 1113200647, 1113200649, 1113200650, 1113200652, 1650071565, 1113200654, 1112539137, 1112539138, 1095761922, 1229980163, 1766856708, 1095761932, 1112539140, 1229984263, 1288701959, 1826248716, 1112539143, 1095761935, 1112539141, 1112539144, 1095761937, 1716520985, 1666189314, 1114638363, 1087373323, 1087373320, 1113200651, 1641025539, 1238369286, 1095761942, 1087373324, 1087375373, 1112539152, 1112539153, 1112539154, 1112539155, 1095763991, 1649410049, 1112541202, 1112541203, 1112541204, 1313866249, 1146093582, 1146095627, 1146095626, 1146095629, 1112541191, 1112541192, 1112541193, 1114638362, 1112539147, 1112539148, 1112539149, 1146095628, 1112539142, 1112539139, 1095761927, 1095761940, 1112539159, 1112539160, 1112539161, 1112539162, 1146093584, 1297090050]),
+"labelTokenIds",  Clazz.newIntArray (-1, [1086324739, 1086326786, 1086326785, 1111492620, 1631586315, 1086324740, 1094713347, 1086324746, 1086326789, 1111490569, 1094713357, 1094713361, 1111492618, 1094715393, 1094713363, 1094715402, 1094717454, 1086324743, 1094713360, 1086324742, 79, 1088421903, 1111492619, 1111490570, 81, 1128269825, 1094715412, 1086324747, 1094713366, 1086324740, 1111490574, 1111492620, 1086324745, 1111490575, 1648363544, 1145047055, 1140850705, 1111492612, 1111492609, 1111492629, 1111492613, 1111492610, 1111492630, 1111492614, 1111492611, 1111492631, 1114249217, 1112152066, 1112150019, 1112150020, 1112150021, 1112152070, 1112152071, 1112152073, 1112152074, 1112152076, 1649022989, 1112152078, 1111490561, 1111490562, 1094713346, 1228931587, 1765808134, 1094713356, 1111490564, 1228935687, 1287653388, 1825200146, 1111490567, 1094713359, 1111490565, 1111490568, 1094713362, 1715472409, 1665140738, 1113589787, 1086324748, 1086324744, 1112152075, 1639976963, 1237320707, 1094713367, 1086324749, 1086326798, 1111490576, 1111490577, 1111490578, 1111490579, 1094715417, 1648361473, 1111492626, 1111492627, 1111492628, 1312817669, 1145045006, 1145047051, 1145047050, 1145047053, 1111492615, 1111492616, 1111492617, 1113589786, 1111490571, 1111490572, 1111490573, 1145047052, 1111490566, 1111490563, 1094713351, 1094713365, 1111490583, 1111490584, 1111490585, 1111490586, 1145045008, 1296041474]),
 "STANDARD_LABEL", "%[identify]",
 "twoCharLabelTokenParams", "fuv",
-"twoCharLabelTokenIds",  Clazz.newIntArray (-1, [1112541188, 1112541189, 1112541190, 1112539153, 1112539154, 1112539155, 1112541202, 1112541203, 1112541204]));
+"twoCharLabelTokenIds",  Clazz.newIntArray (-1, [1111492612, 1111492613, 1111492614, 1111490577, 1111490578, 1111490579, 1111492626, 1111492627, 1111492628]));
 });

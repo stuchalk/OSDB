@@ -32,7 +32,7 @@ this.maxSerial = 0;
 this.haveHsAlready = false;
 if (modelLoader == null) {
 this.ms = null;
-this.bsAddedHydrogens = this.bsAtomsForHs = null;
+this.bsAddedHydrogens = this.bsAtomsForHs = this.bsAssigned = null;
 this.htBondMap = null;
 this.htGroupBonds = null;
 this.hNames = null;
@@ -351,7 +351,7 @@ Clazz.defineMethod (c$, "fixAnnotations",
 var o = this.ml.ms.getInfo (i, name);
 if (o != null) {
 var dbObj = (this.ml.ms.bioModelset).getCachedAnnotationMap (name, o);
-if (dbObj != null) this.vwr.getAnnotationParser ().fixAtoms (i, dbObj, this.bsAddedMask, type, 20);
+if (dbObj != null) this.vwr.getAnnotationParser (false).fixAtoms (i, dbObj, this.bsAddedMask, type, 20);
 }}, "~N,~S,~N");
 Clazz.defineMethod (c$, "finalizePdbCharges", 
  function () {
@@ -710,13 +710,13 @@ return JM.Resolver.specialAtomNames[atomID];
 Clazz.overrideMethod (c$, "getArgbs", 
 function (tok) {
 switch (tok) {
-case 3145730:
+case 2097154:
 return JM.Resolver.argbsAmino;
 case 1073742144:
 return JM.Resolver.argbsShapely;
-case 1141899265:
+case 1140850689:
 return JM.Resolver.argbsChainAtom;
-case 1613758470:
+case 1612709894:
 return JM.Resolver.argbsChainHetero;
 }
 return null;

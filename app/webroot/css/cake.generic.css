@@ -792,7 +792,7 @@ div.chemical {
 	margin: 10px;
 	padding: 10px;
 	background-color: #dddddd;
-	width: 190px;
+	width: 230px;
 }
 
 .float {
@@ -804,4 +804,12 @@ div.chemical {
     background-color: #dddddd;
     width: 350px;
     padding: 0 10px;
+}
+.linkbutton {
+    color: white;
+    font-weight: bold;
+    background-color: #8e076c;
+    text-decoration: none;
+    border-radius: 5px;
+    padding: 3px;
 }

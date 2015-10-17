@@ -22,7 +22,11 @@ function () {
 if (!this.g3d.checkTranslucent (false)) return false;
 if (this.atomPt == null) this.atomPt =  new JU.Point3fi ();
 var measures = this.shape;
-this.doJustify = this.vwr.getBoolean (603979871);
+if (measures.ms !== this.ms) {
+System.out.println ("!measure wrong modelset!");
+measures.clear ();
+return false;
+}this.doJustify = this.vwr.getBoolean (603979871);
 this.modulating = this.ms.bsModulated != null;
 this.imageFontScaling = this.vwr.imageFontScaling;
 this.mad0 = measures.mad;
@@ -223,7 +227,16 @@ this.renderLabelOrMeasure (this.m.text, s);
 }}, "~S,JU.Point3fi,JU.Point3fi,JU.Point3fi,JU.Point3fi");
 Clazz.defineMethod (c$, "renderPendingMeasurement", 
  function () {
+try {
 this.getPoints ();
+} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+(this.shape).mPending = null;
+return;
+} else {
+throw e;
+}
+}
 var renderLabel = (this.m.traceX == -2147483648);
 this.g3d.setC (this.labelColix = (renderLabel ? this.vwr.cm.colixRubberband : this.count == 2 ? 20 : 23));
 if ((this.m).haveTarget) {

@@ -5,6 +5,10 @@
 
 // see JSmolApi.js for public user-interface. All these are private functions
 
+// BH 10/13/2015 9:32:08 PM adding Jmol.__$ as jquery object used 
+// BH 15/09/2015 18:06:39 fixing mouse check for swingjs-ui since SVG element className is not a string 
+// BH 8/12/2015 11:43:52 PM adding isHttps2Http forcing call to server proxy
+// BH 8/9/2015 6:33:33 PM correcting bug in load ASYNC for x-domain access
 // BH 7/7/2015 1:42:31 PM Jmol._persistentMenu
 // BH 6/29/2015 10:14:47 AM adds Jmol.$getSize(obj)
 // BH 5/30/2015 9:33:12 AM adds class swingjs-ui to ignore 
@@ -136,7 +140,7 @@ Jmol = (function(document) {
 		}
 	};
 	var j = {
-		_version: "$Date: 2015-07-07 14:00:27 -0500 (Tue, 07 Jul 2015) $", // svn.keywords:lastUpdated
+		_version: "$Date: 2015-09-19 23:29:54 -0500 (Sat, 19 Sep 2015) $", // svn.keywords:lastUpdated
 		_alertNoBinary: true,
 		// this url is used to Google Analytics tracking of Jmol use. You may remove it or modify it if you wish. 
 		_allowedJmolSize: [25, 2048, 300],   // min, max, default (pixels)
@@ -214,6 +218,8 @@ Jmol = (function(document) {
 
 
 (function (Jmol, $) {
+
+  Jmol.__$ = $; // local jQuery object -- important if any other module needs to access it (JSmolMenu, for example)
 
 // this library is organized into the following sections:
 
@@ -881,12 +887,13 @@ Jmol = (function(document) {
 		if (fileName.indexOf("file:/") == 0 && fileName.indexOf("file:///") != 0)
 			fileName = "file://" + fileName.substring(5);      /// fixes IE problem
 		var isMyHost = (fileName.indexOf("://") < 0 || fileName.indexOf(document.location.protocol) == 0 && fileName.indexOf(document.location.host) >= 0);
+    var isHttps2Http = (Jmol._httpProto == "https://" && fileName.indexOf("http://") == 0);
 		var isDirectCall = Jmol._isDirectCall(fileName);
 		//if (fileName.indexOf("http://pubchem.ncbi.nlm.nih.gov/") == 0)isDirectCall = false;
 
 		var cantDoSynchronousLoad = (!isMyHost && Jmol.$supportsIECrossDomainScripting());
 		var data = null;
-		if ((!fSuccess || asBase64) && (cantDoSynchronousLoad || asBase64 || !isMyHost && !isDirectCall)) {
+		if (isHttps2Http || asBase64 || !isMyHost && !isDirectCall || !fSuccess && cantDoSynchronousLoad ) {
 				data = Jmol._getRawDataFromServer("_",fileName, fSuccess, fSuccess, asBase64, true);
 		} else {
 			fileName = fileName.replace(/file:\/\/\/\//, "file://"); // opera
@@ -1544,8 +1551,8 @@ Jmol = (function(document) {
 
 	Jmol._jsSetMouse = function(canvas) {
 
-    var doIgnore = function(ev) { return (!ev.target || ev.target.className.indexOf("swingjs-ui") >= 0) };
-         
+    var doIgnore = function(ev) { return (!ev.target || ("" + ev.target.className).indexOf("swingjs-ui") >= 0) };
+
 		Jmol.$bind(canvas, 'mousedown touchstart', function(ev) {
       if (doIgnore(ev))
         return true;

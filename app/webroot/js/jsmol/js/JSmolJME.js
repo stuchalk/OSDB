@@ -2,7 +2,7 @@
 
 // see http://peter-ertl.com/jsme/JSME_2013-10-13/api_javadoc/index.html
 
-
+// BH 15/09/2015 18:10:25 jmolAtoms no var
 // BH 6/19/2015 5:36:23 PM fix for Jmol mouse hook t.x.baseVal not implemented fully on iOS
 // BH 3/26/2015 6:13:01 PM  SMILES fix for stereochem in rings losing H atoms
 // BH 9/13/2014 2:24:29 PM SMILES fix again
@@ -416,13 +416,14 @@
 			if (jme == null && this._isJava)
 				jme = this._applet = Jmol._getElement(this, "object");
 			var isOK = true;
+      var jmeSMILES = null;
 			if (this._viewSet != null) {
 			  isOK = false;
 			} else if (jme != null) {
 				jmeSMILES = this._getSmiles();
 				// testing here to see that we have the same structure as in the JMOL applet
 				// feature change here --- evaluation of an atom set returns an array now, not an uninterpretable string
-				jmolAtoms = (jmeSMILES ? jmol._evaluate("{*}.find('SMILES', '" + jmeSMILES.replace(/\\/g,"\\\\")+ "')") : []);
+				var jmolAtoms = (jmeSMILES ? jmol._evaluate("{*}.find('SMILES', '/noncanonical/" + jmeSMILES.replace(/\\/g,"\\\\")+ "')") : []);
 				var isOK = (jmolAtoms.length > 0);
 			}
 			if (!isOK) {

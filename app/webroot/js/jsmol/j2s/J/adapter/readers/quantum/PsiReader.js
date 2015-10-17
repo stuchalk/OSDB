@@ -115,7 +115,7 @@ for (var j = 0; j < tokens.length; j++) garray[i][j] = this.parseFloatStr (token
 
 }
 this.moData.put ("gaussians", garray);
-if (JU.Logger.debugging) {
+if (this.debugging) {
 JU.Logger.debug (this.shellCount + " slater shells read");
 JU.Logger.debug (this.gaussianCount + " gaussian primitives read");
 }});

@@ -45,6 +45,7 @@ if (Clazz.instanceOf (x, java.util.Map)) return JU.Escape.escapeMap (x);
 if (Clazz.instanceOf (x, JU.BS)) return JU.Escape.eBS (x);
 if (Clazz.instanceOf (x, JU.T3)) return JU.Escape.eP (x);
 if (Clazz.instanceOf (x, JU.P4)) return JU.Escape.eP4 (x);
+if (JU.AU.isAP (x)) return JU.Escape.eAP (x);
 if (JU.AU.isAS (x)) return JU.Escape.eAS (x, true);
 if (Clazz.instanceOf (x, JU.M34)) return JU.PT.rep (x.toString (), "\t", ",\t");
 if (Clazz.instanceOf (x, JU.A4)) {
@@ -362,7 +363,22 @@ return "" + (Clazz.doubleToInt (iv / 1000000)) + "." + (iv % 1000000);
 }, "~N");
 c$.encapsulateData = Clazz.defineMethod (c$, "encapsulateData", 
 function (name, data, depth) {
-return "  DATA \"" + name + "\"\n" + (depth == 2 ? JU.Escape.escapeFloatAA (data, true) + ";\n" : depth == 3 ? JU.Escape.escapeFloatAAA (data, true) + ";\n" : data) + "    END \"" + name + "\";\n";
+var s;
+switch (depth) {
+case 1:
+s = JU.Escape.escapeFloatA (data, false) + ";\n";
+break;
+case 2:
+s = JU.Escape.escapeFloatAA (data, true) + ";\n";
+break;
+case 3:
+s = JU.Escape.escapeFloatAAA (data, true) + ";\n";
+break;
+default:
+s = data.toString ();
+break;
+}
+return "  DATA \"" + name + "\"\n" + s + "    END \"" + name + "\";\n";
 }, "~S,~O,~N");
 c$.unescapeUnicode = Clazz.defineMethod (c$, "unescapeUnicode", 
 function (s) {
@@ -421,16 +437,16 @@ return Clazz.instanceOf(x[0], JS.SV);
 c$.escapeHelical = Clazz.defineMethod (c$, "escapeHelical", 
 function (id, tokType, a, b, pts) {
 switch (tokType) {
-case 135266320:
+case 134217751:
 return (pts == null ?  new JU.P3 () : pts[0]);
 case 1073741854:
-case 1666189314:
+case 1665140738:
 return (pts == null ?  new JU.V3 () : pts[tokType == 1073741854 ? 1 : 2]);
-case 135266305:
+case 134217729:
 return Float.$valueOf (pts == null ? NaN : pts[3].x);
 case 135176:
 return (pts == null ? "" : "draw ID \"" + id + "\" VECTOR " + JU.Escape.eP (pts[0]) + " " + JU.Escape.eP (pts[1]) + " color " + (pts[3].x < 0 ? "{255.0 200.0 0.0}" : "{255.0 0.0 128.0}"));
-case 1746538509:
+case 1745489939:
 return (pts == null ? "" : "measure " + JU.Escape.eP (a) + JU.Escape.eP (pts[0]) + JU.Escape.eP (pts[4])) + JU.Escape.eP (b);
 default:
 return (pts == null ?  new Array (0) : pts);

@@ -1,10 +1,6 @@
 Clazz.declarePackage ("JM");
 Clazz.load (["JM.Monomer"], "JM.PhosphorusMonomer", ["JU.Quat", "$.V3", "J.c.STR"], function () {
-c$ = Clazz.decorateAsClass (function () {
-this.$isPurine = false;
-this.$isPyrimidine = false;
-Clazz.instantialize (this, arguments);
-}, JM, "PhosphorusMonomer", JM.Monomer);
+c$ = Clazz.declareType (JM, "PhosphorusMonomer", JM.Monomer);
 Clazz.overrideMethod (c$, "isNucleic", 
 function () {
 return true;
@@ -14,40 +10,23 @@ function () {
 });
 c$.validateAndAllocateP = Clazz.defineMethod (c$, "validateAndAllocateP", 
 function (chain, group3, seqcode, firstIndex, lastIndex, specialAtomIndexes) {
-return (firstIndex != lastIndex || specialAtomIndexes[13] != firstIndex ? null :  new JM.PhosphorusMonomer ().set3 (chain, group3, seqcode, firstIndex, lastIndex, JM.PhosphorusMonomer.phosphorusOffsets));
+return (firstIndex != lastIndex || specialAtomIndexes[13] != firstIndex ? null :  new JM.PhosphorusMonomer ().set2 (chain, group3, seqcode, firstIndex, lastIndex, JM.PhosphorusMonomer.phosphorusOffsets));
 }, "JM.Chain,~S,~N,~N,~N,~A");
-Clazz.defineMethod (c$, "set3", 
-function (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, offsets) {
-this.set2 (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, offsets);
-if (group3.indexOf ('T') >= 0) chain.isDna = true;
-if (group3.indexOf ('U') + group3.indexOf ('I') > -2) chain.isRna = true;
-this.$isPurine = (group3.indexOf ('A') + group3.indexOf ('G') + group3.indexOf ('I') > -3);
-this.$isPyrimidine = (group3.indexOf ('T') + group3.indexOf ('C') + group3.indexOf ('U') > -3);
-return this;
-}, "JM.Chain,~S,~N,~N,~N,~A");
-Clazz.defineMethod (c$, "getP", 
-function () {
-return this.getAtomFromOffsetIndex (0);
-});
-Clazz.defineMethod (c$, "isPhosphorusMonomer", 
-function () {
-return true;
-});
 Clazz.overrideMethod (c$, "isDna", 
 function () {
-return this.chain.isDna;
+return this.isDnaByID ();
 });
 Clazz.overrideMethod (c$, "isRna", 
 function () {
-return this.chain.isRna;
+return this.isRnaByID ();
 });
 Clazz.overrideMethod (c$, "isPurine", 
 function () {
-return this.$isPurine;
+return this.isPurineByID ();
 });
 Clazz.overrideMethod (c$, "isPyrimidine", 
 function () {
-return this.$isPyrimidine;
+return this.isPyrimidineByID ();
 });
 Clazz.overrideMethod (c$, "getStructure", 
 function () {

@@ -423,23 +423,20 @@ return (a == null ? -1 : a.index);
 }, "~S");
 Clazz.defineMethod (c$, "addNewBondWithOrder", 
 function (atomIndex1, atomIndex2, order) {
-if (atomIndex1 < 0 || atomIndex1 >= this.ac || atomIndex2 < 0 || atomIndex2 >= this.ac) return null;
-var bond =  new J.adapter.smarter.Bond (atomIndex1, atomIndex2, order);
-this.addBond (bond);
-return bond;
+if (atomIndex1 >= 0 && atomIndex1 < this.ac && atomIndex2 >= 0 && atomIndex2 < this.ac && atomIndex1 != atomIndex2) this.addBond ( new J.adapter.smarter.Bond (atomIndex1, atomIndex2, order));
 }, "~N,~N,~N");
 Clazz.defineMethod (c$, "addNewBondFromNames", 
 function (atomName1, atomName2, order) {
-return this.addNewBondWithOrderA (this.getAtomFromName (atomName1), this.getAtomFromName (atomName2), order);
+this.addNewBondWithOrderA (this.getAtomFromName (atomName1), this.getAtomFromName (atomName2), order);
 }, "~S,~S,~N");
 Clazz.defineMethod (c$, "addNewBondWithOrderA", 
 function (atom1, atom2, order) {
-return (atom1 == null || atom2 == null ? null : this.addNewBondWithOrder (atom1.index, atom2.index, order));
+if (atom1 != null && atom2 != null) this.addNewBondWithOrder (atom1.index, atom2.index, order);
 }, "J.adapter.smarter.Atom,J.adapter.smarter.Atom,~N");
 Clazz.defineMethod (c$, "addBond", 
 function (bond) {
 if (this.trajectoryStepCount > 0) return;
-if (bond.atomIndex1 < 0 || bond.atomIndex2 < 0 || bond.order < 0 || this.atoms[bond.atomIndex1].atomSetIndex != this.atoms[bond.atomIndex2].atomSetIndex) {
+if (bond.atomIndex1 < 0 || bond.atomIndex2 < 0 || bond.order < 0 || bond.atomIndex1 == bond.atomIndex2 || this.atoms[bond.atomIndex1].atomSetIndex != this.atoms[bond.atomIndex2].atomSetIndex) {
 if (JU.Logger.debugging) {
 JU.Logger.debug (">>>>>>BAD BOND:" + bond.atomIndex1 + "-" + bond.atomIndex2 + " order=" + bond.order);
 }return;
@@ -592,11 +589,10 @@ this.newAtomSetClear (true);
 });
 Clazz.defineMethod (c$, "newAtomSetClear", 
 function (doClearMap) {
-if (!this.allowMultiple && this.iSet >= 0) this.discardPreviousAtoms ();
+if (!this.allowMultiple && this.iSet >= 0) this.reader.discardPreviousAtoms ();
 this.bondIndex0 = this.bondCount;
-if (this.isTrajectory) {
-this.discardPreviousAtoms ();
-}this.iSet = this.atomSetCount++;
+if (this.isTrajectory) this.reader.discardPreviousAtoms ();
+this.iSet = this.atomSetCount++;
 if (this.atomSetCount > this.atomSetNumbers.length) {
 this.atomSetAtomIndexes = JU.AU.doubleLengthI (this.atomSetAtomIndexes);
 this.atomSetAtomCounts = JU.AU.doubleLengthI (this.atomSetAtomCounts);

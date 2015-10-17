@@ -61,7 +61,7 @@ var ipt = this.monomerIndex + offset;
 if (ipt >= 0 && ipt < groups.length) {
 var m = groups[ipt];
 if (offset == 1 && !m.isConnectedPrevious ()) return -1;
-if ("0".equals (name)) return m.leadAtomIndex;
+if ("\0".equals (name)) return m.leadAtomIndex;
 var atoms = this.chain.model.ms.at;
 for (var i = m.firstAtomIndex; i <= m.lastAtomIndex; i++) if (name == null || name.equalsIgnoreCase (atoms[i].getAtomName ())) return i;
 
@@ -170,13 +170,13 @@ var seqNum = this.getResno ();
 if (seqNum > 0) info.put ("sequenceNumber", Integer.$valueOf (seqNum));
 var insCode = this.getInsertionCode ();
 if (insCode.charCodeAt (0) != 0) info.put ("insertionCode", "" + insCode);
-var f = this.getGroupParameter (1112539145);
+var f = this.getGroupParameter (1111490569);
 if (!Float.isNaN (f)) info.put ("phi", Float.$valueOf (f));
-f = this.getGroupParameter (1112539146);
+f = this.getGroupParameter (1111490570);
 if (!Float.isNaN (f)) info.put ("psi", Float.$valueOf (f));
-f = this.getGroupParameter (1112539141);
+f = this.getGroupParameter (1111490565);
 if (!Float.isNaN (f)) info.put ("mu", Float.$valueOf (f));
-f = this.getGroupParameter (1112539152);
+f = this.getGroupParameter (1111490576);
 if (!Float.isNaN (f)) info.put ("theta", Float.$valueOf (f));
 var structure = this.getStructure ();
 if (Clazz.instanceOf (structure, JM.ProteinStructure)) {
@@ -253,26 +253,29 @@ return id;
 });
 Clazz.overrideMethod (c$, "isCrossLinked", 
 function (g) {
-for (var i = this.firstAtomIndex; i <= this.lastAtomIndex; i++) if (this.getCrossLinkGroup (i, null, g)) return true;
+for (var i = this.firstAtomIndex; i <= this.lastAtomIndex; i++) if (this.getCrossLinkGroup (i, null, g, true, true, false)) return true;
 
 return false;
 }, "JM.Group");
-Clazz.overrideMethod (c$, "getCrossLinkLead", 
-function (vReturn) {
-for (var i = this.firstAtomIndex; i <= this.lastAtomIndex; i++) if (this.getCrossLinkGroup (i, vReturn, null) && vReturn == null) return true;
+Clazz.overrideMethod (c$, "getCrossLinkVector", 
+function (vReturn, crosslinkCovalent, crosslinkHBond) {
+var isNotCheck = (vReturn == null);
+for (var i = this.firstAtomIndex; i <= this.lastAtomIndex; i++) if (this.getCrossLinkGroup (i, vReturn, null, crosslinkCovalent, crosslinkHBond, isNotCheck) && isNotCheck) return true;
 
-return false;
-}, "JU.Lst");
+return !isNotCheck && vReturn.size () > 0;
+}, "JU.Lst,~B,~B");
 Clazz.defineMethod (c$, "getCrossLinkGroup", 
-function (i, vReturn, group) {
+function (i, vReturn, group, crosslinkCovalent, crosslinkHBond, isNotCheck) {
 var atom = this.chain.model.ms.at[i];
 var bonds = atom.bonds;
 var ibp = this.getBioPolymerIndexInModel ();
 if (ibp < 0 || bonds == null) return false;
 var haveCrossLink = false;
-var checkPrevious = (vReturn == null && group == null);
+var checkPrevious = (!isNotCheck && vReturn == null && group == null);
 for (var j = 0; j < bonds.length; j++) {
-var a = bonds[j].getOtherAtom (atom);
+var b = bonds[j];
+if (b.isCovalent () ? !crosslinkCovalent : !crosslinkHBond) continue;
+var a = b.getOtherAtom (atom);
 var g = a.group;
 if (group != null && g !== group) continue;
 var iPolymer = g.getBioPolymerIndexInModel ();
@@ -281,11 +284,13 @@ if (checkPrevious) {
 if (iPolymer == ibp && igroup == this.monomerIndex - 1) return true;
 } else if (iPolymer >= 0 && igroup >= 0 && (iPolymer != ibp || igroup < this.monomerIndex - 1 || igroup > this.monomerIndex + 1)) {
 haveCrossLink = true;
-if (group != null) break;
+if (group != null || vReturn == null) break;
+vReturn.addLast (Integer.$valueOf (i));
+vReturn.addLast (Integer.$valueOf (a.i));
 vReturn.addLast (Integer.$valueOf (g.leadAtomIndex));
 }}
 return haveCrossLink;
-}, "~N,JU.Lst,JM.Group");
+}, "~N,JU.Lst,JM.Group,~B,~B,~B");
 Clazz.defineMethod (c$, "isConnectedPrevious", 
 function () {
 return true;
@@ -293,22 +298,22 @@ return true;
 Clazz.defineMethod (c$, "setGroupParameter", 
 function (tok, f) {
 switch (tok) {
-case 1112539145:
+case 1111490569:
 this.phi = f;
 break;
-case 1112539146:
+case 1111490570:
 this.psi = f;
 break;
-case 1112539144:
+case 1111490568:
 this.omega = f;
 break;
-case 1112539141:
+case 1111490565:
 this.mu = f;
 break;
-case 1112539152:
+case 1111490576:
 this.theta = f;
 break;
-case 1112539150:
+case 1111490574:
 this.straightness = f;
 break;
 }
@@ -318,19 +323,19 @@ function (tok) {
 if (this.bioPolymer == null) return 0;
 if (!this.bioPolymer.haveParameters) this.bioPolymer.calcParameters ();
 switch (tok) {
-case 1073742029:
+case 1094713361:
 return 1;
-case 1112539144:
+case 1111490568:
 return this.omega;
-case 1112539145:
+case 1111490569:
 return this.phi;
-case 1112539146:
+case 1111490570:
 return this.psi;
-case 1112539141:
+case 1111490565:
 return this.mu;
-case 1112539152:
+case 1111490576:
 return this.theta;
-case 1112539150:
+case 1111490574:
 return this.straightness;
 }
 return NaN;

@@ -1,15 +1,12 @@
 Clazz.declarePackage ("J.adapter.readers.simple");
 Clazz.load (["J.adapter.smarter.AtomSetCollectionReader"], "J.adapter.readers.simple.FoldingXyzReader", ["java.util.Hashtable", "JU.PT", "J.adapter.smarter.Atom"], function () {
-c$ = Clazz.decorateAsClass (function () {
-this.haveBonds = false;
-Clazz.instantialize (this, arguments);
-}, J.adapter.readers.simple, "FoldingXyzReader", J.adapter.smarter.AtomSetCollectionReader);
+c$ = Clazz.declareType (J.adapter.readers.simple, "FoldingXyzReader", J.adapter.smarter.AtomSetCollectionReader);
 Clazz.overrideMethod (c$, "initializeReader", 
 function () {
 });
 Clazz.overrideMethod (c$, "finalizeSubclassReader", 
 function () {
-if (this.haveBonds) this.asc.setNoAutoBond ();
+if (this.asc.bondCount > 0) this.asc.setNoAutoBond ();
 this.isTrajectory = false;
 this.finalizeReaderASCR ();
 });
@@ -85,7 +82,7 @@ var b0 = 0;
 if (haveAtomTypes) a1.atomName += "\0" + b[b0++];
 for (var j = b.length - 1; --j >= b0; ) {
 var a2 = this.asc.getAtomFromName (b[j]);
-if (a1.index < a2.index && this.asc.addNewBondWithOrderA (a1, a2, 1) != null) this.haveBonds = true;
+if (a1.index < a2.index) this.asc.addNewBondWithOrderA (a1, a2, 1);
 }
 }
 }, "~A,~B");

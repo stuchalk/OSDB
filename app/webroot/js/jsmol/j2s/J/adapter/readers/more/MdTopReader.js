@@ -50,7 +50,7 @@ if (k % 100 == 0) j++;
 this.setAtomCoordXYZ (atoms[i], (i % 100) * 2, j * 2, 0);
 }}
 if (atoms2 != null) {
-this.asc.discardPreviousAtoms ();
+this.discardPreviousAtoms ();
 for (var i = 0; i < this.nAtoms; i++) this.asc.addAtom (atoms2[i]);
 
 }JU.Logger.info ("Total number of atoms used=" + this.nAtoms);

@@ -41,7 +41,7 @@ this.PX (parent, saxReader);
 }, "J.adapter.readers.xml.XmlReader,~O");
 Clazz.overrideMethod (c$, "processStartElement", 
 function (localName) {
-if (JU.Logger.debugging) JU.Logger.debug ("xmlvasp: start " + localName);
+if (this.debugging) JU.Logger.debug ("xmlvasp: start " + localName);
 if (!this.parent.continuing) return;
 if ("calculation".equals (localName)) {
 this.enthalpy = null;
@@ -85,7 +85,7 @@ return;
 }}, "~S");
 Clazz.overrideMethod (c$, "processEndElement", 
 function (localName) {
-if (JU.Logger.debugging) JU.Logger.debug ("xmlvasp: end " + localName);
+if (this.debugging) JU.Logger.debug ("xmlvasp: end " + localName);
 while (true) {
 if (!this.parent.doProcessLines) break;
 if (this.isE_wo_entrp) {

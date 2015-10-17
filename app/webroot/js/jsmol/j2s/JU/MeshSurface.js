@@ -168,7 +168,7 @@ return (this.bsSlabGhost != null && this.slabMeshType == 1073742018 ? "mesh" : n
 });
 Clazz.defineMethod (c$, "resetSlab", 
 function () {
-if (this.slicer != null) this.slicer.slabPolygons (JU.TempArray.getSlabObjectType (1048587, null, false, null), false);
+if (this.slicer != null) this.slicer.slabPolygons (JU.TempArray.getSlabObjectType (1073742333, null, false, null), false);
 });
 Clazz.defineMethod (c$, "slabPolygonsList", 
 function (slabInfo, allowCap) {

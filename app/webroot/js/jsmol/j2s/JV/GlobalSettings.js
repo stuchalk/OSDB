@@ -101,6 +101,7 @@ this.showMultipleBonds = true;
 this.ssbondsBackbone = false;
 this.multipleBondSpacing = -1;
 this.multipleBondRadiusFactor = 0;
+this.multipleBondBananas = false;
 this.cartoonBaseEdges = false;
 this.cartoonRockets = false;
 this.backboneSteps = false;
@@ -317,7 +318,6 @@ this.setI ("spinZ", 0);
 this.setI ("spinFps", 30);
 this.setF ("visualRange", 5.0);
 this.setI ("stereoDegrees", -5);
-this.setI ("stateversion", 0);
 this.setB ("syncScript", vwr.sm.syncingScripts);
 this.setB ("syncMouse", vwr.sm.syncingMouse);
 this.setB ("syncStereo", vwr.sm.stereoSync);
@@ -462,6 +462,7 @@ this.setB ("modelKitMode", this.modelKitMode);
 this.setF ("modulationScale", this.modulationScale);
 this.setB ("monitorEnergy", this.monitorEnergy);
 this.setF ("multipleBondRadiusFactor", this.multipleBondRadiusFactor);
+this.setB ("multipleBondBananas", this.multipleBondBananas);
 this.setF ("multipleBondSpacing", this.multipleBondSpacing);
 this.setB ("multiProcessor", this.multiProcessor && (JV.Viewer.nProcessors > 1));
 this.setB ("navigationMode", this.navigationMode);
@@ -655,7 +656,7 @@ function (name, nullAsString) {
 var v = this.getParam (name, false);
 return (v == null && nullAsString ? "" : v);
 }, "~S,~B");
-Clazz.defineMethod (c$, "getOrSetNewVariable", 
+Clazz.defineMethod (c$, "getAndSetNewVariable", 
 function (name, doSet) {
 if (name == null || name.length == 0) name = "x";
 var v = this.getParam (name, true);
@@ -698,16 +699,15 @@ if (format == null) return null;
 if (id.indexOf ("/") < 0) {
 if (database.equals ("pubchem")) id = "name/" + id;
  else if (database.equals ("nci")) id += "/file?format=sdf&get3d=True";
-}while (format.indexOf ("%c") >= 0) {
-try {
-for (var i = 1; i < 10; i++) {
+}try {
+while (format.indexOf ("%c") >= 0) for (var i = 1; i < 10; i++) {
 format = JU.PT.rep (format, "%c" + i, id.substring (i - 1, i));
 }
+
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 } else {
 throw e;
-}
 }
 }
 return (format.indexOf ("%FILE") < 0 ? format + id : JU.PT.formatStringS (format, "FILE", id));
@@ -768,6 +768,7 @@ this.app (str, "set legacyJavaFloat " + this.legacyJavaFloat);
 this.app (str, "set minBondDistance " + this.minBondDistance);
 this.app (str, "set minimizationCriterion  " + this.minimizationCriterion);
 this.app (str, "set minimizationSteps  " + this.minimizationSteps);
+this.app (str, "set multipleBondBananas false");
 this.app (str, "set pdbAddHydrogens " + (htParams != null && htParams.get ("pdbNoHydrogens") !== Boolean.TRUE ? this.pdbAddHydrogens : false));
 this.app (str, "set pdbGetHeader " + this.pdbGetHeader);
 this.app (str, "set pdbSequential " + this.pdbSequential);

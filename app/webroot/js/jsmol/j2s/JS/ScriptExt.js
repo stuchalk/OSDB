@@ -43,7 +43,7 @@ return this.e.paramAsStr (i);
 }, "~N");
 Clazz.defineMethod (c$, "centerParameter", 
 function (i) {
-return this.e.centerParameter (i);
+return this.e.centerParameter (i, null);
 }, "~N");
 Clazz.defineMethod (c$, "floatParameter", 
 function (i) {
@@ -96,7 +96,7 @@ return name;
 Clazz.defineMethod (c$, "getColorTrans", 
 function (eval, i, allowNone, ret) {
 var translucentLevel = 3.4028235E38;
-if (eval.theTok != 1766856708) --i;
+if (eval.theTok != 1765808134) --i;
 switch (this.tokAt (i + 1)) {
 case 603979967:
 i++;
@@ -109,7 +109,7 @@ break;
 }
 if (eval.isColorParam (i + 1)) {
 ret[0] = eval.getArgbParam (++i);
-} else if (this.tokAt (i + 1) == 1048587) {
+} else if (this.tokAt (i + 1) == 1073742333) {
 ret[0] = 0;
 eval.iToken = i + 1;
 } else if (translucentLevel == 3.4028235E38) {

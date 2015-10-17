@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JM");
-Clazz.load (["JU.V3"], "JM.BioPolymer", ["java.lang.Float", "JU.BS", "$.P3"], function () {
+Clazz.load (["JM.Structure", "JU.V3"], "JM.BioPolymer", ["java.lang.Float", "JU.BS", "$.P3"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.model = null;
 this.monomers = null;
@@ -23,7 +23,7 @@ this.selectedMonomerCount = 0;
 this.bsSelectedMonomers = null;
 this.haveParameters = false;
 Clazz.instantialize (this, arguments);
-}, JM, "BioPolymer");
+}, JM, "BioPolymer", null, JM.Structure);
 Clazz.prepareFields (c$, function () {
 this.unitVectorX = JU.V3.new3 (1, 0, 0);
 });
@@ -38,6 +38,15 @@ for (var i = this.monomerCount; --i >= 0; ) monomers[i].setBioPolymer (this, i);
 
 this.model = monomers[0].getModel ();
 }, "~A");
+Clazz.overrideMethod (c$, "setAtomBits", 
+function (bs) {
+this.getRange (bs, true);
+}, "JU.BS");
+Clazz.overrideMethod (c$, "setAtomBitsAndClear", 
+function (bs, bsOut) {
+for (var i = this.monomerCount; --i >= 0; ) this.monomers[i].setAtomBitsAndClear (bs, bsOut);
+
+}, "JU.BS,JU.BS");
 Clazz.defineMethod (c$, "getRange", 
 function (bs, isMutated) {
 if (this.monomerCount == 0) return;
@@ -95,24 +104,6 @@ Clazz.defineMethod (c$, "getWingPoint",
 function (polymerIndex) {
 return this.monomers[polymerIndex].getWingAtom ();
 }, "~N");
-Clazz.defineMethod (c$, "getConformation", 
-function (bsConformation, conformationIndex) {
-var atoms = this.model.ms.at;
-for (var j = this.monomerCount; --j >= 0; ) {
-var m = this.monomers[j];
-var ch = '\u0000';
-for (var i = m.firstAtomIndex, n = m.lastAtomIndex; i <= n; i++) {
-var atom = atoms[i];
-var altloc = atom.altloc;
-if (altloc == '\0') continue;
-if (conformationIndex >= 0 && altloc != ch) {
-ch = altloc;
-conformationIndex--;
-}if (conformationIndex < 0 && altloc != ch) bsConformation.clear (i);
-}
-}
-this.recalculateLeadMidpointsAndWingVectors ();
-}, "JU.BS,~N");
 Clazz.defineMethod (c$, "setConformation", 
 function (bsSelected) {
 var atoms = this.model.ms.at;
@@ -296,13 +287,9 @@ Clazz.defineMethod (c$, "calculateRamachandranHelixAngle",
 function (m, qtype) {
 return NaN;
 }, "~N,~S");
-Clazz.defineMethod (c$, "isRna", 
-function () {
-return (this.monomerCount > 0 && this.monomers[0].isRna ());
-});
 Clazz.defineMethod (c$, "isNucleic", 
 function () {
-return (this.monomerCount > 0 && (this.monomers[0].isDna () || this.monomers[0].isRna ()));
+return (this.monomerCount > 0 && Clazz.instanceOf (this, JM.NucleicPolymer));
 });
 Clazz.defineMethod (c$, "getRangeGroups", 
 function (nResidues, bsAtoms, bsResult) {

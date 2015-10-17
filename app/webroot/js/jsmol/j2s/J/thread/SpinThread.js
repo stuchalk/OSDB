@@ -92,7 +92,7 @@ case -2:
 if (this.dihedralList != null) {
 this.vwr.setDihedrals (this.dihedralList, this.bsBranches, 0);
 } else if (this.bsAtoms != null && this.endPositions != null) {
-this.vwr.setAtomCoords (this.bsAtoms, 1146095626, this.endPositions);
+this.vwr.setAtomCoords (this.bsAtoms, 1145047050, this.endPositions);
 this.bsAtoms = null;
 this.endPositions = null;
 }if (!this.isReset) {

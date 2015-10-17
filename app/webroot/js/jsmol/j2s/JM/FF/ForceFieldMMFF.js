@@ -1,7 +1,6 @@
 Clazz.declarePackage ("JM.FF");
 Clazz.load (["JM.FF.ForceField"], "JM.FF.ForceFieldMMFF", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.Lst", "$.PT", "JM.MinAtom", "$.MinObject", "JM.FF.AtomType", "$.CalculationsMMFF", "JU.BSUtil", "$.Elements", "$.Escape", "$.Logger", "JV.JmolAsyncException"], function () {
 c$ = Clazz.decorateAsClass (function () {
-this.useEmpiricalRules = true;
 this.rawAtomTypes = null;
 this.rawBondTypes = null;
 this.rawMMFF94Charges = null;
@@ -36,7 +35,7 @@ function (bsElements, elemnoMax) {
 var m = this.minimizer;
 if (!this.setArrays (m.atoms, m.bsAtoms, m.bonds, m.rawBondCount, false, false)) return false;
 this.setModelFields ();
-this.fixTypes ();
+if (!this.fixTypes ()) return false;
 this.calc =  new JM.FF.CalculationsMMFF (this, JM.FF.ForceFieldMMFF.ffParams, this.minAtoms, this.minBonds, this.minAngles, this.minTorsions, this.minPositions, this.minimizer.constraints);
 this.calc.setLoggingEnabled (true);
 return this.calc.setupCalculations ();
@@ -510,7 +509,7 @@ nUsed++;
 }
 JU.Logger.info (nUsed + " SMARTS matches used");
 try {
-smartsMatcher.getSubstructureSets (smarts, atoms, atoms.length, 20, bsConnected, bitSets, vRings);
+smartsMatcher.getSubstructureSets (smarts, atoms, atoms.length, 40, bsConnected, bitSets, vRings);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 JU.Logger.error (e.toString ());
@@ -572,6 +571,7 @@ for (var i = this.minBonds.length; --i >= 0; ) {
 var bond = this.minBonds[i];
 bond.type = this.rawBondTypes[bond.rawIndex];
 bond.key = this.getKey (bond, bond.type, 3);
+if (bond.key == null) return false;
 }
 for (var i = this.minAngles.length; --i >= 0; ) {
 var angle = this.minAngles[i];
@@ -582,6 +582,7 @@ for (var i = this.minTorsions.length; --i >= 0; ) {
 var torsion = this.minTorsions[i];
 torsion.key = this.getKey (torsion, torsion.type, 9);
 }
+return true;
 });
 Clazz.defineMethod (c$, "setAngleType", 
  function (angle) {
@@ -667,7 +668,6 @@ key = JM.MinObject.getKey (type, this.typeData[0], this.typeData[1], this.typeDa
 var ddata = JM.FF.ForceFieldMMFF.ffParams.get (key);
 switch (ktype) {
 case 3:
-if (!this.useEmpiricalRules) return key;
 return (ddata != null && ddata[0] > 0 ? key : this.applyEmpiricalRules (o, ddata, 3));
 case 5:
 if (ddata != null && ddata[0] != 0) return key;
@@ -676,8 +676,7 @@ case 9:
 if (ddata == null) {
 if (!JM.FF.ForceFieldMMFF.ffParams.containsKey (key = this.getTorsionKey (type, 0, 2)) && !JM.FF.ForceFieldMMFF.ffParams.containsKey (key = this.getTorsionKey (type, 2, 0)) && !JM.FF.ForceFieldMMFF.ffParams.containsKey (key = this.getTorsionKey (type, 2, 2))) key = this.getTorsionKey (0, 2, 2);
 ddata = JM.FF.ForceFieldMMFF.ffParams.get (key);
-}if (!this.useEmpiricalRules) return key;
-return (ddata != null ? key : this.applyEmpiricalRules (o, ddata, 9));
+}return (ddata != null ? key : this.applyEmpiricalRules (o, ddata, 9));
 case 21:
 if (ddata != null) return key;
 var r1 = this.getRowFor (data[0]);
@@ -687,7 +686,6 @@ return JM.MinObject.getKey (0, r1, r2, r3, 126);
 case 13:
 if (ddata != null) return key;
 }
-if (!this.useEmpiricalRules && ddata != null) return key;
 var isSwapped = false;
 var haveKey = false;
 for (var i = 0; i < 3 && !haveKey; i++) {
@@ -717,8 +715,7 @@ break;
 }
 } else if (type != 0 && ktype == 5) {
 key = Integer.$valueOf (key.intValue () ^ 0xFF);
-}if (!this.useEmpiricalRules) return key;
-ddata = JM.FF.ForceFieldMMFF.ffParams.get (key);
+}ddata = JM.FF.ForceFieldMMFF.ffParams.get (key);
 switch (ktype) {
 case 5:
 return (ddata != null && ddata[0] != 0 ? key : this.applyEmpiricalRules (o, ddata, 5));

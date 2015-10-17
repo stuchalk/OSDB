@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JS");
-Clazz.load (null, "JS.SmilesExt", ["java.lang.Float", "JU.AU", "$.BS", "$.Lst", "$.M4", "$.Measure", "$.P3", "J.api.Interface", "JU.Logger"], function () {
+Clazz.load (null, "JS.SmilesExt", ["java.lang.Float", "JU.AU", "$.BS", "$.Lst", "$.M4", "$.Measure", "$.P3", "J.api.Interface", "JU.Logger", "JV.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.e = null;
 this.sm = null;
@@ -25,7 +25,7 @@ ptsB =  new JU.Lst ();
 var c =  new JU.P3 ();
 var atoms = this.e.vwr.ms.at;
 var ac = this.e.vwr.ms.ac;
-var maps = this.sm.getCorrelationMaps (smiles, atoms, ac, bsA, flags | 4194304);
+var maps = this.sm.getCorrelationMaps (smiles, atoms, ac, bsA, flags | 64);
 if (maps == null) this.e.evalError (this.sm.getLastException (), null);
 if (maps.length == 0) return NaN;
 var mapFirst = maps[0];
@@ -43,7 +43,7 @@ ptsB.clear ();
 for (var j = 0; j < maps[i].length; j++) ptsB.addLast (atoms[maps[i][j]]);
 
 J.api.Interface.getInterface ("JU.Eigen", this.e.vwr, "script");
-var stddev = JU.Measure.getTransformMatrix4 (ptsA, ptsB, m, c);
+var stddev = (ptsB.size () == 1 ? 0 : JU.Measure.getTransformMatrix4 (ptsA, ptsB, m, null));
 JU.Logger.info ("getSmilesCorrelation stddev=" + stddev);
 if (vReturn != null) {
 if (stddev < tolerance) {
@@ -77,11 +77,10 @@ throw ex;
 return 0;
 }, "JU.BS,JU.BS,~S,JU.Lst,JU.Lst,JU.M4,JU.Lst,~B,~A,JU.P3,~B,~N");
 Clazz.defineMethod (c$, "getSmilesMatches", 
-function (pattern, smiles, bsSelected, bsMatch3D, isSmarts, asOneBitset, firstMatchOnly) {
-if (pattern.length == 0 || pattern.equals ("H") || pattern.equals ("*")) {
-var isBioSmiles = (!asOneBitset);
+function (pattern, smiles, bsSelected, bsMatch3D, flags, asOneBitset, firstMatchOnly) {
+if (pattern.length == 0 || pattern.equals ("H") || pattern.equals ("*") || (firstMatchOnly = pattern.equalsIgnoreCase ("NOAROMATIC"))) {
 try {
-return this.e.vwr.getSmilesOpt (bsSelected, 0, 0, (pattern.equals ("H") ? 1 : 0) | (pattern.equals ("*") ? 2 : 0) | (isBioSmiles ? 262 : 0));
+return this.e.vwr.getSmilesOpt (bsSelected, 0, 0, flags | (pattern.equals ("H") ? 256 : 0) | (pattern.equals ("*") ? 512 : 0) | (firstMatchOnly ? 1024 : 0));
 } catch (ex) {
 if (Clazz.exceptionOf (ex, Exception)) {
 this.e.evalError (ex.getMessage (), null);
@@ -91,9 +90,10 @@ throw ex;
 }
 }var b;
 if (bsMatch3D == null) {
+var isSmarts = JV.JC.checkFlag (flags, 2);
 try {
 if (smiles == null) {
-b = this.sm.getSubstructureSetArray (pattern, this.e.vwr.ms.at, this.e.vwr.ms.ac, bsSelected, null, isSmarts ? 131072 : 65536);
+b = this.sm.getSubstructureSetArray (pattern, this.e.vwr.ms.at, this.e.vwr.ms.ac, bsSelected, null, flags);
 } else {
 var map = this.sm.find (pattern, smiles, isSmarts, firstMatchOnly);
 if (!asOneBitset) return (!firstMatchOnly ? map : map.length == 0 ?  Clazz.newIntArray (0, 0) : map[0]);
@@ -103,10 +103,10 @@ var a = map[j];
 for (var k = a.length; --k >= 0; ) bs.set (a[k]);
 
 }
-if (!isSmarts) return Integer.$valueOf (bs.cardinality ());
+if (!isSmarts) return  Clazz.newIntArray (bs.cardinality (), 0);
 var iarray =  Clazz.newIntArray (bs.cardinality (), 0);
 var pt = 0;
-for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) iarray[pt++] = i + 1;
+for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) iarray[pt++] = i;
 
 return iarray;
 }} catch (ex) {
@@ -119,11 +119,9 @@ throw ex;
 }
 } else {
 var vReturn =  new JU.Lst ();
-var stddev = this.getSmilesCorrelation (bsMatch3D, bsSelected, pattern, null, null, null, vReturn, false, null, null, false, isSmarts ? 131072 : 65536);
-if (Float.isNaN (stddev)) {
-if (asOneBitset) return  new JU.BS ();
-return  Clazz.newArray (-1, []);
-}this.e.showString ("RMSD " + stddev + " Angstroms");
+var stddev = this.getSmilesCorrelation (bsMatch3D, bsSelected, pattern, null, null, null, vReturn, false, null, null, false, flags);
+if (Float.isNaN (stddev)) return (asOneBitset ?  new JU.BS () :  Clazz.newArray (-1, []));
+this.e.showString ("RMSD " + stddev + " Angstroms");
 b = vReturn.toArray ( new Array (vReturn.size ()));
 }if (asOneBitset) {
 var bs =  new JU.BS ();
@@ -134,11 +132,11 @@ return bs;
 for (var j = 0; j < b.length; j++) list.addLast (b[j]);
 
 return list;
-}, "~S,~S,JU.BS,JU.BS,~B,~B,~B");
+}, "~S,~S,JU.BS,JU.BS,~N,~B,~B");
 Clazz.defineMethod (c$, "getFlexFitList", 
 function (bs1, bs2, smiles1, isSmarts) {
 var mapSet = JU.AU.newInt2 (2);
-this.getSmilesCorrelation (bs1, bs2, smiles1, null, null, null, null, false, mapSet, null, false, isSmarts ? 131072 : 65536);
+this.getSmilesCorrelation (bs1, bs2, smiles1, null, null, null, null, false, mapSet, null, false, isSmarts ? 2 : 1);
 if (mapSet[0] == null) return null;
 var bondMap1 = this.e.vwr.ms.getDihedralMap (mapSet[0]);
 var bondMap2 = (bondMap1 == null ? null : this.e.vwr.ms.getDihedralMap (mapSet[1]));

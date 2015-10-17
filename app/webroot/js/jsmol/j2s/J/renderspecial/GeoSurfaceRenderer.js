@@ -15,7 +15,7 @@ this.facePt3 =  new JU.P3 ();
 Clazz.overrideMethod (c$, "render", 
 function () {
 var gs = this.shape;
-this.iShowSolid = !(!this.vwr.checkMotionRendering (1113198597) && gs.ec.getDotsConvexMax () > 100);
+this.iShowSolid = !(!this.vwr.checkMotionRendering (1112150021) && gs.ec.getDotsConvexMax () > 100);
 if (!this.iShowSolid && !this.g3d.setC (4)) return false;
 var tCover = this.vwr.gdata.translucentCoverOnly;
 if (this.iShowSolid) this.vwr.gdata.translucentCoverOnly = true;

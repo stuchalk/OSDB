@@ -42,7 +42,7 @@ for (var j = frames.length; --j >= 0; ) frames[j] += modelOffset;
 return;
 }
 }if (atomOffset <= 0) return;
-if (this.id == 1060866) {
+if (this.id == 12290) {
 var map = (this.info).values ();
 for (var o, $o = map.iterator (); $o.hasNext () && ((o = $o.next ()) || true);) JU.BSUtil.offset (o, 0, atomOffset);
 
@@ -62,8 +62,8 @@ var sID;
 var sb = null;
 if (this.bsAtoms != null) this.modelIndex = this.getModelIndex (m);
 switch (this.id) {
-case 3145770:
-sm.vwr.displayAtoms (this.bsAtoms, false, false, 1276118017, true);
+case 2097194:
+sm.vwr.displayAtoms (this.bsAtoms, false, false, 1275069441, true);
 return;
 case 12295:
 var bs = sm.vwr.getModelUndeletedAtomsBitSet (this.argb);
@@ -78,9 +78,9 @@ if (this.info == null) {
 sm.vwr.displayAtoms (null, true, false, 0, true);
 }sm.vwr.setObjectProp (this.info, this.id);
 } else {
-sm.vwr.displayAtoms (this.bsAtoms, this.id == 1610625028, false, 1276118017, true);
+sm.vwr.displayAtoms (this.bsAtoms, this.id == 1610625028, false, 1275069441, true);
 }return;
-case 1060866:
+case 12290:
 sm.vwr.defineAtomSets (this.info);
 return;
 case 1073742032:
@@ -102,7 +102,7 @@ case 5:
 sm.loadShape (this.id);
 sm.setShapePropertyBs (this.id, "textLabels", this.info, this.bsAtoms);
 return;
-case 1678770178:
+case 1677721602:
 break;
 case 659488:
 case 1:
@@ -113,7 +113,7 @@ pymolScene.setUniqueBonds (bsBonds, this.id == 1);
 this.size = -1;
 }this.id = 1;
 break;
-case 1141899265:
+case 1140850689:
 this.id = 0;
 break;
 case 0:
@@ -121,7 +121,7 @@ break;
 case 10:
 case 9:
 sm.loadShape (this.id);
-var bsCarb = m.getAtoms (3145764, null);
+var bsCarb = m.getAtoms (2097188, null);
 JU.BSUtil.andNot (this.bsAtoms, bsCarb);
 break;
 case 16:
@@ -222,10 +222,10 @@ sb.append (" ]");
 }if (doCache && !JU.PT.isOneOf (sID, mepList)) sb.append (";isosurface cache");
 sb.append (";set meshScale ").appendI (Clazz.doubleToInt (this.size / 500));
 break;
-case 135271429:
+case 134222850:
 sb = this.info;
 break;
-case 1113200654:
+case 1112152078:
 sm.loadShape (this.id = 10);
 sm.setShapePropertyBs (this.id, "putty", this.info, this.bsAtoms);
 break;

@@ -32,7 +32,7 @@ Clazz.overrideMethod (c$, "finalizeSubclassReader",
 function () {
 this.finalizeReaderASCR ();
 if (this.nOrbitals > 0) this.setMOs ("eV");
-if (JU.Logger.debugging) JU.Logger.debug (this.orbitals.size () + " molecular orbitals read");
+if (this.debugging) JU.Logger.debug (this.orbitals.size () + " molecular orbitals read");
 });
 Clazz.defineMethod (c$, "readHeader", 
 function () {
@@ -138,7 +138,7 @@ garray[i] = gdata.get (i);
 }
 this.moData.put ("shells", sdata);
 this.moData.put ("gaussians", garray);
-if (JU.Logger.debugging) {
+if (this.debugging) {
 JU.Logger.debug (sdata.size () + " slater shells read");
 JU.Logger.debug (garray.length + " gaussian primitives read");
 }this.asc.setCurrentModelInfo ("moData", this.moData);

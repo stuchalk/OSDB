@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JV");
-Clazz.load (["java.util.Hashtable"], "JV.StatusManager", ["java.lang.Boolean", "$.Float", "javajs.awt.Dimension", "JU.Lst", "$.PT", "J.api.Interface", "J.c.CBK", "JS.SV", "JU.Logger"], function () {
+Clazz.load (["java.util.Hashtable"], "JV.StatusManager", ["java.lang.Boolean", "$.Float", "JU.Lst", "$.PT", "J.api.Interface", "J.c.CBK", "JS.SV", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.jsl = null;
@@ -380,7 +380,7 @@ return (this.jsl == null ? null : this.jsl.getJSpecViewProperty (myParam == null
 }, "~S");
 Clazz.defineMethod (c$, "resizeInnerPanel", 
 function (width, height) {
-return (this.jsl == null ?  new javajs.awt.Dimension (width, height) : this.jsl.resizeInnerPanel ("preferredWidthHeight " + width + " " + height + ";"));
+return (this.jsl == null ?  Clazz.newIntArray (-1, [width, height]) : this.jsl.resizeInnerPanel ("preferredWidthHeight " + width + " " + height + ";"));
 }, "~N,~N");
 Clazz.defineStatics (c$,
 "MAXIMUM_QUEUE_LENGTH", 16,

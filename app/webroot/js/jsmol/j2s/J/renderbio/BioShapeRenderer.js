@@ -95,7 +95,7 @@ this.invalidateMesh = false;
 this.needTranslucent = false;
 this.isPrecision = true;
 this.g3d.addRenderer (553648147);
-var TF = (!this.isExport && !this.vwr.checkMotionRendering (1113200642));
+var TF = (!this.isExport && !this.vwr.checkMotionRendering (1112152066));
 if (TF != this.wireframeOnly) this.invalidateMesh = true;
 this.wireframeOnly = TF;
 TF = (this.isExport || !this.wireframeOnly && this.vwr.getBoolean (603979864));
@@ -173,7 +173,7 @@ this.bsVisible.set (i);
 haveVisible = true;
 }
 if (!haveVisible) return false;
-this.ribbonBorder = this.vwr.getBoolean (603979898);
+this.ribbonBorder = this.vwr.getBoolean (603979899);
 this.isNucleic = Clazz.instanceOf (bioShape.bioPolymer, JM.NucleicPolymer);
 this.isCarbohydrate = Clazz.instanceOf (bioShape.bioPolymer, JM.CarbohydratePolymer);
 this.haveControlPointScreens = false;

@@ -28,25 +28,15 @@ Info = {
 	script: "load data/caffeine.mol"
 }
 
-loadJmol = function() {
-  $("#mathdiv").show();
-	$("#mydiv").html(Jmol.getAppletHtml("jmolApplet0",Info))
-}
-
 // standard jQuery document ready function called only when the document has been rendered
 
 $(document).ready(function(){
-  checkMathJax(loadJmol);
+  // see http://mathjax.readthedocs.org/en/latest/startup.html
+  MathJax.Hub.Register.StartupHook("End", function() {
+    $("#mathdiv").show();
+  	$("#mydiv").html(Jmol.getAppletHtml("jmolApplet0",Info))
+  });
 });
-
-// execute a ready function only when MathJax has finished loading 
-
-checkMathJax = function(fReady) {
-  return (!$("#MathJax_Message")[0] 
-    || $('#MathJax_Message:contains("Loading")')[0]
-    ? setTimeout(function(){checkMathJax(fReady)},10)
-    : fReady());
-}
 
 </script>
 </head>
@@ -55,9 +45,9 @@ checkMathJax = function(fReady) {
 <span id=mathdiv style="display:none">
 When $a \ne 0$, there are two solutions to $ax^2 + bx + c = 0$, and they are
 $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
-<br />
+<br>
 <hr>
-<br />
+<br>
 The trick here is to start the Jmol loading process only
 after the MathJax process is complete. We monitor the contents of the
 <b>MathJax_Message</b> div every 10 ms, and while it doesn't exist or its message contains

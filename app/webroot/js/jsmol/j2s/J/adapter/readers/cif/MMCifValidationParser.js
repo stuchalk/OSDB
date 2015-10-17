@@ -17,19 +17,21 @@ this.asResidues = reader.checkFilterKey ("ASRES");
 return this;
 }, "J.adapter.smarter.AtomSetCollectionReader");
 Clazz.defineMethod (c$, "finalizeValidations", 
-function (modelMap) {
+function (vwr, modelMap) {
+var map = this.reader.dssr;
+if (map != null) return vwr.getAnnotationParser (true).fixDSSRJSONMap (map);
 this.mapAtomResIDs (modelMap);
 var svMap = this.reader.validation;
-var retProps = this.reader.vwr.getAnnotationParser ().catalogValidations (this.reader.vwr, svMap, this.getModelAtomIndices (), this.resMap, (this.asResidues ? null : this.atomMap), modelMap);
+var retProps = this.reader.vwr.getAnnotationParser (false).catalogValidations (this.reader.vwr, svMap, this.getModelAtomIndices (), this.resMap, (this.asResidues ? null : this.atomMap), modelMap);
 var note = (retProps == null || retProps.size () == 0 ? null : this.setProperties (retProps));
 svMap.mapPut ("_note", JS.SV.newS (note));
 return note;
-}, "java.util.Map");
+}, "JV.Viewer,java.util.Map");
 Clazz.defineMethod (c$, "finalizeRna3d", 
 function (modelMap) {
 this.mapAtomResIDs (modelMap);
 var svMap = this.getRna3dMap (this.reader.addedData);
-var note = this.reader.vwr.getAnnotationParser ().catalogStructureUnits (this.reader.vwr, svMap, this.getModelAtomIndices (), this.resMap, null, modelMap);
+var note = this.reader.vwr.getAnnotationParser (false).catalogStructureUnits (this.reader.vwr, svMap, this.getModelAtomIndices (), this.resMap, null, modelMap);
 svMap.mapPut ("_note", JS.SV.newS (note));
 for (var i = this.reader.asc.atomSetCount; --i >= 0; ) {
 var info = this.reader.asc.getAtomSetAuxiliaryInfo (i);

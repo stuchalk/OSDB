@@ -141,6 +141,13 @@ vNorm.normalize ();
 vNorm.scale (-dist);
 ptProj.add2 (pt, vNorm);
 }, "JU.P3,JU.P4,JU.P3,JU.V3");
+c$.getNormalFromCenter = Clazz.defineMethod (c$, "getNormalFromCenter", 
+function (ptCenter, ptA, ptB, ptC, isOutward, normal, vTemp) {
+var d = JU.Measure.getNormalThroughPoints (ptA, ptB, ptC, normal, vTemp);
+var isReversed = (JU.Measure.distanceToPlaneV (normal, d, ptCenter) > 0);
+if (isReversed == isOutward) normal.scale (-1.0);
+return !isReversed;
+}, "JU.P3,JU.P3,JU.P3,JU.P3,~B,JU.V3,JU.V3");
 c$.getNormalToLine = Clazz.defineMethod (c$, "getNormalToLine", 
 function (pointA, pointB, vNormNorm) {
 vNormNorm.sub2 (pointA, pointB);

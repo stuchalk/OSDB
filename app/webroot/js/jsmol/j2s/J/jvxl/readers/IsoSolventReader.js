@@ -335,10 +335,8 @@ var isOK = false;
 if ((f = this.validateFace (ia, ib, ic, edge, this.ptS1)) != null) {
 this.vFaces.addLast (f);
 isOK = true;
-f.dump ();
 }if ((f = this.validateFace (ia, ib, ic, edge, this.ptS2)) != null) {
 this.vFaces.addLast (f);
-if (!isOK) f.dump ();
 isOK = true;
 }if (isOK) {
 this.noFaceSpheres.clear (ia);

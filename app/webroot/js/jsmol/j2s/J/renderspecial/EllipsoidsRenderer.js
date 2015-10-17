@@ -92,7 +92,7 @@ this.bGlobals[2] = this.vwr.getBooleanProperty ("ellipsoidAxes");
 this.bGlobals[4] = this.vwr.getBooleanProperty ("ellipsoidBall");
 this.bGlobals[0] = this.vwr.getBooleanProperty ("ellipsoidDots");
 this.bGlobals[3] = this.vwr.getBooleanProperty ("ellipsoidFill");
-this.bGlobals[6] = !this.isExport && !this.vwr.checkMotionRendering (1113198596);
+this.bGlobals[6] = !this.isExport && !this.vwr.checkMotionRendering (1112150020);
 this.diameter0 = Math.round ((this.vwr.getP ("ellipsoidAxisDiameter")).floatValue () * 1000);
 var m4 = this.tm.matrixTransform;
 this.mat.setRow (0, m4.m00, m4.m01, m4.m02);

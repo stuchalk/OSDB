@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.readers.quantum");
-Clazz.load (["J.adapter.readers.quantum.GamessReader"], "J.adapter.readers.quantum.GamessUKReader", ["java.lang.Float", "JU.Lst", "$.PT", "J.adapter.smarter.AtomSetCollectionReader"], function () {
+Clazz.load (["J.adapter.readers.quantum.GamessReader"], "J.adapter.readers.quantum.GamessUKReader", ["java.lang.Float", "JU.Lst", "$.PT"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.symmetries = null;
 this.occupancies = null;

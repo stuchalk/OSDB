@@ -21,15 +21,63 @@ this.readDipoleMoment ();
 this.readPartialCharges ();
 this.readBasis ();
 this.readMolecularObitals ();
-this.readFrequencies ("NumFreq", false);
+this.checkForFreq ();
 this.continuing = false;
 });
+Clazz.defineMethod (c$, "checkForFreq", 
+ function () {
+var n = this.fileData.get ("Vib-NDim");
+if (n == null) {
+this.readFrequencies ("NumFreq", false);
+return;
+}try {
+var nModes = n.intValue ();
+var vibE2 = this.fileData.get ("Vib-E2");
+var modes = this.fileData.get ("Vib-Modes");
+var frequencies = this.fillFloat (vibE2, 0, nModes);
+var red_masses = this.fillFloat (vibE2, nModes, nModes);
+var frc_consts = this.fillFloat (vibE2, nModes * 2, nModes);
+var intensities = this.fillFloat (vibE2, nModes * 3, nModes);
+var ac = this.asc.getLastAtomSetAtomCount ();
+var ignore =  Clazz.newBooleanArray (nModes, false);
+var fpt = 0;
+for (var i = 0; i < nModes; ++i) {
+ignore[i] = !this.doGetVibration (++this.vibrationNumber);
+if (ignore[i]) continue;
+var iAtom0 = this.asc.ac;
+this.asc.cloneAtomSetWithBonds (true);
+var name = this.asc.setAtomSetFrequency ("Calculation " + this.calculationNumber, null, "" + frequencies[i], null);
+this.appendLoadNote ("model " + this.asc.atomSetCount + ": " + name);
+this.namedSets.set (this.asc.iSet);
+this.asc.setAtomSetModelProperty ("ReducedMass", red_masses[i] + " AMU");
+this.asc.setAtomSetModelProperty ("ForceConstant", frc_consts[i] + " mDyne/A");
+this.asc.setAtomSetModelProperty ("IRIntensity", intensities[i] + " KM/Mole");
+for (var iAtom = 0; iAtom < ac; iAtom++) {
+this.asc.addVibrationVectorWithSymmetry (iAtom0 + iAtom, modes[fpt++], modes[fpt++], modes[fpt++], false);
+}
+}
+} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+JU.Logger.error ("Could not read Vib-E2 section: " + e.getMessage ());
+} else {
+throw e;
+}
+}
+});
+Clazz.defineMethod (c$, "fillFloat", 
+ function (f0, i, n) {
+var f =  Clazz.newFloatArray (n, 0);
+for (var i1 = 0, ilast = i + n; i < ilast; i++, i1++) f[i1] = f0[i];
+
+return f;
+}, "~A,~N,~N");
 Clazz.defineMethod (c$, "readAllData", 
  function () {
 while ((this.line == null ? this.rd () : this.line) != null) {
 if (this.line.length < 40) {
-if (this.line.indexOf ("NumAtom") == 0) return;
-continue;
+if (this.line.indexOf ("NumAtom") == 0) {
+return;
+}continue;
 }var name = JU.PT.rep (this.line.substring (0, 40).trim (), " ", "");
 var type = this.line.charAt (43);
 var isArray = (this.line.indexOf ("N=") >= 0);
@@ -151,7 +199,7 @@ if (oType.equals ("F7") || oType.equals ("D5")) slater[1] = J.adapter.readers.qu
  else slater[1] = J.adapter.readers.quantum.BasisFunctionReader.getQuantumShellTagID (oType);
 slater[2] = this.gaussianCount;
 slater[3] = nGaussians;
-if (JU.Logger.debugging) JU.Logger.debug ("Slater " + this.shells.size () + " " + JU.Escape.eAI (slater));
+if (this.debugging) JU.Logger.debug ("Slater " + this.shells.size () + " " + JU.Escape.eAI (slater));
 this.shells.addLast (slater);
 for (var j = 0; j < nGaussians; j++) {
 var g = this.gaussians[this.gaussianCount] =  Clazz.newFloatArray (3, 0);

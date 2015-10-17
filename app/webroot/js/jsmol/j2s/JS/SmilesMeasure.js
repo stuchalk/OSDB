@@ -1,4 +1,5 @@
 Clazz.declarePackage ("JS");
+Clazz.load (null, "JS.SmilesMeasure", ["JU.PT"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.search = null;
 this.nPoints = 0;
@@ -6,8 +7,7 @@ this.type = 0;
 this.index = 0;
 this.isNot = false;
 this.indices = null;
-this.min = 0;
-this.max = 0;
+this.minmax = null;
 this.points = null;
 Clazz.instantialize (this, arguments);
 }, JS, "SmilesMeasure");
@@ -16,21 +16,18 @@ this.indices =  Clazz.newIntArray (4, 0);
 this.points =  new Array (4);
 });
 Clazz.makeConstructor (c$, 
-function (search, index, type, min, max, isNot) {
+function (search, index, type, isNot, minmax) {
 this.search = search;
 this.type = Math.min (4, Math.max (type, 2));
 this.index = index;
-this.min = Math.min (min, max);
-this.max = Math.max (min, max);
 this.isNot = isNot;
-}, "JS.SmilesSearch,~N,~N,~N,~N,~B");
-Clazz.overrideMethod (c$, "toString", 
-function () {
-var s = "(." + "__dat".charAt (this.type) + this.index + ":" + this.min + "," + this.max + ") for";
-for (var i = 0; i < this.type; i++) s += " " + (i >= this.nPoints ? "?" : "" + this.indices[i]);
-
-return s;
-});
+this.minmax = minmax;
+for (var i = minmax.length - 2; i >= 0; i -= 2) if (minmax[i] > minmax[i + 1]) {
+var min = minmax[i + 1];
+minmax[i + 1] = minmax[i];
+minmax[i] = min;
+}
+}, "JS.SmilesSearch,~N,~N,~B,~A");
 Clazz.defineMethod (c$, "addPoint", 
 function (index) {
 if (this.nPoints == this.type) return false;
@@ -60,7 +57,9 @@ JS.SmilesMeasure.setTorsionData (this.points[0], this.points[1], this.points[2],
 d = this.search.v.vTemp1.angle (this.search.v.vTemp2) / 0.017453292 * (this.search.v.vNorm1.dot (this.search.v.vNorm2) < 0 ? 1 : -1);
 break;
 }
-return ((d < this.min || d > this.max) == this.isNot);
+for (var i = this.minmax.length - 2; i >= 0; i -= 2) if (d >= this.minmax[i] && d <= this.minmax[i + 1]) return !this.isNot;
+
+return this.isNot;
 });
 c$.setTorsionData = Clazz.defineMethod (c$, "setTorsionData", 
 function (pt1a, pt1, pt2, pt2a, v, isAll) {
@@ -75,6 +74,14 @@ v.vTemp2.cross (v.vTemp2, v.vNorm1);
 v.vTemp2.normalize ();
 v.vNorm2.cross (v.vTemp1, v.vTemp2);
 }, "JU.P3,JU.P3,JU.P3,JU.P3,JS.VTemp,~B");
+Clazz.overrideMethod (c$, "toString", 
+function () {
+var s = "(." + "__dat".charAt (this.type) + this.index + ":" + JU.PT.toJSON (null, this.minmax) + ") for";
+for (var i = 0; i < this.type; i++) s += " " + (i >= this.nPoints ? "?" : "" + this.indices[i]);
+
+return s;
+});
 Clazz.defineStatics (c$,
 "TYPES", "__dat",
 "radiansPerDegree", (0.017453292519943295));
+});

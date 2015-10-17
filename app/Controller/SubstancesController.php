@@ -44,6 +44,7 @@ class SubstancesController extends AppController
     {
         $data=$this->Substance->find('first',['conditions'=>['Substance.id'=>$id],'recursive'=>4]);
         $this->set('data',$data);
+        if($this->request->is('ajax')) { echo json_encode($data['Substance']);exit; }
     }
 
     /**

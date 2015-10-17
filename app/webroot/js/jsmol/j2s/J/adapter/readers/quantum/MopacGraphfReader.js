@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.readers.quantum");
-Clazz.load (["J.adapter.readers.quantum.MopacSlaterReader"], "J.adapter.readers.quantum.MopacGraphfReader", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "J.adapter.smarter.AtomSetCollectionReader"], function () {
+Clazz.load (["J.adapter.readers.quantum.MopacSlaterReader"], "J.adapter.readers.quantum.MopacGraphfReader", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.Lst"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.ac = 0;
 this.nCoefficients = 0;

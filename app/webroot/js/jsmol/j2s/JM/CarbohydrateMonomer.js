@@ -41,9 +41,8 @@ if (this.isCursorOnTopOf (anomericO, x, y, radiusBegin, competitor)) closest[0] 
 Clazz.overrideMethod (c$, "isConnectedPrevious", 
 function () {
 if (this.monomerIndex <= 0) return false;
-for (var i = this.firstAtomIndex; i <= this.lastAtomIndex; i++) {
-if (this.getCrossLinkGroup (i, null, null)) return true;
-}
+for (var i = this.firstAtomIndex; i <= this.lastAtomIndex; i++) if (this.getCrossLinkGroup (i, null, null, true, false, false)) return true;
+
 return false;
 });
 Clazz.defineStatics (c$,

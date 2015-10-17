@@ -108,6 +108,7 @@ return s.toString ();
 });
 Clazz.overrideMethod (c$, "getSignature", 
 function () {
+if (this.typeName == null) return JS.T.nameOf (this.tok);
 var s =  new JU.SB ().append (this.typeName).append (" ").append (this.name).append (" (");
 for (var i = 0; i < this.nParameters; i++) {
 if (i > 0) s.append (", ");

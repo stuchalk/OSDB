@@ -138,7 +138,7 @@ this.gaussians[i] =  Clazz.newFloatArray (tokens.length, 0);
 for (var j = 0; j < tokens.length; j++) this.gaussians[i][j] = this.parseFloatStr (tokens[j]);
 
 }
-if (JU.Logger.debugging) {
+if (this.debugging) {
 JU.Logger.debug (shellCount + " slater shells read");
 JU.Logger.debug (gaussianCount + " gaussian primitives read");
 }this.discardLinesUntilStartsWith (" There are");

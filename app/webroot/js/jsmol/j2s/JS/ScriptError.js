@@ -65,6 +65,7 @@ this.showString (strError);
 Clazz.defineMethod (c$, "evalError", 
 function (message, strUntranslated) {
 if (this.ignoreError) throw  new NullPointerException ();
+if (strUntranslated == null) strUntranslated = message;
 if (!this.chk) {
 this.setCursorWait (false);
 this.vwr.setBooleanProperty ("refreshing", true);

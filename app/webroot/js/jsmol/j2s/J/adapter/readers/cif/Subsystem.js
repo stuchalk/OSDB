@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.readers.cif");
-Clazz.load (null, "J.adapter.readers.cif.Subsystem", ["JU.Lst", "$.Matrix", "$.V3", "JU.Logger"], function () {
+Clazz.load (null, "J.adapter.readers.cif.Subsystem", ["JU.Lst", "$.Matrix", "$.V3", "JU.Logger", "$.SimpleUnitCell"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.msRdr = null;
 this.code = null;
@@ -44,7 +44,7 @@ var tFactor = wdd.sub (sigma_nu.mul (w3d));
 JU.Logger.info ("sigma_nu = " + sigma_nu);
 var s0 = this.msRdr.cr.asc.getSymmetry ();
 var vu43 = s0.getUnitCellVectors ();
-var vr43 = this.reciprocalsOf (vu43);
+var vr43 = JU.SimpleUnitCell.getReciprocal (vu43);
 var mard3 =  new JU.Matrix (null, 3 + this.d, 3);
 var mar3 =  new JU.Matrix (null, 3, 3);
 var mard3a = mard3.getArray ();
@@ -60,7 +60,7 @@ var uc_nu =  new Array (4);
 uc_nu[0] = vu43[0];
 for (var i = 0; i < 3; i++) uc_nu[i + 1] = JU.V3.new3 (a[i][0], a[i][1], a[i][2]);
 
-uc_nu = this.reciprocalsOf (uc_nu);
+uc_nu = JU.SimpleUnitCell.getReciprocal (uc_nu);
 this.symmetry = (this.msRdr.cr.getInterface ("JS.Symmetry")).getUnitCell (uc_nu, false, null);
 this.modMatrices =  Clazz.newArray (-1, [sigma_nu, tFactor]);
 if (!setOperators) return;
@@ -98,17 +98,6 @@ for (var i = 3; --i >= 0; ) for (var j = 3 + this.d; --j >= 3; ) if (a[i][j] != 
 
 return false;
 }, "JU.Matrix");
-Clazz.defineMethod (c$, "reciprocalsOf", 
- function (abc) {
-var rabc =  new Array (4);
-rabc[0] = abc[0];
-for (var i = 0; i < 3; i++) {
-rabc[i + 1] =  new JU.V3 ();
-rabc[i + 1].cross (abc[((i + 1) % 3) + 1], abc[((i + 2) % 3) + 1]);
-rabc[i + 1].scale (1 / abc[i + 1].dot (rabc[i + 1]));
-}
-return rabc;
-}, "~A");
 Clazz.overrideMethod (c$, "toString", 
 function () {
 return "Subsystem " + this.code + "\n" + this.w;

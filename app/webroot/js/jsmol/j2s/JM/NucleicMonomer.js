@@ -1,6 +1,8 @@
 Clazz.declarePackage ("JM");
 Clazz.load (["JM.PhosphorusMonomer"], "JM.NucleicMonomer", ["java.lang.Character", "JU.Lst", "$.P3", "$.Quat", "$.V3", "J.c.STR", "JM.Group", "JM.NucleicPolymer"], function () {
 c$ = Clazz.decorateAsClass (function () {
+this.$isPurine = false;
+this.$isPyrimidine = false;
 this.hasRnaO2Prime = false;
 this.baseCenter = null;
 this.bps = null;
@@ -22,7 +24,7 @@ return ( new JM.NucleicMonomer ()).set4 (chain, group3, seqcode, firstAtomIndex,
 }, "JM.Chain,~S,~N,~N,~N,~A");
 Clazz.defineMethod (c$, "set4", 
  function (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, offsets) {
-this.set3 (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, offsets);
+this.set2 (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, offsets);
 if (!JM.Monomer.have (offsets, 15)) {
 offsets[0] = offsets[19];
 this.setLeadAtomIndex ();
@@ -45,11 +47,11 @@ return this.hasRnaO2Prime;
 });
 Clazz.overrideMethod (c$, "isPurine", 
 function () {
-return this.$isPurine;
+return this.$isPurine || !this.$isPyrimidine && this.isPurineByID ();
 });
 Clazz.overrideMethod (c$, "isPyrimidine", 
 function () {
-return this.$isPyrimidine;
+return this.$isPyrimidine || !this.$isPurine && this.isPyrimidineByID ();
 });
 Clazz.defineMethod (c$, "isGuanine", 
 function () {
@@ -58,6 +60,10 @@ return JM.Monomer.have (this.offsets, 17);
 Clazz.overrideMethod (c$, "getProteinStructureType", 
 function () {
 return (this.hasRnaO2Prime ? J.c.STR.RNA : J.c.STR.DNA);
+});
+Clazz.defineMethod (c$, "getP", 
+function () {
+return this.getAtomFromOffsetIndex (0);
 });
 Clazz.defineMethod (c$, "getC1P", 
 function () {
@@ -268,12 +274,12 @@ var myN1 = myNucleotide.getN1 ();
 var otherN3 = otherNucleotide.getN3 ();
 return (myN1.isBonded (otherN3));
 }, "JM.Group");
-Clazz.overrideMethod (c$, "getCrossLinkLead", 
-function (vReturn) {
+Clazz.overrideMethod (c$, "getCrossLinkVector", 
+function (vReturn, crosslinkCovalent, crosslinkHBond) {
+if (!crosslinkHBond) return false;
 var N = (this.$isPurine ? this.getN1 () : this.getN3 ());
 var bonds = N.bonds;
 if (bonds == null) return false;
-var haveCrossLinks = false;
 for (var i = 0; i < bonds.length; i++) {
 if (bonds[i].isHydrogen ()) {
 var N2 = bonds[i].getOtherAtom (N);
@@ -282,11 +288,12 @@ if (!(Clazz.instanceOf (g, JM.NucleicMonomer))) continue;
 var m = g;
 if ((this.$isPurine ? m.getN3 () : m.getN1 ()) === N2) {
 if (vReturn == null) return true;
+vReturn.addLast (Integer.$valueOf (N.i));
+vReturn.addLast (Integer.$valueOf (N2.i));
 vReturn.addLast (Integer.$valueOf (m.leadAtomIndex));
-haveCrossLinks = true;
 }}}
-return haveCrossLinks;
-}, "JU.Lst");
+return vReturn != null && vReturn.size () > 0;
+}, "JU.Lst,~B,~B");
 Clazz.defineMethod (c$, "getEdgePoints", 
 function (pts) {
 pts[0] = this.getLeadAtom ();
@@ -326,7 +333,7 @@ if (this.group1 == '\0') this.group1 = g;
 }, "~S");
 Clazz.defineMethod (c$, "getBasePairs", 
 function () {
-if (this.bioPolymer != null && !(this.bioPolymer).isDssrSet) this.bioPolymer.model.ms.vwr.getAnnotationParser ().setAllDSSRParametersForModel (this.bioPolymer.model.ms.vwr, this.bioPolymer.model.modelIndex);
+if (this.bioPolymer != null && !(this.bioPolymer).isDssrSet) this.bioPolymer.model.ms.vwr.getAnnotationParser (true).getBasePairs (this.bioPolymer.model.ms.vwr, this.bioPolymer.model.modelIndex);
 return this.bps;
 });
 Clazz.overrideMethod (c$, "getGroup1b", 

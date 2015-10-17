@@ -17,12 +17,7 @@ g3d.drawString (text.lines[i], text.font, Clazz.floatToInt (temp[0]), Clazz.floa
 }
 } else {
 g3d.drawImage (text.image, Clazz.floatToInt (text.boxX), Clazz.floatToInt (text.boxY), text.z, text.zSlab, text.bgcolix, Clazz.floatToInt (text.boxWidth), Clazz.floatToInt (text.boxHeight));
-}J.render.TextRenderer.drawPointer (text, g3d);
-return true;
-}, "JM.Text,J.api.JmolRendererInterface,~N,~N,~B,~A,~A");
-c$.drawPointer = Clazz.defineMethod (c$, "drawPointer", 
-function (text, g3d) {
-if ((text.pointer & 1) == 0 || !g3d.setC ((text.pointer & 2) != 0 && text.bgcolix != 0 ? text.bgcolix : text.colix)) return;
+}if ((text.pointer & 1) == 0 || !g3d.setC ((text.pointer & 2) != 0 && text.bgcolix != 0 ? text.bgcolix : text.colix)) return true;
 var w = text.boxWidth;
 var h = text.boxHeight;
 var pt = NaN;
@@ -30,7 +25,8 @@ var x = text.boxX + (text.boxX > text.atomX + w ? 0 : text.boxX + w < text.atomX
 var setY = !Float.isNaN (pt);
 var y = text.boxY + (setY && text.boxY > text.atomY ? 0 : setY && text.boxY + h < text.atomY ? h : h / 2);
 g3d.drawLineXYZ (text.atomX, text.atomY, text.atomZ, Clazz.floatToInt (x), Clazz.floatToInt (y), text.zSlab);
-}, "JM.Text,J.api.JmolRendererInterface");
+return true;
+}, "JM.Text,J.api.JmolRendererInterface,~N,~N,~B,~A,~A");
 c$.renderSimpleLabel = Clazz.defineMethod (c$, "renderSimpleLabel", 
 function (g3d, font, strLabel, colix, bgcolix, boxXY, z, zSlab, xOffset, yOffset, ascent, descent, doPointer, pointerColix, isAbsolute) {
 var boxWidth = font.stringWidth (strLabel) + 8;

@@ -366,7 +366,7 @@ if (vData.size () > 0) {
 this.indicatedModelIndex = (data[3]).intValue ();
 this.lineData = vData;
 }}} else if (this.slabData != null && this.plane != null) {
-this.slabData.getMeshSlicer ().getIntersection (0, this.plane, null, null, null, null, null, false, true, 135266319, false);
+this.slabData.getMeshSlicer ().getIntersection (0, this.plane, null, null, null, null, null, false, true, 134217750, false);
 this.polygon =  new JU.Lst ();
 this.polygon.addLast (this.slabData.vs);
 this.polygon.addLast (this.slabData.pis);

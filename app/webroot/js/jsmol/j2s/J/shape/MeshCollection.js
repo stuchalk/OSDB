@@ -140,13 +140,13 @@ this.colix = JU.C.getColixO (value);
 this.color = (value).intValue ();
 if (this.currentMesh != null) {
 this.currentMesh.color = this.color;
-}this.setTokenProperty (1766856708, false, false);
+}this.setTokenProperty (1765808134, false, false);
 return;
 }if ("translucency" === propertyName) {
 this.setTokenProperty (603979967, ((value).equals ("translucent")), false);
 return;
 }if ("hidden" === propertyName) {
-value = Integer.$valueOf ((value).booleanValue () ? 1048588 : 1048589);
+value = Integer.$valueOf ((value).booleanValue () ? 1073742334 : 1073742335);
 propertyName = "token";
 }if ("token" === propertyName) {
 var tok = (value).intValue ();
@@ -154,18 +154,18 @@ var tok2 = 0;
 var test = true;
 switch (tok) {
 case 1610625028:
-case 1048589:
+case 1073742335:
 case 1073741958:
 case 1073741862:
 case 1073741964:
-case 1113198595:
+case 1112150019:
 case 1073741938:
 case 1073742182:
 case 1073741960:
 break;
-case 1048588:
+case 1073742334:
 test = false;
-tok = 1048589;
+tok = 1073742335;
 break;
 case 1073741898:
 tok2 = 1073742018;
@@ -185,7 +185,7 @@ tok2 = 1073741898;
 break;
 case 1073742042:
 test = false;
-tok = 1113198595;
+tok = 1112150019;
 break;
 case 1073742046:
 test = false;
@@ -232,10 +232,10 @@ case 1610625028:
 m.bsDisplay = this.bsDisplay;
 if (this.bsDisplay == null && this.displayWithinPoints != null) m.setShowWithin (this.displayWithinPoints, this.displayWithinDistance2, this.isDisplayWithinNot);
 return;
-case 1048589:
+case 1073742335:
 m.visible = bProp;
 return;
-case 1766856708:
+case 1765808134:
 m.colix = this.colix;
 return;
 case 603979967:
@@ -301,7 +301,8 @@ if (property.startsWith ("list")) {
 this.clean ();
 var sb =  new JU.SB ();
 var k = 0;
-var id = (property.equals ("list") ? null : property.substring (5));
+var isNamed = property.length > 5;
+var id = (property.equals ("list") ? null : isNamed ? property.substring (5) : this.currentMesh == null ? null : this.currentMesh.thisID);
 for (var i = 0; i < this.meshCount; i++) {
 m = this.meshes[i];
 if (id != null && !id.equalsIgnoreCase (m.thisID)) continue;
@@ -315,7 +316,7 @@ for (var j = 0; j < m.title.length; j++) s += (j == 0 ? "; title:" : " | ") + m.
 if (s.length > 10000) s = s.substring (0, 10000) + "...";
 sb.append (s);
 }sb.appendC ('\n');
-if (id != null) {
+if (isNamed) {
 var info = this.getProperty ("jvxlFileInfo", 0);
 if (info != null) sb.append (info).appendC ('\n');
 }}

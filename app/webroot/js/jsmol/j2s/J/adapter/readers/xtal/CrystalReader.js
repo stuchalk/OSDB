@@ -447,7 +447,7 @@ var frequencies =  Clazz.newFloatArray (tokens.length, 0);
 var frequencyCount = frequencies.length;
 for (var i = 0; i < frequencyCount; i++) {
 frequencies[i] = this.parseFloatStr (tokens[i]);
-if (JU.Logger.debugging) JU.Logger.debug ((this.vibrationNumber + i) + " frequency=" + frequencies[i]);
+if (this.debugging) JU.Logger.debug ((this.vibrationNumber + i) + " frequency=" + frequencies[i]);
 }
 var ignore =  Clazz.newBooleanArray (frequencyCount, false);
 var iAtom0 = 0;

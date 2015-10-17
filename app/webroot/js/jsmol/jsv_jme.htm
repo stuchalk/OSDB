@@ -145,12 +145,12 @@ insert mol file data here
 Then click <input class="btn" type="button" onclick="predictSpectrum(0)" value="&#8594" />
 to see a <b>simulated</b> spectrum. Or load your own spectrum by dragging a file into the blue box or using 
 a right-click to access the pop-up menu.
-<br />
-<br />
+<br>
+<br>
 To select atoms on the structure, click <span><img src=data/jmestar.png></span> from the menu, then click on an atom.
 To select a peak, just click on it. Clickable peaks are the ones with a red tab at the top.
-<br />
-<br />
+<br>
+<br>
 This page illustrates how we can use JSME (the JavaScript Molecular Editor) 
 along with JSpecView to quickly get a simulated spectrum for a compound of our choice.
 JSmol on this page calls servers in Frederick, Maryland (NIH resolver, for name-to-structure)
@@ -173,7 +173,7 @@ Jmol.getApplet("jmol", JmolInfo)
 <script>
 Jmol.getJSVApplet("jsv", JSVInfo)
 </script>
-<br />
+<br>
 <a href="javascript:unhideJSV();Jmol.showInfo(jsv, true);Jmol.showInfo(jmol, true)">info</a>
 <a href="javascript:Jmol.clearConsole(jsv);Jmol.clearConsole(jmol);">clear</a>
 <a href="javascript:Jmol.showInfo(jsv, false);Jmol.showInfo(jmol, false)">spectrum</a>
@@ -193,15 +193,15 @@ Jmol.getJSVApplet("jsv", JSVInfo)
 
 <div id="infodiv" style="text-align:center;display:none">
 This page illustrates how we can use JSME (the JavaScript Molecular Editor) 
-<br />along with JSpecView to quickly get a simulated spectrum for a compound of our choice.
-<br />Note that the three applets can be combined easily in any combination. 
-<br /><br />JSmol on this page calls servers in Frederick, Maryland (NIH resolver, for name-to-structure)
-<br />and Lausanne, Switzerland (nmrdb, for structure-to-spectrum)
-<br /><br /><span style="color:blue">Draw a chemical structure 
-<br />or search for a chemical identifier such as <b>caffeine</b> or <i>CCOCC</i>, 
-<br />then press <input class="btn" type="button" onclick="predictSpectrum()" value="&#8594" />.</span>
-<br /><br /><span style="color:red">Note that these spectra are <i>just predictions.</i> 
-<br />They may differ significantly from actual NMR spectra.</span>
+<br>along with JSpecView to quickly get a simulated spectrum for a compound of our choice.
+<br>Note that the three applets can be combined easily in any combination. 
+<br><br>JSmol on this page calls servers in Frederick, Maryland (NIH resolver, for name-to-structure)
+<br>and Lausanne, Switzerland (nmrdb, for structure-to-spectrum)
+<br><br><span style="color:blue">Draw a chemical structure 
+<br>or search for a chemical identifier such as <b>caffeine</b> or <i>CCOCC</i>, 
+<br>then press <input class="btn" type="button" onclick="predictSpectrum()" value="&#8594" />.</span>
+<br><br><span style="color:red">Note that these spectra are <i>just predictions.</i> 
+<br>They may differ significantly from actual NMR spectra.</span>
 
 </div>
 </td>

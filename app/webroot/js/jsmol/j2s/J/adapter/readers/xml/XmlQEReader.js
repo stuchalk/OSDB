@@ -25,7 +25,7 @@ this.PX (parent, saxReader);
 }, "J.adapter.readers.xml.XmlReader,~O");
 Clazz.overrideMethod (c$, "processStartElement", 
 function (localName) {
-if (JU.Logger.debugging) JU.Logger.debug ("xmlqe: start " + localName);
+if (this.debugging) JU.Logger.debug ("xmlqe: start " + localName);
 if (!this.parent.continuing) return;
 if ("NUMBER_OF_ATOMS".equalsIgnoreCase (localName) || "CELL_DIMENSIONS".equalsIgnoreCase (localName) || "AT".equalsIgnoreCase (localName)) {
 this.keepChars = true;
@@ -44,7 +44,7 @@ return;
 }, "~S");
 Clazz.overrideMethod (c$, "processEndElement", 
 function (localName) {
-if (JU.Logger.debugging) JU.Logger.debug ("xmlqe: end " + localName);
+if (this.debugging) JU.Logger.debug ("xmlqe: end " + localName);
 while (true) {
 if (!this.parent.doProcessLines) break;
 if ("CELL_DIMENSIONS".equalsIgnoreCase (localName)) {

@@ -380,7 +380,7 @@ return null;
 }, "~A");
 Clazz.defineStatics (c$,
 "classBase", "J.adapter.readers.");
-c$.readerSets = c$.prototype.readerSets =  Clazz.newArray (-1, ["aflow.", ";AFLOW;", "cif.", ";Cif;MMCif;", "molxyz.", ";Mol3D;Mol;Xyz;", "more.", ";BinaryDcd;Gromacs;Jcampdx;MdCrd;MdTop;Mol2;TlsDataOnly;", "quantum.", ";Adf;Csf;Dgrid;GamessUK;GamessUS;Gaussian;GaussianFchk;GaussianWfn;Jaguar;Molden;MopacGraphf;GenNBO;NWChem;Odyssey;Psi;Qchem;Spartan;SpartanSmol;WebMO;", "pdb.", ";Pdb;Pqr;P2n;", "pymol.", ";PyMOL;", "simple.", ";Alchemy;Ampac;Cube;FoldingXyz;GhemicalMM;HyperChem;Jme;JSON;Mopac;MopacArchive;Tinker;Input;", "xtal.", ";Abinit;Aims;Bilbao;Castep;Cgd;Crystal;Dmol;Espresso;Gulp;Jana;Magres;Shelx;Siesta;VaspOutcar;VaspPoscar;Wien2k;Xcrysden;", "xml.", ";XmlArgus;XmlCml;XmlChem3d;XmlMolpro;XmlOdyssey;XmlXsd;XmlVasp;XmlQE;"]);
+c$.readerSets = c$.prototype.readerSets =  Clazz.newArray (-1, ["aflow.", ";AFLOW;", "cif.", ";Cif;MMCif;", "molxyz.", ";Mol3D;Mol;Xyz;", "more.", ";BinaryDcd;Gromacs;Jcampdx;MdCrd;MdTop;Mol2;TlsDataOnly;", "quantum.", ";Adf;Csf;Dgrid;GamessUK;GamessUS;Gaussian;GaussianFchk;GaussianWfn;Jaguar;Molden;MopacGraphf;GenNBO;NWChem;Odyssey;Psi;Qchem;Spartan;SpartanSmol;WebMO;", "pdb.", ";Pdb;Pqr;P2n;JmolData;", "pymol.", ";PyMOL;", "simple.", ";Alchemy;Ampac;Cube;FoldingXyz;GhemicalMM;HyperChem;Jme;JSON;Mopac;MopacArchive;Tinker;Input;", "xtal.", ";Abinit;Aims;Bilbao;Castep;Cgd;Crystal;Dmol;Espresso;Gulp;Jana;Magres;Shelx;Siesta;VaspOutcar;VaspPoscar;Wien2k;Xcrysden;", "xml.", ";XmlArgus;XmlCml;XmlChem3d;XmlMolpro;XmlOdyssey;XmlXsd;XmlVasp;XmlQE;"]);
 Clazz.defineStatics (c$,
 "CML_NAMESPACE_URI", "http://www.xml-cml.org/schema",
 "LEADER_CHAR_MAX", 64,
@@ -397,13 +397,14 @@ Clazz.defineStatics (c$,
 "pymolStartRecords",  Clazz.newArray (-1, ["PyMOL", "}q"]),
 "janaStartRecords",  Clazz.newArray (-1, ["Jana", "Version Jana"]),
 "jsonStartRecords",  Clazz.newArray (-1, ["JSON", "{\"mol\":"]),
-"jcampdxStartRecords",  Clazz.newArray (-1, ["Jcampdx", "##TITLE"]));
-c$.fileStartsWithRecords = c$.prototype.fileStartsWithRecords =  Clazz.newArray (-1, [J.adapter.smarter.Resolver.sptRecords, J.adapter.smarter.Resolver.m3dStartRecords, J.adapter.smarter.Resolver.cubeFileStartRecords, J.adapter.smarter.Resolver.mol2Records, J.adapter.smarter.Resolver.webmoFileStartRecords, J.adapter.smarter.Resolver.moldenFileStartRecords, J.adapter.smarter.Resolver.dcdFileStartRecords, J.adapter.smarter.Resolver.tlsDataOnlyFileStartRecords, J.adapter.smarter.Resolver.inputFileStartRecords, J.adapter.smarter.Resolver.magresFileStartRecords, J.adapter.smarter.Resolver.pymolStartRecords, J.adapter.smarter.Resolver.janaStartRecords, J.adapter.smarter.Resolver.jsonStartRecords, J.adapter.smarter.Resolver.jcampdxStartRecords]);
+"jcampdxStartRecords",  Clazz.newArray (-1, ["Jcampdx", "##TITLE"]),
+"jmoldataStartRecords",  Clazz.newArray (-1, ["JmolData", "REMARK   6 Jmol"]),
+"pqrStartRecords",  Clazz.newArray (-1, ["Pqr", "REMARK   1 PQR", "REMARK    The B-factors"]),
+"p2nStartRecords",  Clazz.newArray (-1, ["P2n", "REMARK   1 P2N"]));
+c$.fileStartsWithRecords = c$.prototype.fileStartsWithRecords =  Clazz.newArray (-1, [J.adapter.smarter.Resolver.sptRecords, J.adapter.smarter.Resolver.m3dStartRecords, J.adapter.smarter.Resolver.cubeFileStartRecords, J.adapter.smarter.Resolver.mol2Records, J.adapter.smarter.Resolver.webmoFileStartRecords, J.adapter.smarter.Resolver.moldenFileStartRecords, J.adapter.smarter.Resolver.dcdFileStartRecords, J.adapter.smarter.Resolver.tlsDataOnlyFileStartRecords, J.adapter.smarter.Resolver.inputFileStartRecords, J.adapter.smarter.Resolver.magresFileStartRecords, J.adapter.smarter.Resolver.pymolStartRecords, J.adapter.smarter.Resolver.janaStartRecords, J.adapter.smarter.Resolver.jsonStartRecords, J.adapter.smarter.Resolver.jcampdxStartRecords, J.adapter.smarter.Resolver.jmoldataStartRecords, J.adapter.smarter.Resolver.pqrStartRecords, J.adapter.smarter.Resolver.p2nStartRecords]);
 Clazz.defineStatics (c$,
 "mmcifLineStartRecords",  Clazz.newArray (-1, ["MMCif", "_entry.id", "_database_PDB_", "_pdbx_", "_chem_comp.pdbx_type", "_audit_author.name", "_atom_site."]),
 "cifLineStartRecords",  Clazz.newArray (-1, ["Cif", "data_", "_publ"]),
-"pqrLineStartRecords",  Clazz.newArray (-1, ["Pqr", "REMARK   1 PQR"]),
-"p2nLineStartRecords",  Clazz.newArray (-1, ["P2n", "REMARK   1 P2N"]),
 "pdbLineStartRecords",  Clazz.newArray (-1, ["Pdb", "HEADER", "OBSLTE", "TITLE ", "CAVEAT", "COMPND", "SOURCE", "KEYWDS", "EXPDTA", "AUTHOR", "REVDAT", "SPRSDE", "JRNL  ", "REMARK ", "DBREF ", "SEQADV", "SEQRES", "MODRES", "HELIX ", "SHEET ", "TURN  ", "CRYST1", "ORIGX1", "ORIGX2", "ORIGX3", "SCALE1", "SCALE2", "SCALE3", "ATOM  ", "HETATM", "MODEL ", "LINK  ", "USER  MOD "]),
 "cgdLineStartRecords",  Clazz.newArray (-1, ["Cgd", "EDGE ", "edge "]),
 "shelxLineStartRecords",  Clazz.newArray (-1, ["Shelx", "TITL ", "ZERR ", "LATT ", "SYMM ", "CELL "]),
@@ -415,7 +416,7 @@ Clazz.defineStatics (c$,
 "mdTopLineStartRecords",  Clazz.newArray (-1, ["MdTop", "%FLAG TITLE"]),
 "hyperChemLineStartRecords",  Clazz.newArray (-1, ["HyperChem", "mol 1"]),
 "vaspOutcarLineStartRecords",  Clazz.newArray (-1, ["VaspOutcar", " vasp.", " INCAR:"]));
-c$.lineStartsWithRecords = c$.prototype.lineStartsWithRecords =  Clazz.newArray (-1, [J.adapter.smarter.Resolver.mmcifLineStartRecords, J.adapter.smarter.Resolver.cifLineStartRecords, J.adapter.smarter.Resolver.pqrLineStartRecords, J.adapter.smarter.Resolver.p2nLineStartRecords, J.adapter.smarter.Resolver.pdbLineStartRecords, J.adapter.smarter.Resolver.cgdLineStartRecords, J.adapter.smarter.Resolver.shelxLineStartRecords, J.adapter.smarter.Resolver.ghemicalMMLineStartRecords, J.adapter.smarter.Resolver.jaguarLineStartRecords, J.adapter.smarter.Resolver.mdlLineStartRecords, J.adapter.smarter.Resolver.spartanSmolLineStartRecords, J.adapter.smarter.Resolver.csfLineStartRecords, J.adapter.smarter.Resolver.mol2Records, J.adapter.smarter.Resolver.mdTopLineStartRecords, J.adapter.smarter.Resolver.hyperChemLineStartRecords, J.adapter.smarter.Resolver.vaspOutcarLineStartRecords]);
+c$.lineStartsWithRecords = c$.prototype.lineStartsWithRecords =  Clazz.newArray (-1, [J.adapter.smarter.Resolver.mmcifLineStartRecords, J.adapter.smarter.Resolver.cifLineStartRecords, J.adapter.smarter.Resolver.pdbLineStartRecords, J.adapter.smarter.Resolver.cgdLineStartRecords, J.adapter.smarter.Resolver.shelxLineStartRecords, J.adapter.smarter.Resolver.ghemicalMMLineStartRecords, J.adapter.smarter.Resolver.jaguarLineStartRecords, J.adapter.smarter.Resolver.mdlLineStartRecords, J.adapter.smarter.Resolver.spartanSmolLineStartRecords, J.adapter.smarter.Resolver.csfLineStartRecords, J.adapter.smarter.Resolver.mol2Records, J.adapter.smarter.Resolver.mdTopLineStartRecords, J.adapter.smarter.Resolver.hyperChemLineStartRecords, J.adapter.smarter.Resolver.vaspOutcarLineStartRecords]);
 Clazz.defineStatics (c$,
 "bilbaoContainsRecords",  Clazz.newArray (-1, ["Bilbao", ">Bilbao Crystallographic Server<"]),
 "xmlContainsRecords",  Clazz.newArray (-1, ["Xml", "<?xml", "<atom", "<molecule", "<reaction", "<cml", "<bond", ".dtd\"", "<list>", "<entry", "<identifier", "http://www.xml-cml.org/schema/cml2/core"]),

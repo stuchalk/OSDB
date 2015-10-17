@@ -315,8 +315,8 @@ case 1073741964:
 this.setLighting (tokProp);
 return;
 case 1073742042:
-case 1113198595:
-this.showPoints = (tokProp == 1113198595 ? bProp : !bProp);
+case 1112150019:
+this.showPoints = (tokProp == 1112150019 ? bProp : !bProp);
 return;
 case 1073742052:
 case 1073742018:

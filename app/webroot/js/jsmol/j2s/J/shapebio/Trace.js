@@ -26,7 +26,7 @@ var sumsq = 0.0;
 var min = 3.4028235E38;
 var max = 0;
 for (var i = bsAtoms.nextSetBit (0); i >= 0; i = bsAtoms.nextSetBit (i + 1)) {
-var value = this.atoms[i].atomPropertyFloat (null, 1112541196, null);
+var value = this.atoms[i].atomPropertyFloat (null, 1111492620, null);
 sum += value;
 sumsq += (value * value);
 if (value < min) min = value;
@@ -51,7 +51,7 @@ nonlinear = true;
 break;
 }
 for (var i = bsAtoms.nextSetBit (0); i >= 0; i = bsAtoms.nextSetBit (i + 1)) {
-var scale = this.atoms[i].atomPropertyFloat (null, 1112541196, null);
+var scale = this.atoms[i].atomPropertyFloat (null, 1111492620, null);
 switch (transform) {
 case 3:
 case 7:

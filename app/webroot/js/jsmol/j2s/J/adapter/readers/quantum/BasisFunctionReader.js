@@ -10,6 +10,7 @@ this.alphaBeta = "";
 this.dfCoefMaps = null;
 this.filterTokens = null;
 this.filterIsNot = false;
+this.spin = null;
 if (!Clazz.isClassDefined ("J.adapter.readers.quantum.BasisFunctionReader.MOEnergySorter")) {
 J.adapter.readers.quantum.BasisFunctionReader.$BasisFunctionReader$MOEnergySorter$ ();
 }
@@ -24,11 +25,11 @@ Clazz.defineMethod (c$, "filterMO",
 function () {
 var isHeader = (this.line.indexOf ('\n') == 0);
 if (!isHeader && !this.doReadMolecularOrbitals) return false;
-if (this.filter == null) return true;
 var isOK = true;
-var nOK = 0;
 this.line += " " + this.alphaBeta;
 var ucline = this.line.toUpperCase ();
+if (this.filter != null) {
+var nOK = 0;
 if (this.filterTokens == null) {
 this.filterIsNot = (this.filter.indexOf ("!") >= 0);
 this.filterTokens = JU.PT.getTokens (this.filter.$replace ('!', ' ').$replace (',', ' ').$replace (';', ' '));
@@ -41,12 +42,15 @@ nOK++;
 }
 isOK = (nOK == this.filterTokens.length);
 if (!isHeader) JU.Logger.info ("filter MOs: " + isOK + " for \"" + this.line + "\"");
+}this.spin = (ucline.indexOf ("ALPHA") >= 0 ? "alpha" : ucline.indexOf ("BETA") >= 0 ? "beta" : null);
 return isOK;
 });
 Clazz.defineMethod (c$, "setMO", 
 function (mo) {
 if (this.dfCoefMaps != null) mo.put ("dfCoefMaps", this.dfCoefMaps);
 this.orbitals.addLast (mo);
+mo.put ("index", Integer.$valueOf (this.orbitals.size ()));
+if (this.spin != null) mo.put ("spin", this.spin);
 }, "java.util.Map");
 Clazz.defineMethod (c$, "getDFMap", 
 function (fileList, shellType, jmolList, minLength) {
@@ -109,6 +113,12 @@ return J.quantum.QS.getQuantumShellTag (id);
 c$.getNewDfCoefMap = Clazz.defineMethod (c$, "getNewDfCoefMap", 
 function () {
 return J.quantum.QS.getNewDfCoefMap ();
+});
+Clazz.overrideMethod (c$, "discardPreviousAtoms", 
+function () {
+this.asc.discardPreviousAtoms ();
+this.moData.remove ("mos");
+this.orbitals.clear ();
 });
 c$.$BasisFunctionReader$MOEnergySorter$ = function () {
 Clazz.pu$h(self.c$);

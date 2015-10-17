@@ -289,7 +289,7 @@ if (this.thisMesh != null) this.thisMesh.atomIndex = this.atomIndex;
 this.center.setT (value);
 } else if ("colorRGB" === propertyName) {
 var rgb = (value).intValue ();
-if (rgb == 1297090050) {
+if (rgb == 1296041474) {
 this.colorType = rgb;
 } else {
 this.colorType = 0;
@@ -449,7 +449,7 @@ return true;
 var mesh = this.getMesh (data[0]);
 if (mesh == null) return false;
 data[3] = Integer.$valueOf (mesh.modelIndex);
-mesh.getMeshSlicer ().getIntersection (0, data[1], null, data[2], null, null, null, false, false, 135266319, false);
+mesh.getMeshSlicer ().getIntersection (0, data[1], null, data[2], null, null, null, false, false, 134217750, false);
 return true;
 }if (property === "getBoundingBox") {
 var id = data[0];
@@ -680,9 +680,9 @@ Clazz.defineMethod (c$, "getCapSlabObject",
 try {
 if (s.indexOf ("array") == 0) {
 var pts = JU.PT.split (s.substring (6, s.length - 1), ",");
-return JU.TempArray.getSlabObjectType (1679429641,  Clazz.newArray (-1, [JU.Escape.uP (pts[0]), JU.Escape.uP (pts[1]), JU.Escape.uP (pts[2]), JU.Escape.uP (pts[3])]), isCap, null);
+return JU.TempArray.getSlabObjectType (1678381065,  Clazz.newArray (-1, [JU.Escape.uP (pts[0]), JU.Escape.uP (pts[1]), JU.Escape.uP (pts[2]), JU.Escape.uP (pts[3])]), isCap, null);
 }var plane = JU.Escape.uP (s);
-if (Clazz.instanceOf (plane, JU.P4)) return JU.TempArray.getSlabObjectType (135266319, plane, isCap, null);
+if (Clazz.instanceOf (plane, JU.P4)) return JU.TempArray.getSlabObjectType (134217750, plane, isCap, null);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 } else {

@@ -64,7 +64,12 @@ this.c = this.binarydoc.readFloat ();
 this.alpha = this.binarydoc.readFloat ();
 this.beta = this.binarydoc.readFloat ();
 this.gamma = this.binarydoc.readFloat ();
-this.mapc = this.binarydoc.readInt ();
+if (this.alpha == 0) {
+this.alpha = this.beta = this.gamma = 90;
+JU.Logger.info ("MRC header: alpha,beta,gamma 0 changed to 90,90,90");
+JU.Logger.info ("MRC header: alpha,beta,gamma 0 reversing insideOut sense");
+if (this.params.thePlane == null) this.params.insideOut = !this.params.insideOut;
+}this.mapc = this.binarydoc.readInt ();
 this.mapr = this.binarydoc.readInt ();
 this.maps = this.binarydoc.readInt ();
 JU.Logger.info ("MRC header: mapc mapr maps: " + this.mapc + " " + this.mapr + " " + this.maps);

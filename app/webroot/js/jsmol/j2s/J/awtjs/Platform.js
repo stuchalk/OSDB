@@ -2,8 +2,8 @@ Clazz.declarePackage ("J.awtjs");
 Clazz.load (["J.awtjs2d.Platform"], "J.awtjs.Platform", null, function () {
 c$ = Clazz.declareType (J.awtjs, "Platform", J.awtjs2d.Platform);
 Clazz.overrideMethod (c$, "drawImage", 
-function (g, img, x, y, width, height) {
-}, "~O,~O,~N,~N,~N,~N");
+function (g, img, x, y, width, height, isDTI) {
+}, "~O,~O,~N,~N,~N,~N,~B");
 Clazz.overrideMethod (c$, "getTextPixels", 
 function (text, font3d, gObj, image, width, height, ascent) {
 return null;

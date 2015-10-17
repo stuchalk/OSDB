@@ -99,6 +99,7 @@ if (this.isTabularData) {
 this.setTabularDataType (spectrum, label);
 if (!this.processTabularData (spectrum, dataLDRTable)) throw  new JSV.exception.JSVException ("Unable to read JDX file");
 this.addSpectrum (spectrum, false);
+if (this.isSimulation && spectrum.getXUnits ().equals ("PPM")) spectrum.setHZtoPPM (true);
 spectrum = null;
 continue;
 }if (label.equals ("##DATATYPE") && value.toUpperCase ().equals ("LINK")) {
@@ -531,8 +532,7 @@ if (d > minMaxY[1]) minMaxY[1] = d;
 if (spec.offset != 1.7976931348623157E308 && freq != 1.7976931348623157E308 && spec.dataType.toUpperCase ().contains ("SPECTRUM")) {
 JSV.common.Coordinate.applyShiftReference (xyCoords, spec.dataPointNum, spec.fileFirstX, spec.fileLastX, spec.offset, freq, spec.shiftRefType);
 }if (freq != 1.7976931348623157E308 && spec.getXUnits ().toUpperCase ().equals ("HZ")) {
-var xScale = freq;
-JSV.common.Coordinate.applyScale (xyCoords, (1 / xScale), 1);
+JSV.common.Coordinate.applyScale (xyCoords, (1.0 / freq), 1);
 spec.setXUnits ("PPM");
 spec.setHZtoPPM (true);
 }if (this.errorLog.length () != errPt) {

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JU");
-Clazz.load (null, "JU.AU", ["java.util.Arrays", "JU.Lst"], function () {
+Clazz.load (null, "JU.AU", ["java.lang.reflect.Array", "java.util.Arrays", "JU.Lst"], function () {
 c$ = Clazz.declareType (JU, "AU");
 c$.ensureLength = Clazz.defineMethod (c$, "ensureLength", 
 function (array, minimumLength) {
@@ -83,10 +83,12 @@ return t;
 }, "~O,~N");
 c$.newInstanceO = Clazz.defineMethod (c$, "newInstanceO", 
  function (array, n) {
+if (JU.AU.isAI (array)) return  Clazz.newIntArray (n, 0);
 {
-if (!array.getClass().getComponentType)
+if (!array.getClass || !array.getClass().getComponentType)
 return new Array(n);
-}}, "~O,~N");
+}return java.lang.reflect.Array.newInstance (array.getClass ().getComponentType (), n);
+}, "~O,~N");
 c$.getLength = Clazz.defineMethod (c$, "getLength", 
 function (array) {
 {
@@ -341,11 +343,10 @@ return Clazz.isAFFF(x);
 }}, "~O");
 c$.ensureSignedBytes = Clazz.defineMethod (c$, "ensureSignedBytes", 
 function (b) {
+if (b != null) {
 {
-for (var i = b.length; --i >= 0;) {
-var j = b[i] & 0xFF;
-if (j >= 0x80) j -= 0x100;
-b[i] = j;
-}
-}}, "~A");
+for (var i = b.length; --i >= 0;) { var j = b[i] & 0xFF; if
+(j >= 0x80) j -= 0x100; b[i] = j; }
+}}return b;
+}, "~A");
 });

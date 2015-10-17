@@ -6,7 +6,7 @@ Clazz.instantialize (this, arguments);
 }, J.adapter.readers.quantum, "GamessUSReader", J.adapter.readers.quantum.GamessReader);
 Clazz.defineMethod (c$, "initializeReader", 
 function () {
-this.lowdenCharges = this.checkFilterKey ("CHARGE=LOW");
+this.lowdenCharges = this.checkAndRemoveFilterKey ("CHARGE=LOW");
 Clazz.superCall (this, J.adapter.readers.quantum.GamessUSReader, "initializeReader", []);
 });
 Clazz.overrideMethod (c$, "checkLine", 

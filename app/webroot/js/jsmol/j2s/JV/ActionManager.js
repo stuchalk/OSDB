@@ -66,6 +66,7 @@ this.rectRubber =  new JU.Rectangle ();
 Clazz.defineMethod (c$, "setViewer", 
 function (vwr, commandOptions) {
 this.vwr = vwr;
+if (!vwr.isJS) this.createActions ();
 this.setBinding (this.jmolBinding =  new JV.binding.JmolBinding ());
 this.LEFT_CLICKED = JV.binding.Binding.getMouseAction (1, 16, 2);
 this.LEFT_DRAGGED = JV.binding.Binding.getMouseAction (1, 16, 1);
@@ -115,6 +116,57 @@ function (i, name, info) {
 JV.ActionManager.actionInfo[i] = info;
 JV.ActionManager.actionNames[i] = name;
 }, "~N,~S,~S");
+Clazz.defineMethod (c$, "createActions", 
+function () {
+if (JV.ActionManager.actionInfo[0] != null) return;
+JV.ActionManager.newAction (0, "_assignNew", J.i18n.GT.o (J.i18n.GT._ ("assign/new atom or bond (requires {0})"), "set picking assignAtom_??/assignBond_?"));
+JV.ActionManager.newAction (1, "_center", J.i18n.GT._ ("center"));
+JV.ActionManager.newAction (2, "_clickFrank", J.i18n.GT._ ("pop up recent context menu (click on Jmol frank)"));
+JV.ActionManager.newAction (4, "_deleteAtom", J.i18n.GT.o (J.i18n.GT._ ("delete atom (requires {0})"), "set picking DELETE ATOM"));
+JV.ActionManager.newAction (5, "_deleteBond", J.i18n.GT.o (J.i18n.GT._ ("delete bond (requires {0})"), "set picking DELETE BOND"));
+JV.ActionManager.newAction (6, "_depth", J.i18n.GT.o (J.i18n.GT._ ("adjust depth (back plane; requires {0})"), "SLAB ON"));
+JV.ActionManager.newAction (7, "_dragAtom", J.i18n.GT.o (J.i18n.GT._ ("move atom (requires {0})"), "set picking DRAGATOM"));
+JV.ActionManager.newAction (8, "_dragDrawObject", J.i18n.GT.o (J.i18n.GT._ ("move whole DRAW object (requires {0})"), "set picking DRAW"));
+JV.ActionManager.newAction (9, "_dragDrawPoint", J.i18n.GT.o (J.i18n.GT._ ("move specific DRAW point (requires {0})"), "set picking DRAW"));
+JV.ActionManager.newAction (10, "_dragLabel", J.i18n.GT.o (J.i18n.GT._ ("move label (requires {0})"), "set picking LABEL"));
+JV.ActionManager.newAction (11, "_dragMinimize", J.i18n.GT.o (J.i18n.GT._ ("move atom and minimize molecule (requires {0})"), "set picking DRAGMINIMIZE"));
+JV.ActionManager.newAction (12, "_dragMinimizeMolecule", J.i18n.GT.o (J.i18n.GT._ ("move and minimize molecule (requires {0})"), "set picking DRAGMINIMIZEMOLECULE"));
+JV.ActionManager.newAction (13, "_dragSelected", J.i18n.GT.o (J.i18n.GT._ ("move selected atoms (requires {0})"), "set DRAGSELECTED"));
+JV.ActionManager.newAction (14, "_dragZ", J.i18n.GT.o (J.i18n.GT._ ("drag atoms in Z direction (requires {0})"), "set DRAGSELECTED"));
+JV.ActionManager.newAction (15, "_multiTouchSimulation", J.i18n.GT._ ("simulate multi-touch using the mouse)"));
+JV.ActionManager.newAction (16, "_navTranslate", J.i18n.GT.o (J.i18n.GT._ ("translate navigation point (requires {0} and {1})"),  Clazz.newArray (-1, ["set NAVIGATIONMODE", "set picking NAVIGATE"])));
+JV.ActionManager.newAction (17, "_pickAtom", J.i18n.GT._ ("pick an atom"));
+JV.ActionManager.newAction (3, "_pickConnect", J.i18n.GT.o (J.i18n.GT._ ("connect atoms (requires {0})"), "set picking CONNECT"));
+JV.ActionManager.newAction (18, "_pickIsosurface", J.i18n.GT.o (J.i18n.GT._ ("pick an ISOSURFACE point (requires {0}"), "set DRAWPICKING"));
+JV.ActionManager.newAction (19, "_pickLabel", J.i18n.GT.o (J.i18n.GT._ ("pick a label to toggle it hidden/displayed (requires {0})"), "set picking LABEL"));
+JV.ActionManager.newAction (20, "_pickMeasure", J.i18n.GT.o (J.i18n.GT._ ("pick an atom to include it in a measurement (after starting a measurement or after {0})"), "set picking DISTANCE/ANGLE/TORSION"));
+JV.ActionManager.newAction (21, "_pickNavigate", J.i18n.GT.o (J.i18n.GT._ ("pick a point or atom to navigate to (requires {0})"), "set NAVIGATIONMODE"));
+JV.ActionManager.newAction (22, "_pickPoint", J.i18n.GT.o (J.i18n.GT._ ("pick a DRAW point (for measurements) (requires {0}"), "set DRAWPICKING"));
+JV.ActionManager.newAction (23, "_popupMenu", J.i18n.GT._ ("pop up the full context menu"));
+JV.ActionManager.newAction (24, "_reset", J.i18n.GT._ ("reset (when clicked off the model)"));
+JV.ActionManager.newAction (25, "_rotate", J.i18n.GT._ ("rotate"));
+JV.ActionManager.newAction (26, "_rotateBranch", J.i18n.GT.o (J.i18n.GT._ ("rotate branch around bond (requires {0})"), "set picking ROTATEBOND"));
+JV.ActionManager.newAction (27, "_rotateSelected", J.i18n.GT.o (J.i18n.GT._ ("rotate selected atoms (requires {0})"), "set DRAGSELECTED"));
+JV.ActionManager.newAction (28, "_rotateZ", J.i18n.GT._ ("rotate Z"));
+JV.ActionManager.newAction (29, "_rotateZorZoom", J.i18n.GT._ ("rotate Z (horizontal motion of mouse) or zoom (vertical motion of mouse)"));
+JV.ActionManager.newAction (30, "_select", J.i18n.GT.o (J.i18n.GT._ ("select an atom (requires {0})"), "set pickingStyle EXTENDEDSELECT"));
+JV.ActionManager.newAction (31, "_selectAndDrag", J.i18n.GT.o (J.i18n.GT._ ("select and drag atoms (requires {0})"), "set DRAGSELECTED"));
+JV.ActionManager.newAction (32, "_selectAndNot", J.i18n.GT.o (J.i18n.GT._ ("unselect this group of atoms (requires {0})"), "set pickingStyle DRAG/EXTENDEDSELECT"));
+JV.ActionManager.newAction (33, "_selectNone", J.i18n.GT.o (J.i18n.GT._ ("select NONE (requires {0})"), "set pickingStyle EXTENDEDSELECT"));
+JV.ActionManager.newAction (34, "_selectOr", J.i18n.GT.o (J.i18n.GT._ ("add this group of atoms to the set of selected atoms (requires {0})"), "set pickingStyle DRAG/EXTENDEDSELECT"));
+JV.ActionManager.newAction (35, "_selectToggle", J.i18n.GT.o (J.i18n.GT._ ("toggle selection (requires {0})"), "set pickingStyle DRAG/EXTENDEDSELECT/RASMOL"));
+JV.ActionManager.newAction (36, "_selectToggleOr", J.i18n.GT.o (J.i18n.GT._ ("if all are selected, unselect all, otherwise add this group of atoms to the set of selected atoms (requires {0})"), "set pickingStyle DRAG"));
+JV.ActionManager.newAction (37, "_setMeasure", J.i18n.GT._ ("pick an atom to initiate or conclude a measurement"));
+JV.ActionManager.newAction (38, "_slab", J.i18n.GT.o (J.i18n.GT._ ("adjust slab (front plane; requires {0})"), "SLAB ON"));
+JV.ActionManager.newAction (39, "_slabAndDepth", J.i18n.GT.o (J.i18n.GT._ ("move slab/depth window (both planes; requires {0})"), "SLAB ON"));
+JV.ActionManager.newAction (40, "_slideZoom", J.i18n.GT._ ("zoom (along right edge of window)"));
+JV.ActionManager.newAction (41, "_spinDrawObjectCCW", J.i18n.GT.o (J.i18n.GT._ ("click on two points to spin around axis counterclockwise (requires {0})"), "set picking SPIN"));
+JV.ActionManager.newAction (42, "_spinDrawObjectCW", J.i18n.GT.o (J.i18n.GT._ ("click on two points to spin around axis clockwise (requires {0})"), "set picking SPIN"));
+JV.ActionManager.newAction (43, "_stopMotion", J.i18n.GT.o (J.i18n.GT._ ("stop motion (requires {0})"), "set waitForMoveTo FALSE"));
+JV.ActionManager.newAction (44, "_swipe", J.i18n.GT._ ("spin model (swipe and release button and stop motion simultaneously)"));
+JV.ActionManager.newAction (45, "_translate", J.i18n.GT._ ("translate"));
+JV.ActionManager.newAction (46, "_wheelZoom", J.i18n.GT._ ("zoom"));
+});
 c$.getActionName = Clazz.defineMethod (c$, "getActionName", 
 function (i) {
 return (i < JV.ActionManager.actionNames.length ? JV.ActionManager.actionNames[i] : null);
@@ -384,7 +436,7 @@ break;
 }
 var action = 16 | 256 | 8192 | this.moved.modifiers;
 if (!this.labelMode && !this.b.isUserAction (action)) this.checkMotionRotateZoom (action, this.current.x, 0, 0, false);
-if (this.vwr.getBoolean (603979888)) {
+if (this.vwr.getBoolean (603979889)) {
 switch (key) {
 case 38:
 case 40:
@@ -413,7 +465,7 @@ case 17:
 this.moved.modifiers &= -3;
 }
 if (this.moved.modifiers == 0) this.vwr.setCursor (0);
-if (!this.vwr.getBoolean (603979888)) return;
+if (!this.vwr.getBoolean (603979889)) return;
 switch (key) {
 case 38:
 case 40:
@@ -425,7 +477,9 @@ break;
 }, "~N");
 Clazz.overrideMethod (c$, "mouseEnterExit", 
 function (time, x, y, isExit) {
+if (this.vwr.tm.stereoDoubleDTI) x = x << 1;
 this.setCurrent (time, x, y, 0);
+if (isExit) this.exitMeasurementMode ("mouseExit");
 }, "~N,~N,~N,~B");
 Clazz.defineMethod (c$, "setMouseActions", 
  function (count, buttonMods, isRelease) {
@@ -437,6 +491,7 @@ Clazz.overrideMethod (c$, "mouseAction",
 function (mode, time, x, y, count, buttonMods) {
 if (!this.vwr.getMouseEnabled ()) return;
 if (JU.Logger.debuggingHigh && mode != 0) this.vwr.showString ("mouse action: " + mode + " " + buttonMods + " " + JV.binding.Binding.getMouseActionName (JV.binding.Binding.getMouseAction (count, buttonMods, mode), false), false);
+if (this.vwr.tm.stereoDoubleDTI) x = x << 1;
 switch (mode) {
 case 0:
 this.setCurrent (time, x, y, buttonMods);
@@ -579,7 +634,7 @@ return;
 case 36:
 case 27:
 case 30:
-bs = this.vwr.ms.getAtoms (1095761936, JU.BSUtil.newAndSetBit (this.dragAtomIndex));
+bs = this.vwr.ms.getAtoms (1094713360, JU.BSUtil.newAndSetBit (this.dragAtomIndex));
 if (this.apm == 36) bs.and (this.vwr.getAtomBitSet ("ligand"));
 case 28:
 case 29:
@@ -630,7 +685,7 @@ this.setMotion (13, true);
 this.vwr.checkObjectDragged (this.dragged.x, this.dragged.y, x, y, dragWheelAction);
 return;
 }if (this.checkMotionRotateZoom (dragWheelAction, x, deltaX, deltaY, true)) {
-if (this.vwr.tm.slabEnabled && this.checkSlideZoom (dragWheelAction)) this.vwr.slabDepthByPixels (deltaY);
+if (this.vwr.tm.slabEnabled && this.bnd (dragWheelAction, [39])) this.vwr.slabDepthByPixels (deltaY);
  else this.vwr.zoomBy (deltaY);
 return;
 }if (this.bnd (dragWheelAction, [25])) {
@@ -644,13 +699,6 @@ this.vwr.zoomBy (deltaY + (deltaY > 0 ? -1 : 1));
 this.setMotion (13, true);
 this.vwr.rotateZBy (-deltaX + (deltaX > 0 ? 1 : -1), 2147483647, 2147483647);
 }return;
-} else if (this.bnd (dragWheelAction, [46])) {
-this.zoomByFactor (deltaY, 2147483647, 2147483647);
-return;
-} else if (this.bnd (dragWheelAction, [28])) {
-this.setMotion (13, true);
-this.vwr.rotateZBy (-deltaX, 2147483647, 2147483647);
-return;
 }if (this.vwr.tm.slabEnabled) {
 if (this.bnd (dragWheelAction, [6])) {
 this.vwr.depthByPixels (deltaY);
@@ -661,7 +709,14 @@ return;
 }if (this.bnd (dragWheelAction, [39])) {
 this.vwr.slabDepthByPixels (deltaY);
 return;
-}}}, "~N,~N,~N,~N,~N,~N,~N");
+}}if (this.bnd (dragWheelAction, [46])) {
+this.zoomByFactor (deltaY, 2147483647, 2147483647);
+return;
+}if (this.bnd (dragWheelAction, [28])) {
+this.setMotion (13, true);
+this.vwr.rotateZBy (-deltaX, 2147483647, 2147483647);
+return;
+}}, "~N,~N,~N,~N,~N,~N,~N");
 Clazz.defineMethod (c$, "dragSelected", 
  function (a, deltaX, deltaY, isPickingDrag) {
 this.setMotion (13, true);
@@ -737,7 +792,7 @@ return;
 }this.setMouseMode ();
 if (this.bnd (this.clickAction, [43])) {
 this.vwr.tm.stopMotion ();
-}if (this.vwr.getBoolean (603979888) && this.apm == 23 && this.bnd (this.clickAction, [21])) {
+}if (this.vwr.getBoolean (603979889) && this.apm == 23 && this.bnd (this.clickAction, [21])) {
 this.vwr.navTranslatePercent (x * 100 / this.vwr.getScreenWidth () - 50, y * 100 / this.vwr.getScreenHeight () - 50);
 return;
 }if (isBond) {
@@ -808,7 +863,7 @@ return !passThrough;
 }, "~N,~N,~N,~N,~N,~N,~N");
 Clazz.defineMethod (c$, "checkMotionRotateZoom", 
  function (mouseAction, x, deltaX, deltaY, isDrag) {
-var isSlideZoom = this.checkSlideZoom (mouseAction);
+var isSlideZoom = this.bnd (mouseAction, [40]) && this.isZoomArea (this.pressed.x);
 var isRotateXY = this.bnd (mouseAction, [25]);
 var isRotateZorZoom = this.bnd (mouseAction, [29]);
 if (!isSlideZoom && !isRotateXY && !isRotateZorZoom) return false;
@@ -851,13 +906,9 @@ Clazz.defineMethod (c$, "getDegrees",
 function (delta, isX) {
 return delta / Math.min (500, isX ? this.vwr.getScreenWidth () : this.vwr.getScreenHeight ()) * 180 * this.mouseDragFactor;
 }, "~N,~B");
-Clazz.defineMethod (c$, "checkSlideZoom", 
- function (action) {
-return this.bnd (action, [40]) && this.isZoomArea (this.pressed.x);
-}, "~N");
 Clazz.defineMethod (c$, "isZoomArea", 
  function (x) {
-return x > this.vwr.getScreenWidth () * (this.vwr.isStereoDouble () ? 2 : 1) * 98 / 100;
+return x > this.vwr.getScreenWidth () * (this.vwr.tm.stereoDoubleFull || this.vwr.tm.stereoDoubleDTI ? 2 : 1) * 98 / 100;
 }, "~N");
 Clazz.defineMethod (c$, "getPoint", 
  function (t) {
@@ -902,7 +953,7 @@ this.exitMeasurementMode (null);
 this.measurementQueued = this.getMP ();
 });
 Clazz.defineMethod (c$, "exitMeasurementMode", 
- function (refreshWhy) {
+function (refreshWhy) {
 if (this.mp == null) return;
 this.vwr.setPendingMeasurement (this.mp = null);
 this.vwr.setCursor (0);
@@ -914,7 +965,7 @@ var a1 = this.measurementQueued.getAtomIndex (1);
 var a2 = this.measurementQueued.getAtomIndex (2);
 if (a1 < 0 || a2 < 0) return;
 try {
-var sequence = this.vwr.getSmilesOpt (null, a1, a2, 256);
+var sequence = this.vwr.getSmilesOpt (null, a1, a2, 65536);
 this.vwr.setStatusMeasuring ("measureSequence", -2, sequence, 0);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
@@ -1176,7 +1227,7 @@ if (isSpin) this.vwr.scriptStatus (queuedAtomCount == 1 ? J.i18n.GT._ ("pick one
 return;
 }var s = this.measurementQueued.getMeasurementScript (" ", false);
 if (isSpin) this.runScript ("spin" + s + " " + this.vwr.getInt (553648157));
- else this.runScript ("draw symop" + s + ";show symop" + s);
+ else this.runScript ("draw symop " + s + ";show symop " + s);
 }, "JU.Point3fi,~N");
 Clazz.defineMethod (c$, "reset", 
  function () {
@@ -1278,55 +1329,7 @@ Clazz.defineStatics (c$,
 "ACTION_count", 47);
 c$.actionInfo = c$.prototype.actionInfo =  new Array (47);
 c$.actionNames = c$.prototype.actionNames =  new Array (47);
-{
-JV.ActionManager.newAction (0, "_assignNew", J.i18n.GT.o (J.i18n.GT._ ("assign/new atom or bond (requires {0})"), "set picking assignAtom_??/assignBond_?"));
-JV.ActionManager.newAction (1, "_center", J.i18n.GT._ ("center"));
-JV.ActionManager.newAction (2, "_clickFrank", J.i18n.GT._ ("pop up recent context menu (click on Jmol frank)"));
-JV.ActionManager.newAction (4, "_deleteAtom", J.i18n.GT.o (J.i18n.GT._ ("delete atom (requires {0})"), "set picking DELETE ATOM"));
-JV.ActionManager.newAction (5, "_deleteBond", J.i18n.GT.o (J.i18n.GT._ ("delete bond (requires {0})"), "set picking DELETE BOND"));
-JV.ActionManager.newAction (6, "_depth", J.i18n.GT.o (J.i18n.GT._ ("adjust depth (back plane; requires {0})"), "SLAB ON"));
-JV.ActionManager.newAction (7, "_dragAtom", J.i18n.GT.o (J.i18n.GT._ ("move atom (requires {0})"), "set picking DRAGATOM"));
-JV.ActionManager.newAction (8, "_dragDrawObject", J.i18n.GT.o (J.i18n.GT._ ("move whole DRAW object (requires {0})"), "set picking DRAW"));
-JV.ActionManager.newAction (9, "_dragDrawPoint", J.i18n.GT.o (J.i18n.GT._ ("move specific DRAW point (requires {0})"), "set picking DRAW"));
-JV.ActionManager.newAction (10, "_dragLabel", J.i18n.GT.o (J.i18n.GT._ ("move label (requires {0})"), "set picking LABEL"));
-JV.ActionManager.newAction (11, "_dragMinimize", J.i18n.GT.o (J.i18n.GT._ ("move atom and minimize molecule (requires {0})"), "set picking DRAGMINIMIZE"));
-JV.ActionManager.newAction (12, "_dragMinimizeMolecule", J.i18n.GT.o (J.i18n.GT._ ("move and minimize molecule (requires {0})"), "set picking DRAGMINIMIZEMOLECULE"));
-JV.ActionManager.newAction (13, "_dragSelected", J.i18n.GT.o (J.i18n.GT._ ("move selected atoms (requires {0})"), "set DRAGSELECTED"));
-JV.ActionManager.newAction (14, "_dragZ", J.i18n.GT.o (J.i18n.GT._ ("drag atoms in Z direction (requires {0})"), "set DRAGSELECTED"));
-JV.ActionManager.newAction (15, "_multiTouchSimulation", J.i18n.GT._ ("simulate multi-touch using the mouse)"));
-JV.ActionManager.newAction (16, "_navTranslate", J.i18n.GT.o (J.i18n.GT._ ("translate navigation point (requires {0} and {1})"),  Clazz.newArray (-1, ["set NAVIGATIONMODE", "set picking NAVIGATE"])));
-JV.ActionManager.newAction (17, "_pickAtom", J.i18n.GT._ ("pick an atom"));
-JV.ActionManager.newAction (3, "_pickConnect", J.i18n.GT.o (J.i18n.GT._ ("connect atoms (requires {0})"), "set picking CONNECT"));
-JV.ActionManager.newAction (18, "_pickIsosurface", J.i18n.GT.o (J.i18n.GT._ ("pick an ISOSURFACE point (requires {0}"), "set DRAWPICKING"));
-JV.ActionManager.newAction (19, "_pickLabel", J.i18n.GT.o (J.i18n.GT._ ("pick a label to toggle it hidden/displayed (requires {0})"), "set picking LABEL"));
-JV.ActionManager.newAction (20, "_pickMeasure", J.i18n.GT.o (J.i18n.GT._ ("pick an atom to include it in a measurement (after starting a measurement or after {0})"), "set picking DISTANCE/ANGLE/TORSION"));
-JV.ActionManager.newAction (21, "_pickNavigate", J.i18n.GT.o (J.i18n.GT._ ("pick a point or atom to navigate to (requires {0})"), "set NAVIGATIONMODE"));
-JV.ActionManager.newAction (22, "_pickPoint", J.i18n.GT.o (J.i18n.GT._ ("pick a DRAW point (for measurements) (requires {0}"), "set DRAWPICKING"));
-JV.ActionManager.newAction (23, "_popupMenu", J.i18n.GT._ ("pop up the full context menu"));
-JV.ActionManager.newAction (24, "_reset", J.i18n.GT._ ("reset (when clicked off the model)"));
-JV.ActionManager.newAction (25, "_rotate", J.i18n.GT._ ("rotate"));
-JV.ActionManager.newAction (26, "_rotateBranch", J.i18n.GT.o (J.i18n.GT._ ("rotate branch around bond (requires {0})"), "set picking ROTATEBOND"));
-JV.ActionManager.newAction (27, "_rotateSelected", J.i18n.GT.o (J.i18n.GT._ ("rotate selected atoms (requires {0})"), "set DRAGSELECTED"));
-JV.ActionManager.newAction (28, "_rotateZ", J.i18n.GT._ ("rotate Z"));
-JV.ActionManager.newAction (29, "_rotateZorZoom", J.i18n.GT._ ("rotate Z (horizontal motion of mouse) or zoom (vertical motion of mouse)"));
-JV.ActionManager.newAction (30, "_select", J.i18n.GT.o (J.i18n.GT._ ("select an atom (requires {0})"), "set pickingStyle EXTENDEDSELECT"));
-JV.ActionManager.newAction (31, "_selectAndDrag", J.i18n.GT.o (J.i18n.GT._ ("select and drag atoms (requires {0})"), "set DRAGSELECTED"));
-JV.ActionManager.newAction (32, "_selectAndNot", J.i18n.GT.o (J.i18n.GT._ ("unselect this group of atoms (requires {0})"), "set pickingStyle DRAG/EXTENDEDSELECT"));
-JV.ActionManager.newAction (33, "_selectNone", J.i18n.GT.o (J.i18n.GT._ ("select NONE (requires {0})"), "set pickingStyle EXTENDEDSELECT"));
-JV.ActionManager.newAction (34, "_selectOr", J.i18n.GT.o (J.i18n.GT._ ("add this group of atoms to the set of selected atoms (requires {0})"), "set pickingStyle DRAG/EXTENDEDSELECT"));
-JV.ActionManager.newAction (35, "_selectToggle", J.i18n.GT.o (J.i18n.GT._ ("toggle selection (requires {0})"), "set pickingStyle DRAG/EXTENDEDSELECT/RASMOL"));
-JV.ActionManager.newAction (36, "_selectToggleOr", J.i18n.GT.o (J.i18n.GT._ ("if all are selected, unselect all, otherwise add this group of atoms to the set of selected atoms (requires {0})"), "set pickingStyle DRAG"));
-JV.ActionManager.newAction (37, "_setMeasure", J.i18n.GT._ ("pick an atom to initiate or conclude a measurement"));
-JV.ActionManager.newAction (38, "_slab", J.i18n.GT.o (J.i18n.GT._ ("adjust slab (front plane; requires {0})"), "SLAB ON"));
-JV.ActionManager.newAction (39, "_slabAndDepth", J.i18n.GT.o (J.i18n.GT._ ("move slab/depth window (both planes; requires {0})"), "SLAB ON"));
-JV.ActionManager.newAction (40, "_slideZoom", J.i18n.GT._ ("zoom (along right edge of window)"));
-JV.ActionManager.newAction (41, "_spinDrawObjectCCW", J.i18n.GT.o (J.i18n.GT._ ("click on two points to spin around axis counterclockwise (requires {0})"), "set picking SPIN"));
-JV.ActionManager.newAction (42, "_spinDrawObjectCW", J.i18n.GT.o (J.i18n.GT._ ("click on two points to spin around axis clockwise (requires {0})"), "set picking SPIN"));
-JV.ActionManager.newAction (43, "_stopMotion", J.i18n.GT.o (J.i18n.GT._ ("stop motion (requires {0})"), "set waitForMoveTo FALSE"));
-JV.ActionManager.newAction (44, "_swipe", J.i18n.GT._ ("spin model (swipe and release button and stop motion simultaneously)"));
-JV.ActionManager.newAction (45, "_translate", J.i18n.GT._ ("translate"));
-JV.ActionManager.newAction (46, "_wheelZoom", J.i18n.GT._ ("zoom"));
-}Clazz.defineStatics (c$,
+Clazz.defineStatics (c$,
 "PICKING_OFF", 0,
 "PICKING_IDENTIFY", 1,
 "PICKING_LABEL", 2,

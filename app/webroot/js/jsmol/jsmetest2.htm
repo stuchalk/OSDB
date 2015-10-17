@@ -43,8 +43,8 @@ var JMEInfo = {
   //,"jme" : startingStructure   
 }
 
-Jmol.setGrabberOptions([[":", "PubChem"]])
-//Jmol.setGrabberOptions([["$", "NCI"]])
+//Jmol.setGrabberOptions([[":", "PubChem"]])
+Jmol.setGrabberOptions([["$", "NCI"]])
         
 </script>
 </head>
@@ -63,7 +63,7 @@ jme = Jmol.getJMEApplet("jme", JMEInfo, jmol);
 <td><div id="jmediv" style="position:relative;width:350px;height:300px;"></div></td>
 <td>
 <input type="button" onclick="Jmol.show2d(jmol, false)" value="&#8594" />
-<br />  
+<br>  
 <input type="button" onclick="Jmol.show2d(jmol, true)" value="&#8592" />
 </td>
 <td>

@@ -55,7 +55,7 @@ for (var i = this.tensors.size (); --i >= 0; ) a.tensors.addLast ((this.tensors.
 });
 Clazz.defineMethod (c$, "getElementSymbol", 
 function () {
-if (this.elementSymbol == null) if (this.atomName != null) {
+if (this.elementSymbol == null && this.atomName != null) {
 var len = this.atomName.length;
 var ichFirst = 0;
 var chFirst = String.fromCharCode (0);

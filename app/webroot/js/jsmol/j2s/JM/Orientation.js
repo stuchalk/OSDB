@@ -47,7 +47,7 @@ this.zoom = vwr.tm.getZoomSetting ();
 this.center.setT (vwr.tm.fixedRotationCenter);
 this.windowCenteredFlag = vwr.tm.isWindowCentered ();
 this.rotationRadius = vwr.getFloat (570425388);
-this.navigationMode = vwr.getBoolean (603979888);
+this.navigationMode = vwr.getBoolean (603979889);
 this.moveToText = vwr.tm.getMoveToText (-1, false);
 if (this.navigationMode) {
 this.xNav = vwr.tm.getNavigationOffsetPercent ('X');

@@ -236,7 +236,7 @@ this.words = a;
 }, "~N");
 Clazz.overrideMethod (c$, "toString", 
 function () {
-return JU.BS.escape (this, '{', '}');
+return JU.BS.escape (this, '(', ')');
 });
 c$.copy = Clazz.defineMethod (c$, "copy", 
 function (bitsetToCopy) {

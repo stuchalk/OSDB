@@ -218,11 +218,10 @@ return tokens;
 }, "~S,~N");
 c$.countChar = Clazz.defineMethod (c$, "countChar", 
 function (line, c) {
-var tokenCount = 0;
-var pt = -1;
-while ((pt = line.indexOf (c, pt + 1)) >= 0) tokenCount++;
+var n = 0;
+for (var i = line.lastIndexOf (c) + 1; --i >= 0; ) if (line.charAt (i) == c) n++;
 
-return tokenCount;
+return n;
 }, "~S,~S");
 c$.countTokens = Clazz.defineMethod (c$, "countTokens", 
 function (line, ich) {
@@ -645,7 +644,7 @@ sb.append (f.substring (pt + 1));
 return sb.toString ();
 }, "~S,~N,~N");
 c$.formatString = Clazz.defineMethod (c$, "formatString", 
-function (strFormat, key, strT, floatT, doubleT, doOne) {
+ function (strFormat, key, strT, floatT, doubleT, doOne) {
 if (strFormat == null) return null;
 if ("".equals (strFormat)) return "";
 var len = key.length;
@@ -680,12 +679,12 @@ var isExponential = false;
 if (strFormat.charAt (ich) == '.') {
 ++ich;
 if ((ch = strFormat.charAt (ich)) == '-') {
-isExponential = true;
+isExponential = (strT == null);
 ++ich;
 }if ((ch = strFormat.charAt (ich)) >= '0' && ch <= '9') {
 precision = ch.charCodeAt (0) - 48;
 ++ich;
-}if (isExponential) precision = -precision - (strT == null ? 1 : 0);
+}if (isExponential) precision = -precision;
 }var st = strFormat.substring (ich, ich + len);
 if (!st.equals (key)) {
 ich = ichPercent + 1;
@@ -694,7 +693,7 @@ continue;
 }ich += len;
 if (!Float.isNaN (floatT)) strLabel += JU.PT.formatF (floatT, width, precision, alignLeft, zeroPad);
  else if (strT != null) strLabel += JU.PT.formatS (strT, width, precision, alignLeft, zeroPad);
- else if (!Double.isNaN (doubleT)) strLabel += JU.PT.formatD (doubleT, width, precision, alignLeft, zeroPad, true);
+ else if (!Double.isNaN (doubleT)) strLabel += JU.PT.formatD (doubleT, width, precision - 1, alignLeft, zeroPad, true);
 if (doOne) break;
 } catch (ioobe) {
 if (Clazz.exceptionOf (ioobe, IndexOutOfBoundsException)) {

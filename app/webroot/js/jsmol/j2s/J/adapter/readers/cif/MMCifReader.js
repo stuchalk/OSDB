@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.readers.cif");
-Clazz.load (["J.adapter.readers.cif.CifReader"], "J.adapter.readers.cif.MMCifReader", ["java.lang.Boolean", "java.util.Hashtable", "JU.BS", "$.Lst", "$.M4", "$.P3", "$.PT", "$.Rdr", "$.SB", "J.adapter.smarter.Atom", "$.Structure", "J.c.STR", "JU.Logger"], function () {
+Clazz.load (["J.adapter.readers.cif.CifReader"], "J.adapter.readers.cif.MMCifReader", ["java.lang.Boolean", "java.util.Hashtable", "JU.BS", "$.Lst", "$.M4", "$.P3", "$.PT", "$.SB", "J.adapter.smarter.Atom", "$.Structure", "J.c.STR", "JU.BSUtil", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.isBiomolecule = false;
 this.byChain = false;
@@ -10,14 +10,18 @@ this.vBiomolecules = null;
 this.thisBiomolecule = null;
 this.htBiomts = null;
 this.htSites = null;
+this.htHetero = null;
+this.htBondMap = null;
 this.assemblyIdAtoms = null;
 this.thisChain = -1;
+this.modelIndex = 0;
 this.chainSum = null;
 this.chainAtomCount = null;
 this.isLigandBondBug = false;
 this.assem = null;
-this.hetatmData = null;
-this.modelIndex = 0;
+this.structConnMap = null;
+this.structConnList = "";
+this.doSetBonds = false;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.cif, "MMCifReader", J.adapter.readers.cif.CifReader);
 Clazz.overrideMethod (c$, "initSubclass", 
@@ -25,6 +29,7 @@ function () {
 this.setIsPDB ();
 this.isMMCIF = true;
 if (this.htParams.containsKey ("isMutate")) this.asc.setInfo ("isMutate", Boolean.TRUE);
+this.doSetBonds = this.checkFilterKey ("ADDBONDS");
 this.byChain = this.checkFilterKey ("BYCHAIN");
 this.bySymop = this.checkFilterKey ("BYSYMOP");
 this.isCourseGrained = this.byChain || this.bySymop;
@@ -36,6 +41,28 @@ this.isBiomolecule = this.checkFilterKey ("ASSEMBLY");
 if (this.isBiomolecule) this.filter = this.filter.$replace (':', ' ');
 this.isLigandBondBug = (this.stateScriptVersionInt >= 140204 && this.stateScriptVersionInt <= 140208 || this.stateScriptVersionInt >= 140304 && this.stateScriptVersionInt <= 140308);
 });
+Clazz.overrideMethod (c$, "processSubclassEntry", 
+function () {
+if (this.key0.startsWith ("_pdbx_struct_assembly_gen.") || this.key0.startsWith ("_struct_conn.") || this.key0.startsWith ("_struct_ref_seq_dif.")) this.processSubclassLoopBlock ();
+ else if (this.key.equals ("_rna3d") || this.key.equals ("_dssr")) {
+this.addedData = this.data;
+this.addedDataKey = this.key;
+}});
+Clazz.overrideMethod (c$, "processSubclassLoopBlock", 
+function () {
+if (this.key0.startsWith ("_pdbx_struct_oper_list.")) return this.processStructOperListBlock ();
+if (this.key0.startsWith ("_pdbx_struct_assembly_gen.")) return this.processAssemblyGenBlock ();
+if (this.key0.startsWith ("_struct_ref_seq_dif.")) return this.processSequence ();
+if (this.isCourseGrained) return false;
+if (this.key0.startsWith ("_struct_site_gen.")) return this.processStructSiteBlock ();
+if (this.key0.startsWith ("_chem_comp.")) return this.processChemCompLoopBlock ();
+if (this.key0.startsWith ("_struct_conf.")) return this.processStructConfLoopBlock ();
+if (this.key0.startsWith ("_struct_sheet_range.")) return this.processStructSheetRangeLoopBlock ();
+if (this.isLigandBondBug) return false;
+if (this.key0.startsWith ("_chem_comp_bond.")) return this.processCompBondLoopBlock ();
+if (this.key0.startsWith ("_struct_conn.")) return this.processStructConnLoopBlock ();
+return false;
+});
 Clazz.overrideMethod (c$, "finalizeSubclass", 
 function () {
 if (this.byChain && !this.isBiomolecule) for (var id, $id = this.chainAtomMap.keySet ().iterator (); $id.hasNext () && ((id = $id.next ()) || true);) this.createParticle (id);
@@ -43,18 +70,17 @@ if (this.byChain && !this.isBiomolecule) for (var id, $id = this.chainAtomMap.ke
 if (!this.isCourseGrained && this.asc.ac == this.nAtoms) {
 this.asc.removeCurrentAtomSet ();
 } else {
-if ((this.validation != null || this.addedData != null) && !this.isCourseGrained) {
+if ((this.dssr != null || this.validation != null || this.addedData != null) && !this.isCourseGrained) {
 var vs = (this.getInterface ("J.adapter.readers.cif.MMCifValidationParser")).set (this);
 var note = null;
 if (this.addedData == null) {
-note = vs.finalizeValidations (this.modelMap);
+if (this.validation != null || this.dssr != null) note = vs.finalizeValidations (this.vwr, this.modelMap);
 } else if (this.addedDataKey.equals ("_rna3d")) {
 note = vs.finalizeRna3d (this.modelMap);
-} else {
-this.reader = JU.Rdr.getBR (this.addedData);
-this.processDSSR (this, this.htGroup1);
 }if (note != null) this.appendLoadNote (note);
-}if (!this.isCourseGrained) this.applySymmetryAndSetTrajectory ();
+}this.setHetero ();
+if (this.doSetBonds) this.setBonds ();
+if (!this.isCourseGrained) this.applySymmetryAndSetTrajectory ();
 }if (this.htSites != null) this.addSites (this.htSites);
 if (this.vBiomolecules != null && this.vBiomolecules.size () > 0 && (this.isCourseGrained || this.asc.ac > 0)) {
 this.asc.setCurrentModelInfo ("biomolecules", this.vBiomolecules);
@@ -66,66 +92,88 @@ this.asc.getXSymmetry ().applySymmetryBio (ht, this.unitCellParams, this.applySy
 this.asc.xtalSymmetry = null;
 }}return true;
 });
-Clazz.overrideMethod (c$, "processSubclassEntry", 
+Clazz.overrideMethod (c$, "checkSubclassSymmetry", 
 function () {
-if (this.key.startsWith ("_pdbx_entity_nonpoly")) this.processDataNonpoly ();
- else if (this.key.startsWith ("_pdbx_struct_assembly_gen")) this.processDataAssemblyGen ();
- else if (this.key.equals ("_rna3d") || this.key.equals ("_dssr")) this.processAddedData ();
+this.asc.checkSpecial = false;
+var modelIndex = this.asc.iSet;
+this.asc.setCurrentModelInfo ("PDB_CONECT_firstAtom_count_max",  Clazz.newIntArray (-1, [this.asc.getAtomSetAtomIndex (modelIndex), this.asc.getAtomSetAtomCount (modelIndex), this.maxSerial]));
+return false;
 });
-Clazz.defineMethod (c$, "processAddedData", 
+Clazz.defineMethod (c$, "setBonds", 
  function () {
-this.addedData = this.data;
-this.addedDataKey = this.key;
+if (this.htBondMap == null) return;
+var bsAtoms = this.asc.bsAtoms;
+if (bsAtoms == null) bsAtoms = JU.BSUtil.newBitSet2 (0, this.asc.ac);
+var atoms = this.asc.atoms;
+var seqid = -1;
+var comp = null;
+var map = null;
+for (var i = bsAtoms.nextSetBit (0); i >= 0; i = bsAtoms.nextSetBit (i + 1)) {
+var a = atoms[i];
+var pt = (a.vib == null ? a.sequenceNumber : a.vib.x);
+if (pt != seqid) {
+seqid = pt;
+if (comp != null) this.processBonds (this.htBondMap.get (comp), map, false);
+map =  new java.util.Hashtable ();
+comp = atoms[i].group3;
+if (!this.htBondMap.containsKey (comp)) {
+comp = null;
+continue;
+}}if (comp == null) continue;
+map.put (a.atomName, Integer.$valueOf (a.index));
+}
+if (comp != null) this.processBonds (this.htBondMap.get (comp), map, false);
+if (this.structConnMap != null) {
+map =  new java.util.Hashtable ();
+seqid = -1;
+comp = null;
+for (var i = bsAtoms.nextSetBit (0); i >= 0; i = bsAtoms.nextSetBit (i + 1)) {
+var a = atoms[i];
+var pt = (a.vib == null ? a.sequenceNumber : a.vib.x);
+if (pt != seqid) {
+seqid = pt;
+var ckey = a.chainID + a.group3 + seqid;
+if (this.structConnList.indexOf (ckey) < 0) {
+comp = null;
+continue;
+}comp = ckey;
+}if (comp == null) continue;
+map.put (comp + a.atomName + a.altLoc, Integer.$valueOf (a.index));
+}
+this.processBonds (this.structConnMap, map, true);
+}this.appendLoadNote (this.asc.bondCount + " bonds added");
 });
+Clazz.defineMethod (c$, "processBonds", 
+ function (cmap, map, isStructConn) {
+var i1;
+var i2;
+for (var i = 0, n = cmap.size (); i < n; i++) {
+var o = cmap.get (i);
+if ((i1 = map.get (o[0])) == null || (i2 = map.get (o[1])) == null) continue;
+if (this.debugging) JU.Logger.debug ((isStructConn ? "_struct_conn" : "_comp_bond") + " adding bond " + i1 + " " + i2 + " order=" + o[2]);
+this.asc.addNewBondWithOrder (i1.intValue (), i2.intValue (), (o[2]).intValue ());
+}
+}, "JU.Lst,java.util.Map,~B");
 Clazz.defineMethod (c$, "processSequence", 
  function () {
 this.parseLoopParameters (J.adapter.readers.cif.MMCifReader.structRefFields);
+var g1;
+var g3;
 while (this.parser.getData ()) {
-var g1 = null;
-var g3 = null;
-var n = this.parser.getFieldCount ();
-for (var i = 0; i < n; ++i) {
-switch (this.fieldProperty (i)) {
-case 0:
-g3 = this.field;
-break;
-case 1:
-if (this.field.length == 1) g1 = this.field.toLowerCase ();
-}
-}
-if (g1 != null && g3 != null) {
+if (this.isNull (g1 = this.getField (1).toLowerCase ()) || g1.length != 1 || this.isNull (g3 = this.getField (0))) continue;
 if (this.htGroup1 == null) this.asc.setInfo ("htGroup1", this.htGroup1 =  new java.util.Hashtable ());
 this.htGroup1.put (g3, g1);
-}}
-return true;
-});
-Clazz.defineMethod (c$, "processDataNonpoly", 
- function () {
-if (this.hetatmData == null) this.hetatmData =  new Array (3);
-for (var i = J.adapter.readers.cif.MMCifReader.nonpolyFields.length; --i >= 0; ) if (this.key.equals (J.adapter.readers.cif.MMCifReader.nonpolyFields[i])) {
-this.hetatmData[i] = this.data;
-break;
 }
-if (this.hetatmData[1] == null || this.hetatmData[2] == null) return;
-this.addHetero (this.hetatmData[2], this.hetatmData[1]);
-this.hetatmData = null;
-});
-Clazz.defineMethod (c$, "processDataAssemblyGen", 
- function () {
-if (this.assem == null) this.assem =  new Array (3);
-if (this.key.indexOf ("assembly_id") >= 0) this.assem[0] = this.parser.fullTrim (this.data);
- else if (this.key.indexOf ("oper_expression") >= 0) this.assem[1] = this.parser.fullTrim (this.data);
- else if (this.key.indexOf ("asym_id_list") >= 0) this.assem[2] = this.parser.fullTrim (this.data);
-if (this.assem[0] != null && this.assem[1] != null && this.assem[2] != null) this.addAssembly ();
+return true;
 });
 Clazz.defineMethod (c$, "processAssemblyGenBlock", 
  function () {
-this.parseLoopParametersFor ("_pdbx_struct_assembly_gen", J.adapter.readers.cif.MMCifReader.assemblyFields);
+this.parseLoopParameters (J.adapter.readers.cif.MMCifReader.assemblyFields);
 while (this.parser.getData ()) {
 this.assem =  new Array (3);
 var count = 0;
 var p;
-var n = this.parser.getFieldCount ();
+var n = this.parser.getColumnCount ();
 for (var i = 0; i < n; ++i) {
 switch (p = this.fieldProperty (i)) {
 case 0:
@@ -190,7 +238,7 @@ while (this.parser.getData ()) {
 var count = 0;
 var id = null;
 var xyz = null;
-var n = this.parser.getFieldCount ();
+var n = this.parser.getColumnCount ();
 for (var i = 0; i < n; ++i) {
 var p = this.fieldProperty (i);
 switch (p) {
@@ -224,69 +272,29 @@ return true;
 Clazz.defineMethod (c$, "processChemCompLoopBlock", 
  function () {
 this.parseLoopParameters (J.adapter.readers.cif.MMCifReader.chemCompFields);
-while (this.parser.getData ()) {
-var groupName = null;
-var hetName = null;
-var n = this.parser.getFieldCount ();
-for (var i = 0; i < n; ++i) {
-switch (this.fieldProperty (i)) {
-case -1:
-break;
-case 0:
-groupName = this.field;
-break;
-case 1:
-hetName = this.field;
-break;
-}
-}
-if (groupName != null && hetName != null) this.addHetero (groupName, hetName);
-}
-return true;
-});
-Clazz.defineMethod (c$, "processNonpolyLoopBlock", 
- function () {
-this.parseLoopParameters (J.adapter.readers.cif.MMCifReader.nonpolyFields);
-while (this.parser.getData ()) {
-var groupName = null;
-var hetName = null;
-var n = this.parser.getFieldCount ();
-for (var i = 0; i < n; ++i) {
-switch (this.fieldProperty (i)) {
-case -1:
-case 0:
-break;
-case 2:
-groupName = this.field;
-break;
-case 1:
-hetName = this.field;
-break;
-}
-}
-if (groupName == null || hetName == null) return false;
-this.addHetero (groupName, hetName);
-}
+var groupName;
+var hetName;
+while (this.parser.getData ()) if (!this.isNull (groupName = this.getField (0)) && !this.isNull (hetName = this.getField (1))) this.addHetero (groupName, hetName, true);
+
 return true;
 });
 Clazz.defineMethod (c$, "addHetero", 
- function (groupName, hetName) {
+ function (groupName, hetName, addNote) {
 if (!this.vwr.getJBR ().isHetero (groupName)) return;
 if (this.htHetero == null) this.htHetero =  new java.util.Hashtable ();
+if (this.htHetero.containsKey (groupName)) return;
 this.htHetero.put (groupName, hetName);
-if (JU.Logger.debugging) {
-JU.Logger.debug ("hetero: " + groupName + " = " + hetName);
-}}, "~S,~S");
+if (addNote) this.appendLoadNote (groupName + " = " + hetName);
+}, "~S,~S,~B");
 Clazz.defineMethod (c$, "processStructConfLoopBlock", 
  function () {
 this.parseLoopParametersFor ("_struct_conf", J.adapter.readers.cif.MMCifReader.structConfFields);
-for (var i = this.propertyCount; --i >= 0; ) if (this.fieldOf[i] == -1) {
-JU.Logger.warn ("?que? missing property: " + J.adapter.readers.cif.MMCifReader.structConfFields[i]);
+if (!this.checkAllFieldsPresent (J.adapter.readers.cif.MMCifReader.structConfFields, true)) {
+this.parser.skipLoop (true);
 return false;
-}
-while (this.parser.getData ()) {
+}while (this.parser.getData ()) {
 var structure =  new J.adapter.smarter.Structure (-1, J.c.STR.HELIX, J.c.STR.HELIX, null, 0, 0);
-var n = this.parser.getFieldCount ();
+var n = this.parser.getColumnCount ();
 for (var i = 0; i < n; ++i) {
 switch (this.fieldProperty (i)) {
 case -1:
@@ -333,42 +341,17 @@ return true;
 Clazz.defineMethod (c$, "processStructSheetRangeLoopBlock", 
  function () {
 this.parseLoopParametersFor ("_struct_sheet_range", J.adapter.readers.cif.MMCifReader.structSheetRangeFields);
-for (var i = this.propertyCount; --i >= 0; ) if (this.fieldOf[i] == -1) {
-JU.Logger.warn ("?que? missing property:" + J.adapter.readers.cif.MMCifReader.structSheetRangeFields[i]);
+if (!this.checkAllFieldsPresent (J.adapter.readers.cif.MMCifReader.structSheetRangeFields, true)) {
+this.parser.skipLoop (true);
 return false;
-}
-while (this.parser.getData ()) {
-var structure =  new J.adapter.smarter.Structure (-1, J.c.STR.SHEET, J.c.STR.SHEET, null, 0, 0);
-var n = this.parser.getFieldCount ();
-for (var i = 0; i < n; ++i) {
-switch (this.fieldProperty (i)) {
-case 1:
-structure.startChainID = this.vwr.getChainID (this.field, true);
-break;
-case 2:
-structure.startSequenceNumber = this.parseIntStr (this.field);
-break;
-case 3:
-structure.startInsertionCode = this.firstChar;
-break;
-case 4:
-structure.endChainID = this.vwr.getChainID (this.field, true);
-break;
-case 5:
-structure.endSequenceNumber = this.parseIntStr (this.field);
-break;
-case 6:
-structure.endInsertionCode = this.firstChar;
-break;
-case 0:
-structure.strandCount = 1;
-structure.structureID = this.field;
-break;
-case 7:
-structure.serialID = this.parseIntStr (this.field);
-break;
-}
-}
+}while (this.parser.getData ()) {
+var structure =  new J.adapter.smarter.Structure (-1, J.c.STR.SHEET, J.c.STR.SHEET, this.getField (0), this.parseIntStr (this.getField (7)), 1);
+structure.startChainID = this.vwr.getChainID (this.getField (1), true);
+structure.startSequenceNumber = this.parseIntStr (this.getField (2));
+structure.startInsertionCode = this.getField (3).charAt (0);
+structure.endChainID = this.vwr.getChainID (this.getField (4), true);
+structure.endSequenceNumber = this.parseIntStr (this.getField (5));
+structure.endInsertionCode = this.getField (6).charAt (0);
 this.asc.addStructure (structure);
 }
 return true;
@@ -376,61 +359,26 @@ return true;
 Clazz.defineMethod (c$, "processStructSiteBlock", 
  function () {
 this.parseLoopParametersFor ("_struct_site_gen", J.adapter.readers.cif.MMCifReader.structSiteFields);
-for (var i = 3; --i >= 0; ) if (this.fieldOf[i] == -1) {
-JU.Logger.warn ("?que? missing property: " + J.adapter.readers.cif.MMCifReader.structSiteFields[i]);
-return false;
-}
-var siteID = "";
-var seqNum = "";
-var insCode = "";
-var chainID = "";
-var resID = "";
-var group = "";
 var htSite = null;
 this.htSites =  new java.util.Hashtable ();
+var seqNum;
+var resID;
 while (this.parser.getData ()) {
-var n = this.parser.getFieldCount ();
-for (var i = 0; i < n; ++i) {
-switch (this.fieldProperty (i)) {
-case 0:
-if (group !== "") {
-var groups = htSite.get ("groups");
-groups += (groups.length == 0 ? "" : ",") + group;
-group = "";
-htSite.put ("groups", groups);
-}siteID = this.field;
+if (this.isNull (seqNum = this.getField (3)) || this.isNull (resID = this.getField (1))) continue;
+var siteID = this.getField (0);
 htSite = this.htSites.get (siteID);
 if (htSite == null) {
 htSite =  new java.util.Hashtable ();
 htSite.put ("groups", "");
 this.htSites.put (siteID, htSite);
-}seqNum = "";
-insCode = "";
-chainID = "";
-resID = "";
-break;
-case 1:
-resID = this.field;
-break;
-case 2:
-chainID = this.field;
-break;
-case 3:
-seqNum = this.field;
-break;
-case 4:
-insCode = this.field;
-break;
-}
-if (seqNum !== "" && resID !== "") group = "[" + resID + "]" + seqNum + (insCode.length > 0 ? "^" + insCode : "") + (chainID.length > 0 ? ":" + chainID : "");
-}
-}
-if (group !== "") {
+}var insCode = this.getField (4);
+var chainID = this.getField (2);
+var group = "[" + resID + "]" + seqNum + (this.isNull (insCode) ? "" : "^" + insCode) + (this.isNull (chainID) ? "" : ":" + chainID);
 var groups = htSite.get ("groups");
 groups += (groups.length == 0 ? "" : ",") + group;
-group = "";
 htSite.put ("groups", groups);
-}return true;
+}
+return true;
 });
 Clazz.defineMethod (c$, "setBiomolecules", 
  function (biomolecule) {
@@ -521,39 +469,36 @@ m.mul (this.htBiomts.get (ops.substring (pt + 1)));
 return m;
 }return this.htBiomts.get (ops);
 }, "~S");
-Clazz.defineMethod (c$, "processLigandBondLoopBlock", 
+Clazz.defineMethod (c$, "processStructConnLoopBlock", 
  function () {
-this.parseLoopParametersFor ("_chem_comp_bond", J.adapter.readers.cif.MMCifReader.chemCompBondFields);
-if (this.isLigandBondBug) return false;
-for (var i = this.propertyCount; --i >= 0; ) if (this.fieldOf[i] == -1) {
-JU.Logger.warn ("?que? missing property: " + J.adapter.readers.cif.MMCifReader.chemCompBondFields[i]);
-return false;
-}
-var order = 0;
-var isAromatic = false;
+this.parseLoopParametersFor ("_struct_conn", J.adapter.readers.cif.MMCifReader.structConnFields);
 while (this.parser.getData ()) {
-var atom1 = null;
-var atom2 = null;
-order = 0;
-isAromatic = false;
-var n = this.parser.getFieldCount ();
-for (var i = 0; i < n; ++i) {
-switch (this.fieldProperty (i)) {
-case 0:
-atom1 = this.asc.getAtomFromName (this.field);
-break;
-case 1:
-atom2 = this.asc.getAtomFromName (this.field);
-break;
-case 3:
-isAromatic = (this.field.charAt (0) == 'Y');
-break;
-case 2:
-order = this.getBondOrder (this.field);
-break;
+var sym1 = this.getField (5);
+var sym2 = this.getField (11);
+if (!sym1.equals (sym2) || !this.isNull (sym1) && !sym1.equals ("1_555")) continue;
+var type = this.getField (12);
+if (!type.startsWith ("covale") && !type.equals ("disulf") && !type.equals ("metalc")) continue;
+if (this.htBondMap == null) this.htBondMap =  new java.util.Hashtable ();
+var key1 = this.vwr.getChainID (this.getField (0), true) + this.getField (2) + this.parseFloatStr (this.getField (1)) + this.getField (3) + this.getField (4);
+var key2 = this.vwr.getChainID (this.getField (6), true) + this.getField (8) + this.parseFloatStr (this.getField (7)) + this.getField (9) + this.getField (10);
+var order = this.getBondOrder (this.getField (13));
+if (this.structConnMap == null) this.structConnMap =  new JU.Lst ();
+this.structConnMap.addLast ( Clazz.newArray (-1, [key1, key2, Integer.$valueOf (order)]));
+if (this.structConnList.indexOf (key1) < 0) this.structConnList += key1;
+if (this.structConnList.indexOf (key2) < 0) this.structConnList += key2;
 }
-}
-if (isAromatic) switch (order) {
+return true;
+});
+Clazz.defineMethod (c$, "processCompBondLoopBlock", 
+ function () {
+this.doSetBonds = true;
+this.parseLoopParametersFor ("_chem_comp_bond", J.adapter.readers.cif.MMCifReader.chemCompBondFields);
+while (this.parser.getData ()) {
+var comp = this.getField (0);
+var atom1 = this.getField (1);
+var atom2 = this.getField (2);
+var order = this.getBondOrder (this.getField (3));
+if ((this.getField (4).charAt (0) == 'Y')) switch (order) {
 case 1:
 order = 513;
 break;
@@ -561,8 +506,14 @@ case 2:
 order = 514;
 break;
 }
-this.asc.addNewBondWithOrderA (atom1, atom2, order);
-}
+if (this.isLigand) {
+this.asc.addNewBondWithOrderA (this.asc.getAtomFromName (atom1), this.asc.getAtomFromName (atom2), order);
+} else if (this.haveHAtoms || this.htHetero != null && this.htHetero.containsKey (comp)) {
+if (this.htBondMap == null) this.htBondMap =  new java.util.Hashtable ();
+var cmap = this.htBondMap.get (comp);
+if (cmap == null) this.htBondMap.put (comp, cmap =  new JU.Lst ());
+cmap.addLast ( Clazz.newArray (-1, [atom1, atom2, Integer.$valueOf (this.haveHAtoms ? order : 1)]));
+}}
 return true;
 });
 Clazz.overrideMethod (c$, "processSubclassAtom", 
@@ -591,26 +542,8 @@ if (this.assemblyIdAtoms == null) this.assemblyIdAtoms =  new java.util.Hashtabl
 var bs = this.assemblyIdAtoms.get (assemblyId);
 if (bs == null) this.assemblyIdAtoms.put (assemblyId, bs =  new JU.BS ());
 bs.set (this.ac);
-}if (atom.isHetero && this.htHetero != null) {
-this.asc.setCurrentModelInfo ("hetNames", this.htHetero);
-this.asc.setInfo ("hetNames", this.htHetero);
-this.htHetero = null;
 }return true;
 }, "J.adapter.smarter.Atom,~S,~S");
-Clazz.overrideMethod (c$, "processSubclassLoopBlock", 
-function () {
-if (this.key.startsWith ("_pdbx_struct_oper_list")) return this.processStructOperListBlock ();
-if (this.key.startsWith ("_pdbx_struct_assembly_gen")) return this.processAssemblyGenBlock ();
-if (this.key.startsWith ("_struct_ref_seq_dif")) return this.processSequence ();
-if (this.isCourseGrained) return false;
-if (this.key.startsWith ("_struct_site_gen")) return this.processStructSiteBlock ();
-if (this.key.startsWith ("_chem_comp_bond")) return this.processLigandBondLoopBlock ();
-if (this.key.startsWith ("_chem_comp")) return this.processChemCompLoopBlock ();
-if (this.key.startsWith ("_pdbx_entity_nonpoly")) return this.processNonpolyLoopBlock ();
-if (this.key.startsWith ("_struct_conf") && !this.key.startsWith ("_struct_conf_type")) return this.processStructConfLoopBlock ();
-if (this.key.startsWith ("_struct_sheet_range")) return this.processStructSheetRangeLoopBlock ();
-return false;
-});
 Clazz.overrideMethod (c$, "checkPDBModelField", 
 function (modelField, currentModelNo) {
 this.fieldProperty (modelField);
@@ -622,6 +555,7 @@ this.skipping = false;
 this.continuing = true;
 return -2147483648;
 }var modelNumberToUse = (this.useFileModelNumbers ? modelNo : ++this.modelIndex);
+this.setHetero ();
 this.newModel (modelNumberToUse);
 if (!this.skipping) {
 this.nextAtomSet ();
@@ -630,25 +564,30 @@ this.modelMap.put ("" + modelNo, Integer.$valueOf (Math.max (0, this.asc.iSet)))
 this.modelMap.put ("_" + Math.max (0, this.asc.iSet), Integer.$valueOf (modelNo));
 }}return modelNo;
 }, "~N,~N");
+Clazz.defineMethod (c$, "setHetero", 
+ function () {
+if (this.htHetero != null) {
+this.asc.setCurrentModelInfo ("hetNames", this.htHetero);
+this.asc.setInfo ("hetNames", this.htHetero);
+}});
 Clazz.defineStatics (c$,
 "OPER_ID", 12,
 "OPER_XYZ", 13,
+"FAMILY_OPER_CAT", "_pdbx_struct_oper_list.",
 "FAMILY_OPER", "_pdbx_struct_oper_list",
 "operFields",  Clazz.newArray (-1, ["*_matrix[1][1]", "*_matrix[1][2]", "*_matrix[1][3]", "*_vector[1]", "*_matrix[2][1]", "*_matrix[2][2]", "*_matrix[2][3]", "*_vector[2]", "*_matrix[3][1]", "*_matrix[3][2]", "*_matrix[3][3]", "*_vector[3]", "*_id", "*_symmetry_operation"]),
 "ASSEM_ID", 0,
 "ASSEM_OPERS", 1,
 "ASSEM_LIST", 2,
-"FAMILY_ASSEM", "_pdbx_struct_assembly_gen",
-"assemblyFields",  Clazz.newArray (-1, ["*_assembly_id", "*_oper_expression", "*_asym_id_list"]),
+"FAMILY_ASSEM_CAT", "_pdbx_struct_assembly_gen.",
+"assemblyFields",  Clazz.newArray (-1, ["_pdbx_struct_assembly_gen_assembly_id", "_pdbx_struct_assembly_gen_oper_expression", "_pdbx_struct_assembly_gen_asym_id_list"]),
+"FAMILY_SEQUENCEDIF_CAT", "_struct_ref_seq_dif.",
 "STRUCT_REF_G3", 0,
 "STRUCT_REF_G1", 1,
-"structRefFields",  Clazz.newArray (-1, ["_struct_ref_seq_dif_mon_id", "_struct_ref_seq_dif.db_mon_id"]),
-"NONPOLY_ENTITY_ID", 0,
-"NONPOLY_NAME", 1,
-"NONPOLY_COMP_ID", 2,
-"nonpolyFields",  Clazz.newArray (-1, ["_pdbx_entity_nonpoly_entity_id", "_pdbx_entity_nonpoly_name", "_pdbx_entity_nonpoly_comp_id"]),
+"structRefFields",  Clazz.newArray (-1, ["_struct_ref_seq_dif_mon_id", "_struct_ref_seq_dif_db_mon_id"]),
 "CHEM_COMP_ID", 0,
 "CHEM_COMP_NAME", 1,
+"FAMILY_CHEMCOMP_CAT", "_chem_comp.",
 "chemCompFields",  Clazz.newArray (-1, ["_chem_comp_id", "_chem_comp_name"]),
 "CONF_TYPE_ID", 0,
 "BEG_ASYM_ID", 1,
@@ -660,10 +599,12 @@ Clazz.defineStatics (c$,
 "STRUCT_ID", 7,
 "SERIAL_NO", 8,
 "HELIX_CLASS", 9,
-"structConfFields",  Clazz.newArray (-1, ["*_conf_type_id", "*_beg_auth_asym_id", "*_beg_auth_seq_id", "*_pdbx_beg_pdb_ins_code", "*_end_auth_asym_id", "*_end_auth_seq_id", "*_pdbx_end_pdb_ins_code", "*_id", "*_pdbx_pdb_helix_id", "*_pdbx_pdb_helix_class"]),
+"FAMILY_STRUCTCONF_CAT", "_struct_conf.",
 "FAMILY_STRUCTCONF", "_struct_conf",
+"structConfFields",  Clazz.newArray (-1, ["*_conf_type_id", "*_beg_auth_asym_id", "*_beg_auth_seq_id", "*_pdbx_beg_pdb_ins_code", "*_end_auth_asym_id", "*_end_auth_seq_id", "*_pdbx_end_pdb_ins_code", "*_id", "*_pdbx_pdb_helix_id", "*_pdbx_pdb_helix_class"]),
 "SHEET_ID", 0,
 "STRAND_ID", 7,
+"FAMILY_SHEET_CAT", "_struct_sheet_range.",
 "FAMILY_SHEET", "_struct_sheet_range",
 "structSheetRangeFields",  Clazz.newArray (-1, ["*_sheet_id", "*_beg_auth_asym_id", "*_beg_auth_seq_id", "*_pdbx_beg_pdb_ins_code", "*_end_auth_asym_id", "*_end_auth_seq_id", "*_pdbx_end_pdb_ins_code", "*_id"]),
 "SITE_ID", 0,
@@ -671,12 +612,32 @@ Clazz.defineStatics (c$,
 "SITE_ASYM_ID", 2,
 "SITE_SEQ_ID", 3,
 "SITE_INS_CODE", 4,
+"FAMILY_STRUCSITE_CAT", "_struct_site_gen.",
 "FAMILY_STRUCSITE", "_struct_site_gen",
 "structSiteFields",  Clazz.newArray (-1, ["*_site_id", "*_auth_comp_id", "*_auth_asym_id", "*_auth_seq_id", "*_label_alt_id"]),
-"CHEM_COMP_BOND_ATOM_ID_1", 0,
-"CHEM_COMP_BOND_ATOM_ID_2", 1,
-"CHEM_COMP_BOND_VALUE_ORDER", 2,
-"CHEM_COMP_BOND_AROMATIC_FLAG", 3,
+"STRUCT_CONN_ASYM1", 0,
+"STRUCT_CONN_SEQ1", 1,
+"STRUCT_CONN_COMP1", 2,
+"STRUCT_CONN_ATOM1", 3,
+"STRUCT_CONN_ALT1", 4,
+"STRUCT_CONN_SYMM1", 5,
+"STRUCT_CONN_ASYM2", 6,
+"STRUCT_CONN_SEQ2", 7,
+"STRUCT_CONN_COMP2", 8,
+"STRUCT_CONN_ATOM2", 9,
+"STRUCT_CONN_ALT2", 10,
+"STRUCT_CONN_SYMM2", 11,
+"STRUCT_CONN_TYPE", 12,
+"STRUCT_CONN_ORDER", 13,
+"FAMILY_STRUCTCONN_CAT", "_struct_conn.",
+"FAMILY_STRUCTCONN", "_struct_conn",
+"structConnFields",  Clazz.newArray (-1, ["*_ptnr1_auth_asym_id", "*_ptnr1_auth_seq_id", "*_ptnr1_auth_comp_id", "*_ptnr1_label_atom_id", "*_pdbx_ptnr1_label_alt_id", "*_ptnr1_symmetry", "*_ptnr2_auth_asym_id", "*_ptnr2_auth_seq_id", "*_ptnr2_auth_comp_id", "*_ptnr2_label_atom_id", "*_pdbx_ptnr2_label_alt_id", "*_ptnr2_symmetry", "*_conn_type_id", "*_pdbx_value_order"]),
+"CHEM_COMP_BOND_ID", 0,
+"CHEM_COMP_BOND_ATOM_ID_1", 1,
+"CHEM_COMP_BOND_ATOM_ID_2", 2,
+"CHEM_COMP_BOND_VALUE_ORDER", 3,
+"CHEM_COMP_BOND_AROMATIC_FLAG", 4,
+"FAMILY_COMPBOND_CAT", "_chem_comp_bond.",
 "FAMILY_COMPBOND", "_chem_comp_bond",
-"chemCompBondFields",  Clazz.newArray (-1, ["*_atom_id_1", "*_atom_id_2", "*_value_order", "*_pdbx_aromatic_flag"]));
+"chemCompBondFields",  Clazz.newArray (-1, ["*_comp_id", "*_atom_id_1", "*_atom_id_2", "*_value_order", "*_pdbx_aromatic_flag"]));
 });

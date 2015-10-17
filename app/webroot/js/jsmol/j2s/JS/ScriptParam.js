@@ -11,7 +11,6 @@ this.slen = 0;
 this.fractionalPoint = null;
 this.coordinatesAreFractional = false;
 this.isBondSet = false;
-this.expressionResult = null;
 Clazz.instantialize (this, arguments);
 }, JS, "ScriptParam", JS.ScriptError);
 Clazz.defineMethod (c$, "getToken", 
@@ -31,7 +30,7 @@ return (this.iToken = i) < this.slen;
 }, "~N");
 Clazz.defineMethod (c$, "getParameter", 
 function (key, tokType, nullAsString) {
-var v = this.getContextVariableAsVariable (key);
+var v = this.getContextVariableAsVariable (key, false);
 if (v == null) {
 if (nullAsString) v = this.vwr.getP (key);
  else if ((v = this.vwr.getPOrNull (key)) == null) return null;
@@ -48,15 +47,15 @@ return sb.toString ();
 }
 return JS.SV.oValue (v);
 }, "~S,~N,~B");
-Clazz.defineMethod (c$, "getStringParameter", 
+Clazz.defineMethod (c$, "getVarParameter", 
 function ($var, orReturnName) {
-var v = this.getContextVariableAsVariable ($var);
-if (v != null) return v.asString ();
-var val = "" + this.vwr.getP ($var);
-return (val.length == 0 && orReturnName ? $var : val);
+var v = this.getContextVariableAsVariable ($var, false);
+if (v != null) return (orReturnName ? v.asString () : JS.SV.oValue (v));
+var val = this.vwr.getP ($var);
+return (orReturnName && ("" + val).length == 0 ? $var : val);
 }, "~S,~B");
 Clazz.defineMethod (c$, "getContextVariableAsVariable", 
-function ($var) {
+function ($var, isLocal) {
 if ($var.equals ("expressionBegin")) return null;
 if ($var.equalsIgnoreCase ("_caller")) {
 var sc = this.thisContext;
@@ -66,8 +65,8 @@ sc = sc.parentContext;
 }
 return JS.SV.newV (6,  new java.util.Hashtable ());
 }$var = $var.toLowerCase ();
-return (this.contextVariables != null && this.contextVariables.containsKey ($var) ? this.contextVariables.get ($var) : this.thisContext == null ? null : this.thisContext.getVariable ($var));
-}, "~S");
+return (this.contextVariables != null && this.contextVariables.containsKey ($var) ? this.contextVariables.get ($var) : isLocal || this.thisContext == null ? null : this.thisContext.getVariable ($var));
+}, "~S,~B");
 Clazz.defineMethod (c$, "paramAsStr", 
 function (i) {
 this.getToken (i);
@@ -91,7 +90,7 @@ if (Clazz.instanceOf (o, String)) return JU.PT.split (o, "\n");
 case 1073742195:
 i += 2;
 break;
-case 269484096:
+case 268435520:
 ++i;
 break;
 case 7:
@@ -101,9 +100,9 @@ this.invArg ();
 }
 var tok;
 var v =  new JU.Lst ();
-while ((tok = this.tokAt (i)) != 269484097) {
+while ((tok = this.tokAt (i)) != 268435521) {
 switch (tok) {
-case 269484080:
+case 268435504:
 break;
 case 4:
 v.addLast (this.stringParameter (i));
@@ -128,87 +127,88 @@ if (!this.checkToken (index)) this.error (37);
 return this.paramAsStr (index);
 }, "~N");
 Clazz.defineMethod (c$, "atomCenterOrCoordinateParameter", 
-function (i) {
+function (i, ret) {
 switch (this.getToken (i).tok) {
 case 10:
-case 1048577:
-var bs = this.atomExpression (this.st, i, 0, true, false, false, true);
-if (bs != null && bs.cardinality () == 1) return this.vwr.ms.at[bs.nextSetBit (0)];
-if (bs != null) return this.vwr.ms.getAtomSetCenter (bs);
-if (Clazz.instanceOf (this.expressionResult, JU.P3)) return this.expressionResult;
+case 1073742325:
+var bs = this.atomExpression (this.st, i, 0, true, false, ret, true);
+if (bs != null) {
+if (ret != null) ret[0] = bs;
+return (bs.cardinality () == 1 ? this.vwr.ms.at[bs.nextSetBit (0)] : this.vwr.ms.getAtomSetCenter (bs));
+}if (ret != null && Clazz.instanceOf (ret[0], JU.P3)) return ret[0];
 this.invArg ();
 break;
-case 1048586:
+case 1073742332:
 case 8:
 return this.getPoint3f (i, true);
 }
 this.invArg ();
 return null;
-}, "~N");
+}, "~N,~A");
 Clazz.defineMethod (c$, "isCenterParameter", 
 function (i) {
 var tok = this.tokAt (i);
-return (tok == 1048582 || tok == 1048586 || tok == 1048577 || tok == 8 || tok == 10);
+return (tok == 1073742330 || tok == 1073742332 || tok == 1073742325 || tok == 8 || tok == 10);
 }, "~N");
 Clazz.defineMethod (c$, "centerParameter", 
-function (i) {
-return this.centerParameterForModel (i, -2147483648);
-}, "~N");
+function (i, ret) {
+return this.centerParameterForModel (i, -2147483648, ret);
+}, "~N,~A");
 Clazz.defineMethod (c$, "centerParameterForModel", 
-function (i, modelIndex) {
+function (i, modelIndex, ret) {
 var center = null;
-this.expressionResult = null;
 if (this.checkToken (i)) {
 switch (this.getToken (i).tok) {
-case 1048582:
+case 1073742330:
 var id = this.objectNameParameter (++i);
 var index = -2147483648;
-if (this.tokAt (i + 1) == 269484096) {
+if (this.tokAt (i + 1) == 268435520) {
 index = this.parameterExpressionList (-i - 1, -1, true).get (0).asInt ();
-if (this.getToken (--this.iToken).tok != 269484097) this.invArg ();
+if (this.getToken (--this.iToken).tok != 268435521) this.invArg ();
 }if (this.chk) return  new JU.P3 ();
-if (this.tokAt (i + 1) == 1048583 && (this.tokAt (i + 2) == 1141899267 || this.tokAt (i + 2) == 1141899270)) {
+if (this.tokAt (i + 1) == 1073742336 && (this.tokAt (i + 2) == 1140850691 || this.tokAt (i + 2) == 1140850694)) {
 index = 2147483647;
 this.iToken = i + 2;
 }if ((center = this.getObjectCenter (id, index, modelIndex)) == null) this.errorStr (12, id);
 break;
 case 10:
-case 1048577:
-case 1048586:
+case 1073742325:
+case 1073742332:
 case 8:
-center = this.atomCenterOrCoordinateParameter (i);
+if (ret == null) ret =  new Array (1);
+center = this.atomCenterOrCoordinateParameter (i, ret);
 break;
 }
 }if (center == null) this.error (11);
 return center;
-}, "~N,~N");
+}, "~N,~N,~A");
 Clazz.defineMethod (c$, "planeParameter", 
 function (i) {
 var vTemp =  new JU.V3 ();
 var vTemp2 =  new JU.V3 ();
 var plane = null;
-if (this.tokAt (i) == 135266319) i++;
-var isNegated = (this.tokAt (i) == 269484192);
+if (this.tokAt (i) == 134217750) i++;
+var isNegated = (this.tokAt (i) == 268435616);
 if (isNegated) i++;
 if (i < this.slen) switch (this.getToken (i).tok) {
 case 9:
 plane = JU.P4.newPt (this.theToken.value);
 break;
-case 1048582:
+case 1073742330:
 var id = this.objectNameParameter (++i);
 if (this.chk) return  new JU.P4 ();
 plane = this.getPlaneForObject (id, vTemp);
 break;
-case 1112541205:
-if (!this.checkToken (++i) || this.getToken (i++).tok != 269484436) this.evalError ("x=?", null);
+case 1111492629:
+if (!this.checkToken (++i) || this.getToken (i++).tok != 268435860) this.evalError ("x=?", null);
 plane = JU.P4.new4 (1, 0, 0, -this.floatParameter (i));
 break;
-case 1112541206:
-if (!this.checkToken (++i) || this.getToken (i++).tok != 269484436) this.evalError ("y=?", null);
+case 1111492630:
+if (!this.checkToken (++i) || this.getToken (i++).tok != 268435860) this.evalError ("y=?", null);
 plane = JU.P4.new4 (0, 1, 0, -this.floatParameter (i));
 break;
-case 1112541207:
-if (!this.checkToken (++i) || this.getToken (i++).tok != 269484436) this.evalError ("z=?", null);
+case 1111492631:
+if (!this.checkToken (++i) || this.getToken (i++).tok != 268435860) this.evalError ("z=?", null);
 plane = JU.P4.new4 (0, 0, 1, -this.floatParameter (i));
 break;
 case 1073741824:
@@ -218,17 +218,17 @@ if (str.equalsIgnoreCase ("xy")) plane = JU.P4.new4 (0, 0, isNegated ? -1 : 1, 0
  else if (str.equalsIgnoreCase ("xz")) plane = JU.P4.new4 (0, isNegated ? -1 : 1, 0, 0);
  else if (str.equalsIgnoreCase ("yz")) plane = JU.P4.new4 (isNegated ? -1 : 1, 0, 0, 0);
 break;
-case 1048586:
+case 1073742332:
 case 8:
 if (!this.isPoint3f (i)) {
 plane = this.getPoint4f (i);
 break;
 }case 10:
-case 1048577:
-var pt1 = this.atomCenterOrCoordinateParameter (i);
-if (this.getToken (++this.iToken).tok == 269484080) ++this.iToken;
-var pt2 = this.atomCenterOrCoordinateParameter (this.iToken);
-if (this.getToken (++this.iToken).tok == 269484080) ++this.iToken;
+case 1073742325:
+var pt1 = this.atomCenterOrCoordinateParameter (i, null);
+if (this.getToken (++this.iToken).tok == 268435504) ++this.iToken;
+var pt2 = this.atomCenterOrCoordinateParameter (this.iToken, null);
+if (this.getToken (++this.iToken).tok == 268435504) ++this.iToken;
 if (this.isFloatParameter (this.iToken)) {
 var frac = this.floatParameter (this.iToken);
 plane =  new JU.P4 ();
@@ -236,7 +236,7 @@ vTemp.sub2 (pt2, pt1);
 vTemp.scale (frac * 2);
 JU.Measure.getBisectingPlane (pt1, vTemp, vTemp2, vTemp, plane);
 } else {
-var pt3 = this.atomCenterOrCoordinateParameter (this.iToken);
+var pt3 = this.atomCenterOrCoordinateParameter (this.iToken, null);
 i = this.iToken;
 var norm =  new JU.V3 ();
 var w = JU.Measure.getNormalThroughPoints (pt1, pt2, pt3, norm, vTemp);
@@ -300,31 +300,31 @@ this.invArg ();
 }var multiplier = 1;
 out : for (var i = index; i < this.st.length; i++) {
 switch (this.getToken (i).tok) {
-case 1048586:
-case 269484080:
-case 269484128:
-case 269484160:
+case 1073742332:
+case 268435504:
+case 268435552:
+case 268435584:
 break;
-case 1048590:
+case 1073742338:
 break out;
-case 269484192:
+case 268435616:
 multiplier = -1;
 break;
-case 1048615:
+case 1073742363:
 if (n == 6) this.invArg ();
 coord[n++] = this.theToken.intValue;
 multiplier = -1;
 break;
 case 2:
-case 1048614:
+case 1073742362:
 if (n == 6) this.invArg ();
 coord[n++] = this.theToken.intValue * multiplier;
 multiplier = 1;
 break;
-case 269484208:
-case 1048610:
+case 268435632:
+case 1073742358:
 if (!allowFractional) this.invArg ();
-if (this.theTok == 269484208) this.getToken (++i);
+if (this.theTok == 268435632) this.getToken (++i);
 n--;
 if (n < 0 || integerOnly) this.invArg ();
 if (Clazz.instanceOf (this.theToken.value, Integer) || this.theTok == 2) {
@@ -333,12 +333,12 @@ coord[n++] /= (this.theToken.intValue == 2147483647 ? (this.theToken.value).intV
 coord[n++] /= (this.theToken.value).floatValue ();
 }this.coordinatesAreFractional = true;
 break;
-case 1048609:
+case 1073742357:
 case 1073741824:
 coord[n++] = NaN;
 break;
 case 3:
-case 1048611:
+case 1073742359:
 if (integerOnly) this.invArg ();
 if (n == 6) this.invArg ();
 coord[n++] = (this.theToken.value).floatValue ();
@@ -392,15 +392,15 @@ Clazz.defineMethod (c$, "xypParameter",
 function (index) {
 var tok = this.tokAt (index);
 if (tok == 1073742195) tok = this.tokAt (++index);
-if (tok != 269484096 || !this.isFloatParameter (++index)) return null;
+if (tok != 268435520 || !this.isFloatParameter (++index)) return null;
 var pt =  new JU.P3 ();
 pt.x = this.floatParameter (index);
-if (this.tokAt (++index) == 269484080) index++;
+if (this.tokAt (++index) == 268435504) index++;
 if (!this.isFloatParameter (index)) return null;
 pt.y = this.floatParameter (index);
-var isPercent = (this.tokAt (++index) == 269484210);
+var isPercent = (this.tokAt (++index) == 268435634);
 if (isPercent) ++index;
-if (this.tokAt (index) != 269484097) return null;
+if (this.tokAt (index) != 268435521) return null;
 this.iToken = index;
 pt.z = (isPercent ? -1 : 1) * 3.4028235E38;
 return pt;
@@ -430,12 +430,12 @@ function (index) {
 if (this.checkToken (index)) {
 this.getToken (index);
 switch (this.theTok) {
-case 1048615:
+case 1073742363:
 return -this.theToken.intValue;
-case 1048614:
+case 1073742362:
 case 2:
 return this.theToken.intValue;
-case 1048611:
+case 1073742359:
 case 3:
 return (this.theToken.value).floatValue ();
 }
@@ -461,29 +461,29 @@ case 1073742195:
 tok = this.tokAt (i++);
 break;
 }
-if (tok != 269484096) this.invArg ();
+if (tok != 268435520) this.invArg ();
 var n = 0;
-while (tok != 269484097 && tok != 0) {
+while (tok != 268435521 && tok != 0) {
 tok = this.getToken (i).tok;
 switch (tok) {
 case 0:
-case 269484097:
+case 268435521:
 break;
-case 269484080:
+case 268435504:
 i++;
 break;
 default:
 if (nPoints >= 0 && n == nPoints) {
 tok = 0;
 break;
-}var pt = this.centerParameter (i);
+}var pt = this.centerParameter (i, null);
 if (points == null) vp.addLast (pt);
  else points[n] = pt;
 n++;
 i = this.iToken + 1;
 }
 }
-if (tok != 269484097) this.invArg ();
+if (tok != 268435521) this.invArg ();
 if (points == null) points = vp.toArray ( new Array (vp.size ()));
 if (nPoints > 0 && points[nPoints - 1] == null) this.invArg ();
 return points;
@@ -493,17 +493,17 @@ function (i, nMin, nMax) {
 var v =  new JU.Lst ();
 var tok = this.tokAt (i);
 if (tok == 1073742195) tok = this.tokAt (++i);
-var haveBrace = (tok == 1048586);
-var haveSquare = (tok == 269484096);
+var haveBrace = (tok == 1073742332);
+var haveSquare = (tok == 268435520);
 if (haveBrace || haveSquare) i++;
 var n = 0;
 while (n < nMax) {
 tok = this.tokAt (i);
-if (haveBrace && tok == 1048590 || haveSquare && tok == 269484097) break;
+if (haveBrace && tok == 1073742338 || haveSquare && tok == 268435521) break;
 switch (tok) {
-case 269484080:
-case 1048586:
-case 1048590:
+case 268435504:
+case 1073742332:
+case 1073742338:
 case 4:
 break;
 case 9:
@@ -516,7 +516,7 @@ n += 4;
 break;
 default:
 if (this.isCenterParameter (i)) {
-var pt = this.centerParameter (i);
+var pt = this.centerParameter (i, null);
 i = this.iToken;
 v.addLast (Float.$valueOf (pt.x));
 v.addLast (Float.$valueOf (pt.y));
@@ -526,9 +526,9 @@ break;
 }v.addLast (Float.$valueOf (this.floatParameter (i)));
 n++;
 }
-i += (n == nMax && haveSquare && this.tokAt (i + 1) == 1048590 ? 2 : 1);
+i += (n == nMax && haveSquare && this.tokAt (i + 1) == 1073742338 ? 2 : 1);
 }
-if (haveBrace && this.tokAt (i++) != 1048590 || haveSquare && this.tokAt (i++) != 269484097 || n < nMin || n > nMax) this.invArg ();
+if (haveBrace && this.tokAt (i++) != 1073742338 || haveSquare && this.tokAt (i++) != 268435521 || n < nMin || n > nMax) this.invArg ();
 this.iToken = i - 1;
 return v;
 }, "~N,~N,~N");
@@ -568,7 +568,7 @@ case 7:
 case 11:
 case 12:
 case 1073742195:
-case 269484096:
+case 268435520:
 return true;
 }
 return false;
@@ -643,9 +643,9 @@ var mad = 1;
 switch (this.getToken (1).tok) {
 case 1073742072:
 this.restrictSelected (false, false);
-case 1048589:
+case 1073742335:
 break;
-case 1048588:
+case 1073742334:
 mad = 0;
 break;
 case 2:
@@ -740,7 +740,7 @@ return JS.ScriptParam.getPartialBondOrderFromFloatEncodedInt (JS.ScriptParam.get
 Clazz.defineMethod (c$, "isColorParam", 
 function (i) {
 var tok = this.tokAt (i);
-return (tok == 570425378 || tok == 1073742195 || tok == 269484096 || tok == 7 || tok == 8 || this.isPoint3f (i) || (tok == 4 || JS.T.tokAttr (tok, 1073741824)) && JU.CU.getArgbFromString (this.st[i].value) != 0);
+return (tok == 570425378 || tok == 1073742195 || tok == 268435520 || tok == 7 || tok == 8 || this.isPoint3f (i) || (tok == 4 || JS.T.tokAttr (tok, 1073741824)) && JU.CU.getArgbFromString (this.st[i].value) != 0);
 }, "~N");
 Clazz.defineMethod (c$, "getArgbParam", 
 function (index) {
@@ -764,7 +764,7 @@ case 4:
 return JU.CU.getArgbFromString (this.paramAsStr (index));
 case 1073742195:
 return this.getColorTriad (index + 2);
-case 269484096:
+case 268435520:
 return this.getColorTriad (++index);
 case 7:
 var rgb = JS.SV.flistValue (this.theToken, 3);
@@ -773,10 +773,10 @@ break;
 case 8:
 pt = this.theToken.value;
 break;
-case 1048586:
+case 1073742332:
 pt = this.getPoint3f (index, false);
 break;
-case 1048587:
+case 1073742333:
 if (allowNone) return 0;
 }
 }if (pt == null) this.error (8);
@@ -792,11 +792,11 @@ var pt = null;
 var val = 0;
 out : switch (this.theTok) {
 case 2:
-case 1048614:
+case 1073742362:
 case 3:
 for (; i < this.slen; i++) {
 switch (this.getToken (i).tok) {
-case 269484080:
+case 268435504:
 continue;
 case 1073741824:
 if (n != 1 || colors[0] != 0) this.error (4);
@@ -810,11 +810,11 @@ case 2:
 if (n > 2) this.error (4);
 val = this.theToken.intValue;
 break;
-case 1048614:
+case 1073742362:
 if (n > 2) this.error (4);
 val = (this.theToken.value).intValue () % 256;
 break;
-case 269484097:
+case 268435521:
 if (n != 3) this.error (4);
 --i;
 pt = JU.P3.new3 (colors[0], colors[1], colors[2]);
@@ -835,7 +835,7 @@ break;
 default:
 this.error (4);
 }
-if (this.getToken (++i).tok != 269484097) this.error (4);
+if (this.getToken (++i).tok != 268435521) this.error (4);
 if (pt != null) return JU.CU.colorPtToFFRGB (pt);
 if ((n = JU.CU.getArgbFromString ("[" + hex + "]")) == 0) this.error (4);
 return n;
@@ -847,26 +847,26 @@ if (this.tokAt (index) != 1073742164) return null;
 var tickInfo;
 var str = " ";
 switch (this.tokAt (index + 1)) {
-case 1112541205:
-case 1112541206:
-case 1112541207:
+case 1111492629:
+case 1111492630:
+case 1111492631:
 str = this.paramAsStr (++index).toLowerCase ();
 break;
 case 1073741824:
 this.invArg ();
 }
-if (this.tokAt (++index) == 1048587) {
+if (this.tokAt (++index) == 1073742333) {
 tickInfo =  new JM.TickInfo (null);
 tickInfo.type = str;
 this.iToken = index;
 return tickInfo;
 }tickInfo =  new JM.TickInfo (this.getPointOrPlane (index, false, true, false, false, 3, 3));
-if (this.coordinatesAreFractional || this.tokAt (this.iToken + 1) == 1614417948) {
+if (this.coordinatesAreFractional || this.tokAt (this.iToken + 1) == 1747587102) {
 tickInfo.scale = JU.P3.new3 (NaN, NaN, NaN);
 allowScale = false;
-}if (this.tokAt (this.iToken + 1) == 1614417948) this.iToken++;
+}if (this.tokAt (this.iToken + 1) == 1747587102) this.iToken++;
 tickInfo.type = str;
-if (this.tokAt (this.iToken + 1) == 1288701959) tickInfo.tickLabelFormats = this.stringParameterSet (this.iToken + 2);
+if (this.tokAt (this.iToken + 1) == 1287653388) tickInfo.tickLabelFormats = this.stringParameterSet (this.iToken + 2);
 if (!allowScale) return tickInfo;
 if (this.tokAt (this.iToken + 1) == 1073742138) {
 if (this.isFloatParameter (this.iToken + 2)) {

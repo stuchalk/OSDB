@@ -42,7 +42,8 @@ class Report extends AppModel
         $c=['Dataset'=>['fields'=>['id'],
                     'Context'=>['fields'=>['id'],
                         'System'=>['fields'=>['id'],
-                            'Substance'=>['fields'=>['id','name']]]]]];
+                            'Substance'=>['fields'=>['id','name'],
+                                'Identifier'=>['fields'=>['id','type','value'],'conditions'=>['type'=>'inchikey']]]]]]];
         $f=['Report.id','Report.title'];
         $o=['Report.title'];
         if($field=='user'&&!is_null($id)) {
@@ -60,11 +61,15 @@ class Report extends AppModel
         //debug($reps);exit;
         $results=[];
         foreach($reps as $rep) {
-            $analyte=$rep['Dataset']['Context']['System'][0]['Substance'][0]['name'];
+            $sub=$rep['Dataset']['Context']['System'][0]['Substance'][0];
+            $name=$sub['name'];
+            $results[$name]['id']=$sub['id'];
+            $results[$name]['inchikey']=$sub['Identifier'][0]['value'];
             preg_match("/\(([a-zA-Z0-9 ]*)\)/",$rep['Report']['title'],$matches);
-            $results[$analyte][$rep['Report']['id']]=$matches[1];
+            $results[$name]['spectra'][$rep['Report']['id']]=$matches[1];
         }
         ksort($results);
+        //debug($results);exit;
         return $results;
     } // ,'Substance.name'
 

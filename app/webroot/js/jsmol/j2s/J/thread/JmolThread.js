@@ -40,10 +40,13 @@ Clazz.defineMethod (c$, "resumeEval",
 function () {
 if (this.eval == null || !this.isJS && !this.vwr.testAsync || !this.useTimeout) return;
 this.sc.mustResumeEval = !this.stopped;
-this.eval.resumeEval (this.sc);
+var eval = this.eval;
+var sc = this.sc;
 this.eval = null;
 this.sc = null;
-});
+{
+setTimeout(function() { eval.resumeEval(sc); }, 1);
+}});
 Clazz.defineMethod (c$, "start", 
 function () {
 if (this.isJS) {

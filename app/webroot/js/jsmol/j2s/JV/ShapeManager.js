@@ -206,9 +206,7 @@ this.shapes[i].setProperty ("color", J.c.PAL.NONE, bsAllAtoms);
 }, "JU.BS");
 Clazz.defineMethod (c$, "setAtomLabel", 
 function (strLabel, i) {
-if (this.shapes == null) return;
-this.loadShape (5);
-this.shapes[5].setProperty ("label:" + strLabel, Integer.$valueOf (i), null);
+if (this.shapes != null) this.shapes[5].setProperty ("label:" + strLabel, Integer.$valueOf (i), null);
 }, "~S,~N");
 Clazz.defineMethod (c$, "setModelVisibility", 
 function () {
@@ -270,7 +268,7 @@ atom.sX = screen.x;
 atom.sY = screen.y;
 atom.sZ = screen.z;
 var d = Math.abs (atom.madAtom);
-if (d == JM.Atom.MAD_GLOBAL) d = Clazz.floatToInt (vwr.getFloat (1141899265) * 2000);
+if (d == JM.Atom.MAD_GLOBAL) d = Clazz.floatToInt (vwr.getFloat (1140850689) * 2000);
 atom.sD = Clazz.floatToShort (vwr.tm.scaleToScreen (screen.z, d));
 if (checkOccupancy && vibrationVectors[i] != null && (occ = vibrationVectors[i].getOccupancy100 (vibs)) != -2147483648) {
 haveMods = true;

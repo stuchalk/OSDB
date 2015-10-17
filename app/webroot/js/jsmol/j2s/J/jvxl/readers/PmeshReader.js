@@ -164,11 +164,11 @@ if (color == -2147483648) color = JU.CU.getArgbFromString (c);
 color |= 0xFF000000;
 }if (vertexCount == 4) {
 this.nTriangles += 2;
-this.addTriangleCheck (vertices[0], vertices[1], vertices[3], 5, color, false, -1);
-this.addTriangleCheck (vertices[1], vertices[2], vertices[3], 3, color, false, -1);
+this.addTriangleCheck (vertices[0], vertices[1], vertices[3], 5, 0, false, color);
+this.addTriangleCheck (vertices[1], vertices[2], vertices[3], 3, 0, false, color);
 } else {
 this.nTriangles++;
-this.addTriangleCheck (vertices[0], vertices[1], vertices[2], 7, color, false, -1);
+this.addTriangleCheck (vertices[0], vertices[1], vertices[2], 7, 0, false, color);
 }}
 if (this.isBinary) this.nBytes = this.binarydoc.getPosition ();
 return true;

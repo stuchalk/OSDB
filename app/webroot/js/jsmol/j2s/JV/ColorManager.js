@@ -89,7 +89,7 @@ lo = 0;
 hi = 10000;
 }return this.ce.getColorIndexFromPalette (atom.getBfactor100 (), lo, hi, 7, false);
 case 86:
-return this.ce.getColorIndexFromPalette (atom.group.getGroupParameter (1112539150), -1, 1, 7, false);
+return this.ce.getColorIndexFromPalette (atom.group.getGroupParameter (1111490574), -1, 1, 7, false);
 case 70:
 hi = this.vwr.ms.getSurfaceDistanceMax ();
 return this.ce.getColorIndexFromPalette (atom.getSurfaceDistance100 (), 0, hi, 7, false);
@@ -126,8 +126,8 @@ break;
 case 10:
 var chain = atom.getChainID ();
 if (JU.ColorEncoder.argbsChainAtom == null) {
-JU.ColorEncoder.argbsChainAtom = this.getArgbs (1141899265);
-JU.ColorEncoder.argbsChainHetero = this.getArgbs (1613758470);
+JU.ColorEncoder.argbsChainAtom = this.getArgbs (1140850689);
+JU.ColorEncoder.argbsChainHetero = this.getArgbs (1612709894);
 }chain = ((chain < 0 ? 0 : chain >= 256 ? chain - 256 : chain) & 0x1F) % JU.ColorEncoder.argbsChainAtom.length;
 argb = (atom.isHetero () ? JU.ColorEncoder.argbsChainHetero : JU.ColorEncoder.argbsChainAtom)[chain];
 break;

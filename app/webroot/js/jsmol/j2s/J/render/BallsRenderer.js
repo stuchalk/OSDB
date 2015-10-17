@@ -4,7 +4,7 @@ c$ = Clazz.declareType (J.render, "BallsRenderer", J.render.ShapeRenderer);
 Clazz.overrideMethod (c$, "render", 
 function () {
 var needTranslucent = false;
-if (this.isExport || this.vwr.checkMotionRendering (1141899265)) {
+if (this.isExport || this.vwr.checkMotionRendering (1140850689)) {
 var atoms = this.ms.at;
 var colixes = (this.shape).colixes;
 var bsOK = this.vwr.shm.bsRenderableAtoms;

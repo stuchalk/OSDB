@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JM");
-Clazz.load (["java.util.Hashtable", "JU.BS"], "JM.ModelLoader", ["java.lang.Boolean", "$.Float", "$.NullPointerException", "java.util.Arrays", "JU.AU", "$.Lst", "$.P3", "$.PT", "$.SB", "$.V3", "J.api.Interface", "JM.Chain", "$.Group", "$.Model", "$.ModelSet", "JU.BSUtil", "$.Elements", "$.JmolMolecule", "$.Logger"], function () {
+Clazz.load (["java.util.Hashtable", "JU.BS"], "JM.ModelLoader", ["java.lang.Boolean", "$.Float", "$.NullPointerException", "java.util.Arrays", "JU.AU", "$.Lst", "$.P3", "$.PT", "$.SB", "$.V3", "J.api.Interface", "JM.Chain", "$.Group", "$.Model", "$.ModelSet", "JS.T", "JU.BSUtil", "$.Elements", "$.JmolMolecule", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.ms = null;
@@ -93,7 +93,7 @@ this.ms.modelSetProperties = this.ms.getInfoM ("properties");
 this.ms.haveBioModels = this.ms.getMSInfoB ("isPDB");
 this.isMutate = this.ms.getMSInfoB ("isMutate");
 if (this.ms.haveBioModels) this.jbr = this.vwr.getJBR ().setLoader (this);
-this.jmolData = this.ms.getInfoM ("jmolData");
+this.jmolData = (this.adapterModelCount == 0 ? this.ms.getInfoM ("jmolData") : null);
 this.fileHeader = this.ms.getInfoM ("fileHeader");
 var steps = this.ms.getInfoM ("trajectorySteps");
 this.isTrajectory = (steps != null);
@@ -260,7 +260,9 @@ Clazz.defineMethod (c$, "setAtomProperties",
 var modelCount = this.ms.mc;
 for (var i = this.baseModelIndex; i < modelCount; i++) {
 var atomProperties = this.ms.getInfo (i, "atomProperties");
+if (this.jmolData != null) this.addJmolDataProperties (this.ms.am[i], this.ms.getInfo (i, "jmolDataProperties"));
 var groupList = this.ms.getInfo (i, "groupPropertyList");
+if (this.ms.am[i].isBioModel && this.ms.getInfo (i, "dssr") != null) this.vwr.getAnnotationParser (true).setGroup1 (this.ms, i);
 if (atomProperties == null) continue;
 for (var entry, $entry = atomProperties.entrySet ().iterator (); $entry.hasNext () && ((entry = $entry.next ()) || true);) {
 var key = entry.getKey ();
@@ -500,6 +502,31 @@ vdwtypeLast = vdwtype;
 }}}
 JU.Logger.info (nRead + " atoms created");
 }, "J.api.JmolAdapter,~O");
+Clazz.defineMethod (c$, "addJmolDataProperties", 
+ function (m, jmolDataProperties) {
+if (jmolDataProperties == null) return;
+var bs = m.bsAtoms;
+var nAtoms = bs.cardinality ();
+for (var e, $e = jmolDataProperties.entrySet ().iterator (); $e.hasNext () && ((e = $e.next ()) || true);) {
+var key = e.getKey ();
+var data = e.getValue ();
+if (data.length != nAtoms) return;
+var tok = (key.startsWith ("property_") ? 1715472409 : JS.T.getTokFromName (key));
+switch (tok) {
+default:
+if (JS.T.tokAttr (tok, 2048)) {
+this.vwr.setAtomProperty (bs, tok, 0, 0, null, data, null);
+break;
+}case 1111492629:
+case 1111492630:
+case 1111492631:
+key = "property_" + key;
+tok = 1715472409;
+case 1715472409:
+this.vwr.setData (key,  Clazz.newArray (-1, [key, data, bs, Integer.$valueOf (1)]), 0, 0, 0, 0, 0);
+}
+}
+}, "JM.Model,java.util.Map");
 Clazz.defineMethod (c$, "getPdbCharge", 
  function (group3, name) {
 return (group3.equals ("ARG") && name.equals ("NH1") || group3.equals ("LYS") && name.equals ("NZ") || group3.equals ("HIS") && name.equals ("ND1") ? 1 : 0);
@@ -626,7 +653,7 @@ if (lst != null) notionalCell = lst.get (pt++);
 }this.ms.unitCells[i].setSymmetryInfo (i, this.ms.getModelAuxiliaryInfo (i), notionalCell);
 }}
 }if (this.appendNew && this.ms.someModelsHaveSymmetry) {
-this.ms.getAtoms (1089470478, null);
+this.ms.getAtoms (1088421903, null);
 var atoms = this.ms.at;
 for (var iAtom = this.baseAtomIndex, iModel = -1, i0 = 0; iAtom < this.ms.ac; iAtom++) {
 if (atoms[iAtom].mi != iModel) {
@@ -876,7 +903,7 @@ var loadAllData = (JU.BSUtil.cardinalityOf (bsSelected) == vwr.ms.ac);
 for (var iterAtom = adapter.getAtomIterator (asc); iterAtom.hasNext (); ) {
 var xyz = iterAtom.getXYZ ();
 if (Float.isNaN (xyz.x + xyz.y + xyz.z)) continue;
-if (tokType == 1146095626) {
+if (tokType == 1145047050) {
 i = bsSelected.nextSetBit (i + 1);
 if (i < 0) break;
 n++;
@@ -895,30 +922,30 @@ continue;
 } else if (n > 1 && JU.Logger.debugging) {
 JU.Logger.debug ("createAtomDataSet: " + n + " atoms found at position " + pt);
 }}switch (tokType) {
-case 1146095631:
+case 1145047055:
 var vib = iterAtom.getVib ();
 if (vib == null) continue;
 if (JU.Logger.debugging) JU.Logger.debug ("xyz: " + pt + " vib: " + vib);
-modelSet.setAtomCoords (bs, 1146095631, vib);
+modelSet.setAtomCoords (bs, 1145047055, vib);
 break;
-case 1129318401:
+case 1128269825:
 modelSet.setAtomProperty (bs, tokType, 0, iterAtom.getOccupancy (), null, null, null);
 break;
-case 1112541195:
+case 1111492619:
 modelSet.setAtomProperty (bs, tokType, 0, iterAtom.getPartialCharge (), null, null, null);
 break;
-case 1112541196:
+case 1111492620:
 modelSet.setAtomProperty (bs, tokType, 0, iterAtom.getBfactor (), null, null, null);
 break;
 }
 }
 switch (tokType) {
-case 1146095631:
+case 1145047055:
 var vibName = adapter.getAtomSetName (asc, 0);
 JU.Logger.info ("_vibrationName = " + vibName);
 vwr.setStringProperty ("_vibrationName", vibName);
 break;
-case 1146095626:
+case 1145047050:
 JU.Logger.info (n + " atom positions read");
 modelSet.recalculateLeadMidpointsAndWingVectors (-1);
 if (n == modelSet.ac) return "boundbox {*};reset";

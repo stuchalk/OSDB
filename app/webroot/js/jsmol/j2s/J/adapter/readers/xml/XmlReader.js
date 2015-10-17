@@ -48,7 +48,7 @@ try {
 thisReader.processXml (this, saxReader);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
-return "Error reading XML: " + (this.parent.vwr.isJS ? e : e.getMessage ());
+return "Error reading XML: " + ((this.parent == null ? this.vwr : this.parent.vwr).isJS ? e : e.getMessage ());
 } else {
 throw e;
 }
