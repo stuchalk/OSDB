@@ -9,7 +9,6 @@ $u=$data['User'];
     $index=0;
     foreach($reps as $name=>$r) {
         echo $this->element('molspectra',['index'=>$index,'name'=>$name] + $r);
-        //if($index==0) { break; }
         $index++;
     }
     ?>

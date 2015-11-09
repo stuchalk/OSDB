@@ -103,14 +103,14 @@ class ReportsController extends AppController
         //$json['permalink']="http://hdl.handle.net/osdb/".$id;
 
         // Dataset
-        $setj['@id']="data";
+        $setj['@id']="scidata";
         $opts=['setType','property','kind'];
         foreach($opts as $opt) {
             if(isset($set[$opt])&&$set[$opt]!="") {
                 $setj[$opt]=$set[$opt];
             }
         }
-        $json['data']=$setj;
+        $json['scidata']=$setj;
 
         // Methodology sections
         $metj['@id']='methodology';
@@ -153,7 +153,7 @@ class ReportsController extends AppController
         }
 
         // Add methodology section to main array
-        $json['data']['methodology']=$metj;
+        $json['scidata']['methodology']=$metj;
 
         // Context sections
         $conj['@id']='context';
@@ -205,15 +205,15 @@ class ReportsController extends AppController
         }
 
         // Add context section to main array
-        $json['data']['context']=$conj;
+        $json['scidata']['context']=$conj;
 
-        // Result section
-        $resj['@id']='results';
-        $resj['result']=[];
+        // Dataset section
+        $resj['@id']='dataset';
+        $resj['dataseries']=[];
         for($k=0;$k<count($ser);$k++) {
             $dat=$ser[$k];
             $datj=[];
-            $datj['@id']="series/".($k+1);
+            $datj['@id']="dataseries/".($k+1);
             $opts=['type','format','level'];
             foreach($opts as $opt) {
                 if(isset($dat[$opt])&&$dat[$opt]!="") {
@@ -263,7 +263,7 @@ class ReportsController extends AppController
                 }
             }
 
-            // Results
+            // Datapoints
             if(isset($dat['Datapoint'])) {
                 for($m=0;$m<count($dat['Datapoint']);$m++) {
                     // Independent axis
@@ -320,9 +320,9 @@ class ReportsController extends AppController
                     $datj['values'][]=$dataj;
                 }
             }
-            $resj['result']=$datj;
+            $resj['dataseries']=$datj;
         }
-        $json['data']['results']=$resj;
+        $json['scidata']['dataset']=$resj;
 
         // Source
         $json['source']=['@id'=>'source'];
