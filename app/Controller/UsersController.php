@@ -18,7 +18,6 @@ class UsersController extends AppController {
 
     /**
      * beforeSave function
-     * @param array $options
      * @return bool
      */
     public function beforeSave() {

@@ -15,15 +15,15 @@ class ReportsController extends AppController
     public function beforeFilter()
     {
         parent::beforeFilter();
-        $this->Auth->allow('view','scidata');
+        $this->Auth->allow('view','scidata','recent','latest','plot');
     }
 
     /**
-     * List the properties
+     * List the reports
      */
     public function index()
     {
-        $data=$this->Report->bySubstance();
+        $data=$this->Report->bySubstance(['conditions'=>['count >'=>0]]);
         //$data=$this->Report->find('list',['fields'=>['id','title'],'order'=>['title']]);
         $this->set('data',$data);
     }
@@ -44,14 +44,192 @@ class ReportsController extends AppController
     }
 
     /**
-     * View a property
+     * View a report
      * @param $id
      */
     public function view($id)
     {
         $data=$this->Report->scidata($id);
-        //debug($data);exit;
-        $this->set('data',$data);
+        $rpt=$data['Report'];
+        $set=$data['Dataset'];
+        $file=$set['File'];
+        $met=$set['Methodology'];
+        $mea=$met['Measurement'];
+        $sam=$set['Sample'];
+        $ser=$set['Dataseries'];
+
+        // Send on only the data needed for the view not the flot plot which is done separately via an element
+        // Measurement data...
+        $minfo=[];
+        $minfo[]="Instrument: ".$mea['instrumentType'];
+        $meta=['instrument','vendor'];
+        foreach($meta as $m) {
+            if(!empty(str_replace("?","",$mea[$m]))) { $minfo[]=$mea[$m]; }
+        }
+
+        if(!empty($mea['Setting'])) {
+            $sets=$mea['Setting'];
+            foreach($sets as $set) {
+                (empty($set['text'])) ? $value=$set['number'] : $value=$set['text']; // So that zeroes are not lost
+                $name=$set['Property']['name'];
+                (!empty($set['Unit'])) ? $unit=" ".$set['Unit']['symbol'] : $unit="";
+                $minfo[]=$name.": ".$value.$unit;
+            }
+        }
+
+        // Sample data...
+        $sinfo=[];
+        if(isset($sam['title'])&&!empty($sam['title'])) {
+            $sinfo[]=$sam['title'];
+            if(!empty($sam['Annotation'])) {
+                $sinfo['comments']=[];
+                foreach($sam['Annotation'] as $a) {
+                    $sinfo['comments'][]=$a['comment'];
+                }
+            }
+        }
+
+        $freq = 1; // Default...
+        if(!empty($mea['Setting'])) {
+            $sets = $mea['Setting'];
+            foreach ($sets as $set) {
+                (empty($set['text'])) ? $value = $set['number'] : $value = $set['text']; // So that zeroes are not lost
+                if ($set['Property']['name'] == "Observe Frequency") {
+                    $freq = $value;
+                }
+            }
+        }
+
+        // File, Spectral Data, and Conversion data
+        if(count($ser)==1) {
+            $finfo=[];$dinfo=[];$cinfo=[];$scale = 1;
+            $spec = $ser[0];
+            if (isset($spec['Annotation'])) {
+                foreach ($spec['Annotation'] as $ann) {
+                    if ($ann['class'] == 'origin') {
+                        foreach ($ann['Metadata'] as $m) {
+                            if ($m['field'] == "fileComments") {
+                                $cinfo['comments'] = $m['value'];
+                            } elseif ($m['field'] == "conversionErrors") {
+                                $cinfo['errors'] = $m['value'];
+                            } elseif ($m['field'] == "date") {
+                                $finfo[] = ucfirst($m['field']) . ": " . date("M j, Y", strtotime($m['value']));
+                            } else {
+                                $finfo[] = ucfirst($m['field']) . ": " . $m['value'];
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!empty($spec['Descriptor'])) {
+                if ($spec['level'] == 'processed' && $spec['processedType'] == "frequency") {
+                    $scale = $freq;
+                } elseif ($spec['level'] == 'processed' && $spec['processedType'] == "chemical shift") {
+                    $scale = 1;
+                }
+                foreach ($spec['Descriptor'] as $d) {
+                    $value = 0;
+                    (empty($d['text'])) ? $value = (float)$d['number'] : $value = $d['text']; // So that zeroes are not lost
+                    if (stristr($d['title'], "maximum x")) {
+                        $value = number_format(round($value / $scale), 0);
+                    } elseif (stristr($d['title'], "minimum x")) {
+                        $value = number_format(round($value / $scale), 0);
+                    } elseif (stristr($d['title'], "increment")) {
+                        $value = number_format($value / $scale, 5);
+                    } elseif (stristr($d['title'], "first x")) {
+                        $value = number_format($value / $scale, 0);
+                    } elseif (stristr($d['title'], "last x")) {
+                        $value = number_format($value / $scale, 0);
+                    } elseif (stristr($d['title'], "first y")) {
+                        $value = number_format($value, 0);
+                    } elseif (stristr($d['title'], "maximum y")) {
+                        $value = number_format($value, 0);
+                    } elseif (stristr($d['title'], "minimum y")) {
+                        $value = number_format($value, 0);
+                    }
+                    $dinfo[]=ucfirst($d['title']) . ": " . $value;
+                }
+            }
+        }
+        $this->set('desc',$rpt['description']);
+        $this->set('minfo',$minfo);
+        $this->set('sinfo',$sinfo);
+        $this->set('finfo',$finfo);
+        $this->set('dinfo',$dinfo);
+        $this->set('cinfo',$cinfo);
+        $this->set('fileid',$file['id']);
+        $this->set('id',$id);
+    }
+
+    /**
+     * View the plot of a spectrum
+     * @param $id
+     * @param $w
+     * @param $h
+     */
+    public function plot($id,$w=800,$h=600)
+    {
+        $data=$this->Report->scidata($id);
+        $rpt=$data['Report'];
+        $set=$data['Dataset'];
+        $file=$set['File'];
+        $usr=$data['User'];
+        $met=$set['Methodology'];
+        $mea=$met['Measurement'];
+        $con=$set['Context'];
+        $sys=$con['System'];
+        $sam=$set['Sample'];
+        $ser=$set['Dataseries'];
+
+        // Plot (flot) data...
+        $flot=[];
+        if($mea['technique']=="Mass Spectrometry") {
+            $flot['tech']="ms";
+        } elseif($mea['technique']=="Nuclear Magnetic Resonance") {
+            $flot['tech']='nmr';
+        } elseif($mea['technique']=="Infrared Spectroscopy") {
+            $flot['tech']='ir';
+        }
+
+        if(!empty($mea['Setting'])) {
+            $sets=$mea['Setting'];
+            foreach($sets as $set) {
+                (empty($set['text'])) ? $value=$set['number'] : $value=$set['text']; // So that zeroes are not lost
+                if($set['Property']['name']=="Observe Frequency")  { $flot['freq']=$value; }
+                if($set['Property']['name']=="Observe Nucleus")    { $flot['nuc']=$value; }
+            }
+        }
+
+        if(count($ser)==1) {
+            $finfo=[];$dinfo=[];$cinfo=[];$spec = $ser[0];$flot['scale'] = 1;
+            if (!empty($spec['Descriptor'])) {
+                if ($spec['level'] == 'processed' && $spec['processedType'] == "frequency") {
+                    $flot['scale'] = $flot['freq'];
+                } elseif ($spec['level'] == 'processed' && $spec['processedType'] == "chemical shift") {
+                    $flot['scale'] = 1;
+                }
+                foreach ($spec['Descriptor'] as $d) {
+                    $value = 0;
+                    (empty($d['text'])) ? $value = (float)$d['number'] : $value = $d['text']; // So that zeroes are not lost
+                    if (stristr($d['title'], "points")) {
+                        $flot['points'] = $value;
+                    } elseif (stristr($d['title'], "maximum x")) {
+                        $flot['maxx'] = $value / $flot['scale'];
+                    } elseif (stristr($d['title'], "minimum x")) {
+                        $flot['minx'] = $value / $flot['scale'];
+                    } elseif (stristr($d['title'], "minimum y")) {
+                        $flot['miny'] = $value;
+                    }
+                }
+            }
+            $flot['xsid']=$spec['Datapoint'][0]['Condition'][0]['id'];
+            $flot['ysid']=$spec['Datapoint'][0]['Data'][0]['id'];
+        }
+
+        $this->set('flot',$flot);
+        $this->set('w',$w);
+        $this->set('h',$h);
     }
 
     /**
@@ -69,6 +247,37 @@ class ReportsController extends AppController
             $this->set('data',$data);
         }
 
+    }
+
+    /**
+     * Get the five most recently uploaded spectra
+     */
+    public function recent()
+    {
+        $data=$this->Report->find('list',['order'=>['updated'=>'desc'],'limit'=>5]);
+        $this->set('data',$data);
+        if($this->request->params['requested']) { return $data; }
+    }
+
+    /**
+     * Get the five most recently uploaded spectra
+     */
+    public function latest()
+    {
+        $c=['Dataset'=>[
+                'Dataseries'=>
+                    ['Datapoint'=>['Data','Condition'],'Descriptor'],
+                'Context'=>['System'=>['Substance'=>['Identifier'=>['conditions'=>['type'=>'inchikey']]]]],
+                'Methodology'=>['Measurement']]];
+        $r=$this->Report->find('first',['order'=>['Report.updated'=>'desc'],'limit'=>1,'contain'=>$c]);
+        // For jmol: name, inchikey
+        $data=[];
+        $data['jmol']['name']=$r['Dataset']['Context']['System'][0]['Substance'][0]['name'];
+        $data['jmol']['inchikey']=$r['Dataset']['Context']['System'][0]['Substance'][0]['Identifier'][0]['value'];
+        // For flot
+        $data['flot']['id']=$r['Report']['id'];
+        $this->set('data',$data);
+        if($this->request->params['requested']) { return $data; }
     }
 
     /**

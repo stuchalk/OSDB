@@ -80,7 +80,7 @@ class Report extends AppModel
      */
     public function scidata($id)
     {
-        // Note: there is an issue with the retrival of susbtances under system if id is not requested as a field
+        // Note: there is an issue with the retrival of substances under system if id is not requested as a field
         // This is a bug in CakePHP as it works without id if its at the top level...
         $contain=['Publication'=>['fields'=>['title']],
             'User'=>['fields'=>['fullname']],

@@ -1,7 +1,9 @@
 <?php
-    //pr($config);//exit;
     // Set up defaults
-    $w=600;$h=400;$ticksize=1;$tform="";$xlabel="";$ylabel="";
+    if(!isset($w)) { $w=600; }
+    if(!isset($h)) { $w=400; }
+
+    $ticksize=1;$tform="";$xlabel="";$ylabel="";
     $lines="true";$bars="false";$points="false";
     if($this->request->host()=="sds.coas.unf.edu") {
         $url="/osdb/data/flot/".$config['xsid']."/".$config['ysid'];
@@ -60,6 +62,7 @@
         var button;
         var dataurl;
         var firstcoordinate;
+        var placeholder = $("#placeholder");
 
         $("button.fetchSeries").click(function () {
 
@@ -87,7 +90,7 @@
             };
 
             data = [];
-            $.plot("#placeholder", data, options);
+            $.plot(placeholder, data, options);
             button = $(this);
 
             // Find the URL in the link right next to us, then fetch the data
@@ -107,7 +110,7 @@
                     data.push(series);
                 }
 
-                $.plot("#placeholder", data, options);
+                $.plot(placeholder, data, options);
             }
 
             $.ajax({
@@ -118,7 +121,7 @@
             });
         });
 
-        $("#placeholder").bind("plotclick", function (event, pos, item) {
+        placeholder.bind("plotclick", function (event, pos, item) {
             alert("You clicked at " + pos.x + ", " + pos.y);
             // axis coordinates for other axes, if present, are in pos.x2, pos.x3, ...
             // if you need global screen coordinates, they are pos.pageX, pos.pageY
@@ -129,10 +132,17 @@
             }
         });
 
+        placeholder.resize(function () {
+            $(".message").text("Placeholder is now "
+                + $(this).width() + "x" + $(this).height()
+                + " pixels");
+        });
+
         // Load the first series by default, so we don't have an empty plot
         $("button.fetchSeries:first").click();
     });
 </script>
 
 <div id="placeholder" style="width:<?php echo $w; ?>px;height:<?php echo $h; ?>px;border: 1px solid #BBBBBB;box-shadow: 10px 10px 5px #BBBBBB;"></div>
+<div class="message"></div>
 <button class="fetchSeries" id="<?php echo $url; ?>" style="display: none;"></button>
