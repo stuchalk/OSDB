@@ -1,21 +1,19 @@
 <?php
+// Variables from controller: $data, $subs
 $c=$data['Collection'];
 $u=$data['User'];
-//pr($cols);//exit; ?>
-<h2>Collection</h2>
-<p><?php echo $c['description']; ?></p>
-<p>Provided by: <?php echo $u['fullname']; ?></p>
-<p>Orginal source: <?php echo $c['source']; ?></p>
-<p>Website: <?php echo $c['url']; ?></p>
-<h3>Spectra</h3>
-<ul>
-    <?php
-    foreach($cols as $name=>$r) {
-        echo "<li>".$name." ";
-        foreach($r as $id=>$title) {
-            echo $this->Html->link($title,'/spectra/view/'.$id)." ";
-        }
-        echo "</li>";
-    }
 ?>
-</ul>
+<h2><?php echo $c['name']; ?> Collection</h2>
+<p><?php echo $c['description']; ?><br />
+Provided by: <?php echo $u['fullname']; ?><br />
+Orginal source: <?php echo $c['source']; ?><br />
+Website: <?php echo $this->Html->link($c['url'],$c['url'],['target'=>'_blank']); ?></p>
+
+<h3>Substances</h3>
+<?php
+$index=0;
+foreach($subs as $name=>$r) {
+    echo $this->element('molspectra',['index'=>$index,'name'=>$name,'grid'=>4] + $r);
+    $index++;
+}
+?>

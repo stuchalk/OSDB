@@ -1,25 +1,34 @@
-<h2>Substances</h2>
 <?php
-$chars=[];
-foreach($data as $char=>$iarray) { $chars[]=$char; }
-echo "<p>Click on a letter below to show substances starting with that letter</p>";
-echo "<p>";
-foreach($chars as $char)
-{
-    echo "<div onclick=\"showletter('".$char."')\" style='display: inline;cursor: pointer;'>".$char."</div>&nbsp;&nbsp;";
-}
-echo "</p>";
-$chars=array_keys($data);
-foreach($data as $char=>$iarray)
-{
-    if($char==$chars[0]):	echo "<div id='".$char."' class='letter' style='display: block;'>";
-    else:					echo "<div id='".$char."' class='letter' style='display: none;'>";
-    endif;
-    echo "<ul style='font-size: 12px;'>";
-    foreach($iarray as $pid=>$substance)
-    {
-        echo '<li>'.html_entity_decode($this->Html->link($substance,'/substances/view/'.$pid)).'</li>';
-    }
-    echo "</ul></div>";
+// Variables: $data, $count
+?>
+<h2>Substances</h2>
+
+
+
+<?php
+$cutoff=Configure::read('index.display.cutoff');
+if($count>$cutoff) {
+    echo $this->element('alpha_list',['data'=>$data,'type'=>'substances']);
+} else {
+    echo $this->element('column_list',['data'=>$data,'type'=>'substances']);
 }
 ?>
+<div class="row">
+    <div class="col-md-4">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"">Export Options</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <?php echo $this->Html->image('xml.png',['url'=>'/substances/index/XML','alt'=>'Output as XML','class'=>'img-responsive box-shadow--4dp']); ?>
+                </div>
+                <div class="col-md-6">
+                    <?php echo $this->Html->image('json.png',['url'=>'/substances/index/JSON','alt'=>'Output as JSON','class'=>'img-responsive box-shadow--4dp']); ?>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>

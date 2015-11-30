@@ -38,14 +38,40 @@
     });
 </script>
 
-<h2>Add a Source</h2>
+<?php if(!$ajax) { ?>
+    <h2>Add a Source</h2>
+<?php } ?>
 <?php
-echo $this->Form->create('Source');
-echo $this->Form->input('name', ['type' =>'text','size'=>40,'label'=>false,'div'=>false,'placeholder'=>"Name"]);
-echo "<div id='warn1' style='display: inline;'></div>";
-echo $this->Form->input('url', ['type' =>'text','size'=>60,'label'=>false,'div'=>false,'placeholder'=>"Website"]);
-echo $this->Form->input('contact', ['type' =>'text','size'=>40,'label'=>false,'div'=>false,'placeholder'=>"Contact"]);
-echo "<div id='warn2' style='display: inline;'></div>";
-echo $this->Form->input('email', ['type' =>'text','size'=>40,'label'=>false,'div'=>false,'placeholder'=>"Email"]);
-echo $this->Form->end(['value'=>'Add Source']);
+echo $this->Form->create('Source',['role'=>'form','class'=>'form-horizontal','inputDefaults'=>['label'=>false,'div'=>false]]);
 ?>
+<div class="form-group">
+    <label for="SourceName" class="col-sm-2 control-label">Name</label>
+    <div class="col-sm-10">
+        <?php echo $this->Form->input('name', ['type' =>'text','size'=>30,'placeholder'=>"Name"]); ?>
+    </div>
+</div>
+<div id='warn1' style='display: inline;'></div>
+<div class="form-group">
+    <label for="SourceUrl" class="col-sm-2 control-label">Website</label>
+    <div class="col-sm-10">
+        <?php echo $this->Form->input('url', ['type' =>'text','size'=>50,'placeholder'=>"URL..."]); ?>
+    </div>
+</div>
+<div class="form-group">
+    <label for="SourceContact" class="col-sm-2 control-label">Contact</label>
+    <div class="col-sm-10">
+        <?php echo $this->Form->input('contact', ['type' =>'text','size'=>30,'placeholder'=>"Contact"]); ?>
+    </div>
+</div>
+<div id='warn2' style='display: inline;'></div>
+<div class="form-group">
+    <label for="SourceEmail" class="col-sm-2 control-label">Email</label>
+    <div class="col-sm-10">
+        <?php echo $this->Form->input('email', ['type' =>'text','size'=>30,'placeholder'=>"Email"]); ?>
+    </div>
+</div>
+<div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10 pull-right">
+        <?php echo $this->Form->end('Add Source',['class'=>'btn btn-default']); ?>
+    </div>
+</div>

@@ -14,4 +14,10 @@
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
 ?>
-<?php echo $this->fetch('content'); ?>
+<?php
+echo $this->Html->script('jquery');
+echo $this->Html->script('flot/jquery.flot');
+echo $this->Html->script('flot/jquery.flot.axislabels');
+echo $this->Html->script('flot/jquery.flot.labels');
+echo $this->fetch('content');
+?>

@@ -14,11 +14,19 @@ foreach($identifiers as $identifier) {
     }
 }
 ?>
-<?php
-$chem=['name'=>$substance['name'],'inchi'=>$inchi,'inchikey'=>$inchikey,'casrn'=>$casrn];
-echo $this->element('molspectra',['index'=>0]+$chem);
-?>
-<div style="float: left;">
+<div class="col-md-4">
+    <?php
+    $chem=['name'=>$substance['name'],'inchi'=>$inchi,'inchikey'=>$inchikey,'casrn'=>$casrn];
+    echo $this->element('molspectra',['index'=>0,'grid'=>12]+$chem); // Sets it full width with col-md-4 grid
+    ?>
+    <div class="text-center">
+    <?php
+    echo $this->Html->image('xml.png',['width'=>'150','url'=>'/substances/view/'.$substance['id'].'/xml','alt'=>'Output as XML','style'=>'padding-right: 20px;']);
+    echo $this->Html->image('json.png',['width'=>'150','url'=>'/substances/view/'.$substance['id'].'/json','alt'=>'Output as JSON','style'=>'padding-right: 20px;']);
+    ?>
+    </div>
+</div>
+<div class="col-md-8">
     <h2><?php echo $substance['name']; ?></h2>
     <ul>
         <li><?php echo "Formula: ".$substance['formula'];?></li>
@@ -27,20 +35,36 @@ echo $this->element('molspectra',['index'=>0]+$chem);
         foreach($identifiers as $identifier) {
             if(isset($idnicetext[$identifier['type']])) {
                 echo "<li>".$idnicetext[$identifier['type']].": ".$identifier['value']."</li>";
-
-                echo "</li>";
             }
         }
         ?>
     </ul>
-    <h3>Systems</h3>
+    <h3>Systems and Spectra</h3>
     <?php
     foreach($system as $sys) {
-        echo "<h4 style='margin-top: 0.5em;'>". $this->Html->link($sys['name'],'/systems/view/'.$sys['id'])."</h4>";
-        foreach($sys['Context'] as $context) {
-            $rpt=$context['Dataset']['Report'];
-            echo "<ul><li>". $this->Html->link($rpt['title'],'/spectra/view/'.$rpt['id'])."</li></ul>";
-        }
+        ?>
+        <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"><?php echo $this->Html->link($sys['name'],'/systems/view/'.$sys['id']); ?></h3>
+            </div>
+            <div class="panel-body">
+                <div class="list-group">
+                    <?php
+                    foreach($sys['Context'] as $context) {
+                        $rpt=$context['Dataset']['Report'];
+                        echo $this->Html->link($rpt['title'],'/spectra/view/'.$rpt['id'],['class'=>'list-group-item']);
+                    }
+                    ?>
+                </div>
+            </div>
+        </div>
+        </div>
+        <?php
     }
     ?>
 </div>
+<div class="clearfix"></div>
+<code>
+    <?php //pr($data); ?>
+</code>

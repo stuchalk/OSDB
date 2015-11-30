@@ -18,20 +18,20 @@ if(!isset($grid))       { $grid=3;}
 if(isset($inchikey))
 {
     ?>
-    <div class='col-md-<?php echo $grid; ?>'>
+    <div class='col-sm-<?php echo $grid; ?>'>
         <div id='chemical<?php echo $index; ?>' class='panel panel-default'>
             <div class="panel-heading text-center" style="padding: 5px;">
                 <?php
                 if(isset($label)) {
-                    echo "<h4>".$label."</h4>";
-                }
 
-                if(!empty($spectra)) {
+                } elseif(!empty($spectra)) {
                     echo "<p style='margin-top: 5px;margin-bottom: 10px;'>";
                     foreach($spectra as $id=>$title) {
                         echo $this->Html->link($title,'/spectra/view/'.$id,['class'=>'linkbutton'])."&nbsp;";
                     }
                     echo "</p>";
+                } else {
+                    echo "<h4>&nbsp;</h4>";
                 }
                 $url=str_replace("<id>",$inchikey,Configure::read('cir.url'));
                 echo $this->element('jmol',['uid'=>$index,'url'=>$url,'height'=>$height,'width'=>$width]);

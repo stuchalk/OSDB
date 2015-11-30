@@ -1,10 +1,16 @@
 <?php
 // Store all project configuration parameters here
+
+// Server
 $config['server']=$_SERVER['SERVER_NAME'];
 ($config['server']=="sds.coas.unf.edu") ? $config['path']="/osdb" : $config['path']="";
 $config['url']="https://".$config['server'].$config['path'];
 $config['filepath']['jdx']="/files/jdx/";
 $config['filepath']['xml']="/files/xml/";
+
+// Defaults
+$config['tech']['types']=['MS','IR','UVVIS','1HNMR','13CNMR'];
+$config['index']['display']['cutoff']=20;
 
 // Jmol
 $config['jmol']['j2spath']=$config['path']."/js/jsmol/j2s";

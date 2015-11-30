@@ -2,30 +2,36 @@
 
 /**
  * Class ReportController
- * Actions related to reports
+ * Actions related to reports (spectra)
  * @author Stuart Chalk <schalk@unf.edu>
  */
 class ReportsController extends AppController
 {
-    public $uses=['Report'];
+    public $uses=['Report','Substance','Identifier','Technique'];
 
-    /**
+     /**
      * beforeFilter function
      */
     public function beforeFilter()
     {
         parent::beforeFilter();
-        $this->Auth->allow('view','scidata','recent','latest','plot');
+        $this->Auth->allow('view','scidata','recent','latest','plot','index');
     }
 
     /**
      * List the reports
+     * @param integer $offset
+     * @param integer $limit
      */
-    public function index()
+    public function index($offset=0,$limit=6)
     {
-        $data=$this->Report->bySubstance(['conditions'=>['count >'=>0]]);
-        //$data=$this->Report->find('list',['fields'=>['id','title'],'order'=>['title']]);
-        $this->set('data',$data);
+        $data=$this->Report->bySubstance(['conditions'=>['count >'=>0]],null,$offset,$limit);
+        // Limit the amount of data return base on offset and limit (needs to be redone using paginator)
+        $slice=array_slice($data,$offset,$limit);
+        $this->set('count',count($data));
+        $this->set('offset',$offset);
+        $this->set('limit',$limit);
+        $this->set('data',$slice);
     }
 
     /**
@@ -45,10 +51,68 @@ class ReportsController extends AppController
 
     /**
      * View a report
-     * @param $id
+     * @param mixed $id
+     * @param string $tech
+     * @param string $format
      */
-    public function view($id)
+    public function view($id,$tech="",$format="")
     {
+        $error = "";
+        if(!is_numeric($id)) {
+            // Get the report id is one exists for this chemical and technique
+            $sid = $tid = $error = "";
+            // Get the sid if there is one
+            $data = $this->Substance->find('first', ['conditions' => ['name' => $id], 'recursive' => -1]);
+            if (empty($data)) {
+                $data = $this->Identifier->find('first', ['conditions' => ['value' => $id], 'recursive' => -1]);
+                if (empty($data)) {
+                    $error='Compound not found (' . $id . ')';
+                } else {
+                    $sid = $data['Identifier']['substance_id'];
+                }
+            } else {
+                $sid = $data['Substance']['id'];
+            }
+            // Get the tid if there is one
+            $techs = Configure::read('tech.types');
+            if (!in_array($tech, $techs)) {
+                $error='Invalid OSDB technique code (' . $tech . ')';
+            } else {
+                $data = $this->Technique->find('first', ['conditions' => ['matchstr' => $tech]]);
+                $tid = $data['Technique']['id'];
+            }
+            // Find the report if one exists
+            if($sid!=""&&$tid!="") {
+                $report = $this->Report->find('first', ['conditions' => ['analyte_id' => $sid, 'technique_id' => $tid],'recursive'=>-1]);
+                if (empty($report)) {
+                    $error='There is no ' . $tech . ' spectrum for ' . $id . ' currently in the OSDB.';
+                } else {
+                    $id = $report['Report']['id'];
+                }
+            }
+        }
+        //echo $sid." : ".$tid." : ".$id;exit;
+        if($error!="") {
+            if($format==""||$format=="JCAMP") {
+                exit($error);
+            } elseif($format=="XML") {
+                $this->Export->xml('osdb','spectra',['error'=>$error]);
+            } elseif($format=="JSON"||$format=="JSONLD") {
+                $this->Export->json('osdb','spectra',['error'=>$error]);
+            }
+        }
+
+        // Check the download formats
+        $osdbpath=Configure::read('url');
+        if($format=="JCAMP") {
+            header("Location: ".$osdbpath."/download/jdx/".str_pad($id,9,0,STR_PAD_LEFT).".jdx");exit;
+        } elseif($format=="XML") {
+            header("Location: ".$osdbpath."/download/xml/".str_pad($id,9,0,STR_PAD_LEFT).".xml");exit;
+        } elseif($format=="JSONLD") {
+            header("Location: ".$osdbpath."/spectra/scidata/".str_pad($id,9,0,STR_PAD_LEFT));exit;
+        }
+
+        //Process
         $data=$this->Report->scidata($id);
         $rpt=$data['Report'];
         $set=$data['Dataset'];
@@ -164,12 +228,53 @@ class ReportsController extends AppController
 
     /**
      * View the plot of a spectrum
-     * @param $id
-     * @param $w
-     * @param $h
+     * @param mixed $id
+     * @param string $tech
+     * @param integer $w
+     * @param integer $h
+     * @param boolean $embed
      */
-    public function plot($id,$w=800,$h=600)
+    public function plot($id,$tech="",$w=720,$h=540,$embed=false)
     {
+        $error = "";
+        if(!is_numeric($id)) {
+            // Get the report id is one exists for this chemical and technique
+            $sid = $tid = "";
+            // Get the sid if there is one
+            $data = $this->Substance->find('first', ['conditions' => ['name' => $id], 'recursive' => -1]);
+            if (empty($data)) {
+                $data = $this->Identifier->find('first', ['conditions' => ['value' => $id], 'recursive' => -1]);
+                if (empty($data)) {
+                    $error='Compound not found (' . $id . ')';
+                } else {
+                    $sid = $data['Identifier']['substance_id'];
+                }
+            } else {
+                $sid = $data['Substance']['id'];
+            }
+            // Get the tid if there is one
+            $techs = Configure::read('tech.types');
+            if (!in_array($tech, $techs)) {
+                $error='Invalid OSDB technique code (' . $tech . ')';
+            } else {
+                $data = $this->Technique->find('first', ['conditions' => ['matchstr' => $tech]]);
+                $tid = $data['Technique']['id'];
+            }
+            // Find the report if one exists
+            if($sid!=""&&$tid!="") {
+                $report = $this->Report->find('first', ['conditions' => ['analyte_id' => $sid, 'technique_id' => $tid],'recursive'=>-1]);
+                if (empty($report)) {
+                    $error='There is no ' . $tech . ' spectrum for ' . $id . ' currently in the OSDB.';
+                } else {
+                    $id = $report['Report']['id'];
+                }
+            }
+        }
+        //echo $sid." : ".$tid." : ".$id;exit;
+        if($error!="") {
+            exit($error);
+        }
+
         $data=$this->Report->scidata($id);
         $rpt=$data['Report'];
         $set=$data['Dataset'];
@@ -230,6 +335,9 @@ class ReportsController extends AppController
         $this->set('flot',$flot);
         $this->set('w',$w);
         $this->set('h',$h);
+        if($embed) {
+            $this->layout='ajax';
+        }
     }
 
     /**
@@ -246,11 +354,10 @@ class ReportsController extends AppController
             $data=$this->Report->find('first',['conditions'=>['Report.id'=>$id]]);
             $this->set('data',$data);
         }
-
     }
 
     /**
-     * Get the five most recently uploaded spectra
+     * Get the five most recently uploaded spectra (reports)
      */
     public function recent()
     {
@@ -260,7 +367,7 @@ class ReportsController extends AppController
     }
 
     /**
-     * Get the five most recently uploaded spectra
+     * Get the latest uploaded spectrum (report)
      */
     public function latest()
     {

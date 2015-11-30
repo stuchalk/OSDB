@@ -17,6 +17,51 @@ class SubstancesController extends AppController
     }
 
     /**
+     * View a list of substances
+     * @param string $format
+     */
+    public function index($format="")
+    {
+        $count=$this->Substance->find('count');
+        $cutoff=Configure::read('index.display.cutoff');
+        if($count>$cutoff) {
+            // Chunk by first letter
+            $data=$this->Substance->find('list',['fields'=>['id','name','first'],'order'=>['first','name']]);
+        } else {
+            $data=$this->Substance->find('list',['fields'=>['id','name'],'order'=>['first','name']]);
+        }
+        if($format=="") {
+            $this->set('count',$count);
+            $this->set('data',$data);
+        } else {
+            $osdbpath=Configure::read('url');
+            $out['substance']=[];$title="osdb_substance_list";
+            if($count>$cutoff) {
+                foreach($data as $chunk) {
+                    foreach($chunk as $id=>$name) {
+                        $c['name']=$name;
+                        $c['url']=$osdbpath.'/substances/view/'.$id;
+                        $out['substance'][]=$c;
+                    }
+                }
+            } else {
+                foreach($data as $id=>$name) {
+                    $c['name']=$name;
+                    $c['url']=$osdbpath.'/substances/view/'.$id;
+                    $out['substance'][]=$c;
+                }
+            }
+            $out['accessed']=date(DATE_ATOM);
+            $out['url']=$osdbpath.'/substances';
+            if($format=="XML") {
+                $this->Export->xml($title,"substances",$out);
+            } elseif($format=='JSON') {
+                $this->Export->json($title,"substances",$out);
+            }
+        }
+    }
+
+    /**
      * Add a new substance
      */
     public function add()
@@ -27,10 +72,10 @@ class SubstancesController extends AppController
             $this->Substance->create();
             if ($this->Substance->save($this->request->data))
             {
-                $this->Session->setFlash('Substance created.');
+                $this->Flash->set('Substance created.');
                 $this->redirect(['action' => 'index']);
             } else {
-                $this->Session->setFlash('Substance could not be created.');
+                $this->Flash->set('Substance could not be created.');
             }
         } else {
             // Nothing to do here?
@@ -39,10 +84,72 @@ class SubstancesController extends AppController
 
     /**
      * View a substance
+     * @param integer $id
+     * @param string $format
      */
-    public function view($id)
+    public function view($id,$format="")
     {
-        $data=$this->Substance->find('first',['conditions'=>['Substance.id'=>$id],'recursive'=>4]);
+        $error = "";
+        if(!is_numeric($id)) {
+            // Get the report id is one exists for this chemical and technique
+            $sid = $error = "";
+            // Get the sid if there is one
+            $data = $this->Substance->find('first', ['conditions' => ['name' => $id], 'recursive' => -1]);
+            if (empty($data)) {
+                $data = $this->Identifier->find('first', ['conditions' => ['value' => $id], 'recursive' => -1]);
+                if (empty($data)) {
+                    $error='Compound not found (' . $id . ')';
+                } else {
+                    $id = $data['Identifier']['substance_id'];
+                }
+            } else {
+                $id = $data['Substance']['id'];
+            }
+        }
+        if($error!="") {
+            if($format=="") {
+                exit($error);
+            } elseif($format=="XML") {
+                $this->Export->xml('osdb','spectra',['error'=>$error]);
+            } elseif($format=="JSON") {
+                $this->Export->json('osdb','spectra',['error'=>$error]);
+            }
+        }
+
+        $c=['Identifier'=>['fields'=>['id','type','value']],
+            'System'=>['Context'=>['Dataset'=>['Report']]]];
+        $data=$this->Substance->find('first',['conditions'=>['Substance.id'=>$id],'contain'=>$c,'recursive'=>-1]);
+        $osdbpath=Configure::read('url');
+        if($format=="XML"||$format=="JSON") {
+            $json['uid']="osdb:substance:".$id;
+            unset($data['Substance']['first']);unset($data['Substance']['updated']);
+            $json+=$data['Substance'];
+            $ids=[];
+            foreach($data['Identifier'] as $i) {
+                if($i['type']!='name') {
+                    $ids[$i['type']]=$i['value'];
+                }
+            }
+            $json['identifiers']=$ids;
+            $syss=[];$specs=[];
+            foreach($data['System'] as $sys) {
+                $syss[]=['name'=>$sys['name'],'url'=>$osdbpath.'/systems/view/'.$sys['id']];
+                foreach($sys['Context'] as $context) {
+                    $rpt=$context['Dataset']['Report'];
+                    $specs[]=['title'=>$rpt['title'],'url'=>$osdbpath.'/spectra/view/'.$rpt['id']];
+                }
+            }
+            $json['systems']=$syss;
+            $json['spectra']=$specs;
+            $json['accessed']=date(DATE_ATOM);
+            $json['url']=$osdbpath.'/substances/view/'.$id;
+            $json['website']=$osdbpath;
+            if($format=="XML") {
+                $this->Export->xml("osdb_substance_".$data['Substance']['name'],"substance",$json);
+            } elseif($format=='JSON') {
+                $this->Export->json("osdb_substance_".$data['Substance']['name'],"substance",$json);
+            }
+        }
         $this->set('data',$data);
     }
 
@@ -75,15 +182,6 @@ class SubstancesController extends AppController
     {
         $this->Substance->delete($id);
         $this->redirect(['action' => 'index']);
-    }
-
-    /**
-     * View a list of substances
-     */
-    public function index()
-    {
-        $data=$this->Substance->find('list',['fields'=>['id','name','first'],'order'=>['first','name']]);
-        $this->set('data',$data);
     }
 
     /**

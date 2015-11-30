@@ -32,7 +32,7 @@
         });
 
         $( "#SourceAddForm" ).submit(function(e) {
-            var $inputs = $( "#SourceAddForm").find(":input" );
+            var $inputs = $( "#SourceAddForm" ).find(":input" );
             var values= {};
             var url = "https://<?php echo Configure::read('server'); ?>";
             var d = $( "#SourceDiv" );
@@ -48,7 +48,7 @@
                     $inputs.each(function() {
                         values[this.name]= $(this).val("");
                     });
-                    d.fadeOut();        // Hide SourceDiv
+                    d.modal('hide');        // Hide SourceDiv modal
                      // Add new source to dropdown
                     n = $.parseJSON(data);
                     s.append('<option value="' + n.id + '" selected="selected">' + n.name + '</option>');
@@ -60,17 +60,59 @@
     });
 </script>
 
+<!-- Page -->
 <h2>Upload a Spectrum</h2>
 <?php
-echo $this->Form->create('File', ['type' => 'file']);
+echo $this->Form->create('File',['type'=>'file','role'=>'form','class'=>'form-horizontal','inputDefaults'=>['label'=>false,'div'=>false]]);
 echo $this->Form->input('user_id', ['type' =>'hidden','value'=>$this->Session->read('Auth.User.id')]);
-echo $this->Form->input('substance', ['type' =>'text','size'=>60,'label'=>'Compound','div'=>['class'=>'ui-widget']]);
 echo $this->Form->input('substance_id', ['type' =>'hidden','value'=>'']);
-echo $this->Form->input('source_id', ['type' =>'select','options'=>[''=>'Choose']+$srcs,'label'=>"Source <span id='AddSource' style='cursor: pointer;'>+</span>"]);
-echo $this->Form->input('Collection.url', ['type' =>'text','size'=>80,'label'=>'URL']);
-echo $this->Form->input('file', ['type' =>'file','label'=>'File Upload']);
-echo $this->Form->end('Add File');
-echo "<div id='SourceDiv' class='float'>";
-echo $this->requestAction('/sources/add',['return']);
-echo "</div>";
 ?>
+<div class="form-group form-group-lg">
+    <label for="FileSubstance" class="col-sm-2 control-label">Compound</label>
+    <div class="col-sm-6">
+        <?php echo $this->Form->input('substance',['type' =>'text','size'=>60,'class'=>'form-control']); ?>
+    </div>
+</div>
+<div class="form-group form-group-lg">
+    <label for="FileSourceId" class="col-sm-2 control-label">Source</label>
+    <div class="col-sm-3">
+        <?php echo $this->Form->input('source_id',['type' =>'select','options'=>[''=>'Choose']+$srcs,'class'=>'form-control']); ?>
+    </div>
+    <div class="col-sm-1">
+        <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#SourceDiv"><b>Add New Source</b></button>
+    </div>
+</div>
+<div class="form-group form-group-lg">
+    <label for="CollectionUrl" class="col-sm-2 control-label">URL</label>
+    <div class="col-sm-6">
+        <?php echo $this->Form->input('Collection.url', ['type' =>'text','size'=>60,'class'=>'form-control','placeholder'=>'...or add a URL']); ?>
+    </div>
+</div>
+<div class="form-group form-group-lg">
+    <label for="SourceFile" class="col-sm-2 control-label top">File Upload</label>
+    <div class="col-sm-6">
+        <?php echo $this->Form->input('file', ['type' =>'file','class'=>'btn btn-default']); ?>
+    </div>
+</div>
+<div class="form-group form-group-lg">
+    <div class="col-sm-offset-2 col-sm-6">
+        <button type="submit" class="btn btn-default">Upload File</button>
+    </div>
+</div>
+
+<!-- Popup for adding a source -->
+<div class="modal fade" id="SourceDiv" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel">Add a Source</h4>
+            </div>
+            <div class="modal-body">
+                <?php echo $this->requestAction('/sources/add',['return']); ?>
+            </div>
+        </div>
+    </div>
+</div>

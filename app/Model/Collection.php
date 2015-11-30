@@ -13,6 +13,8 @@ class Collection extends AppModel
 
     public $hasAndBelongsToMany = ['Report'];
 
+    public $virtualFields=['first'=>'substr(name,1,1)'];
+
     /**
      * General function to add a new collection
      * @param array $data

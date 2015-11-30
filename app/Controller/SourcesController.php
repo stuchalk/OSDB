@@ -35,7 +35,11 @@ class SourcesController extends AppController
         } else {
             $data = $this->Source->find('list',['fields'=>['name'],'order'=>['name']]);
             $this->set('data',$data);
-            if($this->request->is('ajax')) { $this->layout='ajax'; }
+            $this->set('ajax',false);
+            if($this->request->is('ajax')||$this->request->params['requested']) {
+                $this->set('ajax',true);
+                $this->layout='ajax';
+            }
         }
     }
 

@@ -39,6 +39,7 @@ class Report extends AppModel
      */
     public function bySubstance($field=null,$id=null)
     {
+        // TODO: rework to make is a find method so that it can be used with paginator
         $c=['Dataset'=>['fields'=>['id'],
                     'Context'=>['fields'=>['id'],
                         'System'=>['fields'=>['id'],
@@ -47,7 +48,6 @@ class Report extends AppModel
         $f=['Report.id','Report.title'];
         $o=['Report.title'];
         if($field=='user'&&!is_null($id)) {
-            $f=['Report.id','Report.title'];
             $cn=['user_id'=>$id];
             $reps=$this->find('all',['conditions'=>$cn,'fields'=>$f,'contain'=>$c,'order'=>$o,'recursive'=> -1]);
         } else if($field=='col'&&!is_null($id)) {
@@ -55,6 +55,9 @@ class Report extends AppModel
                     ['table'=>'collections','alias'=>'Collection','type'=>'left','conditions'=>['CollectionsReport.collection_id = Collection.id']]]];
             $cn=['CollectionsReport.collection_id'=>$id];
             $reps=$this->find('all',['conditions'=>$cn,'fields'=>$f,'contain'=>$c,'order'=>$o,'joins'=>$j,'recursive'=> -1]);
+        } else if($field=='tech'&&!is_null($id)) {
+            $cn=['technique_id'=>$id];
+            $reps=$this->find('all',['conditions'=>$cn,'fields'=>$f,'contain'=>$c,'order'=>$o,'recursive'=> -1]);
         } else {
             $reps=$this->find('all',['fields'=>$f,'contain'=>$c]);
         }
@@ -71,7 +74,7 @@ class Report extends AppModel
         ksort($results);
         //debug($results);exit;
         return $results;
-    } // ,'Substance.name'
+    }
 
     /**
      * Returns DB data so that it can be used to generate scidata json

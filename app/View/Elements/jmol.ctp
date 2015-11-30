@@ -10,10 +10,11 @@ $proxy=Configure::read('jmol.proxy');
 //echo "URL: ".$url."<br />";
 //echo "PROXY: ".$proxy;
 ?>
-
-<script type='text/javascript'>
-    <?php
-    echo "var Info".$uid." = { color: '".$color."', height: ".$height.", width: ".$width.", src: '".$proxy.$url."', use: 'HTML5', j2sPath: '".$j2spath."' };\n";
-    echo "Jmol.getTMApplet('chem".$uid."', Info".$uid.");\n";
-    ?>
-</script>
+<div style="width: <?php echo $width; ?>px;margin: auto;">
+    <script type='text/javascript'>
+        <?php
+        echo "var Info".$uid." = { zIndexBase: 90, color: '".$color."', height: ".$height.", width: ".$width.", src: '".$proxy.$url."', use: 'HTML5', j2sPath: '".$j2spath."' };\n";
+        echo "Jmol.getTMApplet('chem".$uid."', Info".$uid.");\n";
+        ?>
+    </script>
+</div>

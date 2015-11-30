@@ -4,7 +4,7 @@ echo $this->element('molspectra',['index'=>0,'height'=>200,'width'=>200,'grid'=>
 ?>
 
 <div class="col-sm-6">
-    <div class=" pull-right">
-    <?php echo $this->requestAction('/spectra/plot/'.$data['flot']['id'].'/450/300',['return']); ?>
+    <div class="text-center">
+        <?php echo $this->requestAction('/spectra/plot/'.$data['flot']['id'].'/null/auto/300',['return']); ?>
     </div>
 </div>

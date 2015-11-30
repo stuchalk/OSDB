@@ -15,9 +15,7 @@
     </div>
 </div>
 
-
-    <h3>Get Involved!</h3>
-
+<h3>Get Involved!</h3>
 <div class="row">
     <div class="col-sm-4">
         <div class="panel panel-primary">
@@ -54,8 +52,10 @@
             </div>
             <div class="panel-body text-justify">
                 Got a great idea for a new feature? Like to code?  The OSDB is an open source project hosted on GitHub
-                and built using current web technologies like <?php echo $this->Html->link('CakePHP','http://cakephp.org',['target'=>'_blank']); ?>,
-                <?php echo $this->Html->link('jQuery','http://jquery.com',['target'=>'_blank']); ?> and
+                and built using current web technologies like
+                <?php echo $this->Html->link('CakePHP','http://cakephp.org',['target'=>'_blank']); ?>,
+                <?php echo $this->Html->link('jQuery','http://jquery.com',['target'=>'_blank']); ?>,
+                <?php echo $this->Html->link('flot','http://www.flotcharts.org/',['target'=>'_blank']); ?> and
                 <?php echo $this->Html->link('Bootstrap','http://getbootstrap.com',['target'=>'_blank']); ?>.  Join the repo and
                 extend the feature set of this site.
                 <br /><?php echo $this->Html->link($this->Html->image('GitHub_Logo.png', ['alt' => 'GitHub','width'=>'80']),'http://github.com/stuchalk/OSDB',['target'=>'_blank','escape'=>false,'class'=>'pull-right']); ?>

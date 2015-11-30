@@ -1,7 +1,13 @@
 <?php
     // Set up defaults
-    if(!isset($w)) { $w=600; }
-    if(!isset($h)) { $w=400; }
+    if(!isset($w)||$w=="auto") {
+        $w="100%";
+    } else {
+        $w=$w."px";
+    }
+
+    if(!isset($h))      { $h=400; }
+    if(!isset($title))  { $title="Unknown Spectrum"; }
 
     $ticksize=1;$tform="";$xlabel="";$ylabel="";
     $lines="true";$bars="false";$points="false";
@@ -132,17 +138,15 @@
             }
         });
 
-        placeholder.resize(function () {
-            $(".message").text("Placeholder is now "
-                + $(this).width() + "x" + $(this).height()
-                + " pixels");
-        });
+        window.onresize = function(event) {
+            $.plot(placeholder, data, options);
+        }
 
         // Load the first series by default, so we don't have an empty plot
         $("button.fetchSeries:first").click();
     });
 </script>
 
-<div id="placeholder" style="width:<?php echo $w; ?>px;height:<?php echo $h; ?>px;border: 1px solid #BBBBBB;box-shadow: 10px 10px 5px #BBBBBB;"></div>
+<div id="placeholder" style="width:<?php echo $w; ?>;height:<?php echo $h; ?>px;border: 1px solid #BBBBBB;box-shadow: 10px 10px 5px #BBBBBB;"></div>
 <div class="message"></div>
 <button class="fetchSeries" id="<?php echo $url; ?>" style="display: none;"></button>

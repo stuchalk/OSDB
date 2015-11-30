@@ -134,6 +134,12 @@ class CakeSocket {
 			$scheme = $this->config['protocol'] . '://';
 		}
 
+		$host = $this->config['host'];
+		if (isset($this->config['request']['uri']['host'])) {
+			$host = $this->config['request']['uri']['host'];
+		}
+		$this->_setSslContext($host);
+
 		if (!empty($this->config['context'])) {
 			$context = stream_context_create($this->config['context']);
 		} else {
@@ -196,6 +202,46 @@ class CakeSocket {
 	}
 
 /**
+ * Configure the SSL context options.
+ *
+ * @param string $host The host name being connected to.
+ * @return void
+ */
+	protected function _setSslContext($host) {
+		foreach ($this->config as $key => $value) {
+			if (substr($key, 0, 4) !== 'ssl_') {
+				continue;
+			}
+			$contextKey = substr($key, 4);
+			if (empty($this->config['context']['ssl'][$contextKey])) {
+				$this->config['context']['ssl'][$contextKey] = $value;
+			}
+			unset($this->config[$key]);
+		}
+		if (version_compare(PHP_VERSION, '5.3.2', '>=')) {
+			if (!isset($this->config['context']['ssl']['SNI_enabled'])) {
+				$this->config['context']['ssl']['SNI_enabled'] = true;
+			}
+			if (version_compare(PHP_VERSION, '5.6.0', '>=')) {
+				if (empty($this->config['context']['ssl']['peer_name'])) {
+					$this->config['context']['ssl']['peer_name'] = $host;
+				}
+			} else {
+				if (empty($this->config['context']['ssl']['SNI_server_name'])) {
+					$this->config['context']['ssl']['SNI_server_name'] = $host;
+				}
+			}
+		}
+		if (empty($this->config['context']['ssl']['cafile'])) {
+			$this->config['context']['ssl']['cafile'] = CAKE . 'Config' . DS . 'cacert.pem';
+		}
+		if (!empty($this->config['context']['ssl']['verify_host'])) {
+			$this->config['context']['ssl']['CN_match'] = $host;
+		}
+		unset($this->config['context']['ssl']['verify_host']);
+	}
+
+/**
  * socket_stream_client() does not populate errNum, or $errStr when there are
  * connection errors, as in the case of SSL verification failure.
  *
@@ -216,7 +262,7 @@ class CakeSocket {
  */
 	public function context() {
 		if (!$this->connection) {
-			return;
+			return null;
 		}
 		return stream_context_get_options($this->connection);
 	}
@@ -405,6 +451,4 @@ class CakeSocket {
 		$this->setLastError(null, $errorMessage);
 		throw new SocketException($errorMessage);
 	}
-
 }
-
