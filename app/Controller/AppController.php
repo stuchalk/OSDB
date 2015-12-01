@@ -23,6 +23,7 @@ class AppController extends Controller {
     public $components = ['Export','Utils','Email','RequestHandler','Session', 'Paginator',
                             'Auth' => ['loginRedirect' => ['controller' => 'users','action' => 'dashboard'],
                                     'logoutRedirect' => ['controller' => 'pages','action' => 'display','home']]];
+
     public $helpers = ['Form','Html','Session','Time','Flash'];
 
     public $actsAs = ['Containable'];

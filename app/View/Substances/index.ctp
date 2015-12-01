@@ -2,8 +2,7 @@
 // Variables: $data, $count
 ?>
 <h2>Substances</h2>
-
-
+<?php if(isset($term)) { echo "<h3 class='text-success'>Results for '".$term."'  <span class='badge'>".$count."</span></h3>"; } ?>
 
 <?php
 $cutoff=Configure::read('index.display.cutoff');
@@ -12,6 +11,9 @@ if($count>$cutoff) {
 } else {
     echo $this->element('column_list',['data'=>$data,'type'=>'substances']);
 }
+?>
+<?php
+if(!isset($term)) {
 ?>
 <div class="row">
     <div class="col-md-4">
@@ -32,3 +34,6 @@ if($count>$cutoff) {
     </div>
     </div>
 </div>
+<?php
+}
+?>

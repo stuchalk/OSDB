@@ -56,8 +56,13 @@ class File extends AppModel
         $data['name']=$data['File']['file']['name'];
         $data['size']=$data['File']['file']['size'];
         $data['type']=$data['File']['file']['type'];
-        $source=$data['File']['source_id'];
+        if(isset($data['File']['source_id'])) {
+            $source=$data['File']['source_id'];
+        } else {
+            $source=0;
+        }
         $tmpname=$data['File']['file']['tmp_name'];
+        $uid=$data['File']['user_id'];
         unset($data['File']['file']);
 
         // Create data array
@@ -182,13 +187,18 @@ class File extends AppModel
         }
 
         // Add report - the representation of the data on the website
-        $rpt['user_id']=AuthComponent::user('id');
+        $rpt['user_id']=$uid;
         $rpt['analyte_id']=$analid;
         $rpt['technique_id']=$tecid;
         $rpt['title']=$names[$sid1]." (".$techstr.")";
         $rpt['description']=$tech." spectrum of ".$names[$sid1];
         $rpt['author']=$jarray['ORIGIN'];
-        $rpt['comment']="Upload of a JCAMP file by ".AuthComponent::user('fullname').". ORIGIN: ".$jarray['ORIGIN'].". OWNER: ".$jarray['OWNER'];
+        if(AuthComponent::user('id')) {
+            $fullname=AuthComponent::user('fullname');
+        } else {
+            $fullname="Anonymous"; // If anonymous upload...
+        }
+        $rpt['comment']="Upload of a JCAMP file by ".$fullname.". ORIGIN: ".$jarray['ORIGIN'].". OWNER: ".$jarray['OWNER'];
         $report=$Rep->add($rpt);
         $rptid=$report['id'];
 
@@ -199,7 +209,7 @@ class File extends AppModel
         $proid=$pro['Propertytype']['id'];
 
         // Add the file information
-        $data['user_id']=AuthComponent::user('id');
+        $data['user_id']=$uid;
         $data['substance_id']=$sid1;
         $data['report_id']=$rptid;
         $data['source_id']=$source;
@@ -325,13 +335,33 @@ class File extends AppModel
         } else {
             $mea['instrumentType']=$tech;
         }
-        $mea['instrument']="";
+
+        if(isset($jarray['BRUKER'])) {
+            $mea['vendor']="Bruker";
+        }
+        if(isset($jarray['SPECTROMETERDATASYSTEM'])) {
+            if(stristr($jarray['SPECTROMETERDATASYSTEM'],"Perkin-Elmer")||stristr($jarray['SPECTROMETERDATASYSTEM'],"PerkinElmer")) {
+                $mea['vendor']="PerkinElmer";
+                $jarray['SPECTROMETERDATASYSTEM']=trim(str_ireplace(['Perkin-Elmer','PerkinElmer'],"",$jarray['SPECTROMETERDATASYSTEM']));
+            } elseif (stristr($jarray['SPECTROMETERDATASYSTEM'],"Bruker")) {
+                $mea['vendor']="Bruker";
+                $jarray['SPECTROMETERDATASYSTEM']=trim(str_ireplace(['Bruker'],"",$jarray['SPECTROMETERDATASYSTEM']));
+            }
+        }
+        if(isset($jarray['ORIGIN'])) {
+            if(stristr($jarray['SPECTROMETERDATASYSTEM'],"Perkin-Elmer")||stristr($jarray['SPECTROMETERDATASYSTEM'],"PerkinElmer")) {
+                $mea['vendor']="PerkinElmer";
+            } elseif (stristr($jarray['SPECTROMETERDATASYSTEM'],"Bruker")) {
+                $mea['vendor']="Bruker";
+            }
+        }
         if(isset($jarray['SPECTROMETERDATASYSTEM'])) {
             $mea['instrument']=$jarray['SPECTROMETERDATASYSTEM'];
         }
         if(isset($jarray['DATAPROCESSING'])) {
             $mea['processing']=$jarray['DATAPROCESSING'];
         }
+
         $measurement=$Meas->add($mea);
         $meaid=$measurement['id'];
 
@@ -448,8 +478,11 @@ class File extends AppModel
         }
 
         // Add activity
-        $act=['user_id'=>AuthComponent::user('id'),'file_id'=>$this->id,'step_num'=>1,'type'=>'upload'];
+        $act=['user_id'=>$uid,'file_id'=>$this->id,'step_num'=>1,'type'=>'upload'];
         $Act->add($act);
+
+        // Return report id
+        return $rptid;
     }
 
     /**

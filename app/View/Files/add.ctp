@@ -62,9 +62,15 @@
 
 <!-- Page -->
 <h2>Upload a Spectrum</h2>
+<h5 class="text-success">Currently we are only able to process JCAMP files with a single spectrum</h5>
 <?php
-echo $this->Form->create('File',['type'=>'file','role'=>'form','class'=>'form-horizontal','inputDefaults'=>['label'=>false,'div'=>false]]);
-echo $this->Form->input('user_id', ['type' =>'hidden','value'=>$this->Session->read('Auth.User.id')]);
+if($this->Session->read('Auth.User')) {
+    $uid=$this->Session->read('Auth.User.id');
+} else {
+    $uid="00002";
+}
+echo $this->Form->create('File',['action'=>'add','type'=>'file','role'=>'form','class'=>'form-horizontal','inputDefaults'=>['label'=>false,'div'=>false]]);
+echo $this->Form->input('user_id', ['type' =>'hidden','value'=>$uid]);
 echo $this->Form->input('substance_id', ['type' =>'hidden','value'=>'']);
 ?>
 <div class="form-group form-group-lg">
@@ -73,6 +79,7 @@ echo $this->Form->input('substance_id', ['type' =>'hidden','value'=>'']);
         <?php echo $this->Form->input('substance',['type' =>'text','size'=>60,'class'=>'form-control']); ?>
     </div>
 </div>
+<?php if($this->Session->read('Auth.User')) { ?>
 <div class="form-group form-group-lg">
     <label for="FileSourceId" class="col-sm-2 control-label">Source</label>
     <div class="col-sm-3">
@@ -82,7 +89,8 @@ echo $this->Form->input('substance_id', ['type' =>'hidden','value'=>'']);
         <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#SourceDiv"><b>Add New Source</b></button>
     </div>
 </div>
-<div class="form-group form-group-lg">
+<?php } ?>
+<div class="form-group form-group-lg hidden">
     <label for="CollectionUrl" class="col-sm-2 control-label">URL</label>
     <div class="col-sm-6">
         <?php echo $this->Form->input('Collection.url', ['type' =>'text','size'=>60,'class'=>'form-control','placeholder'=>'...or add a URL']); ?>

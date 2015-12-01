@@ -130,28 +130,21 @@ class Jcamp extends JcampAppModel
 		$comments=['freeform'=>'','in_data'=>''];
 		foreach($this->file as $line)
 		{
-			if(substr($line,0,2)=="$$")
-			{
+			if(substr($line,0,2)=="$$") {
 				// If the $$ is at the start of a line save the comment and dont leave it in the file
 				$comments['freeform'].=trim(substr(trim($line),2)).";";
-			}
-			elseif(stristr($line,"$$") && substr($line,0,2)=="##")
-			{
+			} elseif(stristr($line,"$$") && substr($line,0,2)=="##") {
 				// Remove comment strings from lines
 				list($line,$comment)=explode("$$",$line,2);
 				list($param,)=explode("=",$line);
 				$comments['ldr_'.strtolower(substr(trim($param),2))]=trim($comment);
 				$output[]=trim($line);
-			}
-			elseif(stristr($line,"$$"))
-			{
+			} elseif(stristr($line,"$$")) {
 				// Remove comment strings from lines
 				list($line,$comment)=explode("$$",$line,2);
 				$comments['in_data'].=trim($comment);
 				$output[]=trim($line);
-			}
-			else
-			{
+			} else {
 				$output[]=$line;
 			}
 		}
@@ -232,7 +225,7 @@ class Jcamp extends JcampAppModel
 				}
 			} else {
 				// This is a continuation line therefore check what the previous LDR was to know what to do
-				$ldrarray=["TITLE","ORIGIN","OWNER","SPECTROMETERDATASYSTEM","INSTRUMENTPARAMETERS","SAMPLINGPROCEDURE","NAMES"];
+				$ldrarray=["TITLE","ORIGIN","OWNER","SPECTROMETERDATASYSTEM","AUDITTRAIL","INSTRUMENTPARAMETERS","SAMPLINGPROCEDURE","NAMES","MASFREQUENCY"];
 				if(in_array($prev,$ldrarray)):		$ldrs[$prev].=$line;
 				elseif($prev[0]=="$"):				$bruker[substr($prev,1)].=$line;
 				elseif($prev[0]=="."):				$params[substr($prev,1)].=$line;

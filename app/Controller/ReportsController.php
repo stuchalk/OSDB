@@ -125,19 +125,22 @@ class ReportsController extends AppController
         // Send on only the data needed for the view not the flot plot which is done separately via an element
         // Measurement data...
         $minfo=[];
-        $minfo[]="Instrument: ".$mea['instrumentType'];
+        $minfo[]="Instrument Type: ".$mea['instrumentType'];
         $meta=['instrument','vendor'];
         foreach($meta as $m) {
-            if(!empty(str_replace("?","",$mea[$m]))) { $minfo[]=$mea[$m]; }
+            if(!empty(str_replace("?","",$mea[$m]))) { $minfo[]=ucfirst($m).': '.$mea[$m]; }
         }
 
         if(!empty($mea['Setting'])) {
             $sets=$mea['Setting'];
+            //debug($sets);exit;
             foreach($sets as $set) {
-                (empty($set['text'])) ? $value=$set['number'] : $value=$set['text']; // So that zeroes are not lost
-                $name=$set['Property']['name'];
-                (!empty($set['Unit'])) ? $unit=" ".$set['Unit']['symbol'] : $unit="";
-                $minfo[]=$name.": ".$value.$unit;
+                if(isset($set['Property']['name'])) {
+                    (empty($set['text'])) ? $value = $set['number'] : $value = $set['text']; // So that zeroes are not lost
+                    $name = $set['Property']['name'];
+                    (!empty($set['Unit'])) ? $unit = " " . $set['Unit']['symbol'] : $unit = "";
+                    $minfo[] = $name . ": " . $value . $unit;
+                }
             }
         }
 
@@ -157,9 +160,11 @@ class ReportsController extends AppController
         if(!empty($mea['Setting'])) {
             $sets = $mea['Setting'];
             foreach ($sets as $set) {
-                (empty($set['text'])) ? $value = $set['number'] : $value = $set['text']; // So that zeroes are not lost
-                if ($set['Property']['name'] == "Observe Frequency") {
-                    $freq = $value;
+                if(isset($set['Property']['name'])) {
+                    (empty($set['text'])) ? $value = $set['number'] : $value = $set['text']; // So that zeroes are not lost
+                    if ($set['Property']['name'] == "Observe Frequency") {
+                        $freq = $value;
+                    }
                 }
             }
         }
@@ -301,6 +306,7 @@ class ReportsController extends AppController
             $sets=$mea['Setting'];
             foreach($sets as $set) {
                 (empty($set['text'])) ? $value=$set['number'] : $value=$set['text']; // So that zeroes are not lost
+                if(!isset($set['Property']['name'])) { continue; }
                 if($set['Property']['name']=="Observe Frequency")  { $flot['freq']=$value; }
                 if($set['Property']['name']=="Observe Nucleus")    { $flot['nuc']=$value; }
             }
@@ -325,6 +331,10 @@ class ReportsController extends AppController
                         $flot['minx'] = $value / $flot['scale'];
                     } elseif (stristr($d['title'], "minimum y")) {
                         $flot['miny'] = $value;
+                    } elseif (stristr($d['title'], "first x")) {
+                        $flot['firstx'] = $value / $flot['scale'];
+                    } elseif (stristr($d['title'], "last x")) {
+                        $flot['lastx'] = $value / $flot['scale'];
                     }
                 }
             }
@@ -341,7 +351,7 @@ class ReportsController extends AppController
     }
 
     /**
-     * Update a property
+     * Update a report
      * @param $id
      */
     public function update($id)

@@ -13,11 +13,11 @@ class DataController extends AppController
     public function beforeFilter()
     {
         parent::beforeFilter();
-        $this->Auth->allow('flot','getjson');
+        $this->Auth->allow();
     }
 
     /**
-     * View a property type
+     * View a datum
      * @param integer $id
      */
     public function view($id)

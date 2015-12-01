@@ -31,7 +31,6 @@
 <body>
     <?php include('header.ctp'); ?>
     <div class="container theme-showcase" role="main">
-        <?php echo $this->Session->flash(); ?>
         <?php echo $this->fetch('content'); ?>
     </div>
     <?php include('footer.ctp'); ?>

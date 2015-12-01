@@ -1,7 +1,37 @@
+<script>
+    $(document).ready(function() {
+        function log( message ) {
+            $( "<div>" ).text( message ).prependTo( "#log" );
+            $( "#log" ).scrollTop( 0 );
+        }
+
+        $( "#FileSubstance" ).autocomplete({
+            source: "<?php echo Configure::read('url'); ?>/substances/search",
+            minLength: 2,
+            select: function( event, ui ) {
+                log( ui.item ?
+                "Selected: " + ui.item.value :
+                "Nothing selected, input was " + this.value );
+                $( "#FileSubstanceId" ).val(ui.item.id); // Sends id to hidden field
+            }
+        });
+
+        $('#SubstanceTerm').on("keypress", function(e) {
+            var code = (e.keyCode ? e.keyCode : e.which);
+            if (code == 13) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).closest('form').submit();
+            }
+        });
+
+    });
+</script>
+
 <nav class="navbar navbar-default navbar-fixed-top">
     <div class="container">
         <div class="navbar-header">
-            <a class="navbar-brand" href="/osdb">OSDB</a>
+            <a class="navbar-brand" href="<?php echo Configure::read('path'); ?>">OSDB</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
@@ -25,9 +55,13 @@
                     </ul>
                 </li>
             </ul>
-            <form class="navbar-form navbar-right">
-                <input type="text" class="form-control" placeholder="Search compounds...">
-            </form>
+            <!-- TODO: <div class="btn btn-danger"></div>-->
+            <?php echo $this->Session->flash(); ?>
+            <?php
+            echo $this->Form->create('Substance',['action'=>'search','class'=>'navbar-form navbar-right']);
+            echo $this->Form->input('term',['type'=>'text','class'=>'form-control','div'=>false,'label'=>false,'placeholder'=>'Search compounds...']);
+            echo $this->Form->end();
+            ?>
         </div><!--/.nav-collapse -->
     </div>
 </nav>

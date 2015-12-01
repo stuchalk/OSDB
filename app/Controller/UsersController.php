@@ -38,10 +38,10 @@ class UsersController extends AppController {
         if($this->request->is('post'))
         {
             if($this->Auth->login()) {
-                $this->Session->setFlash('Welcome, '. $this->Auth->user('username'));
+                $this->Flash->set('Welcome, '. $this->Auth->user('username'));
                 $this->redirect($this->Auth->redirectUrl());
             } else {
-                $this->Session->setFlash('Invalid username or password, try again.');
+                $this->Flash->set('Invalid username or password, try again.');
             }
         }
     }
@@ -63,10 +63,10 @@ class UsersController extends AppController {
             $this->User->create();
             $data=$this->request->data;
             if($this->User->save($data)) {
-                $this->Session->setFlash('User has been created');
+                $this->Flash->set('User has been created');
                 $this->redirect(['action'=>'login']);
             } else {
-                $this->Session->setFlash('User could not be created.');
+                $this->Flash->set('User could not be created.');
             }
         }
     }

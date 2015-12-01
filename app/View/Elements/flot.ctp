@@ -2,7 +2,9 @@
     // Set up defaults
     if(!isset($w)||$w=="auto") {
         $w="100%";
+        $pixels=1000;
     } else {
+        $pixels=$w;
         $w=$w."px";
     }
 
@@ -17,10 +19,11 @@
         $url="/data/flot/".$config['xsid']."/".$config['ysid'];
     }
 
+
     // Now add technique specific changes
     if($config['tech']=='nmr') {
         if(isset($config['freq'])) {
-            $scale=floor($config['points']/$w);
+            $scale=floor($config['points']/$pixels);
             $url.="/0/0/".$scale."/nmrppm/".$config['freq'];
         }
         $tform=", transform: function (v) { return -v; } ";
@@ -31,7 +34,7 @@
         $xlabel="Mass-to-Charge Ratio (m/z)";
         $ylabel="Relative Abundance";
     } elseif($config['tech']=='ir') {
-        $scale=floor($config['points']/$w);
+        $scale=floor($config['points']/$pixels);
         $tform=", transform: function (v) { return -v; } ";
         $xlabel="Wavenumber (1/cm)";
         $ylabel="Transmission (%T)";
@@ -39,7 +42,14 @@
     }
 
     // Scale the x-axis
-    $range=$config['maxx']-$config['minx'];
+    if(isset($config['maxx'])&&isset($config['minx'])) {
+        $range=$config['maxx']-$config['minx'];
+    } elseif(isset($config['firstx'])&&isset($config['lastx'])) {
+        $range=abs($config['firstx']-$config['lastx']);
+    } else {
+        $range=9;
+    }
+
     if($range<10) {
         $ticksize=1;
     } elseif($range<20) {
@@ -150,3 +160,6 @@
 <div id="placeholder" style="width:<?php echo $w; ?>;height:<?php echo $h; ?>px;border: 1px solid #BBBBBB;box-shadow: 10px 10px 5px #BBBBBB;"></div>
 <div class="message"></div>
 <button class="fetchSeries" id="<?php echo $url; ?>" style="display: none;"></button>
+<code>
+    <?php //pr($config); ?>
+</code>

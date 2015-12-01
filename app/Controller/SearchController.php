@@ -8,7 +8,7 @@
 class SearchController extends AppController
 {
 
-    public $uses=['Annotation','Chemical','Condition','Context',
+    public $uses=['Annotation','Condition','Context',
                     'Data','Dataseries','Dataset','Descriptors',
                     'Identifier','Measurement','Metadata','Methodology',
                     'Publication','Quantity','Reference',

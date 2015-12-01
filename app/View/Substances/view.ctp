@@ -1,7 +1,7 @@
 <?php
 $substance=$data['Substance'];
 $identifiers=$data['Identifier'];
-$system=$data['System'];
+$systems=$data['System'];
 $idnicetext=['inchi'=>'InChI String','inchikey'=>'InChi Key','casrn'=>'CASRN','pubchemId'=>'PubChem ID','smiles'=>'SMILES'];
 $inchi=$inchikey=$casrn="";
 foreach($identifiers as $identifier) {
@@ -41,14 +41,13 @@ foreach($identifiers as $identifier) {
     </ul>
     <h3>Systems and Spectra</h3>
     <?php
-    foreach($system as $sys) {
+    foreach($systems as $sys) {
         ?>
         <div class="col-md-6">
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h3 class="panel-title"><?php echo $this->Html->link($sys['name'],'/systems/view/'.$sys['id']); ?></h3>
             </div>
-            <div class="panel-body">
                 <div class="list-group">
                     <?php
                     foreach($sys['Context'] as $context) {
@@ -57,7 +56,6 @@ foreach($identifiers as $identifier) {
                     }
                     ?>
                 </div>
-            </div>
         </div>
         </div>
         <?php
@@ -66,5 +64,5 @@ foreach($identifiers as $identifier) {
 </div>
 <div class="clearfix"></div>
 <code>
-    <?php //pr($data); ?>
+    <?php pr($systems); ?>
 </code>

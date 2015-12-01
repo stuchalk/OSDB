@@ -14,7 +14,7 @@ class CollectionsController extends AppController
     public function beforeFilter()
     {
         parent::beforeFilter();
-        $this->Auth->allow('check','index','view');
+        $this->Auth->allow('add','check','index','view','upload');
     }
 
     /**

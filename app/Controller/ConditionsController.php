@@ -13,7 +13,7 @@ class ConditionsController extends AppController
     public function beforeFilter()
     {
         parent::beforeFilter();
-        $this->Auth->allow();
+        $this->Auth->deny('update','delete');
     }
 
     /**

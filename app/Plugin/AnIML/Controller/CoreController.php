@@ -32,9 +32,8 @@ class CoreController extends AnimlAppController {
 		$this->Core->createElement($schema['element']);
 		$this->Core->createSimple($schema['simpleType']);
 		$this->Core->createAttrgroup($schema['attributeGroup']);
-		//exit;
+		exit;
 
-		echo "<pre>";print_r($schema);echo "</pre>";exit;
-
+		//echo "<pre>";print_r($schema);echo "</pre>";exit;
 	}
 }

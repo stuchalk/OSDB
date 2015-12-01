@@ -195,18 +195,39 @@ class SubstancesController extends AppController
     }
 
     /**
-     * jQuery request with query variable
+     * Substance search (form and jQuery)
      */
     public function search()
     {
-        $term=$this->request->query['term'];
-        $temp=$this->Identifier->find('all',['fields'=>['DISTINCT Identifier.substance_id','Substance.name'],'order'=>['Substance.name'],'conditions'=>['Identifier.value like'=>'%'.$term.'%'],'recursive'=>1]);
-        $data=[];
-        for($x=0;$x<count($temp);$x++) {
-            $data[$x]['id']=$temp[$x]['Identifier']['substance_id'];
-            $data[$x]['value']=$temp[$x]['Substance']['name'];
+        if(isset($this->request->query['term'])) {
+            $term=$this->request->query['term'];
+            $temp=$this->Identifier->find('all',['fields'=>['DISTINCT Identifier.substance_id','Substance.name'],'order'=>['Substance.name'],'conditions'=>['Identifier.value like'=>'%'.$term.'%'],'recursive'=>1]);
+            $data=[];
+            for($x=0;$x<count($temp);$x++) {
+                $data[$x]['id']=$temp[$x]['Identifier']['substance_id'];
+                $data[$x]['value']=$temp[$x]['Substance']['name'];
+            }
+            echo json_encode($data);exit;
+        } elseif(isset($this->request->data['Substance']['term'])) {
+            $term=$this->request->data['Substance']['term'];
+            $results=$this->Identifier->find('all',['fields'=>['DISTINCT Identifier.substance_id','Substance.first','Substance.name'],'order'=>['Substance.first','Substance.name'],'conditions'=>['Identifier.value like'=>'%'.$term.'%'],'recursive'=>1]);
+            $count=count($results);$data=[];$cutoff=Configure::read('index.display.cutoff');
+            if($count>$cutoff) {
+                foreach($results as $res) {
+                    $i=$res['Identifier'];$s=$res['Substance'];
+                    $data[$s['first']][$i['substance_id']]=$s['name'];
+                }
+            } else {
+                foreach($results as $res) {
+                    $i=$res['Identifier'];$s=$res['Substance'];
+                    $data[$i['substance_id']]=$s['name'];
+                }
+            }
+            $this->set('term',$term);
+            $this->set('count',$count);
+            $this->set('data',$data);
+            $this->render('index');
         }
-        echo json_encode($data);exit;
     }
 
     /**

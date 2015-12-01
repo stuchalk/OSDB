@@ -6,7 +6,7 @@
  */
 class FilesController extends AppController {
 
-    public $uses = ['File','Source'];
+    public $uses = ['File','Source','Publication'];
 
     /**
      * beforeFilter function
@@ -14,7 +14,7 @@ class FilesController extends AppController {
     public function beforeFilter()
     {
         parent::beforeFilter();
-        $this->Auth->allow('totalfiles','upload');
+        $this->Auth->allow('index','totalfiles','upload','add','view');
     }
 
     /**
@@ -37,7 +37,6 @@ class FilesController extends AppController {
         {
             $data=$this->request->data;
             $id=$this->File->convert($data);
-
             // Redirect to view
             $this->redirect('/spectra/view/' . $id);
         } else {
