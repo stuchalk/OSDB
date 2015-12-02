@@ -29,7 +29,6 @@
  * ...and connect the rest of 'Pages' controller's URLs.
  */
 	Router::connect('/pages/*', ['controller' => 'pages', 'action' => 'display']);
-    Router::connect('/json/*', ['controller' => 'reports', 'action' => 'scidata']);
     Router::connect('/spectra', ['controller' => 'reports','action' => 'index']);
     Router::connect('/spectra/:action/*', ['controller' => 'reports']);
 

@@ -21,7 +21,7 @@ class CollectionsController extends AppController
      * View a list of the collections (all or for a user ($uid))
      * @param integer $uid
      */
-    public function index($uid=null)
+    public function index($uid=null,$format="")
     {
         $count=0;
         if(is_null($uid)) {
@@ -52,13 +52,25 @@ class CollectionsController extends AppController
      */
     public function add()
     {
-        if($this->request->is('post')) {
+        if($this->request->is('ajax')&&!empty($this->request->data)) {
+            $new=$this->Collection->add($this->request->data['Collection']);
+            if(isset($new['id'])) {
+                echo '{ "id": "'.$new['id'].'", "name": "'.$new['name'].'" }'; exit;
+            } else {
+                echo "failure"; exit;
+            }
+        } elseif($this->request->is('post')) {
             $this->Collection->add($this->request->data['Collection']);
             $this->redirect('/users/dashboard');
         } else {
+            //debug($this->request);exit;
             $data = $this->Collection->find('list',['fields'=>['name'],'order'=>['name']]);
             $this->set('data',$data);
-        }
+            $this->set('ajax',false);
+            if($this->request->is('ajax')||isset($this->request->params['requested'])) {
+                $this->set('ajax',true);
+                $this->layout='ajax';
+            }}
     }
 
     /**

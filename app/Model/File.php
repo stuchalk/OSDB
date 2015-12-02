@@ -349,9 +349,9 @@ class File extends AppModel
             }
         }
         if(isset($jarray['ORIGIN'])) {
-            if(stristr($jarray['SPECTROMETERDATASYSTEM'],"Perkin-Elmer")||stristr($jarray['SPECTROMETERDATASYSTEM'],"PerkinElmer")) {
+            if(stristr($jarray['ORIGIN'],"Perkin-Elmer")||stristr($jarray['ORIGIN'],"PerkinElmer")) {
                 $mea['vendor']="PerkinElmer";
-            } elseif (stristr($jarray['SPECTROMETERDATASYSTEM'],"Bruker")) {
+            } elseif (stristr($jarray['ORIGIN'],"Bruker")) {
                 $mea['vendor']="Bruker";
             }
         }

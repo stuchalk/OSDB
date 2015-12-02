@@ -20,7 +20,7 @@ Configure::load('osdb','default');
  */
 class AppController extends Controller {
 
-    public $components = ['Export','Utils','Email','RequestHandler','Session', 'Paginator',
+    public $components = ['Flash','Export','Utils','Email','RequestHandler','Session', 'Paginator',
                             'Auth' => ['loginRedirect' => ['controller' => 'users','action' => 'dashboard'],
                                     'logoutRedirect' => ['controller' => 'pages','action' => 'display','home']]];
 

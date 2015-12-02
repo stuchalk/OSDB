@@ -16,27 +16,18 @@
             }
         });
 
-        $( "#AddSource" ).click(function(event) {
-            var d = $( "#SourceDiv" );
+        $( "#AddCollection" ).click(function(event) {
+            var d = $( "#ColDiv" );
             d.css( {top:event.pageY, left: event.pageX });
             d.fadeIn("slow");
         });
 
-        $( "#FileSourceId").change(function() {
-            //alert($('#FileSourceId').val());
-            if( $('#FileSourceId').val()=='' ) {
-                $('#CollectionUrl').prop('disabled',false);
-            } else {
-                $('#CollectionUrl').prop('disabled',true);
-            }
-        });
-
-        $( "#SourceAddForm" ).submit(function(e) {
-            var $inputs = $( "#SourceAddForm" ).find(":input" );
+        $( "#CollectionAddForm" ).submit(function(e) {
+            var $inputs = $( "#CollectionAddForm" ).find(":input" );
             var values= {};
             var url = "https://<?php echo Configure::read('server'); ?>";
-            var d = $( "#SourceDiv" );
-            var s = $( "#FileSourceId" );
+            var d = $( "#ColDiv" );
+            var s = $( "#CollectionId" );
             var n = {};
             $inputs.each(function() {
                 values[this.name] = $(this).val();
@@ -44,11 +35,11 @@
             $.post(url + $(this).attr('action'), values, function ( data ) {
                 // Check for success
                 if(data != "failure") {
-                    // Clear Source form fields
+                    // Clear Collection form fields
                     $inputs.each(function() {
                         values[this.name]= $(this).val("");
                     });
-                    d.modal('hide');        // Hide SourceDiv modal
+                    d.modal('hide');        // Hide ColDiv modal
                      // Add new source to dropdown
                     n = $.parseJSON(data);
                     s.append('<option value="' + n.id + '" selected="selected">' + n.name + '</option>');
@@ -81,21 +72,21 @@ echo $this->Form->input('substance_id', ['type' =>'hidden','value'=>'']);
 </div>
 <?php if($this->Session->read('Auth.User')) { ?>
 <div class="form-group form-group-lg">
-    <label for="FileSourceId" class="col-sm-2 control-label">Source</label>
+    <label for="CollectionId" class="col-sm-2 control-label">Collection</label>
     <div class="col-sm-3">
-        <?php echo $this->Form->input('source_id',['type' =>'select','options'=>[''=>'Choose']+$srcs,'class'=>'form-control']); ?>
+        <?php echo $this->Form->input('Collection.id',['type' =>'select','options'=>[''=>'Choose']+$cols,'class'=>'form-control']); ?>
     </div>
     <div class="col-sm-1">
-        <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#SourceDiv"><b>Add New Source</b></button>
+        <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#ColDiv"><b>Add New Collection</b></button>
+    </div>
+</div>
+<div class="form-group form-group-lg">
+    <label for="FileUrl" class="col-sm-2 control-label">URL</label>
+    <div class="col-sm-6">
+        <?php echo $this->Form->input('url', ['type' =>'text','size'=>60,'class'=>'form-control','placeholder'=>'Add original file URL if available...']); ?>
     </div>
 </div>
 <?php } ?>
-<div class="form-group form-group-lg hidden">
-    <label for="CollectionUrl" class="col-sm-2 control-label">URL</label>
-    <div class="col-sm-6">
-        <?php echo $this->Form->input('Collection.url', ['type' =>'text','size'=>60,'class'=>'form-control','placeholder'=>'...or add a URL']); ?>
-    </div>
-</div>
 <div class="form-group form-group-lg">
     <label for="SourceFile" class="col-sm-2 control-label top">File Upload</label>
     <div class="col-sm-6">
@@ -107,19 +98,20 @@ echo $this->Form->input('substance_id', ['type' =>'hidden','value'=>'']);
         <button type="submit" class="btn btn-default">Upload File</button>
     </div>
 </div>
+<?php echo $this->Form->end(); ?>
 
 <!-- Popup for adding a source -->
-<div class="modal fade" id="SourceDiv" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal fade" id="ColDiv" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
-                <h4 class="modal-title" id="myModalLabel">Add a Source</h4>
+                <h4 class="modal-title" id="myModalLabel">Add a Collection</h4>
             </div>
             <div class="modal-body">
-                <?php echo $this->requestAction('/sources/add',['return']); ?>
+                <?php echo $this->requestAction('/collections/add',['return']); ?>
             </div>
         </div>
     </div>

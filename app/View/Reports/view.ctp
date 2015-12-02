@@ -109,13 +109,13 @@
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-md-4" style="padding: 0 5px;">
-                                <?php echo $this->Html->image('jcamp.jpg',['url'=>'/spectra/view/'.$id.'/JCAMP','alt'=>'Output as JCAMP-DX','class'=>'img-responsive']); ?>
+                                <?php echo $this->Html->image('jcamp.jpg',['url'=>'/spectra/view/'.$fileid.'/null/JCAMP','alt'=>'Output as JCAMP-DX','class'=>'img-responsive']); ?>
                             </div>
                             <div class="col-md-4" style="padding: 0 5px;">
-                                <?php echo $this->Html->image('xml.png',['url'=>'/spectra/view/'.$id.'/XML','alt'=>'Output as JCAMP-DX XML','class'=>'img-responsive']); ?>
+                                <?php echo $this->Html->image('xml.png',['url'=>'/spectra/view/'.$fileid.'/null/XML','alt'=>'Output as JCAMP-DX XML','class'=>'img-responsive']); ?>
                             </div>
                             <div class="col-md-4" style="padding: 0 5px;">
-                                <?php echo $this->Html->image('jsonld.png',['url'=>'/spectra/view/'.$id.'/JSONLD','alt'=>'Output as JSON-LD','class'=>'img-responsive']); ?>
+                                <?php echo $this->Html->image('jsonld.png',['url'=>'/spectra/view/'.$id.'/null/JSONLD','alt'=>'Output as JSON-LD','class'=>'img-responsive']); ?>
                             </div>
                         </div>
                     </div>

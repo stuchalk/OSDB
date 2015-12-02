@@ -6,7 +6,7 @@
  */
 class FilesController extends AppController {
 
-    public $uses = ['File','Source','Publication'];
+    public $uses = ['File','Collection','Publication'];
 
     /**
      * beforeFilter function
@@ -46,8 +46,8 @@ class FilesController extends AppController {
 
     public function upload()
     {
-        $srcs=$this->Source->find('list',['fields'=>['id','name']]);
-        $this->set('srcs',$srcs);
+        $cols=$this->Collection->find('list',['fields'=>['id','name']]);
+        $this->set('cols',$cols);
         $this->render('add');
     }
 

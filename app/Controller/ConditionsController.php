@@ -26,10 +26,10 @@ class ConditionsController extends AppController
             $this->Condition->create();
             if($this->Condition->save($this->request->data))
             {
-                $this->Session->setFlash('Condition created.');
+                $this->Flash->set('Condition created.');
                 $this->redirect(['action'=>'add']);
             } else {
-                $this->Session->setFlash('Condition could not be created.');
+                $this->Flash->set('Condition could not be created.');
             }
         }
     }
