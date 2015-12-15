@@ -21,4 +21,4 @@ $config['jmol']['height']=190;
 $config['jmol']['width']=190;
 
 // CIR
-$config['cir']['url']="http://cactus.nci.nih.gov/chemical/structure/<id>/file?format=sdf&get3d=True";
+$config['cir']['url']="http://cactus.nci.nih.gov/chemical/structure/<id>/file?format=sdf&get3d=true";

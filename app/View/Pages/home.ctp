@@ -1,5 +1,5 @@
 <div class="well text-justify">
-    <h3>The Open Spectral Database</h3> is exactly what the title suggests - a place where scientists can share spectral data
+    <h3>The Open Spectral Database <span class="label label-danger">Beta</span></h3> is exactly what the title suggests - a place where scientists can share spectral data
         and export it in a number of formats in order to do open science.  Each spectrum gets a persistent identifier and
         contributors can get recognition for their contributions.  The site is also an open source project that you can extend, enhance and share.<br />
         <i class="pull-right">Open science, open data, open code, open concept - it's all about the data!</i>

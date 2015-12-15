@@ -23,7 +23,7 @@ if(isset($inchikey))
             <div class="panel-heading text-center" style="padding: 5px;">
                 <?php
                 if(isset($label)) {
-
+                    echo "<h5>".$label."</h5>";
                 } elseif(!empty($spectra)) {
                     echo "<p style='margin-top: 5px;margin-bottom: 10px;'>";
                     foreach($spectra as $id=>$title) {

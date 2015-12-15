@@ -21,7 +21,7 @@ class PagesController extends AppController {
 
     function beforeFilter()
     {
-        $this->Auth->allow('display');
+        $this->Auth->allow('display','error');
     }
 
     /**
@@ -60,4 +60,6 @@ class PagesController extends AppController {
 			throw new NotFoundException();
 		}
 	}
+
+
 }

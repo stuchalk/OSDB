@@ -30,6 +30,7 @@ class File extends AppModel
         $Coll = ClassRegistry::init('Collection');
         $Cond = ClassRegistry::init('Condition');
         $Ctx = ClassRegistry::init('Context');
+        $ColRpt = ClassRegistry::init('CollectionsReport');
         $CtxSys = ClassRegistry::init('ContextsSystem');
         $Data = ClassRegistry::init('Data');
         $Desc = ClassRegistry::init('Descriptor');
@@ -56,10 +57,10 @@ class File extends AppModel
         $data['name']=$data['File']['file']['name'];
         $data['size']=$data['File']['file']['size'];
         $data['type']=$data['File']['file']['type'];
-        if(isset($data['File']['source_id'])) {
-            $source=$data['File']['source_id'];
+        if(isset($data['Collection']['id'])) {
+            $col=$data['Collection']['id'];
         } else {
-            $source=0;
+            $col=0;
         }
         $tmpname=$data['File']['file']['tmp_name'];
         $uid=$data['File']['user_id'];
@@ -128,6 +129,12 @@ class File extends AppModel
                 $ypropid=$Prop->field('id',['name'=>"Transmittance"]);
                 $yunitid=$Unit->field('id',['symbol'=>"%"]);
                 $level="processed";$processed="transmittance";
+            }
+            if(strtolower($jarray['YUNITS'])=="absorbance") {
+                $ylabel="Absorbance";
+                $ypropid=$Prop->field('id',['name'=>"absorbance"]);
+                $yunitid=$Unit->field('id',['symbol'=>""]);
+                $level="processed";$processed="absorbance";
             }
         }
         $tec=$Tech->find('first',['conditions'=>['matchstr'=>$techcode]]);
@@ -202,6 +209,11 @@ class File extends AppModel
         $report=$Rep->add($rpt);
         $rptid=$report['id'];
 
+        // Link to collection
+        if($col!=0) {
+            $ColRpt->add(['collection_id'=>$col,'report_id'=>$rptid]);
+        }
+
         //debug($report);
 
         // PropertyType is the type of spectrum it is, look up in table to get id
@@ -212,7 +224,6 @@ class File extends AppModel
         $data['user_id']=$uid;
         $data['substance_id']=$sid1;
         $data['report_id']=$rptid;
-        $data['source_id']=$source;
         $file=$this->add($data);
         $filid=$file['id'];
         $pathid=str_pad($filid,9,"0",STR_PAD_LEFT);
@@ -336,7 +347,7 @@ class File extends AppModel
             $mea['instrumentType']=$tech;
         }
 
-        if(isset($jarray['BRUKER'])) {
+        if(!empty($jarray['BRUKER'])) {
             $mea['vendor']="Bruker";
         }
         if(isset($jarray['SPECTROMETERDATASYSTEM'])) {

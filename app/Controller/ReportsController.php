@@ -114,6 +114,9 @@ class ReportsController extends AppController
 
         //Process
         $data=$this->Report->scidata($id);
+        if(empty($data)) {
+            $this->redirect('/pages/error');
+        }
         $rpt=$data['Report'];
         $set=$data['Dataset'];
         $file=$set['File'];
@@ -319,6 +322,12 @@ class ReportsController extends AppController
                     $flot['scale'] = $flot['freq'];
                 } elseif ($spec['level'] == 'processed' && $spec['processedType'] == "chemical shift") {
                     $flot['scale'] = 1;
+                } elseif ($spec['level'] == 'processed' && $spec['processedType'] == "transmittance") {
+                    $flot['scale'] = 1;
+                    $flot['ylabel'] = "Transmittance (%T)";
+                } elseif ($spec['level'] == 'processed' && $spec['processedType'] == "absorbance") {
+                    $flot['scale'] = 1;
+                    $flot['ylabel'] = "Absorbance";
                 }
                 foreach ($spec['Descriptor'] as $d) {
                     $value = 0;
@@ -371,7 +380,7 @@ class ReportsController extends AppController
      */
     public function recent()
     {
-        $data=$this->Report->find('list',['order'=>['updated'=>'desc'],'limit'=>5]);
+        $data=$this->Report->find('list',['order'=>['updated'=>'desc'],'limit'=>6]);
         $this->set('data',$data);
         if($this->request->params['requested']) { return $data; }
     }
@@ -662,7 +671,7 @@ class ReportsController extends AppController
 
         // OK turn it back into JSON-LD
         header("Content-Type: application/ld+json");
-        header('Content-Disposition: attachment; filename="'.$id.'.json"');
+        //header('Content-Disposition: attachment; filename="'.$id.'.json"');
         echo json_encode($json,JSON_UNESCAPED_UNICODE);exit;
 
     }

@@ -1,3 +1,4 @@
+<?php //pr($data);exit; ?>
 <p>Click on a letter below to show substances starting with that letter</p>
 <div class="row">
     <div class="col-md-6">

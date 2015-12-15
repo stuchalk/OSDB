@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="GoDaddy (OSDB)">
+  <component name="PublishConfigData" autoUpload="Always" serverName="GoDaddy (Home)">
     <serverData>
-      <paths name="GoDaddy (OSDB)">
+      <paths name="GoDaddy (Home)">
         <serverdata>
           <mappings>
             <mapping deploy="/public_html" local="$PROJECT_DIR$" web="/" />

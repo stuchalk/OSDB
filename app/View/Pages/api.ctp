@@ -21,7 +21,7 @@ and we are working on additional documentation.</p>
                     <tr>
                         <td><code>/spectra/view/[osdbid]</code></td>
                         <td>Spectrum using id</td>
-                        <td><?php echo $this->Html->link('/spectra/view/11','/spectra/view/11'); ?></td>
+                        <td><?php echo $this->Html->link('/spectra/view/14','/spectra/view/14'); ?></td>
                     </tr>
                     <tr>
                         <td><code>/spectra/view/[comp]/[tech]/[format]</code></td>
@@ -47,6 +47,7 @@ and we are working on additional documentation.</p>
                         </td>
                         <td>
                             <?php echo $this->Html->link('/spectra/plot/1,4-dibromobenzene/MS','/spectra/plot/1,4-dibromobenzene/MS'); ?>
+                            <br /> - OR- <br />
                             <?php echo $this->Html->link('/spectra/plot/106-37-6/MS/400/300/embed','/spectra/plot/106-37-6/MS/400/300/embed'); ?>
                         </td>
                     </tr>
@@ -94,6 +95,7 @@ and we are working on additional documentation.</p>
                             [format]: (HTML), XML, JSON</td>
                         <td>
                             <?php echo $this->Html->link('/substances/view/1,4-dibromobenzene','/substances/view/1,4-dibromobenzene'); ?>
+                            <br /> - OR- <br />
                             <?php echo $this->Html->link('/substances/view/1-aminopropane/JSON','/substances/view/1-aminopropane/JSON'); ?>
                         </td>
                     </tr>

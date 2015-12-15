@@ -17,17 +17,6 @@ class TechniquesController extends AppController
     }
 
     /**
-     * View a property type
-     * @param integer $id
-     */
-    public function view0($id)
-    {
-        $data=$this->Technique->find('first',['conditions'=>['Technique.id'=>$id],'recursive'=>4]);
-        $this->set('data',$data);
-    }
-
-
-    /**
      * View a particular technique
      * @param integer $id
      * @param string $format

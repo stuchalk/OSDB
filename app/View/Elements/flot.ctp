@@ -35,9 +35,14 @@
         $ylabel="Relative Abundance";
     } elseif($config['tech']=='ir') {
         $scale=floor($config['points']/$pixels);
+        if($scale==0) { $scale=1; }
         $tform=", transform: function (v) { return -v; } ";
         $xlabel="Wavenumber (1/cm)";
-        $ylabel="Transmission (%T)";
+        if(!isset($config['ylabel'])) {
+            $ylabel="Transmission (%T)";
+        } else {
+            $ylabel=$config['ylabel'];
+        }
         $url.="/0/0/".$scale;
     }
 
@@ -79,6 +84,10 @@
         var dataurl;
         var firstcoordinate;
         var placeholder = $("#placeholder");
+        var xlabel='<?php echo $xlabel; ?>';
+        var ylabel='<?php echo $ylabel; ?>';
+        var x;
+        var y;
 
         $("button.fetchSeries").click(function () {
 
@@ -93,15 +102,16 @@
                 yaxis: { min: <?php echo $config['miny']; ?> },
                 grid: { show: true,
                     color: ["#DDDDDD"],
+                    hoverable: true,
                     clickable: true,
                     margin: { top: 20, bottom: 20, left: 20, right: 20 }
                 },
                 xaxes: [{
-                    axisLabel: '<?php echo $xlabel; ?>',
+                    axisLabel: xlabel,
                 }],
                 yaxes: [{
                     position: 'left',
-                    axisLabel: '<?php echo $ylabel; ?>',
+                    axisLabel: ylabel,
                 }]
             };
 
@@ -137,20 +147,30 @@
             });
         });
 
+        placeholder.bind("plothover", function (event, pos, item) {
+            if (item) {
+                alert(item);
+                x = item.datapoint[0].toFixed(0),
+                    y = item.datapoint[1].toFixed(0);
+
+                $("#tooltip").html(item.series.label + " of " + x + " = " + y)
+                    .css({top: item.pageY + 5, left: item.pageX + 5})
+                    .fadeIn(200);
+            } else {
+                $("#tooltip").hide();
+            }
+        });
+
         placeholder.bind("plotclick", function (event, pos, item) {
-            alert("You clicked at " + pos.x + ", " + pos.y);
+            alert(xlabel + " " + Math.abs(pos.x.toFixed(1)) + ", " + ylabel + " = " + pos.y.toFixed(1));
             // axis coordinates for other axes, if present, are in pos.x2, pos.x3, ...
             // if you need global screen coordinates, they are pos.pageX, pos.pageY
 
-            if (item) {
-                highlight(item.series, item.datapoint);
-                alert("You clicked a point!");
-            }
         });
 
         window.onresize = function(event) {
             $.plot(placeholder, data, options);
-        }
+        };
 
         // Load the first series by default, so we don't have an empty plot
         $("button.fetchSeries:first").click();
@@ -159,7 +179,8 @@
 
 <div id="placeholder" style="width:<?php echo $w; ?>;height:<?php echo $h; ?>px;border: 1px solid #BBBBBB;box-shadow: 10px 10px 5px #BBBBBB;"></div>
 <div class="message"></div>
+<div id="tooltip" style="position: absolute; border: 1px solid rgb(255, 221, 221); padding: 2px; background-color: rgb(255, 238, 238); opacity: 0.8; top: 462px; left: 631px; display: none;"></div>
 <button class="fetchSeries" id="<?php echo $url; ?>" style="display: none;"></button>
-<code>
+<!--<code>
     <?php //pr($config); ?>
-</code>
+</code>-->

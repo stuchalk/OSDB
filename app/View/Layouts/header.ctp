@@ -55,8 +55,13 @@
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">My OSDB <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li><?php echo $this->Html->link('Login','/users/login'); ?></li>
-                        <li><?php echo $this->Html->link('Register','/users/register'); ?></li>
+                        <?php if($this->Session->read('Auth.User')) { ?>
+                            <li><?php echo $this->Html->link('Dashboard','/users/dashboard'); ?></li>
+                            <li><?php echo $this->Html->link('Logout','/users/logout'); ?></li>
+                        <?php } else { ?>
+                            <li><?php echo $this->Html->link('Login','/users/login'); ?></li>
+                            <li><?php echo $this->Html->link('Register','/users/register'); ?></li>
+                        <?php } ?>
                     </ul>
                 </li>
             </ul>

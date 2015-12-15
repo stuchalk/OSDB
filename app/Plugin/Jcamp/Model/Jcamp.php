@@ -10,6 +10,7 @@
 class Jcamp extends JcampAppModel
 {
 	public $useTable=false;
+	var $actsAs=['Jcamp.Scidata'];
 
 	public $file=[];
 	public $comments=[];
@@ -144,6 +145,10 @@ class Jcamp extends JcampAppModel
 				list($line,$comment)=explode("$$",$line,2);
 				$comments['in_data'].=trim($comment);
 				$output[]=trim($line);
+			} elseif(stristr($line,"##$")&&(stristr($line,"NIST"))) {
+				// Get the data format
+				$comment=str_replace("##$","",$line);
+				$comments['in_data'].=trim($comment);
 			} else {
 				$output[]=$line;
 			}
@@ -179,7 +184,7 @@ class Jcamp extends JcampAppModel
 					else:									$errors['E05']="Unknown data format: ".$type; // Defaults to FIX
 					endif;
 				} elseif(stristr($line,"URL")) {
-					// Get the data format
+					// Get the url
 					list(,$url)=explode("=",$line);
 					$ldrs['URL']=$url;
 					// Set the prev LDR for the next iteration
@@ -205,6 +210,8 @@ class Jcamp extends JcampAppModel
 				list($ldr,$value)=explode("=",$line);
                 $value=trim($value); // Remove extra spaces
 				$ldr=strtoupper(substr($ldr,2));
+				$ldr=str_replace("-","",$ldr); // Remove - from JCAMP-DX
+				$ldr=str_replace(" ","",$ldr); // Remove space
 				if($prev=="PAGE") {
 					// This is a part of the page information for a multiple page series
 					if($ldr=="NPOINTS")		{ $ldrs['DATA'][$page]['npoints']=$value; }
@@ -226,7 +233,7 @@ class Jcamp extends JcampAppModel
 			} else {
 				// This is a continuation line therefore check what the previous LDR was to know what to do
 				$ldrarray=["TITLE","ORIGIN","OWNER","SPECTROMETERDATASYSTEM","AUDITTRAIL","INSTRUMENTPARAMETERS","SAMPLINGPROCEDURE","NAMES","MASFREQUENCY"];
-				if(in_array($prev,$ldrarray)):		$ldrs[$prev].=$line;
+				if(in_array($prev,$ldrarray)):		$ldrs[$prev].=" ".$line;
 				elseif($prev[0]=="$"):				$bruker[substr($prev,1)].=$line;
 				elseif($prev[0]=="."):				$params[substr($prev,1)].=$line;
 				else:								$ldrs['DATA'][$page]['raw'][]=$line;
@@ -702,13 +709,17 @@ class Jcamp extends JcampAppModel
                     $xformat="%d";
                 endif;
                 // Work out the correct way to quote Y values (decimal places) based of of FIRSTY value
-                // How many decimals in FIRSTY?
+                // How many decimals (actually SF!) in FIRSTY?
                 if(stristr($ldrs['FIRSTY'],"E")):
                     list($temp,)=explode("E",strtoupper($ldrs['FIRSTY']));
                     $ydp=strlen($temp)-strpos($temp,'.')-1;
                 elseif(stristr($ldrs['FIRSTY'],".")):
-                    $ldrs['FIRSTY']=trim($ldrs['FIRSTY'],"0"); // Remove trailing zeros from FIRSTY
-                    $ydp=strlen($ldrs['FIRSTY'])-strpos($ldrs['FIRSTY'],'.')-1;
+					if($ldrs['FIRSTY']==0) {
+						$ydp=strlen(str_replace(".","",$ldrs['FIRSTY']));
+					} else {
+						$scinot=$this->scinot($ldrs['FIRSTY']);
+						$ydp=$scinot['s'];
+					}
                 else:
                     $ydp=1000;
                 endif;
@@ -727,11 +738,14 @@ class Jcamp extends JcampAppModel
                     list($temp,)=explode("E",strtoupper($ldrs['YFACTOR']));
                     $fdp=strlen($temp)-strpos($temp,'.')-1;
                 elseif(stristr($ldrs['YFACTOR'],".")):
-                    $ldrs['YFACTOR']=trim($ldrs['YFACTOR'],"0"); // Remove trailing zeros from YFACTOR
-                    $fdp=strlen($ldrs['YFACTOR'])-strpos($ldrs['YFACTOR'],'.')-1;
+                    $scinot=$this->scinot($ldrs['YFACTOR']);
+                    $fdp=$scinot['s'];
                 else:
                     $fdp=1000; // Assumes exact integer
                 endif;
+				//debug($ldrs);
+				//debug($ydp);debug($aydp);debug($fdp);exit;
+
                 // Decide the format based on values being exponentials, floats, or integers
                 if(stristr($ldrs['FIRSTY'],"E")||stristr($ldrs['YFACTOR'],"E")):
                     $yformat="%.".min($ydp,$fdp)."E";
