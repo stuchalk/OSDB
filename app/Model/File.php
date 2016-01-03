@@ -520,7 +520,11 @@ class File extends AppModel
         $syns=$Chm->synonyms($nih['CID']);
         foreach($syns as $syn) {
             $Idn->add(['substance_id'=>$sid,'type'=>'name','value'=>$syn]);
-       }
+        }
+        // Get Wikidata code
+        $Idn->getWikidataId($sid,$name);
+
+        // Return substance id
         return str_pad($sid,5,"0",STR_PAD_LEFT);
         //debug($sub);exit;
     }

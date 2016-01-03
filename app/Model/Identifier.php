@@ -25,4 +25,17 @@ class Identifier extends AppModel {
         return $ret[$model];
     }
 
+    public function getWikidataId($sid,$name)
+    {
+        $url="https://www.wikidata.org/w/api.php?action=wbsearchentities&search=".urlencode($name)."&language=en&format=json";
+        $json=file_get_contents($url);
+        $data=json_decode($json,true);
+        if(!empty($data['search'])) {
+            $wid=$data['search'][0]['id'];
+            $resp=$this->add(['substance_id'=>$sid,'type'=>'wikidata','value'=>$wid]);
+        } else {
+            $resp=false;
+        }
+        return $resp;
+    }
 }

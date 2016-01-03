@@ -48,4 +48,15 @@ class IdentifiersController extends AppController
         $this->set('data',$data);
         $this->render('view');
     }
+
+    /**
+     * Temporary function to test adding Wikidata codes to substances
+     * @param $name
+     */
+    public function test($name)
+    {
+        $sub=$this->Identifier->find('first',['fields'=>['id','substance_id'],'conditions'=>['value'=>$name]]);
+        $data=$this->Identifier->getWikidataId($sub['Identifier']['substance_id'],$name);
+        debug($data);exit;
+    }
 }
