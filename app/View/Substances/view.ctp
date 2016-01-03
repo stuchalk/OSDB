@@ -2,7 +2,7 @@
 $substance=$data['Substance'];
 $identifiers=$data['Identifier'];
 $systems=$data['System'];
-$idnicetext=['inchi'=>'InChI String','inchikey'=>'InChI Key','casrn'=>'CASRN','pubchemId'=>'PubChem ID','smiles'=>'SMILES'];
+$idnicetext=['inchi'=>'InChI String','inchikey'=>'InChI Key','casrn'=>'CASRN','pubchemId'=>'PubChem CID','smiles'=>'SMILES'];
 $inchi=$inchikey=$casrn="";
 foreach($identifiers as $identifier) {
     if ($identifier['type']=='inchi') {
