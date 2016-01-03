@@ -25,13 +25,22 @@ class Identifier extends AppModel {
         return $ret[$model];
     }
 
-    public function getWikidataId($sid,$name)
+    public function getWikidataId($sid,$type,$value)
     {
-        $url="https://www.wikidata.org/w/api.php?action=wbsearchentities&search=".urlencode($name)."&language=en&format=json";
+        // Uses Wikidata SPARQL REST call to get wikidata code via InChIKey (P235), CAS (P231), or CID (P662) search
+        if($type=='inchikey') {
+            $sparql="PREFIX wdt: <http://www.wikidata.org/prop/direct/> select ?c where { ?c wdt:P235 \"".$value."\"}";
+        } elseif($type=='casrn') {
+            $sparql="PREFIX wdt: <http://www.wikidata.org/prop/direct/> select ?c where { ?c wdt:P231 \"".$value."\"}";
+        } elseif($type=='pubchemid') {
+            $sparql="PREFIX wdt: <http://www.wikidata.org/prop/direct/> select ?c where { ?c wdt:P662 \"".$value."\"}";
+        }
+        $url="https://query.wikidata.org/sparql?query=".urlencode($sparql)."&format=json";
         $json=file_get_contents($url);
         $data=json_decode($json,true);
-        if(!empty($data['search'])) {
-            $wid=$data['search'][0]['id'];
+        debug($data);
+        if(!empty($data['results']['bindings'][0]['c'])) {
+            $wid=str_replace("http://www.wikidata.org/entity/","",$data['results']['bindings'][0]['c']['value']);
             $resp=$this->add(['substance_id'=>$sid,'type'=>'wikidata','value'=>$wid]);
         } else {
             $resp=false;

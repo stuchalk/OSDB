@@ -522,7 +522,11 @@ class File extends AppModel
             $Idn->add(['substance_id'=>$sid,'type'=>'name','value'=>$syn]);
         }
         // Get Wikidata code
-        $Idn->getWikidataId($sid,$name);
+        if($nih['InChIKey']!="") {
+            $Idn->getWikidataId($sid,'inchikey',$nih['InChIKey']);
+        } elseif($nih['CID']!="") {
+            $Idn->getWikidataId($sid,'pubchemid',$nih['CID']);
+        }
 
         // Return substance id
         return str_pad($sid,5,"0",STR_PAD_LEFT);

@@ -15,7 +15,7 @@ class IdentifiersController extends AppController
     public function beforeFilter()
     {
         parent::beforeFilter();
-        $this->Auth->allow();
+        $this->Auth->allow('index','view','test');
     }
 
     /**
@@ -56,7 +56,16 @@ class IdentifiersController extends AppController
     public function test($name)
     {
         $sub=$this->Identifier->find('first',['fields'=>['id','substance_id'],'conditions'=>['value'=>$name]]);
-        $data=$this->Identifier->getWikidataId($sub['Identifier']['substance_id'],$name);
-        debug($data);exit;
+        if(!empty($sub)) {
+            $sid=$sub['Identifier']['substance_id'];
+            $resp=$this->Identifier->find('first',['fields'=>['id','value'],'conditions'=>['substance_id'=>$sid,'type'=>'inchikey']]);
+            $key=$resp['Identifier']['value'];
+            debug($key);
+            $data=$this->Identifier->getWikidataId($sub['Identifier']['substance_id'],$key);
+            debug($data);exit;
+        } else {
+            exit;
+        }
+
     }
 }
