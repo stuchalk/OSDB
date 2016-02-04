@@ -38,10 +38,10 @@ class UsersController extends AppController {
         if($this->request->is('post'))
         {
             if($this->Auth->login()) {
-                $this->Flash->set('Welcome, '. $this->Auth->user('username'));
+                $this->Flash->welcome('Welcome<br />'. $this->Auth->user('username'));
                 $this->redirect($this->Auth->redirectUrl());
             } else {
-                $this->Flash->set('Invalid username or password, try again.');
+                $this->Flash->error('Invalid credentials,<br />please try again.');
             }
         }
     }

@@ -15,7 +15,7 @@ class ReportsController extends AppController
     public function beforeFilter()
     {
         parent::beforeFilter();
-        $this->Auth->allow('view','scidata','recent','latest','plot','index');
+        $this->Auth->allow('view','scidata','recent','latest','plot','index','test');
     }
 
     /**
@@ -684,5 +684,34 @@ class ReportsController extends AppController
     {
         $this->Report->delete($id);
         $this->redirect('/reports');
+    }
+
+    /**
+     * Generic testing function
+     */
+    public function test()
+    {
+
+        $this->Splash=$this->Components->load("Splash");
+        $c=['Dataset'=>['fields'=>['setType','property','kind'],
+                'Dataseries'=>['fields'=>['type','format','level','processedType'],
+                    'Datapoint'=>[
+                        'Data'=>['fields'=>['datatype','text','number','title','id'],
+                            'Property'=>['fields'=>['name']],
+                            'Unit'=>['fields'=>['name','symbol']]],
+                        'Condition'=>['fields'=>['datatype','text','number','title','id'],
+                            'Property'=>['fields'=>['name']],
+                            'Unit'=>['fields'=>['name','symbol']]]]]]];
+
+        $rid="000000053";
+        $data=$this->Report->find('first',['conditions'=>['Report.id'=>$rid],'contain'=>$c,'recursive'=>-1]);
+        // What type of data is it? choices are MS, IR, UV, NMR, RAMAN
+        $type=$data['Dataset']['property'];
+        // What is the spectral data?
+        $spectrum=$data['Dataset']['Dataseries'][0]['Datapoint'][0];
+        // Do it!
+        $splash=$this->Splash->generate($rid,$type,$spectrum);
+
+        debug($splash);exit;
     }
 }

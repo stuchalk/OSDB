@@ -65,13 +65,12 @@
                     </ul>
                 </li>
             </ul>
-            <!-- TODO: <div class="btn btn-danger"></div>-->
-            <?php echo $this->Session->flash(); ?>
             <?php
             echo $this->Form->create('Substance',['action'=>'search','class'=>'navbar-form navbar-right']);
             echo $this->Form->input('term',['type'=>'text','class'=>'form-control','div'=>false,'label'=>false,'placeholder'=>'Search compounds...']);
             echo $this->Form->end();
             ?>
+            <?php echo $this->Flash->render(); ?>
         </div><!-- /.nav-collapse -->
     </div><!-- /.container-fluid -->
 </nav>

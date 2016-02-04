@@ -1,4 +1,5 @@
 <h2 class="pull-left">Spectra</h2>
+
 <!--Page controls-->
 <div class="pull-right" style="margin-top: 20px;">
     <?php
