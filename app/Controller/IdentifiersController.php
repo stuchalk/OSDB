@@ -50,19 +50,20 @@ class IdentifiersController extends AppController
     }
 
     /**
-     * Temporary function to test adding Wikidata codes to substances
+     * Add Wikidata code to substance
      * @param $name
      */
-    public function test($name)
+    public function wikidata($name)
     {
         $sub=$this->Identifier->find('first',['fields'=>['id','substance_id'],'conditions'=>['value'=>$name]]);
         if(!empty($sub)) {
             $sid=$sub['Identifier']['substance_id'];
             $resp=$this->Identifier->find('first',['fields'=>['id','value'],'conditions'=>['substance_id'=>$sid,'type'=>'inchikey']]);
             $key=$resp['Identifier']['value'];
-            debug($key);
-            $data=$this->Identifier->getWikidataId($sub['Identifier']['substance_id'],$key);
-            debug($data);exit;
+            debug($sub);debug($key);
+            $data=$this->Identifier->getWikidataId($sub['Identifier']['substance_id'],'inchikey',$key);
+            $this->redirect('/substances/view/'.$sid);
+            //debug($data);exit;
         } else {
             exit;
         }

@@ -32,10 +32,24 @@ foreach($identifiers as $identifier) {
         <li><?php echo "Formula: ".$substance['formula'];?></li>
         <li><?php echo "Molecular Weight: ".$substance['molweight']." g/mol";?></li>
         <?php
+        //pr($identifiers);
+        $wiki='no';
         foreach($identifiers as $identifier) {
             if(isset($idnicetext[$identifier['type']])) {
-                echo "<li>".$idnicetext[$identifier['type']].": ".$identifier['value']."</li>";
+                if($identifier['type']=='pubchemId') {
+                    echo "<li>".$idnicetext[$identifier['type']].": ";
+                    echo $this->Html->link($identifier['value'],'https://pubchem.ncbi.nlm.nih.gov/compound/'.$identifier['value'],['target'=>'_blank'])." <span class=\"glyphicon glyphicon-new-window\" aria-hidden=\"true\"></span></li>";
+                } elseif($identifier['type']=='wikidata') {
+                    $wiki='yes';
+                    echo "<li>".$idnicetext[$identifier['type']].": ";
+                    echo $this->Html->link($identifier['value'],'https://www.wikidata.org/wiki/'.$identifier['value'],['target'=>'_blank'])." <span class=\"glyphicon glyphicon-new-window\" aria-hidden=\"true\"></span></li>";
+                } else {
+                    echo "<li>".$idnicetext[$identifier['type']].": ".$identifier['value']."</li>";
+                }
             }
+        }
+        if($wiki=='no' and $_SERVER['REMOTE_ADDR']='139.62.52.13') {
+            echo "<li>".$this->Html->link('Add Wikidata ID','/identifiers/wikidata/'.$substance['name'])."</li>";
         }
         ?>
     </ul>

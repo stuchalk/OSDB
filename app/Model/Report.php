@@ -58,18 +58,33 @@ class Report extends AppModel
         } else if($field=='tech'&&!is_null($id)) {
             $cn=['technique_id'=>$id];
             $reps=$this->find('all',['conditions'=>$cn,'fields'=>$f,'contain'=>$c,'order'=>$o,'recursive'=> -1]);
+        } else if($field=='sub'&&!is_null($id)) {
+            echo $field.":".$id;
+            $c=['Dataset'=>['fields'=>['id'],
+                'Context'=>['fields'=>['id'],
+                    'System'=>['fields'=>['id'],
+                        'Substance'=>['fields'=>['id','name'],
+                            'Identifier'=>['fields'=>['id','type','value'],'conditions'=>['OR'=>['value LIKE'=>'%'.$id.'%','type'=>'inchikey']]]]]]]];
+            $reps=$this->find('all',['fields'=>$f,'contain'=>$c,'order'=>$o,'recursive'=> -1]);
         } else {
             $reps=$this->find('all',['fields'=>$f,'contain'=>$c]);
         }
-        //debug($reps);exit;
+        //debug($reps);
         $results=[];
         foreach($reps as $rep) {
             $sub=$rep['Dataset']['Context']['System'][0]['Substance'][0];
-            $name=$sub['name'];
-            $results[$name]['id']=$sub['id'];
-            $results[$name]['inchikey']=$sub['Identifier'][0]['value'];
-            preg_match("/\(([a-zA-Z0-9 ]*)\)/",$rep['Report']['title'],$matches);
-            $results[$name]['spectra'][$rep['Report']['id']]=$matches[1];
+            if(count($sub['Identifier'])>1) {
+                $name=$sub['name'];
+                $results[$name]['id']=$sub['id'];
+                foreach($sub['Identifier'] as $ident) {
+                    if($ident['type']=="inchikey") {
+                        $results[$name]['inchikey']=$ident['value'];
+                        break;
+                    }
+                }
+                preg_match("/\(([a-zA-Z0-9 ]*)\)/",$rep['Report']['title'],$matches);
+                $results[$name]['spectra'][$rep['Report']['id']]=$matches[1];
+            }
         }
         ksort($results);
         //debug($results);exit;

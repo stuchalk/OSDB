@@ -22,13 +22,19 @@ class ReportsController extends AppController
      * List the reports
      * @param integer $offset
      * @param integer $limit
+     * @param string $search
      */
-    public function index($offset=0,$limit=6)
+    public function index($offset=0,$limit=6,$search="%")
     {
-        $data=$this->Report->bySubstance(['conditions'=>['count >'=>0]],null,$offset,$limit);
+        //debug($this->request);exit;
+        if(isset($this->request->data['Report']['search'])) {
+            $search=$this->request->data['Report']['search'];
+        }
+        $data=$this->Report->bySubstance('sub',$search);
         // Limit the amount of data return base on offset and limit (needs to be redone using paginator)
         $slice=array_slice($data,$offset,$limit);
         $this->set('count',count($data));
+        $this->set('search',$search);
         $this->set('offset',$offset);
         $this->set('limit',$limit);
         $this->set('data',$slice);
