@@ -1,14 +1,30 @@
-<h2 class="pull-left">Spectra</h2>
+<?php
+    if($search=="%") {
+        $search="";
+        $heading="";
+    } else {
+        $heading=" (for Substances matching '*".$search."*')";
+        $search="/".$search;
+    }
+?>
+<h2 class="pull-left">Spectra<?php echo $heading; ?></h2>
 
 <!--Page controls-->
 <div class="pull-right" style="margin-top: 20px;">
     <?php
     if($offset!=0) {
-        echo $this->Html->link('PREV','/spectra/index/'.($offset-$limit).'/'.$limit,['class'=>'btn btn-success btn-sm','role'=>'button']);
+        echo $this->Html->link('PREV','/spectra/index/'.($offset-$limit).'/'.$limit.$search,['class'=>'btn btn-success btn-sm','role'=>'button']);
     }
-    echo "&nbsp;Substances ".($offset+1)."-".($offset+$limit+1)."&nbsp;";
+    if($count>$limit) {
+        if($count>$offset+$limit) {
+            echo "&nbsp;Substances ".($offset+1)."-".($offset+$limit)." of ".$count;
+        } else {
+            echo "&nbsp;Substances ".($offset+1)."-".$count;
+        }
+    }
+    echo "&nbsp;";
     if($offset<$count-$limit) {
-        echo $this->Html->link('NEXT','/spectra/index/'.($offset+$limit).'/'.$limit,['class'=>'btn btn-success btn-sm','role'=>'button']);
+        echo $this->Html->link('NEXT','/spectra/index/'.($offset+$limit).'/'.$limit.$search,['class'=>'btn btn-success btn-sm','role'=>'button']);
     }
     ?>
 </div>

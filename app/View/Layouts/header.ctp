@@ -66,8 +66,11 @@
                 </li>
             </ul>
             <?php
-            echo $this->Form->create('Substance',['action'=>'search','class'=>'navbar-form navbar-right']);
-            echo $this->Form->input('term',['type'=>'text','class'=>'form-control','div'=>false,'label'=>false,'placeholder'=>'Search compounds...']);
+            //echo $this->Form->create('Substance',['action'=>'search','class'=>'navbar-form navbar-right']);
+            //echo $this->Form->input('term',['type'=>'text','class'=>'form-control','div'=>false,'label'=>false,'placeholder'=>'Search compounds...']);
+            //echo $this->Form->end();
+            echo $this->Form->create('Report',['url'=>'/spectra','class'=>'navbar-form navbar-right']);
+            echo $this->Form->input('search',['type'=>'text','class'=>'form-control','div'=>false,'label'=>false,'placeholder'=>'Search compounds...']);
             echo $this->Form->end();
             ?>
             <?php echo $this->Flash->render(); ?>
