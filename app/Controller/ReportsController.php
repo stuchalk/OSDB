@@ -435,7 +435,7 @@ class ReportsController extends AppController
         $con=$set['Context'];
         //$sam=$set['Sample'];
         $ser=$set['Dataseries'];
-        $base="http://osdb.oinfo/json/".$id;
+        $base="http://osdb.info/json/".$id;
 
         // Build the PHP array that will then be converted to JSON
         $json['@context']=['https://chalk.coas.unf.edu/champ/files/contexts/scidata.jsonld',
@@ -674,7 +674,7 @@ class ReportsController extends AppController
 
         // Source
         $json['source']=['@id'=>'source'];
-        $json['source']['citation']='The Open Spectral Database - http://osdb.oinfo';
+        $json['source']['citation']='The Open Spectral Database - http://osdb.info';
         $json['source']['url']=$base;
 
         // Rights

@@ -52,7 +52,7 @@
 </script>
 
 <!-- Page -->
-<h2>Upload a Spectrum</h2>
+<h2>Upload a Spectrum/Spectra</h2>
 <h5 class="text-success">Currently we are only able to process JCAMP files with a single spectrum</h5>
 <?php
 if($this->Session->read('Auth.User')) {
@@ -93,7 +93,7 @@ echo $this->Form->input('substance_id', ['type' =>'hidden','value'=>'']);
         <?php echo $this->Form->input('file.', ['type' =>'file','class'=>'btn btn-default upload','multiple']); ?>
     </div>
     <div class="col-sm-1">
-        <button type="button" class="btn btn-warning btn-md" data-toggle="modal" onclick="$('.upload').first().clone().val(null).appendTo('#files'); return false;"><b>Add Another File</b></button>
+        <button type="button" class="btn btn-warning btn-md" data-toggle="modal" onclick="$('.upload').first().clone().val(null).appendTo('#files').trigger('click'); return false;"><b>Add Another File</b></button>
     </div>
 </div>
 <div class="form-group form-group-lg">

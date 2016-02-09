@@ -276,8 +276,8 @@
     },
     "source": {
         "@id": "source",
-        "citation": "The Open Spectral Database - http://osdb.oinfo",
-        "url": "http://osdb.oinfo/s00000001"
+        "citation": "The Open Spectral Database - http://osdb.info",
+        "url": "http://osdb.info/s00000001"
     },
     "rights": {
         "@id": "rights",
