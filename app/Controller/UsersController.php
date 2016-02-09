@@ -39,7 +39,9 @@ class UsersController extends AppController {
         {
             if($this->Auth->login()) {
                 $this->Flash->welcome('Welcome<br />'. $this->Auth->user('username'));
-                $this->redirect($this->Auth->redirectUrl());
+                // Forcing the redirectUrl to the dashboard as if not set here trying
+                // to add file redirects to collections/add after authentication
+                $this->redirect($this->Auth->redirectUrl(['controller'=>'users','action'=>'dashboard']));
             } else {
                 $this->Flash->error('Invalid credentials,<br />please try again.');
             }
@@ -98,7 +100,7 @@ class UsersController extends AppController {
         if($this->User->delete()) {
             throw new NotFoundException(_('Invalid user'));
         }
-        $this->Session->setFlash(_('User was not deleted'));
+        $this->Flash->set(_('User was not deleted'));
         $this->redirect(['action'=>'index']);
     }
 
@@ -115,10 +117,10 @@ class UsersController extends AppController {
         if($this->request->is('post') || $this->request->is('put')) {
             if($this->User->save($this->request->data))
             {
-                $this->Session->setFlash(_('User has been updated'));
+                $this->Flash->set(_('User has been updated'));
                 $this->redirect(['action'=>'index']);
             }
-            $this->Session->setFlash(_('User could not be updated, please try again.'));
+            $this->Flash->set(_('User could not be updated, please try again.'));
         } else {
             $this->request->data=$this->User->read(null,$id);
             unset($this->request->data['User']['password']);

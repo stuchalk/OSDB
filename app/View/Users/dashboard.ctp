@@ -1,4 +1,6 @@
 <?php
+//pr($data);
+//pr($reps);
 $cs=$data['Collection'];
 $u=$data['User'];
 $path=Configure::read('path');

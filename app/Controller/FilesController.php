@@ -36,7 +36,19 @@ class FilesController extends AppController {
         if($this->request->is('post'))
         {
             $data=$this->request->data;
-            $id=$this->File->convert($data);
+            // Data has array of arrays for file to accomodate multiple file uploads
+            $files=$data['File']['file'];
+            foreach($files as $file) {
+                if($data['File']['substance_id']=='') {
+                    $chm=$data['File']['substance'];
+                    $sid=$this->File->getChem($chm); // Adds substance if it does not exist
+                    $data['File']['substance_id']=$sid;
+                }
+                $data['File']['file']=$file;
+                //debug($data);exit;
+                $id=$this->File->convert($data);
+            }
+
             // Redirect to view
             $this->redirect('/spectra/view/' . $id);
         } else {
@@ -44,6 +56,9 @@ class FilesController extends AppController {
         }
     }
 
+    /**
+     * Upload a file
+     */
     public function upload()
     {
         $cols=$this->Collection->find('list',['fields'=>['id','name']]);
@@ -96,6 +111,16 @@ class FilesController extends AppController {
     {
         $data=$this->File->find('count');
         return $data;
+    }
+
+    /**
+     * Check the upload of chemical metadata (for testing/debugging)
+     * @param $chem
+     * @param $debug
+     */
+    public function check($chem,$debug)
+    {
+        $this->File->getchem($chem,$debug);
     }
 
 }

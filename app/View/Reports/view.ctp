@@ -124,6 +124,7 @@
         </div>
         <div class="col-sm-9">
             <?php echo $this->requestAction('/spectra/plot/'.$id.'/null/auto/450',['return']); ?>
+            <?php if(!is_null($splash)) { echo "<p>&nbsp;<br /><b>".$splash."</b> (".$this->Html->link('What is this?','http://splash.fiehnlab.ucdavis.edu/',['target'=>'_blank']).")</p>"; } ?>
         </div>
     </div>
 </div>

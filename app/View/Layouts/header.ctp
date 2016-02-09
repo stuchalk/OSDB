@@ -64,6 +64,7 @@
                         <?php } ?>
                     </ul>
                 </li>
+                <li><?php echo $this->Html->link('Add Spectrum','/files/upload'); ?></li>
             </ul>
             <?php
             //echo $this->Form->create('Substance',['action'=>'search','class'=>'navbar-form navbar-right']);

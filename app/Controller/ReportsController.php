@@ -30,6 +30,7 @@ class ReportsController extends AppController
         if(isset($this->request->data['Report']['search'])) {
             $search=$this->request->data['Report']['search'];
         }
+        //debug($search);exit;
         $data=$this->Report->bySubstance('sub',$search);
         // Limit the amount of data return base on offset and limit (needs to be redone using paginator)
         $slice=array_slice($data,$offset,$limit);
@@ -64,6 +65,10 @@ class ReportsController extends AppController
     public function view($id,$tech="",$format="")
     {
         $error = "";
+        if(stristr($id,'splash')) {
+            $report=$this->Report->find('first',['conditions'=>['splash'=>$id]]);
+            $id=$report['id'];
+        }
         if(!is_numeric($id)) {
             // Get the report id is one exists for this chemical and technique
             $sid = $tid = $error = "";
@@ -118,7 +123,7 @@ class ReportsController extends AppController
             header("Location: ".$osdbpath."/spectra/scidata/".str_pad($id,9,0,STR_PAD_LEFT));exit;
         }
 
-        //Process
+        // Process
         $data=$this->Report->scidata($id);
         if(empty($data)) {
             $this->redirect('/pages/error');
@@ -237,6 +242,7 @@ class ReportsController extends AppController
         $this->set('dinfo',$dinfo);
         $this->set('cinfo',$cinfo);
         $this->set('fileid',$file['id']);
+        $this->set('splash',$rpt['splash']);
         $this->set('id',$id);
     }
 
@@ -695,7 +701,7 @@ class ReportsController extends AppController
     /**
      * Generic testing function
      */
-    public function test()
+    public function test($rid="000000013")
     {
 
         $this->Splash=$this->Components->load("Splash");
@@ -709,7 +715,6 @@ class ReportsController extends AppController
                             'Property'=>['fields'=>['name']],
                             'Unit'=>['fields'=>['name','symbol']]]]]]];
 
-        $rid="000000053";
         $data=$this->Report->find('first',['conditions'=>['Report.id'=>$rid],'contain'=>$c,'recursive'=>-1]);
         // What type of data is it? choices are MS, IR, UV, NMR, RAMAN
         $type=$data['Dataset']['property'];
@@ -717,7 +722,17 @@ class ReportsController extends AppController
         $spectrum=$data['Dataset']['Dataseries'][0]['Datapoint'][0];
         // Do it!
         $splash=$this->Splash->generate($rid,$type,$spectrum);
-
-        debug($splash);exit;
+        if(stristr($splash,'{')) {
+            $data=json_decode($splash,true);
+        } else {
+            $data=json_decode('["'.$splash.'"]',true);
+        }
+        if(!isset($data['error'])) {
+            $this->Report->id=$rid;
+            $this->Report->saveField('splash',$data[0]);
+        }
+        $this->redirect('/spectra/view/'.$rid);
+        //if($splash)
+        debug($data);exit;
     }
 }

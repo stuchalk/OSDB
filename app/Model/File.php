@@ -499,22 +499,27 @@ class File extends AppModel
     /**
      * Using Pubchem, get the metadata about the compounds
      * @param $name
+     * @param $debug
      * @return mixed
      */
-    public function getChem($name)
+    public function getChem($name,$debug=0)
     {
         $Chm = ClassRegistry::init('Pubchem.Chemical');
         $Sub = ClassRegistry::init('Substance');
         $Idn = ClassRegistry::init('Identifier');
 
-        $nih=$Chm->check($name);
+        $nih=$Chm->check($name,"",$debug);
+        debug($nih);
         preg_match('/[a-z]/i', $name, $match, PREG_OFFSET_CAPTURE);
         $first=strtoupper($name[$match[0][1]]); // Gets the first alphanumeric char in name
         $sub=$Sub->add(['name'=>ucfirst(strtolower($name)),'formula'=>$nih['MolecularFormula'],'molweight'=>$nih['MolecularWeight'],'first'=>$first]);
         $sid=$sub['id'];
         $iarray=['CID'=>'pubchemId','CanonicalSMILES'=>'smiles','InChI'=>'inchi','InChIKey'=>'inchikey','IUPACName'=>'iupacname'];
         foreach($iarray as $field=>$type) {
-            $Idn->add(['substance_id'=>$sid,'type'=>$type,'value'=>$nih[$field]]);
+            if(isset($nih[$field])&&!empty($nih[$field])) {
+                //echo $nih[$field].":".$type."<br />";
+                $Idn->add(['substance_id'=>$sid,'type'=>$type,'value'=>$nih[$field]]);
+            }
         }
         // Get synonyms
         $syns=$Chm->synonyms($nih['CID']);

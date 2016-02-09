@@ -89,8 +89,11 @@ echo $this->Form->input('substance_id', ['type' =>'hidden','value'=>'']);
 <?php } ?>
 <div class="form-group form-group-lg">
     <label for="SourceFile" class="col-sm-2 control-label top">File Upload</label>
-    <div class="col-sm-6">
-        <?php echo $this->Form->input('file', ['type' =>'file','class'=>'btn btn-default']); ?>
+    <div id="files" class="col-sm-3">
+        <?php echo $this->Form->input('file.', ['type' =>'file','class'=>'btn btn-default upload','multiple']); ?>
+    </div>
+    <div class="col-sm-1">
+        <button type="button" class="btn btn-warning btn-md" data-toggle="modal" onclick="$('.upload').first().clone().val(null).appendTo('#files'); return false;"><b>Add Another File</b></button>
     </div>
 </div>
 <div class="form-group form-group-lg">

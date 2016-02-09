@@ -38,7 +38,7 @@ class Identifier extends AppModel {
         $url="https://query.wikidata.org/sparql?query=".urlencode($sparql)."&format=json";
         $json=file_get_contents($url);
         $data=json_decode($json,true);
-        debug($data);
+        //debug($data);
         if(!empty($data['results']['bindings'][0]['c'])) {
             $wid=str_replace("http://www.wikidata.org/entity/","",$data['results']['bindings'][0]['c']['value']);
             $resp=$this->add(['substance_id'=>$sid,'type'=>'wikidata','value'=>$wid]);

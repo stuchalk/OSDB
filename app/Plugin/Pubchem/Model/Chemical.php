@@ -18,16 +18,18 @@ class Chemical extends AppModel
      * You can use names, ids, cas# etc...
      * Format returned has CID and Synonyms in separate parts of array
      * @param $name
+     * @param $debug
      * @return bool
      */
-    public function cid($name)
+    public function cid($name,$debug=false)
     {
+        if($debug) { echo "<b>function (cid)</b><br />"; }
         $HttpSocket = new HttpSocket();
         $url=$this->path.'name/'.rawurlencode($name).'/synonyms/JSON';
-        //echo $url;exit;
+        if($debug) { echo $url."<br />"; }
         $json=$HttpSocket->get($url);
-        //echo $json;exit;
         $syns=json_decode($json['body'],true);
+        //if($debug) { echo "<pre>".print_r($syns)."</pre>"; }
         if(isset($syns['Fault'])):	return false;
         else:						return $syns['InformationList']['Information'][0]['CID'];
         endif;
@@ -36,16 +38,18 @@ class Chemical extends AppModel
     /**
      * Get a list of synonyms of a chemical
      * @param $cid
+     * @param $debug
      * @return bool
      */
-    public function synonyms($cid)
+    public function synonyms($cid,$debug=false)
     {
+        if($debug) { echo "<b>function (synonyms)</b><br />"; }
         $HttpSocket = new HttpSocket();
         $url=$this->path.'cid/'.$cid.'/synonyms/JSON';
-        //echo $url;exit;
+        if($debug) { echo $url."<br />"; }
         $json=$HttpSocket->get($url);
-        //echo $json;exit;
         $syns=json_decode($json['body'],true);
+        if($debug) { echo "<pre>".print_r($syns)."</pre>"; }
         if(isset($syns['Fault'])):	return false;
         else:						return $syns['InformationList']['Information'][0]['Synonym'];
         endif;
@@ -58,14 +62,17 @@ class Chemical extends AppModel
      * http://pubchem.ncbi.nlm.nih.gov/pug_rest/PUG_REST.html#_Toc409516770
      * @param $props
      * @param $cid
+     * @param $debug
      * @return bool
      */
-    public function property($props,$cid) {
+    public function property($props,$cid,$debug=false) {
+        if($debug) { echo "<b>function (property)</b><br />"; }
         $HttpSocket = new HttpSocket();
         $url=$this->path.'cid/'.rawurlencode($cid).'/property/'.$props.'/JSON';
+        if($debug) { echo $url."<br />"; }
         $json=$HttpSocket->get($url);
-        //echo $url;exit;
         $meta=json_decode($json['body'],true);
+        if($debug) { echo "<pre>".print_r($meta)."</pre>"; }
         if(isset($meta['Fault'])):	return false;
         else:						return $meta['PropertyTable']['Properties'][0];
         endif;
@@ -75,14 +82,15 @@ class Chemical extends AppModel
      * Check for a
      * @param $name
      * @param $cas
+     * @param $debug
      * @return mixed
      */
-    public function check($name,$cas="")
+    public function check($name,$cas="",$debug)
     {
         // Get CID if exists by checking name then CAS
-        $cid=$this->cid($name);
+        $cid=$this->cid($name,$debug);
         if($cid==false) {
-            $cid=$this->cid($cas);
+            $cid=$this->cid($cas,$debug);
             if($cid==false) {
                 return false;
             }
@@ -90,6 +98,6 @@ class Chemical extends AppModel
         //echo $cid;exit;
         // Get property data
         $props="MolecularFormula,MolecularWeight,CanonicalSMILES,InChI,InChIKey,IUPACName";
-        return $this->property($props,$cid);
+        return $this->property($props,$cid,$debug);
     }
 }

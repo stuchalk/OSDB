@@ -147,19 +147,20 @@
             });
         });
 
-        placeholder.bind("plothover", function (event, pos, item) {
-            if (item) {
-                alert(item);
-                x = item.datapoint[0].toFixed(0),
-                    y = item.datapoint[1].toFixed(0);
-
-                $("#tooltip").html(item.series.label + " of " + x + " = " + y)
-                    .css({top: item.pageY + 5, left: item.pageX + 5})
-                    .fadeIn(200);
-            } else {
-                $("#tooltip").hide();
-            }
-        });
+        // TODO: plothover not working at all and causes error for MS spectra (only)
+        //placeholder.bind("plothover", function (event, pos, item) {
+        //    if (item) {
+        //        alert(item);
+        //        x = item.datapoint[0].toFixed(0),
+        //            y = item.datapoint[1].toFixed(0);
+        //
+        //        $("#tooltip").html(item.series.label + " of " + x + " = " + y)
+        //            .css({top: item.pageY + 5, left: item.pageX + 5})
+        //            .fadeIn(200);
+        //    } else {
+        //        $("#tooltip").hide();
+        //    }
+        //});
 
         placeholder.bind("plotclick", function (event, pos, item) {
             alert(xlabel + " " + Math.abs(pos.x.toFixed(1)) + ", " + ylabel + " = " + pos.y.toFixed(1));

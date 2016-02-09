@@ -73,19 +73,23 @@ class Report extends AppModel
         $results=[];
         foreach($reps as $rep) {
             $sub=$rep['Dataset']['Context']['System'][0]['Substance'][0];
+            $name=$sub['name'];
+            $results[$name]['id']=$sub['id'];
             if(count($sub['Identifier'])>1) {
-                $name=$sub['name'];
-                $results[$name]['id']=$sub['id'];
                 foreach($sub['Identifier'] as $ident) {
                     if($ident['type']=="inchikey") {
                         $results[$name]['inchikey']=$ident['value'];
                         break;
                     }
                 }
-                preg_match("/\(([a-zA-Z0-9 ]*)\)/",$rep['Report']['title'],$matches);
-                $results[$name]['spectra'][$rep['Report']['id']]=$matches[1];
+            } else {
+                $results[$name]['inchikey']=$sub['Identifier'][0]['value'];
             }
+            preg_match("/\(([a-zA-Z0-9 ]*)\)/",$rep['Report']['title'],$matches);
+            $results[$name]['spectra'][$rep['Report']['id']]=$matches[1];
         }
+        //debug($results);exit;
+
         ksort($results);
         //debug($results);exit;
         return $results;
