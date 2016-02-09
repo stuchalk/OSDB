@@ -66,8 +66,9 @@ class ReportsController extends AppController
     {
         $error = "";
         if(stristr($id,'splash')) {
+            // Access a spectrum using its splash code
             $report=$this->Report->find('first',['conditions'=>['splash'=>$id]]);
-            $id=$report['id'];
+            $id=$report['Report']['id'];
         }
         if(!is_numeric($id)) {
             // Get the report id is one exists for this chemical and technique
@@ -700,39 +701,21 @@ class ReportsController extends AppController
 
     /**
      * Generic testing function
+     * @param $rid
      */
-    public function test($rid="000000013")
+    public function addsplash($rid)
     {
-
-        $this->Splash=$this->Components->load("Splash");
-        $c=['Dataset'=>['fields'=>['setType','property','kind'],
-                'Dataseries'=>['fields'=>['type','format','level','processedType'],
-                    'Datapoint'=>[
-                        'Data'=>['fields'=>['datatype','text','number','title','id'],
-                            'Property'=>['fields'=>['name']],
-                            'Unit'=>['fields'=>['name','symbol']]],
-                        'Condition'=>['fields'=>['datatype','text','number','title','id'],
-                            'Property'=>['fields'=>['name']],
-                            'Unit'=>['fields'=>['name','symbol']]]]]]];
-
-        $data=$this->Report->find('first',['conditions'=>['Report.id'=>$rid],'contain'=>$c,'recursive'=>-1]);
-        // What type of data is it? choices are MS, IR, UV, NMR, RAMAN
-        $type=$data['Dataset']['property'];
-        // What is the spectral data?
-        $spectrum=$data['Dataset']['Dataseries'][0]['Datapoint'][0];
-        // Do it!
-        $splash=$this->Splash->generate($rid,$type,$spectrum);
-        if(stristr($splash,'{')) {
-            $data=json_decode($splash,true);
+        if($this->Identifier->getSplashId($rid)) {
+            echo "Splash added";
         } else {
-            $data=json_decode('["'.$splash.'"]',true);
+            echo "Error - see log";
         }
-        if(!isset($data['error'])) {
-            $this->Report->id=$rid;
-            $this->Report->saveField('splash',$data[0]);
-        }
-        $this->redirect('/spectra/view/'.$rid);
-        //if($splash)
-        debug($data);exit;
+        exit;
+    }
+
+    public function test()
+    {
+        $rep=$this->Report->find('first',['conditions'=>['Report.id'=>2],'recursive'=>0]);
+        debug($rep);exit;
     }
 }

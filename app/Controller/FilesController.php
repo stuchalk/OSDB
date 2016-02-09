@@ -6,7 +6,7 @@
  */
 class FilesController extends AppController {
 
-    public $uses = ['File','Collection','Publication'];
+    public $uses = ['File','Collection','Publication','Identifier','Report'];
 
     /**
      * beforeFilter function
@@ -48,7 +48,10 @@ class FilesController extends AppController {
                 //debug($data);exit;
                 $id=$this->File->convert($data);
             }
-
+            $rep=$this->Report->find('first',['conditions'=>['Report.id'=>$id]]);
+            if($rep['Report']['technique_id']=='03') {
+                $this->Identifier->getSplashId($id);
+            }
             // Redirect to view
             $this->redirect('/spectra/view/' . $id);
         } else {

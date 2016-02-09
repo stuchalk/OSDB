@@ -19,9 +19,16 @@ and we are working on additional documentation.</p>
                         <th class="col-md-3">Example(s)</th>
                     </tr>
                     <tr>
-                        <td><code>/spectra/view/[osdbid]</code></td>
-                        <td>Spectrum using id</td>
-                        <td><?php echo $this->Html->link('/spectra/view/14','/spectra/view/14'); ?></td>
+                        <td>
+                            <code>/spectra/view/[osdbid]</code><br />
+                            <code>/spectra/view/[splash]</code><br />
+                        </td>
+                        <td>Spectrum using id<br />
+                        Splash id (<?php echo $this->Html->link('What is this?','http://splash.fiehnlab.ucdavis.edu/',['target'=>'_blank']); ?>)</td>
+                        <td>
+                            <?php echo $this->Html->link('/spectra/view/14','/spectra/view/14'); ?><br />
+                            <?php echo $this->Html->link('/spectra/view/splash10-kz00000000-cbb8be674c2cad55b011','/spectra/view/splash10-kz00000000-cbb8be674c2cad55b011'); ?>
+                        </td>
                     </tr>
                     <tr>
                         <td><code>/spectra/view/[comp]/[tech]/[format]</code></td>
