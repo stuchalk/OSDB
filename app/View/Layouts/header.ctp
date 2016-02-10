@@ -50,10 +50,21 @@
                         <li><?php echo $this->Html->link('Collections','/collections'); ?></li>
                     </ul>
                 </li>
+                <li><?php echo $this->Html->link('Add Spectra','/files/upload'); ?></li>
                 <li><?php echo $this->Html->link('API','/pages/api'); ?></li>
                 <li><?php echo $this->Html->link('About/Contact','/pages/about'); ?></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">My OSDB <span class="caret"></span></a>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                        <?php
+                        if($this->Session->read('Auth.User')) {
+                            echo $this->Session->read('Auth.User.fullname');
+                        } else {
+                            echo "My OSDB";
+                        }
+                        ?>
+                        <span class="caret"></span></a>
                     <ul class="dropdown-menu">
                         <?php if($this->Session->read('Auth.User')) { ?>
                             <li><?php echo $this->Html->link('Dashboard','/users/dashboard'); ?></li>
@@ -64,12 +75,8 @@
                         <?php } ?>
                     </ul>
                 </li>
-                <li><?php echo $this->Html->link('Add Spectrum','/files/upload'); ?></li>
             </ul>
             <?php
-            //echo $this->Form->create('Substance',['action'=>'search','class'=>'navbar-form navbar-right']);
-            //echo $this->Form->input('term',['type'=>'text','class'=>'form-control','div'=>false,'label'=>false,'placeholder'=>'Search compounds...']);
-            //echo $this->Form->end();
             echo $this->Form->create('Report',['url'=>'/spectra','class'=>'navbar-form navbar-right']);
             echo $this->Form->input('search',['type'=>'text','class'=>'form-control','div'=>false,'label'=>false,'placeholder'=>'Search compounds...']);
             echo $this->Form->end();

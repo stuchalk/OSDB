@@ -38,7 +38,6 @@ class UsersController extends AppController {
         if($this->request->is('post'))
         {
             if($this->Auth->login()) {
-                $this->Flash->welcome('Welcome<br />'. $this->Auth->user('username'));
                 // Forcing the redirectUrl to the dashboard as if not set here trying
                 // to add file redirects to collections/add after authentication
                 $this->redirect($this->Auth->redirectUrl(['controller'=>'users','action'=>'dashboard']));
