@@ -84,7 +84,7 @@ and we are working on additional documentation.</p>
                             [format]: (HTML), XML, JSON
                         </td>
                         <td>
-                            <?php echo $this->Html->link('/substances','/substances'); ?>
+                            <?php echo $this->Html->link('/substances','/substances'); ?><br />
                             <?php echo $this->Html->link('/substances/index/XML','/substances/index/XML'); ?>
                         </td>
                     </tr>
@@ -105,6 +105,44 @@ and we are working on additional documentation.</p>
                             <br /> - OR- <br />
                             <?php echo $this->Html->link('/substances/view/1-aminopropane/JSON','/substances/view/1-aminopropane/JSON'); ?>
                         </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Systems -->
+<div class="row">
+    <div class="col-sm-12">
+        <div class="panel panel-warning">
+            <div class="panel-heading">
+                <h3 class="panel-title">Systems</h3>
+            </div>
+            <div class="panel-body">
+                <table class="table table-condensed table-striped">
+                    <tr>
+                        <th class="col-md-4">Endpoint</th>
+                        <th class="col-md-5">Notes</th>
+                        <th class="col-md-3">Example(s)</th>
+                    </tr>
+                    <tr>
+                        <td><code>/systems/index/[format]</code></td>
+                        <td>List of substances<br />
+                            [format]: (HTML), XML, JSON
+                        </td>
+                        <td>
+                            <?php echo $this->Html->link('/systems','/systems'); ?><br />
+                            <?php echo $this->Html->link('/systems/index/XML','/systems/index/XML'); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>/systems/view/[osdbid]/[format]</code></td>
+                        <td>Substance using id<br />
+                            [format]: (HTML), XML, JSON
+                        </td>
+                        <td><?php echo $this->Html->link('/systems/view/11','/systems/view/11'); ?><br />
+                            <?php echo $this->Html->link('/systems/view/11/JSON','/systems/view/11/JSON'); ?></td>
                     </tr>
                 </table>
             </div>

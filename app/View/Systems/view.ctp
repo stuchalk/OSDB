@@ -1,5 +1,4 @@
 <?php
-//pr($data);exit;
 $system=$data['System'];
 $substance=$data['Substance'];
 $contexts=$data['Context'];
@@ -12,7 +11,7 @@ $contexts=$data['Context'];
     <li><?php echo "Type: ".$system['type']; ?></li>
 </ul>
 <p>&nbsp;</p>
-<h3>Data Set</h3>
+<h3>Data Set(s)</h3>
 <ul>
     <?php
     foreach($contexts as $context)
