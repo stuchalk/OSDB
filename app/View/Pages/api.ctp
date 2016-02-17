@@ -20,25 +20,37 @@ and we are working on additional documentation.</p>
                     </tr>
                     <tr>
                         <td>
-                            <code>/spectra/view/[osdbid]</code><br />
-                            <code>/spectra/view/[splash]</code><br />
+                            <code>/spectra/view/[osdbid]/[format]</code><br />
                         </td>
-                        <td>Spectrum using id<br />
-                        Splash id (<?php echo $this->Html->link('What is this?','http://splash.fiehnlab.ucdavis.edu/',['target'=>'_blank']); ?>)</td>
+                        <td>Spectrum using OSDB id<br />
+                            [format]: (HTML), JCAMP, XML, JSONLD</td>
                         <td>
                             <?php echo $this->Html->link('/spectra/view/14','/spectra/view/14'); ?><br />
-                            <?php echo $this->Html->link('/spectra/view/splash10-kz00000000-cbb8be674c2cad55b011','/spectra/view/splash10-kz00000000-cbb8be674c2cad55b011'); ?>
+                            <?php echo $this->Html->link('/spectra/view/14/JCAMP','/spectra/view/14/JCAMP'); ?>
                         </td>
                     </tr>
                     <tr>
-                        <td><code>/spectra/view/[comp]/[tech]/[format]</code></td>
+                        <td>
+                            <code>/spectra/view/[splash]/[format]</code>
+                        </td>
+                        <td>Spectrum using Splash id (<?php echo $this->Html->link('What is this?','http://splash.fiehnlab.ucdavis.edu/',['target'=>'_blank']); ?>)<br />
+                            [tech]: MS (only)<br />
+                            [format]: (HTML), JCAMP, XML, JSONLD
+                        </td>
+                        <td>
+                            <?php echo $this->Html->link('/spectra/view/splash10-kz00000000-cbb8be674c2cad55b011','/spectra/view/splash10-kz00000000-cbb8be674c2cad55b011'); ?><br />
+                            <?php echo $this->Html->link('/spectra/view/splash10-kz00000000-cbb8be674c2cad55b011/XML','/spectra/view/splash10-kz00000000-cbb8be674c2cad55b011/XML'); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>/spectra/view/[comp]-[tech]/[format]</code></td>
                         <td>Spectrum via compound identifer and technique code<br />
-                            [comp]: name, cas#, inchi, inchikey, smiles<br />
+                            [comp]: name, cas#, inchi, inchikey, smiles (no wildcards)<br />
                             [tech]: MS, IR, 1HNMR, 13CNMR<br />
                             [format]: (HTML), JCAMP, XML, JSONLD</td>
                         <td>
-                            <?php echo $this->Html->link('/spectra/view/1,4-dibromobenzene/MS','/spectra/view/1,4-dibromobenzene/MS'); ?>
-                            <?php echo $this->Html->link('/spectra/view/1-aminopropane/MS/XML','/spectra/view/1-aminopropane/MS/XML'); ?>
+                            <?php echo $this->Html->link('/spectra/view/1,4-dibromobenzene@MS','/spectra/view/1,4-dibromobenzene@MS'); ?>
+                            <?php echo $this->Html->link('/spectra/view/1-aminopropane@MS/JSONLD','/spectra/view/1-aminopropane@MS/JSONLD'); ?>
                         </td>
                     </tr>
                     <tr>

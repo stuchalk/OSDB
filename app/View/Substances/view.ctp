@@ -21,8 +21,8 @@ foreach($identifiers as $identifier) {
     ?>
     <div class="text-center">
     <?php
-    echo $this->Html->image('xml.png',['width'=>'150','url'=>'/substances/view/'.$substance['id'].'/xml','alt'=>'Output as XML','style'=>'padding-right: 20px;']);
-    echo $this->Html->image('json.png',['width'=>'150','url'=>'/substances/view/'.$substance['id'].'/json','alt'=>'Output as JSON','style'=>'padding-right: 20px;']);
+    echo $this->Html->image('xml.png',['width'=>'150','url'=>'/substances/view/'.$substance['id'].'/XML','alt'=>'Output as XML','style'=>'padding-right: 20px;']);
+    echo $this->Html->image('json.png',['width'=>'150','url'=>'/substances/view/'.$substance['id'].'/JSON','alt'=>'Output as JSON','style'=>'padding-right: 20px;']);
     ?>
     </div>
 </div>
@@ -77,6 +77,3 @@ foreach($identifiers as $identifier) {
     ?>
 </div>
 <div class="clearfix"></div>
-<code>
-    <?php //pr($systems); ?>
-</code>

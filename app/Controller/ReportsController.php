@@ -58,11 +58,10 @@ class ReportsController extends AppController
 
     /**
      * View a report
-     * @param mixed $id
-     * @param string $tech
+     * @param mixed $id  (either spectral id, chemical name:technique, or splash
      * @param string $format
      */
-    public function view($id,$tech="",$format="")
+    public function view($id,$format="")
     {
         $error = "";
         if(stristr($id,'splash')) {
@@ -70,11 +69,12 @@ class ReportsController extends AppController
             $report=$this->Report->find('first',['conditions'=>['splash'=>$id]]);
             $id=$report['Report']['id'];
         }
-        if(!is_numeric($id)) {
+        if(stristr($id,"@")) {
             // Get the report id is one exists for this chemical and technique
+            list($id,$tech)=explode("@",$id);
             $sid = $tid = $error = "";
             // Get the sid if there is one
-            $data = $this->Substance->find('first', ['conditions' => ['name' => $id], 'recursive' => -1]);
+            $data = $this->Substance->find('first', ['conditions' => ['name like ' => '%'.$id.'%'], 'recursive' => -1]);
             if (empty($data)) {
                 $data = $this->Identifier->find('first', ['conditions' => ['value' => $id], 'recursive' => -1]);
                 if (empty($data)) {
@@ -422,11 +422,12 @@ class ReportsController extends AppController
     /**
      * Generates the data in SciData JSON-LD
      * @param $id
+     * @param $down
      */
-    public function scidata($id)
+    public function scidata($id,$down="")
     {
         $data=$this->Report->scidata($id);
-        $id="s".str_pad($id,9,"0",STR_PAD_LEFT);
+        $id=str_pad($id,9,"0",STR_PAD_LEFT);
         $rpt=$data['Report'];
         $set=$data['Dataset'];
         //$file=$set['File'];
@@ -435,14 +436,15 @@ class ReportsController extends AppController
         $con=$set['Context'];
         //$sam=$set['Sample'];
         $ser=$set['Dataseries'];
-        $base="http://osdb.info/json/".$id;
+        $base="http://osdb.info/spectra/scidata/".$id."/";
 
         // Build the PHP array that will then be converted to JSON
         $json['@context']=['https://chalk.coas.unf.edu/champ/files/contexts/scidata.jsonld',
                             ['@base'=>$base]];
 
         // Main metadata
-        $json['@id']=$id;
+        $json['@id']="";
+        $json['uid']="osdb:spectra:".$id;
         $json['title']=$rpt['title'];
         $json['author']=$rpt['author'];
         $json['description']=$rpt['description'];
@@ -684,7 +686,7 @@ class ReportsController extends AppController
 
         // OK turn it back into JSON-LD
         header("Content-Type: application/ld+json");
-        //header('Content-Disposition: attachment; filename="'.$id.'.json"');
+        if($down=="download") { header('Content-Disposition: attachment; filename="'.$id.'.jsonld"'); }
         echo json_encode($json,JSON_UNESCAPED_UNICODE);exit;
 
     }
