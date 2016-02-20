@@ -5,7 +5,7 @@
  */
 class UsersController extends AppController {
 
-    public $uses=['User','Report'];
+    public $uses=['User','Report','File'];
 
     /**
      * beforeFilter function
@@ -136,5 +136,26 @@ class UsersController extends AppController {
         $this->set('data',$data);
         $reps=$this->Report->bySubstance('user',$uid);
         $this->set('reps',$reps);
+    }
+
+    /**
+     * Admin function access
+     */
+    public function admin()
+    {
+        $type=$this->Auth->user('type');
+        if($type!='admin') {
+            $this->Flash->error('Access Denied');
+            $this->redirect(['controller'=>'users','action'=>'dashboard']);
+        }
+        // Get files
+        $c=['Dataset'=>['fields'=>['id'],
+                'Report'=>['fields'=>['id','title']],
+                'Dataseries'=>['fields'=>['id'],
+                    'Datapoint'=>['fields'=>['id'],
+                        'Condition'=>['fields'=>['id']],
+                        'Data'=>['fields'=>['id']]]]]];
+        $files=$this->File->find('all',['contain'=>$c,'recursive'=>-1]);
+        $this->set('files',$files);
     }
 }

@@ -15,7 +15,7 @@ class ReportsController extends AppController
     public function beforeFilter()
     {
         parent::beforeFilter();
-        $this->Auth->allow('view','scidata','recent','latest','plot','index','test');
+        $this->Auth->allow('view','scidata','recent','latest','plot','index','test','splash');
     }
 
     /**

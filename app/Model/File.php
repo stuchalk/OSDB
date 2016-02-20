@@ -221,6 +221,7 @@ class File extends AppModel
         $proid=$pro['Propertytype']['id'];
 
         // Add the file information
+        $data['id']=$rptid; // Make the file id the same as the report id
         $data['user_id']=$uid;
         $data['substance_id']=$sid1;
         $data['report_id']=$rptid;

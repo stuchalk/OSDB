@@ -45,12 +45,13 @@ class FilesController extends AppController {
                     $data['File']['substance_id']=$sid;
                 }
                 $data['File']['file']=$file;
-                //debug($data);exit;
+                // Convert file
                 $id=$this->File->convert($data);
-            }
-            $rep=$this->Report->find('first',['conditions'=>['Report.id'=>$id]]);
-            if($rep['Report']['technique_id']=='03') {
-                $this->Identifier->getSplashId($id);
+                // Add splash
+                $rep=$this->Report->find('first',['conditions'=>['Report.id'=>$id]]);
+                if($rep['Report']['technique_id']=='03') {
+                    $this->Identifier->getSplashId($id);
+                }
             }
             // Redirect to view
             $this->redirect('/spectra/view/' . $id);
@@ -94,16 +95,6 @@ class FilesController extends AppController {
             $this->set('data',$data);
             $this->set('id',$id);
         }
-    }
-
-    /**
-     * Delete a file
-     * @param $id
-     */
-    public function delete($id)
-    {
-        $this->File->delete($id);
-        $this->redirect(['action' => 'index']);
     }
 
     /**

@@ -8,7 +8,7 @@ App::uses('ClassRegistry', 'Utility');
  */
 class Activity extends AppModel
 {
-    public $hasOne = ['User'];
+    public $belongsTo = ['User'];
 
     /**
      * General function to add a new activity

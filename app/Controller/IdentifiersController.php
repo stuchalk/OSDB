@@ -67,6 +67,15 @@ class IdentifiersController extends AppController
         } else {
             exit;
         }
+    }
 
+    /**
+     * Add splash id to a report
+     * @param integer $id
+     */
+    public function addsplash($id)
+    {
+        $this->Identifier->getSplashId($id);
+        $this->redirect('/reports/view/'.$id);
     }
 }

@@ -14,7 +14,6 @@ class Context extends AppModel
     public $belongsTo = ['Dataset'];
 
     public $hasAndBelongsToMany=['System'];
-    //public $hasAndBelongsToMany=['System','Material','Computer'];
 
     public $hasMany=['Annotation'=>['foreignKey'=>'context_id','dependent'=>true]];
 

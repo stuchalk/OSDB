@@ -67,6 +67,9 @@
                         <span class="caret"></span></a>
                     <ul class="dropdown-menu">
                         <?php if($this->Session->read('Auth.User')) { ?>
+                            <?php if($this->Session->read('Auth.User.type')=='admin') { ?>
+                                <li><?php echo $this->Html->link('Admin','/users/admin'); ?></li>
+                            <?php } ?>
                             <li><?php echo $this->Html->link('Dashboard','/users/dashboard'); ?></li>
                             <li><?php echo $this->Html->link('Logout','/users/logout'); ?></li>
                         <?php } else { ?>
