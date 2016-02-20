@@ -427,6 +427,7 @@ class ReportsController extends AppController
     public function scidata($id,$down="")
     {
         $data=$this->Report->scidata($id);
+        //debug($data);exit;
         $id=str_pad($id,9,"0",STR_PAD_LEFT);
         $rpt=$data['Report'];
         $set=$data['Dataset'];
@@ -629,7 +630,7 @@ class ReportsController extends AppController
                     }
                     $condj['axis']="independent";
                     $v=[];
-                    $v['@id']="result/".($m+1)."/x/value";
+                    $v['@id']="series/".($m+1)."/x/value";
                     if(!is_null($cond['number'])) {
                         if($cond['datatype']=="datum") {
                             $v['format']="datam";
@@ -655,7 +656,7 @@ class ReportsController extends AppController
                     }
                     $dataj['axis']="dependent";
                     $v=[];
-                    $v['@id']="result/".($m+1)."/y/value";
+                    $v['@id']="series/".($m+1)."/y/value";
                     if(!is_null($data['number'])) {
                         if($data['datatype']=="datum") {
                             $v['format']="datam";
@@ -692,32 +693,27 @@ class ReportsController extends AppController
     }
 
     /**
-     * Delete a property
+     * Delete a report (and all associated data)
      * @param $id
      */
     public function delete($id)
     {
         $this->Report->delete($id);
-        $this->redirect('/reports');
+        $this->redirect('/users/admin');
     }
 
     /**
-     * Generic testing function
-     * @param $rid
+     * Used by the splash site to find out if a splash exists
+     * @param string $spl
      */
-    public function addsplash($rid)
+    public function splash($spl)
     {
-        if($this->Identifier->getSplashId($rid)) {
-            echo "Splash added";
+        $res=$this->Report->find('first',['conditions'=>['splash'=>$spl]]);
+        if(empty($res)) {
+            echo "false";
         } else {
-            echo "Error - see log";
+            echo "true";
         }
         exit;
-    }
-
-    public function test()
-    {
-        $rep=$this->Report->find('first',['conditions'=>['Report.id'=>2],'recursive'=>0]);
-        debug($rep);exit;
     }
 }
