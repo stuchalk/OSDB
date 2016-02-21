@@ -15,7 +15,7 @@ class ReportsController extends AppController
     public function beforeFilter()
     {
         parent::beforeFilter();
-        $this->Auth->allow('view','scidata','recent','latest','plot','index','test','splash');
+        $this->Auth->allow('view','scidata','recent','latest','plot','index','test','splash','splashes');
     }
 
     /**
@@ -714,6 +714,19 @@ class ReportsController extends AppController
         } else {
             echo "true";
         }
+        exit;
+    }
+
+    /**
+     * JSON array of all splashes
+     */
+    public function splashes()
+    {
+        $spls=$this->Report->find('list',['fields'=>['id','splash'],'conditions'=>['not'=>['splash'=>'null']]]);
+        sort($spls);
+        $json=json_encode($spls);
+        header("Content-Type: application/ld+json");
+        echo '{ "site": "http://osdb.info","timestamp": "'.date(DATE_ATOM).'","count": '.count($spls).',"splashes": '.$json.' }';
         exit;
     }
 }
