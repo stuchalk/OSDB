@@ -41,11 +41,11 @@
         </div>
         <div class="navbar-collapse collapse" id="navbar">
             <ul class="nav navbar-nav">
-                <li class="dropdown">
+                <li class="dropdown" style="z-index: 200000;">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Browse <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu" style="z-index: 200000;">
                         <li><?php echo $this->Html->link('Spectra','/spectra'); ?></li>
-                        <li><?php echo $this->Html->link('Compounds','/substances'); ?></li>
+                        <li><?php echo $this->Html->link('Compounds','/compounds'); ?></li>
                         <li><?php echo $this->Html->link('Techniques','/techniques'); ?></li>
                         <li><?php echo $this->Html->link('Collections','/collections'); ?></li>
                     </ul>
@@ -84,7 +84,10 @@
             echo $this->Form->input('search',['type'=>'text','class'=>'form-control','div'=>false,'label'=>false,'placeholder'=>'Search compounds...']);
             echo $this->Form->end();
             ?>
-            <?php echo $this->Flash->render(); ?>
+            <?php
+            echo $this->Flash->render();
+            
+            ?>
         </div><!-- /.nav-collapse -->
     </div><!-- /.container-fluid -->
 </nav>

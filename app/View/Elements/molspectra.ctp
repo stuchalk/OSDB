@@ -9,14 +9,50 @@
 // $height of div
 // $width of div
 if(!isset($height))     { $height=210; }
-if(!isset($width))      { $width=193; }
+if(!isset($width))      { $width="100%"; }
 if(!isset($spectra))    { $spectra=[]; }
 if(!isset($index))      { $index=0; }
-if(!isset($grid))       { $grid=3;}
+
+if(!isset($named))      { $named=true; }
+if(!isset($fontsize))   { $fontsize=11; }
+if(!isset($links))      { $links=true; }
+if(!isset($cols))       { $cols=12; }
 
 // Chemicals
 if(isset($inchikey))
 {
+    echo "<div id='chemical".$index."' class='chemical col-md-".$cols."'>";
+    // Show spectral links
+    echo "<div class='panel panel-primary'>";
+    if(!empty($spectra)) {
+        echo "<div class='text-center' style='margin-top: 5px;margin-bottom: 10px;'>";
+        foreach($spectra as $id=>$title) {
+            echo $this->Html->link($title,'/spectra/view/'.$id,['class'=>'linkbutton'])."&nbsp;";
+        }
+        echo "</div>";
+    }
+    // Show JSmol
+    echo $this->element('jsmol',['uid'=>$index,'height'=>$height,'width'=>$width,
+        'inchikey'=>$inchikey,'inchi'=>$inchi,'name'=>$name]);
+    // Show chemical name
+    if($named) {
+        if(isset($system)&&$system==true) {
+            $name=$this->Html->link($name,'/substances/view/'.$uid);
+        }
+        echo "<div style='text-align: center;margin-top: 5px;'>".$name."</div>";
+    }
+    // Show links on other sites
+    if($links) {
+        echo "<div style='text-align: center;margin-bottom: 0;font-size: ".$fontsize."px;'>View @ ";
+        echo $this->Html->link('ChemSpider','http://www.chemspider.com/Search.aspx?q='.$inchikey,['target'=>'_blank'])." ";
+        echo $this->Html->link('NIST','http://webbook.nist.gov/cgi/cbook.cgi?InChI='.$inchikey,['target'=>'_blank'])." ";
+        echo $this->Html->link('PubChem','https://pubchem.ncbi.nlm.nih.gov/compound/'.$inchikey,['target'=>'_blank']);
+        echo "</div>";
+    }
+    echo "</div>";
+    echo "</div>";
+} else {
+    if(!isset($grid))       { $grid=3;}
     ?>
     <div class='col-sm-<?php echo $grid; ?>'>
         <div id='chemical<?php echo $index; ?>' class='panel panel-default'>

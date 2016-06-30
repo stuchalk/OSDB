@@ -22,7 +22,7 @@
     echo $this->Html->script('flot/jquery.flot.axislabels');
     echo $this->Html->script('flot/jquery.flot.labels');
     echo $this->Html->script('flot/jquery.flot.resize');
-    echo $this->Html->script('jsmol/JSmol.lite.nojq');
+    echo $this->Html->script('JSmol.min.nojq');
     echo $this->fetch('meta');
     echo $this->fetch('css');
     echo $this->fetch('script');
