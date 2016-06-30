@@ -4,6 +4,7 @@ CakePHP 2
 /app/Config/core.php
 /app/Config/database.php
 /vendors/*
+/app/Controller/WebbookController.php
 
 /lib/Cake/Console/Templates/skel/tmp/
 /build
