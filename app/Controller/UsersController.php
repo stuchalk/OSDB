@@ -1,4 +1,5 @@
 <?php
+App::uses('AppController', 'Controller');
 
 /**
  * Class UsersController
@@ -14,20 +15,6 @@ class UsersController extends AppController {
     {
         parent::beforeFilter();
         $this->Auth->allow('login','register','logout');
-    }
-
-    /**
-     * beforeSave function
-     * @return bool
-     */
-    public function beforeSave() {
-        if (isset($this->data[$this->alias]['password'])) {
-            $passwordHasher = new BlowfishPasswordHasher();
-            $this->data[$this->alias]['password'] = $passwordHasher->hash(
-                $this->data[$this->alias]['password']
-            );
-        }
-        return true;
     }
 
     /**
@@ -60,14 +47,20 @@ class UsersController extends AppController {
      */
     public function register()
     {
-        if($this->request->is('post')) {
-            $this->User->create();
-            $data=$this->request->data;
-            if($this->User->save($data)) {
-                $this->Flash->set('User has been created');
-                $this->redirect(['action'=>'login']);
-            } else {
-                $this->Flash->set('User could not be created.');
+        // Check to make sure this is not a bot using recaptcha
+        if(!empty($this->data['g-recaptcha-response'])) {
+            if ($this->request->is('post') && $r = $this->Recaptcha->check($this->data['g-recaptcha-response'])) {
+                $this->User->create();
+                $data = $this->request->data;
+                $data['recap_date'] = $r['challenge_ts'];
+                $data['recap_ip'] = $r['hostname'];
+                //debug($data);exit;
+                if ($this->User->save($data)) {
+                    $this->Flash->success('User created!<br />Please sign in...');
+                    $this->redirect(['action' => 'login']);
+                } else {
+                    $this->Flash->error('User could not be created.');
+                }
             }
         }
     }

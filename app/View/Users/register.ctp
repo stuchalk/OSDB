@@ -1,3 +1,4 @@
+<script src='https://www.google.com/recaptcha/api.js'></script>
 <script>
     $(document).ready(function() {
         $("[data-toggle=popover]").popover();
@@ -5,7 +6,7 @@
 </script>
 <h2>Register for an Account on OSDB</h2>
 <?php
-echo $this->Form->create('User',['action' => 'register','role'=>'form','class'=>'form-horizontal','inputDefaults'=>['label'=>false,'div'=>false]]);
+echo $this->Form->create(false,['url'=>['controller'=>'users','action'=>'register'],'role'=>'form','class'=>'form-horizontal','inputDefaults'=>['label'=>false,'div'=>false]]);
 echo $this->Form->input('type', ['type' =>'hidden','value'=>'regular']);
 ?>
 <div class="form-group form-group-lg">
@@ -42,6 +43,11 @@ echo $this->Form->input('type', ['type' =>'hidden','value'=>'regular']);
     <label for="UserEmail" class="col-sm-2 control-label">Email</label>
     <div class="col-sm-6">
         <?php echo $this->Form->input('email', ['type'=>'text','size'=>'30','class'=>'form-control']); ?>
+    </div>
+</div>
+<div class="form-group form-group-lg clearfix">
+    <div class="col-sm-offset-2 col-sm-6">
+        <div class="g-recaptcha pull-right" data-sitekey="6LcL5iMTAAAAAErS1vHJCWYyHu-ba5qF7Ubkd-7Q"></div>
     </div>
 </div>
 <div class="form-group form-group-lg">
