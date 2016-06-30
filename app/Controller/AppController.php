@@ -20,9 +20,11 @@ Configure::load('osdb','default');
  */
 class AppController extends Controller {
 
-    public $components = ['Flash','Export','Utils','Email','RequestHandler','Session', 'Paginator',
-                            'Auth' => ['loginRedirect' => ['controller' => 'users','action' => 'dashboard'],
-                                    'logoutRedirect' => ['controller' => 'pages','action' => 'display','home']]];
+    public $components = ['Flash','Export','Utils','Email','Recaptcha','RequestHandler','Session', 'Paginator',
+                            'Auth' => [
+                                'loginRedirect' => ['controller' => 'users','action' => 'dashboard'],
+                                'authenticate' => ['Form' => ['passwordHasher' => 'Blowfish']],
+                                'logoutRedirect' => ['controller' => 'pages','action' => 'display','home']]];
 
     public $helpers = ['Form','Html','Session','Time','Flash'];
 

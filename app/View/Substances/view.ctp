@@ -14,19 +14,8 @@ foreach($identifiers as $identifier) {
     }
 }
 ?>
-<div class="col-md-4">
-    <?php
-    $chem=['name'=>$substance['name'],'inchi'=>$inchi,'inchikey'=>$inchikey,'casrn'=>$casrn];
-    echo $this->element('molspectra',['index'=>0,'grid'=>12]+$chem); // Sets it full width with col-md-4 grid
-    ?>
-    <div class="text-center">
-    <?php
-    echo $this->Html->image('xml.png',['width'=>'150','url'=>'/substances/view/'.$substance['id'].'/XML','alt'=>'Output as XML','style'=>'padding-right: 20px;']);
-    echo $this->Html->image('json.png',['width'=>'150','url'=>'/substances/view/'.$substance['id'].'/JSON','alt'=>'Output as JSON','style'=>'padding-right: 20px;']);
-    ?>
-    </div>
-</div>
-<div class="col-md-8">
+<div class="row">
+<div class="col-sm-8">
     <h2><?php echo $substance['name']; ?></h2>
     <ul>
         <li><?php echo "Formula: ".$substance['formula'];?></li>
@@ -57,11 +46,11 @@ foreach($identifiers as $identifier) {
     <?php
     foreach($systems as $sys) {
         ?>
-        <div class="col-md-6">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h3 class="panel-title"><?php echo $this->Html->link($sys['name'],'/systems/view/'.$sys['id']); ?></h3>
-            </div>
+        <div class="col-sm-6 col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><?php echo $this->Html->link($sys['name'],'/systems/view/'.$sys['id']); ?></h3>
+                </div>
                 <div class="list-group">
                     <?php
                     foreach($sys['Context'] as $context) {
@@ -70,10 +59,25 @@ foreach($identifiers as $identifier) {
                     }
                     ?>
                 </div>
-        </div>
+            </div>
         </div>
         <?php
     }
     ?>
+    </div>
+    <div class="col-sm-4 col-lg-4" style="padding-top: 40px;">
+        <div class="col-sm-12 col-lg-12" style="margin-bottom: 20px;">
+            <?php
+            $chem=['name'=>$substance['name'],'inchi'=>$inchi,'inchikey'=>$inchikey,'casrn'=>$casrn];
+            echo $this->element('molspectra',['index'=>0,'grid'=>12]+$chem); // Sets it full width with col-md-4 grid
+            ?>
+        </div>
+        <div class="text-center" style="margin-top: 20px;">
+            <?php
+            echo $this->Html->image('xml.png',['width'=>'120px','url'=>'/substances/view/'.$substance['id'].'/XML','alt'=>'Output as XML','style'=>'padding-right: 20px;']);
+            echo $this->Html->image('json.png',['width'=>'120px','url'=>'/substances/view/'.$substance['id'].'/JSON','alt'=>'Output as JSON']);
+            ?>
+        </div>
+    </div>
+    <div class="clearfix"></div>
 </div>
-<div class="clearfix"></div>

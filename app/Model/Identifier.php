@@ -27,20 +27,26 @@ class Identifier extends AppModel
         return $ret[$model];
     }
 
+    /**
+     * Get Wikidata ID for compound
+     * @param $sid
+     * @param $type
+     * @param $value
+     * @return bool|int
+     */
     public function getWikidataId($sid, $type, $value)
     {
         // Uses Wikidata SPARQL REST call to get wikidata code via InChIKey (P235), CAS (P231), or CID (P662) search
-        if ($type == 'inchikey') {
-            $sparql = "PREFIX wdt: <http://www.wikidata.org/prop/direct/> select ?c where { ?c wdt:P235 \"" . $value . "\"}";
-        } elseif ($type == 'casrn') {
-            $sparql = "PREFIX wdt: <http://www.wikidata.org/prop/direct/> select ?c where { ?c wdt:P231 \"" . $value . "\"}";
-        } elseif ($type == 'pubchemid') {
-            $sparql = "PREFIX wdt: <http://www.wikidata.org/prop/direct/> select ?c where { ?c wdt:P662 \"" . $value . "\"}";
+        if ($type=='inchikey') {
+            $sparql="PREFIX wdt: <http://www.wikidata.org/prop/direct/> select ?c where { ?c wdt:P235 \"".$value."\"}";
+        } elseif ($type=='casrn') {
+            $sparql="PREFIX wdt: <http://www.wikidata.org/prop/direct/> select ?c where { ?c wdt:P231 \"".$value."\"}";
+        } elseif ($type=='pubchemid') {
+            $sparql="PREFIX wdt: <http://www.wikidata.org/prop/direct/> select ?c where { ?c wdt:P662 \"".$value."\"}";
         }
-        $url = "https://query.wikidata.org/sparql?query=" . urlencode($sparql) . "&format=json";
+        $url = "https://query.wikidata.org/sparql?query=".urlencode($sparql)."&format=json";
         $json = file_get_contents($url);
         $data = json_decode($json, true);
-        //debug($data);
         if (!empty($data['results']['bindings'][0]['c'])) {
             $wid = str_replace("http://www.wikidata.org/entity/", "", $data['results']['bindings'][0]['c']['value']);
             $resp = $this->add(['substance_id' => $sid, 'type' => 'wikidata', 'value' => $wid]);
@@ -68,14 +74,12 @@ class Identifier extends AppModel
                     'Condition' => ['fields' => ['datatype', 'text', 'number', 'title', 'id'],
                         'Property' => ['fields' => ['name']],
                         'Unit' => ['fields' => ['name', 'symbol']]]]]]];
-
-        $data = $Rep->find('first', ['conditions' => ['Report.id' => $rid], 'contain' => $c, 'recursive' => -1]);
+        $data = $Rep->find('first',['conditions'=>['Report.id'=>$rid],'contain'=>$c,'recursive'=>-1]);
         // What type of data is it? choices are MS, IR, UV, NMR, RAMAN
         $type = $data['Dataset']['property'];
-        // What is the spectral data?
+        // Where is the spectral data?
         $spectrum = $data['Dataset']['Dataseries'][0]['Datapoint'][0];
-        // Do it!
-        //$template='{"ions":[{"mass":100,"intensity":1},{"mass":101,"intensity":2},{"mass":102,"intensity":3}],"type":"MS"}';
+        // Put together data packet
         $xdata=json_decode($spectrum['Condition'][0]['number'],true);
         $ydata=json_decode($spectrum['Data'][0]['number'],true);
         if($type=="Mass Spectrometry") { // MS
@@ -91,25 +95,33 @@ class Identifier extends AppModel
         }
         $json=json_encode($sarray);
         $http = new HttpSocket();
-        // Have to override header:content-type as charset=utf8 causes error on server
-        $response=$http->post('http://splash.fiehnlab.ucdavis.edu/splash/it','',['body'=>$json,'header'=>['Content-Type'=>'application/json']]);
+        $path='http://splash.fiehnlab.ucdavis.edu/splash/it';
+        $response=$http->post($path,'',['body'=>$json,'header'=>['Content-Type'=>'application/json']]);
         $splash=$response->body;
         // Get splash from response
         if (stristr($splash, '{')) {
             $data = json_decode($splash, true);
         } else {
-            $data = json_decode('["' . $splash . '"]', true);
+            $data = json_decode('["'.$splash.'"]', true);
         }
-        if (!isset($data['error'])) {
+        if(!isset($data['error'])) {
             $Rep->id = $rid;
             $Rep->saveField('splash', $data[0]);
             $Rep->clear();
-            $this->log('splash', 'Retrieved splash ('.$data[0].') on report '.$rid);
-            return true;
+            $this->log('splash','Retrieved splash ('.$data[0].') on report '.$rid);
+            return $data[0];
         } else {
-            $this->log('splash', 'Error trying to get splash: ' . $data['error']);
+            $this->log('splash','Error trying to get splash: '.$data['error']);
             return false;
         }
-        //debug($data);exit;
+    }
+
+    
+    
+    public function getchebi($id) {
+        $cid=$this->find('first',['conditions'=>['type'=>'pubchemid','substance_id'=>$id]]);
+        debug($cid);exit;
+        $url="https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/10214376/synonyms/JSON";
+
     }
 }

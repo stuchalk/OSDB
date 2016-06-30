@@ -406,13 +406,18 @@ class ReportsController extends AppController
         $c=['Dataset'=>[
                 'Dataseries'=>
                     ['Datapoint'=>['Data','Condition'],'Descriptor'],
-                'Context'=>['System'=>['Substance'=>['Identifier'=>['conditions'=>['type'=>'inchikey']]]]],
+                'Context'=>[
+                    'System'=>[
+                        'Substance'=>[
+                            'Identifier'=>['conditions'=>['type'=>['inchikey','inchi']],'order'=>'type']]]],
                 'Methodology'=>['Measurement']]];
         $r=$this->Report->find('first',['order'=>['Report.updated'=>'desc'],'limit'=>1,'contain'=>$c]);
+        //debug($r);exit;
         // For jmol: name, inchikey
         $data=[];
         $data['jmol']['name']=$r['Dataset']['Context']['System'][0]['Substance'][0]['name'];
-        $data['jmol']['inchikey']=$r['Dataset']['Context']['System'][0]['Substance'][0]['Identifier'][0]['value'];
+        $data['jmol']['inchi']=$r['Dataset']['Context']['System'][0]['Substance'][0]['Identifier'][0]['value'];
+        $data['jmol']['inchikey']=$r['Dataset']['Context']['System'][0]['Substance'][0]['Identifier'][1]['value'];
         // For flot
         $data['flot']['id']=$r['Report']['id'];
         $this->set('data',$data);
@@ -427,7 +432,6 @@ class ReportsController extends AppController
     public function scidata($id,$down="")
     {
         $data=$this->Report->scidata($id);
-        //debug($data);exit;
         $id=str_pad($id,9,"0",STR_PAD_LEFT);
         $rpt=$data['Report'];
         $set=$data['Dataset'];
@@ -437,34 +441,57 @@ class ReportsController extends AppController
         $con=$set['Context'];
         //$sam=$set['Sample'];
         $ser=$set['Dataseries'];
+        $filemeta=$ser[0]['Annotation'][0]['Metadata'];
+        $date="";
+        foreach($filemeta as $meta) {
+            if($meta['field']=="date") {
+                $date=$meta['value'];
+                break;
+            } else {
+                $date=$rpt['updated'];
+            }
+        }
         $base="http://osdb.info/spectra/scidata/".$id."/";
 
         // Build the PHP array that will then be converted to JSON
-        $json['@context']=['https://chalk.coas.unf.edu/champ/files/contexts/scidata.jsonld',
+        $json['@context']=['https://stuchalk.github.io/scidata/contexts/scidata.jsonld',
+                            ['sci'=>'http://stuchalk.github.io/scidata/ontology/scidata.owl#',
+                                'meas'=>'http://stuchalk.github.io/scidata/ontology/scidata_measurement.owl#',
+                                'qudt'=>'http://www.qudt.org/qudt/owl/1.0.0/unit.owl#',
+                                'dc'=>'http://purl.org/dc/terms/',
+                                'ss'=>'http://www.semanticweb.org/ontologies/cheminf.owl#',
+                                'xsd'=>'http://www.w3.org/2001/XMLSchema#'],
                             ['@base'=>$base]];
 
         // Main metadata
         $json['@id']="";
         $json['uid']="osdb:spectra:".$id;
         $json['title']=$rpt['title'];
-        $json['author']=$rpt['author'];
+        $json['author']=['@id'=>'author','@type'=>'dc:creator','name'=>$rpt['author']];
         $json['description']=$rpt['description'];
+        $json['publisher']=$rpt['author'];
         $json['version']=1;
-        $json['date']=$rpt['updated'];
-        //$json['permalink']="http://hdl.handle.net/osdb/".$id;
+        $json['startdate']=$date;
+        $json['permalink']="http://osdb.info/spectra/view/".$id;
+        $json['toc']=['@id'=>'toc','@type'=>'dc:tableOfContents','sections'=>[]];
 
         // Dataset
         $setj['@id']="scidata";
-        $opts=['setType','property','kind'];
-        foreach($opts as $opt) {
+        $setj['@type']="sci:scientificData";
+        $opts=['type'=>'setType','property'=>'property','kind'=>'kind'];
+        foreach($opts as $field=>$opt) {
             if(isset($set[$opt])&&$set[$opt]!="") {
-                $setj[$opt]=$set[$opt];
+                $setj[$field]=$set[$opt];
             }
         }
         $json['scidata']=$setj;
 
         // Methodology sections
+        if(is_array($met)&&!empty($met)) {
+            $json['toc']['sections'][]="methodology";
+        }
         $metj['@id']='methodology';
+        $metj['@type']='sci:methodology';
         if(isset($met['evaluation'])&&$met['evaluation']!="") { $metj['evaluation']=$met['evaluation']; }
         $metj['aspects']=[];
 
@@ -472,7 +499,9 @@ class ReportsController extends AppController
         if(isset($met['Measurement'])&&!empty($met['Measurement'])) {
             $mea=$met['Measurement'];
             $meaj=[];
-            $meaj['@id']='measurement';
+            $meaj['@id']='measurement/1';
+            $meaj['@type']='meas:measurement';
+            $json['toc']['sections'][]=$meaj['@id'];
             $opts=['techniqueType','technique','instrumentType','instrument','vendor'];
             foreach($opts as $opt) {
                 if(isset($mea[$opt])&&$mea[$opt]!="") {
@@ -486,13 +515,17 @@ class ReportsController extends AppController
                     $s=$mea['Setting'][$x];
                     $setgj=[];
                     $setgj['@id']="setting/".($x+1);
+                    $setgj['@type']="sci:setting";
                     $setgj['quantity']=strtolower($s['Property']['Quantity']['name']);
                     $setgj['property']=$s['Property']['name'];
                     $v=[];
                     $v['@id']="setting/".($x+1)."/value";
+                    $v['@type']="sci:value";
                     if(!is_null($s['number'])) {
                         $v['number']=$s['number'];
-                        if(isset($s['Unit']['symbol'])) { $v['unit']=$s['Unit']['symbol']; }
+                        if(isset($s['Unit']['symbol'])&&!empty($s['Unit']['symbol'])) {
+                            $v['unitref']=$this->Report->qudt($s['Unit']['symbol']);
+                        }
                     } else {
                         $v['text']=$s['text'];
                     }
@@ -506,71 +539,106 @@ class ReportsController extends AppController
         // Add methodology section to main array
         $json['scidata']['methodology']=$metj;
 
-        // Context sections
-        $conj['@id']='context';
+        // System sections
+        if(is_array($con)&&!empty($con)) {
+            $json['toc']['sections'][]="system";
+        }
+        $conj['@id']='system';
+        $conj['@type']='sci:system';
         $opts=['discipline','subdiscipline'];
         foreach($opts as $opt) {
             if(isset($con[$opt])&&$con[$opt]!="") {
                 $conj[$opt]=strtolower($con[$opt]);
             }
         }
-        $conj['aspects']=[];
+        $conj['facets']=[];
+
+        //debug($con['System']);
 
         // System
         if(isset($con['System'])) {
             for($i=0;$i<count($con['System']);$i++) {
-                $sys=$con['System'][$i];
-                $sysj['@id'] = 'system/'.($i+1);
-                $opts=['name','description','type'];
-                foreach($opts as $opt) {
-                    if(isset($sys[$opt])&&$sys[$opt]!="") {
-                        $sysj[$opt]=$sys[$opt];
+                if (count($con['System'][$i]['Substance']) == 1) {
+                    $type = "substance";
+                } else {
+                    $type = "mixture";
+                }
+                $sid = $type . "/" . ($i + 1);
+                $json['toc']['sections'][] = $sid;
+                $sys = $con['System'][$i];
+                $sysj['@id'] = $sid;
+                $sysj['@type'] = "sci:" . $type;
+                $opts = ['name', 'description', 'type'];
+                foreach ($opts as $opt) {
+                    if (isset($sys[$opt]) && $sys[$opt] != "") {
+                        $sysj[$opt] = $sys[$opt];
                     }
                 }
-                if(isset($sys['Substance'])) {
+                if (isset($sys['Substance'])) {
                     for ($j = 0; $j < count($sys['Substance']); $j++) {
-                        $sub=$sys['Substance'][$j];
-                        $subj['@id']="substance/".($j+1);
-                        $opts=['name','formula','molweight'];
-                        foreach($opts as $opt) {
-                            if(isset($sub[$opt])&&$sub[$opt]!="") {
-                                $subj[$opt]=$sub[$opt];
+                        // Components
+                        $subj['@id'] = $sid . "/component/" . ($j + 1);
+                        $subj['@type'] = "sci:chemical";
+                        $subj['source'] = "compound/" . ($j + 1);
+                        if ($j == 0) {
+                            $subj['role'] = 'sci:solute';
+                        } else {
+                            $subj['role'] = 'sci:solvent';
+                        }
+                        $sysj['components'][] = $subj;
+                        // Chemicals
+                        $sub = $sys['Substance'][$j];
+                        $chmj['@id'] = "compound/" . ($j + 1);
+                        $json['toc']['sections'][] = $chmj['@id'];
+                        $chmj['@type'] = "sci:compound";
+                        $opts = ['name', 'formula', 'molweight'];
+                        foreach ($opts as $opt) {
+                            if (isset($sub[$opt]) && $sub[$opt] != "") {
+                                $chmj[$opt] = $sub[$opt];
                             }
                         }
-                        if(isset($sub['Identifier']))
-                        {
-                            $opts=['inchi','inchikey','iupacname'];
-                            foreach($sub['Identifier'] as $idn) {
+                        if (isset($sub['Identifier'])) {
+                            $opts = ['inchi', 'inchikey', 'iupacname'];
+                            foreach ($sub['Identifier'] as $idn) {
                                 foreach ($opts as $opt) {
-                                    if ($idn['type']==$opt) {
-                                        $subj[$opt] = $idn['value'];
+                                    if ($idn['type'] == $opt) {
+                                        $chmj[$opt] = $idn['value'];
                                     }
                                 }
                             }
                         }
-                        $sysj['components'][]=$subj;
+                        $conj['facets'][] = $chmj;
                     }
                 }
-                $conj['aspects'][]=$sysj;
+                $conj['facets'][] = $sysj;
             }
         }
 
         // Add context section to main array
-        $json['scidata']['context']=$conj;
+        $json['scidata']['system']=$conj;
 
         // Dataset section
+        $json['toc']['sections'][]="dataset";
         $resj['@id']='dataset';
-        $resj['dataseries']=[];
+        $resj['@type']='sci:dataset';
+        $resj['source']='measurement/1';
+        $resj['scope']='mixture/1';
+        $resj['datagroup']=[];
         for($k=0;$k<count($ser);$k++) {
             $dat=$ser[$k];
+            $json['toc']['sections'][]="datagroup/".($k+1);
+
             $datj=[];
-            $datj['@id']="dataseries/".($k+1);
+            $datj['@id']="datagroup/".($k+1);
             $opts=['type','format','level'];
             foreach($opts as $opt) {
                 if(isset($dat[$opt])&&$dat[$opt]!="") {
                     $datj[$opt]=strtolower($dat[$opt]);
                 }
             }
+
+            // Source
+            $datj['source']='http://osdb.info/spectra/view/'.$id.'/JCAMP';
 
             // Annontations
             if(isset($dat['Annotation'])&&!empty($dat['Annotation'])) {
@@ -589,7 +657,7 @@ class ReportsController extends AppController
                     } else {
                         break; // Get out of annotation if no metadata in class
                     }
-                    $datj[$ann['class']]=$annj;
+                    //$datj[$ann['class']]=$annj;
                 }
             }
 
@@ -598,19 +666,23 @@ class ReportsController extends AppController
                 for($l=0;$l<count($dat['Descriptor']);$l++) {
                     $desj=[];
                     $des=$dat['Descriptor'][$l];
-                    $desj['@id']="descriptor/".($l+1);
+                    $desj['@id']="attribute/".($l+1);
+                    $desj['@type']="sci:attribute";
                     $desj['quantity']=strtolower($des['Property']['Quantity']['name']);
                     $desj['property']=$des['title'];
                     $v=[];
-                    $v['@id']="descriptor/".($l+1)."/value";
+                    $v['@id']="attribute/".($l+1)."/value";
+                    $v['@type']="sci:value";
                     if(!is_null($des['number'])) {
                         $v['number']=$des['number'];
-                        if(isset($des['Unit']['symbol'])) { $v['unit']=$des['Unit']['symbol']; }
+                        if(isset($des['Unit']['symbol'])&&!empty($des['Unit']['symbol'])) {
+                            $v['unitref']=$this->Report->qudt($des['Unit']['symbol']);
+                        }
                     } else {
                         $v['text']=$des['text'];
                     }
                     $desj['value']=$v;
-                    $datj['descriptor'][]=$desj;
+                    $datj['attributes'][]=$desj;
                 }
             }
 
@@ -619,69 +691,110 @@ class ReportsController extends AppController
                 for($m=0;$m<count($dat['Datapoint']);$m++) {
                     // Independent axis
                     $cond=$dat['Datapoint'][$m]['Condition'][0];
-                    //debug($cond);
+                    if(is_array($cond)&&!empty($cond)) {
+                        $json['toc']['sections'][]="dataseries/1";
+                    }
                     $condj=[];
-                    $condj['@id']="series/".($m+1)."/x";
-                    $condj['quantity']=strtolower($cond['Property']['Quantity']['name']);
-                    $condj['property']=$cond['title'];
+                    $condj['@id']="dataseries/1";
+                    $condj['@type']="sci:x-axis";
                     $condj['label']=ucfirst($cond['title']);
                     if(isset($cond['Unit']['symbol'])&&$cond['Unit']['symbol']!="") {
                         $condj['label'].=" (".$cond['Unit']['symbol'].")";
                     }
                     $condj['axis']="independent";
+                    // Parameter
+                    $paramj=[];
+                    $paramj['@id']="dataseries/1/parameter";
+                    $paramj['@type']="sci:parameter";
+                    $paramj['quantity']=strtolower($cond['Property']['Quantity']['name']);
+                    $paramj['property']=$cond['title'];
+                    // Value
                     $v=[];
-                    $v['@id']="series/".($m+1)."/x/value";
                     if(!is_null($cond['number'])) {
-                        if($cond['datatype']=="datum") {
-                            $v['format']="datam";
-                            $v['number']=$cond['number'];
-                        } else {
-                            $v['format']="array";
-                            $v['number']=json_decode($cond['number'],true);
+                        $unit="";
+                        if(isset($cond['Unit']['symbol'])&&!empty($cond['Unit']['symbol'])) {
+                            $unit=$this->Report->qudt($cond['Unit']['symbol']);
                         }
-                        if(isset($cond['Unit']['symbol'])) { $v['unit']=$cond['Unit']['symbol']; }
-                        $condj['value']=$v;
+                        if($cond['datatype']=="datum") {
+                            $v['@id']="dataseries/1/parameter/value";
+                            $v['@type']="sci:value";
+                            $v['datatype']="decimal";
+                            $v['number']=$cond['number'];
+                            if($unit!="") { $v['unitref']=$unit; }
+                            $paramj['value']=$v;
+                        } else {
+                            $v['@id']="dataseries/1/parameter/valuearray";
+                            $v['@type']="sci:valuearray";
+                            $v['datatype']="decimal";
+                            $v['numberarray']=json_decode($cond['number'],true);
+                            if($unit!="") { $v['unitref']=$unit; }
+                            $paramj['valuearray']=$v;
+                        }
+                        $condj['parameter']=$paramj;
                     }
-                    $datj['values'][]=$condj;
+                    $datj['dataseries'][]=$condj;
 
                     // Dependent axis
                     $data=$dat['Datapoint'][$m]['Data'][0];
+                    if(is_array($data)&&!empty($data)) {
+                        $json['toc']['sections'][]="dataseries/2";
+                    }
                     $dataj=[];
-                    $dataj['@id']="series/".($m+1)."/y";
-                    $dataj['quantity']=strtolower($data['Property']['Quantity']['name']);
-                    $dataj['property']=$data['title'];
+                    $dataj['@id']="dataseries/2";
+                    $dataj['@type']="sci:y-axis";
                     $dataj['label']=ucfirst($data['title']);
                     if(isset($data['Unit']['symbol'])&&$data['Unit']['symbol']!="") {
                         $dataj['label'].=" (".$data['Unit']['symbol'].")";
                     }
                     $dataj['axis']="dependent";
+                    // Parameter
+                    $paramj=[];
+                    $paramj['@id']="dataseries/2/parameter";
+                    $paramj['@type']="sci:parameter";
+                    $paramj['quantity']=strtolower($data['Property']['Quantity']['name']);
+                    $paramj['property']=$data['title'];
+                    // Value
                     $v=[];
-                    $v['@id']="series/".($m+1)."/y/value";
                     if(!is_null($data['number'])) {
-                        if($data['datatype']=="datum") {
-                            $v['format']="datam";
-                            $v['number']=$cond['number'];
-                        } else {
-                            $v['format']="array";
-                            $v['number']=json_decode($data['number'],true);
+                        $unit="";
+                        if(isset($data['Unit']['symbol'])&&!empty($data['Unit']['symbol'])) {
+                            $unit=$this->Report->qudt($data['Unit']['symbol']);
                         }
-                        $dataj['value']=$v;
-                        if(isset($data['Unit']['symbol'])) { $v['unit']=$data['Unit']['symbol']; }
+                        if($cond['datatype']=="datum") {
+                            $v['@id']="dataseries/2/parameter/value";
+                            $v['@type']="sci:value";
+                            $v['datatype']="decimal";
+                            $v['number']=$data['number'];
+                            if($unit!="") { $v['unitref']=$unit; }
+                            $paramj['value']=$v;
+                        } else {
+                            $v['@id']="dataseries/2/parameter/valuearray";
+                            $v['@type']="sci:valuearray";
+                            $v['datatype']="decimal";
+                            $v['numberarray']=json_decode($data['number'],true);
+                            if($unit!="") { $v['unitref']=$unit; }
+                            $paramj['valuearray']=$v;
+                        }
+                        $dataj['parameter']=$paramj;
                     }
-                    $datj['values'][]=$dataj;
+                    $datj['dataseries'][]=$dataj;
                 }
             }
-            $resj['dataseries']=$datj;
+
+            $resj['datagroup']=$datj;
         }
         $json['scidata']['dataset']=$resj;
 
+        //debug($json);exit;
+
         // Source
-        $json['source']=['@id'=>'source'];
-        $json['source']['citation']='The Open Spectral Database - http://osdb.info';
-        $json['source']['url']=$base;
+        $json['reference']=['@id'=>'reference','@type'=>'dc:source'];
+        $json['reference']['citation']='The Open Spectral Database - http://osdb.info';
+        $json['reference']['url']=$base;
 
         // Rights
-        $json['rights']=['@id'=>'rights'];
+        $json['rights']=['@id'=>'rights','@type'=>'dc:rights'];
+        $json['rights']['holder']='Chalk Group, Department of Chemistry, University of North Florida';
         $json['rights']['license']='http://creativecommons.org/publicdomain/zero/1.0/';
         //debug($json);exit;
 

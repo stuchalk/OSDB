@@ -44,7 +44,7 @@ class Report extends AppModel
                     'Context'=>['fields'=>['id'],
                         'System'=>['fields'=>['id'],
                             'Substance'=>['fields'=>['id','name'],
-                                'Identifier'=>['fields'=>['id','type','value'],'conditions'=>['type'=>'inchikey']]]]]]];
+                                'Identifier'=>['fields'=>['id','type','value'],'conditions'=>['type'=>['inchikey','inchi']]]]]]]];
         $f=['Report.id','Report.title'];
         $o=['Report.title'];
         if($field=='user'&&!is_null($id)) {
@@ -59,17 +59,16 @@ class Report extends AppModel
             $cn=['technique_id'=>$id];
             $reps=$this->find('all',['conditions'=>$cn,'fields'=>$f,'contain'=>$c,'order'=>$o,'recursive'=> -1]);
         } else if($field=='sub'&&!is_null($id)) {
-            echo $field.":".$id;
             $c=['Dataset'=>['fields'=>['id'],
                 'Context'=>['fields'=>['id'],
                     'System'=>['fields'=>['id'],
                         'Substance'=>['fields'=>['id','name'],
-                            'Identifier'=>['fields'=>['id','type','value'],'conditions'=>['OR'=>['value LIKE'=>'%'.$id.'%','type'=>'inchikey']]]]]]]];
+                            'Identifier'=>['fields'=>['id','type','value'],'conditions'=>['Identifier.value LIKE'=>'%'.$id.'%']]]]]]];
             $reps=$this->find('all',['fields'=>$f,'contain'=>$c,'order'=>$o,'recursive'=> -1]);
         } else {
             $reps=$this->find('all',['fields'=>$f,'contain'=>$c]);
         }
-        //debug($reps);
+        //debug($c);debug($reps);exit;
         $results=[];
         foreach($reps as $rep) {
             $sub=$rep['Dataset']['Context']['System'][0]['Substance'][0];
@@ -79,7 +78,8 @@ class Report extends AppModel
                 foreach($sub['Identifier'] as $ident) {
                     if($ident['type']=="inchikey") {
                         $results[$name]['inchikey']=$ident['value'];
-                        break;
+                    } elseif($ident['type']=="inchi") {
+                        $results[$name]['inchi']=$ident['value'];
                     }
                 }
             } else {
@@ -107,7 +107,7 @@ class Report extends AppModel
         $contain=['Publication'=>['fields'=>['title']],
             'User'=>['fields'=>['fullname']],
             'Dataset'=>['fields'=>['setType','property','kind'],
-                'File'=>['fields'=>['id']],
+                'File',
                 'Sample'=>['fields'=>['title','description'],
                     'Annotation'=>['Metadata'=>['fields'=>['field','value','format']]]],
                 'Methodology'=>['fields'=>['evaluation','aspects'],
@@ -136,4 +136,21 @@ class Report extends AppModel
         $data=$this->find('first',['conditions'=>['Report.id'=>$id],'contain'=>$contain,'recursive'=> -1]);
         return $data;
     }
+
+    /**
+     * Create qudt unit
+     * @param $unit
+     * @return string
+     */
+    public function qudt($unit) {
+        if($unit=="MHz") {
+            $unit="MegaHertz";
+        } elseif($unit=="s") {
+            $unit="Second";
+        } elseif($unit=="Hz") {
+            $unit="Hertz";
+        }
+        return "qudt:".$unit;
+    }
+
 }

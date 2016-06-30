@@ -18,6 +18,7 @@ class TechniquesController extends AppController
 
     /**
      * View a particular technique
+     * Endpoint /osdb.info/techniques/view/{id}[/format]
      * @param integer $id
      * @param string $format
      */
@@ -84,7 +85,8 @@ class TechniquesController extends AppController
     }
 
     /**
-     * List the properties
+     * List the techniques
+     * Endpoint /osdb.info/techniques[/index]
      */
     public function index()
     {

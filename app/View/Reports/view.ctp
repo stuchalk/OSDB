@@ -128,6 +128,3 @@
         </div>
     </div>
 </div>
-<code>
-    <?php //pr($minfo); ?>
-</code>

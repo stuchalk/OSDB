@@ -1,5 +1,5 @@
 <?php //pr($data);exit; ?>
-<p>Click on a letter below to show substances starting with that letter</p>
+<p>Click on a letter below to show <?php echo $type; ?> starting with that letter</p>
 <div class="row">
     <div class="col-md-6">
         <?php

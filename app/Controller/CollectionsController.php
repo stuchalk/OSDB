@@ -119,8 +119,10 @@ class CollectionsController extends AppController
             $json['collection']=$data['Collection'];
             unset($json['collection']['user_id']);unset($json['collection']['first']);
             foreach($subs as $name=>$meta) {
+                debug($meta);exit;
                 $comp=[];
                 $comp['name']=$name;
+                $comp['inchi']=$meta['inchi'];
                 $comp['inchikey']=$meta['inchikey'];
                 $comp['spectra']=[];
                 foreach($meta['spectra'] as $tid=>$tech) {

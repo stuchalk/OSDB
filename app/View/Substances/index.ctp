@@ -1,15 +1,15 @@
 <?php
 // Variables: $data, $count
 ?>
-<h2>Substances</h2>
+<h2>Compounds</h2>
 <?php if(isset($term)) { echo "<h3 class='text-success'>Results for '".$term."'  <span class='badge'>".$count."</span></h3>"; } ?>
 
 <?php
 $cutoff=Configure::read('index.display.cutoff');
 if($count>$cutoff) {
-    echo $this->element('alpha_list',['data'=>$data,'type'=>'substances']);
+    echo $this->element('alpha_list',['data'=>$data,'type'=>'compounds']);
 } else {
-    echo $this->element('column_list',['data'=>$data,'type'=>'substances']);
+    echo $this->element('column_list',['data'=>$data,'type'=>'compounds']);
 }
 ?>
 <?php

@@ -16,9 +16,9 @@ $config['index']['display']['cutoff']=20;
 // Jmol
 $config['jmol']['j2spath']=$config['path']."/js/jsmol/j2s";
 $config['jmol']['proxy']=$config['url']."/jmol/proxy?url=";
-$config['jmol']['color']="#FFFFFF";
+$config['jmol']['color']="#DDDDDD";
 $config['jmol']['height']=190;
 $config['jmol']['width']=190;
 
 // CIR
-$config['cir']['url']="http://cactus.nci.nih.gov/chemical/structure/<id>/file?format=sdf&get3d=true";
+$config['cir']['url']="https://cactus.nci.nih.gov/chemical/structure/<id>/file?format=sdf&get3d=true";

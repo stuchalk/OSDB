@@ -3,7 +3,7 @@
         $search="";
         $heading="";
     } else {
-        $heading=" (for Substances matching '*".$search."*')";
+        $heading=" (for compounds matching '*".$search."*')";
         $search="/".$search;
     }
 ?>
@@ -17,9 +17,9 @@
     }
     if($count>$limit) {
         if($count>$offset+$limit) {
-            echo "&nbsp;Substances ".($offset+1)."-".($offset+$limit)." of ".$count;
+            echo "&nbsp;Compounds ".($offset+1)."-".($offset+$limit)." of ".$count;
         } else {
-            echo "&nbsp;Substances ".($offset+1)."-".$count;
+            echo "&nbsp;Compounds ".($offset+1)."-".$count;
         }
     }
     echo "&nbsp;";

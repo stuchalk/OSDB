@@ -76,12 +76,12 @@ and we are working on additional documentation.</p>
     </div>
 </div>
 
-<!-- Substances -->
+<!-- Substances (Compounds) -->
 <div class="row">
     <div class="col-sm-12">
         <div class="panel panel-success">
             <div class="panel-heading">
-                <h3 class="panel-title">Substances</h3>
+                <h3 class="panel-title">Compounds</h3>
             </div>
             <div class="panel-body">
                 <table class="table table-condensed table-striped">
@@ -91,31 +91,31 @@ and we are working on additional documentation.</p>
                         <th class="col-md-3">Example(s)</th>
                     </tr>
                     <tr>
-                        <td><code>/substances/index/[format]</code></td>
-                        <td>List of substances<br />
+                        <td><code>/compounds/index/[format]</code></td>
+                        <td>List of compounds<br />
                             [format]: (HTML), XML, JSON
                         </td>
                         <td>
-                            <?php echo $this->Html->link('/substances','/substances'); ?><br />
-                            <?php echo $this->Html->link('/substances/index/XML','/substances/index/XML'); ?>
+                            <?php echo $this->Html->link('/compounds','/compounds'); ?><br />
+                            <?php echo $this->Html->link('/compounds/index/XML','/compounds/index/XML'); ?>
                         </td>
                     </tr>
                     <tr>
-                        <td><code>/substances/view/[osdbid]/[format]</code></td>
-                        <td>Substance using id<br />
+                        <td><code>/compounds/view/[osdbid]/[format]</code></td>
+                        <td>Compound using id<br />
                             [format]: (HTML), XML, JSON
                         </td>
-                        <td><?php echo $this->Html->link('/substances/view/11','/substances/view/11'); ?></td>
+                        <td><?php echo $this->Html->link('/compounds/view/11','/compounds/view/11'); ?></td>
                     </tr>
                     <tr>
-                        <td><code>/substances/view/[comp]/[format]</code></td>
+                        <td><code>/compounds/view/[comp]/[format]</code></td>
                         <td>Spectrum via compound identifer and technique code<br />
                             [comp]: name, cas#, inchi, inchikey, smiles<br />
                             [format]: (HTML), XML, JSON</td>
                         <td>
-                            <?php echo $this->Html->link('/substances/view/1,4-dibromobenzene','/substances/view/1,4-dibromobenzene'); ?>
+                            <?php echo $this->Html->link('/compounds/view/1,4-dibromobenzene','/compounds/view/1,4-dibromobenzene'); ?>
                             <br /> - OR- <br />
-                            <?php echo $this->Html->link('/substances/view/1-aminopropane/JSON','/substances/view/1-aminopropane/JSON'); ?>
+                            <?php echo $this->Html->link('/compounds/view/1-aminopropane/JSON','/compounds/view/1-aminopropane/JSON'); ?>
                         </td>
                     </tr>
                 </table>
@@ -140,7 +140,7 @@ and we are working on additional documentation.</p>
                     </tr>
                     <tr>
                         <td><code>/systems/index/[format]</code></td>
-                        <td>List of substances<br />
+                        <td>List of systems<br />
                             [format]: (HTML), XML, JSON
                         </td>
                         <td>
@@ -150,7 +150,7 @@ and we are working on additional documentation.</p>
                     </tr>
                     <tr>
                         <td><code>/systems/view/[osdbid]/[format]</code></td>
-                        <td>Substance using id<br />
+                        <td>System using id<br />
                             [format]: (HTML), XML, JSON
                         </td>
                         <td><?php echo $this->Html->link('/systems/view/11','/systems/view/11'); ?><br />

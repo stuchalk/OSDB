@@ -3,18 +3,16 @@ App::uses('AppModel', 'Model');
 App::uses('ClassRegistry', 'Utility');
 
 /**
- * Class Chemical
- * Chemical model
+ * Class Chemical - Chemical model
  */
 class Chemical extends AppModel
 {
 
     public $path="http://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/";
-
     public $useTable = false;
 
     /**
-     * Get the PubChem CID for chemical based on name or CAS search of names
+     * Get the PubChem CID for a chemical based on name/CAS search of names
      * You can use names, ids, cas# etc...
      * Format returned has CID and Synonyms in separate parts of array
      * @param $name
@@ -29,10 +27,14 @@ class Chemical extends AppModel
         if($debug) { echo $url."<br />"; }
         $json=$HttpSocket->get($url);
         $syns=json_decode($json['body'],true);
-        //if($debug) { echo "<pre>".print_r($syns)."</pre>"; }
-        if(isset($syns['Fault'])):	return false;
-        else:						return $syns['InformationList']['Information'][0]['CID'];
-        endif;
+        if(isset($syns['Fault'])) {
+            if($debug) { echo "An error occured: ".$syns['Fault'];exit; }
+            return false;
+        } else {
+            $cid=$syns['InformationList']['Information'][0]['CID'];
+            if($debug) { echo $cid;exit; }
+            return $cid;
+        }
     }
 
     /**

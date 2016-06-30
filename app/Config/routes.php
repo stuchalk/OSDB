@@ -30,6 +30,8 @@
  */
 	Router::connect('/pages/*', ['controller' => 'pages', 'action' => 'display']);
     Router::connect('/spectra', ['controller' => 'reports','action' => 'index']);
+	Router::connect('/compounds', ['controller' => 'substances','action' => 'index']);
+	Router::connect('/compounds/:action/*', ['controller' => 'substances']);
     Router::connect('/splashes', ['controller' => 'reports','action' => 'splashes']);
     Router::connect('/spectra/:action/*', ['controller' => 'reports']);
 

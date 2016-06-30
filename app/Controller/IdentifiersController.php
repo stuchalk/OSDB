@@ -9,13 +9,15 @@
 class IdentifiersController extends AppController
 {
 
+    public $uses=['Identifier','Report'];
+
     /**
      * function beforeFilter
      */
     public function beforeFilter()
     {
         parent::beforeFilter();
-        $this->Auth->allow('index','view','test');
+        $this->Auth->allow('index','view','test','checksplashes');
     }
 
     /**
@@ -63,7 +65,6 @@ class IdentifiersController extends AppController
             debug($sub);debug($key);
             $data=$this->Identifier->getWikidataId($sub['Identifier']['substance_id'],'inchikey',$key);
             $this->redirect('/substances/view/'.$sid);
-            //debug($data);exit;
         } else {
             exit;
         }
@@ -77,5 +78,45 @@ class IdentifiersController extends AppController
     {
         $this->Identifier->getSplashId($id);
         $this->redirect('/reports/view/'.$id);
+    }
+
+    public function checksplashes()
+    {
+        // Get current SPLASH
+        $reps=$this->Report->find('all',['fields'=>['id','title','splash','technique_id']]);
+        $data=[];
+        foreach($reps as $rep) {
+            $r=$rep['Report'];
+            //debug($r);
+            if($r['technique_id']!=3) { continue; }
+            $id=$r['id'];
+            $d=['id'=>$id,'title'=>$r['title'],'old'=>$r['splash']];
+            if(is_null($r['splash'])) {
+                // If new spectrum with no SPLASH add it...
+                $n=$this->Identifier->getSplashId($id);
+                $this->Report->id=$id;
+                $this->Report->saveField('splash',$n);
+                $this->Report->clear();
+                $d['new']=$n;$d['action']='added';
+            } else {
+                $c=$r['splash'];
+                $n=$this->Identifier->getSplashId($id);
+                $d['new']=$n;
+                if($c!=$n) {
+                    $this->Report->id=$id;
+                    $this->Report->saveField('splash',$n);
+                    $this->Report->clear();
+                    $d['action']='update';
+                } else {
+                    $d['action']='none';
+                }
+            }
+        }
+        debug($data);exit;
+    }
+
+    public function addchebi($cid) {
+        $this->Identifier->getChebi($cid);
+        $this->redirect('/substances/view/'.$cid);
     }
 }
