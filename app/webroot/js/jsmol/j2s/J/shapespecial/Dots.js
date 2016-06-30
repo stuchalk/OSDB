@@ -49,14 +49,14 @@ return;
 }if ("atom" === propertyName) {
 this.thisAtom = (value).intValue ();
 if (this.thisAtom >= this.atoms.length) return;
-this.setShapeVisibility (this.atoms[this.thisAtom], true);
+this.atoms[this.thisAtom].setShapeVisibility (this.vf, true);
 this.ec.allocDotsConvexMaps (this.ac);
 return;
 }if ("dots" === propertyName) {
 if (this.thisAtom >= this.atoms.length) return;
 this.isActive = true;
 this.ec.setFromBits (this.thisAtom, value);
-this.setShapeVisibility (this.atoms[this.thisAtom], true);
+this.atoms[this.thisAtom].setShapeVisibility (this.vf, true);
 if (this.mads == null) {
 this.ec.setMads (null);
 this.mads =  Clazz.newShortArray (this.ac, 0);
@@ -71,10 +71,8 @@ throw e;
 
 this.ec.setMads (this.mads);
 }this.mads[this.thisAtom] = Clazz.floatToShort (this.thisRadius * 1000);
-if (this.colixes == null) {
-this.colixes =  Clazz.newShortArray (this.ac, 0);
-this.paletteIDs =  Clazz.newByteArray (this.ac, 0);
-}this.colixes[this.thisAtom] = JU.C.getColix (this.thisArgb);
+if (this.colixes == null) this.checkColixLength (4, this.ac);
+this.colixes[this.thisAtom] = JU.C.getColix (this.thisArgb);
 this.bsOn.set (this.thisAtom);
 return;
 }if ("refreshTrajectories" === propertyName) {
@@ -140,9 +138,8 @@ var isAll = (bsSelected == null);
 var i0 = (isAll ? this.ac - 1 : bsSelected.nextSetBit (0));
 for (var i = i0; i >= 0; i = (isAll ? i - 1 : bsSelected.nextSetBit (i + 1))) this.bsOn.setBitTo (i, false);
 
-}for (var i = this.ac; --i >= 0; ) {
-this.setShapeVisibility (this.atoms[i], this.bsOn.get (i));
-}
+}for (var i = this.ac; --i >= 0; ) this.atoms[i].setShapeVisibility (this.vf, this.bsOn.get (i));
+
 if (!isVisible) return;
 if (newSet) {
 this.mads = null;
@@ -152,10 +149,8 @@ if (dotsConvexMaps != null) {
 for (var i = this.ac; --i >= 0; ) if (this.bsOn.get (i)) {
 dotsConvexMaps[i] = null;
 }
-}if (dotsConvexMaps == null && (this.colixes == null || this.colixes.length != this.ac)) {
-this.colixes =  Clazz.newShortArray (this.ac, 0);
-this.paletteIDs =  Clazz.newByteArray (this.ac, 0);
-}this.ec.calculate (rd, maxRadius, this.bsOn, this.bsIgnore, !this.vwr.getBoolean (603979830), this.vwr.getBoolean (603979829), this.isSurface, true);
+}if (dotsConvexMaps == null && (this.colixes == null || this.colixes.length != this.ac)) this.checkColixLength (4, this.ac);
+this.ec.calculate (rd, maxRadius, this.bsOn, this.bsIgnore, !this.vwr.getBoolean (603979830), this.vwr.getBoolean (603979829), this.isSurface, true);
 this.rdLast = rd;
 }, "J.atomdata.RadiusData,JU.BS");
 Clazz.overrideMethod (c$, "setAtomClickability", 

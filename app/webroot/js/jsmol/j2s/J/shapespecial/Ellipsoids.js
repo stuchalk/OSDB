@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shapespecial");
-Clazz.load (["J.shape.Shape", "java.util.Hashtable"], "J.shapespecial.Ellipsoids", ["JU.BS", "$.Lst", "$.PT", "$.SB", "$.V3", "J.api.Interface", "J.c.PAL", "J.shapespecial.Ellipsoid", "JU.BSUtil", "$.C", "$.Escape"], function () {
+Clazz.load (["J.shape.AtomShape", "java.util.Hashtable"], "J.shapespecial.Ellipsoids", ["JU.BS", "$.Lst", "$.PT", "$.SB", "$.V3", "J.api.Interface", "J.c.PAL", "J.shapespecial.Ellipsoid", "JU.BSUtil", "$.C", "$.Escape"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.simpleEllipsoids = null;
 this.atomEllipsoids = null;
@@ -7,7 +7,7 @@ this.typeSelected = "1";
 this.selectedAtoms = null;
 this.ellipsoidSet = null;
 Clazz.instantialize (this, arguments);
-}, J.shapespecial, "Ellipsoids", J.shape.Shape);
+}, J.shapespecial, "Ellipsoids", J.shape.AtomShape);
 Clazz.prepareFields (c$, function () {
 this.simpleEllipsoids =  new java.util.Hashtable ();
 this.atomEllipsoids =  new java.util.Hashtable ();
@@ -22,18 +22,17 @@ return (this.checkID (thisID) ? 1 : -1);
 }, "~S");
 Clazz.overrideMethod (c$, "setSize", 
 function (size, bsSelected) {
-if (this.ms.at == null || size == 0 && this.ms.atomTensors == null) return;
+if (this.atoms == null || size == 0 && this.ms.atomTensors == null) return;
 var isAll = (bsSelected == null);
 if (!isAll && this.selectedAtoms != null) bsSelected = this.selectedAtoms;
 var tensors = this.vwr.ms.getAllAtomTensors (this.typeSelected);
 if (tensors == null) return;
-var atoms = this.ms.at;
 for (var i = tensors.size (); --i >= 0; ) {
 var t = tensors.get (i);
 if (isAll || t.isSelected (bsSelected, -1)) {
 var e = this.atomEllipsoids.get (t);
 var isNew = (size != 0 && e == null);
-if (isNew) this.atomEllipsoids.put (t, e = J.shapespecial.Ellipsoid.getEllipsoidForAtomTensor (t, atoms[t.atomIndex1]));
+if (isNew) this.atomEllipsoids.put (t, e = J.shapespecial.Ellipsoid.getEllipsoidForAtomTensor (t, this.atoms[t.atomIndex1]));
 if (e != null && (isNew || size != 2147483647)) {
 e.setScale (size, true);
 }}}
@@ -42,7 +41,7 @@ Clazz.overrideMethod (c$, "getPropertyData",
 function (property, data) {
 if (property === "checkID") {
 return (this.checkID (data[0]));
-}return false;
+}return this.getPropShape (property, data);
 }, "~S,~A");
 Clazz.defineMethod (c$, "checkID", 
  function (thisID) {
@@ -117,7 +116,8 @@ for (var e, $e = this.atomEllipsoids.values ().iterator (); $e.hasNext () && ((e
 var t = e.tensor;
 if ((t.type.equals (this.typeSelected) || this.typeSelected.equals (t.altType)) && t.isSelected (bs, -1)) {
 e.isOn = isOn;
-}}
+}(e.center).setShapeVisibility (this.vf, isOn);
+}
 return;
 }if ("options" === propertyName) {
 var options = (value).toLowerCase ().trim ();
@@ -233,11 +233,8 @@ sb.append (this.vwr.getCommands (temp, temp2, "select"));
 Clazz.overrideMethod (c$, "setModelVisibilityFlags", 
 function (bsModels) {
 if (!this.isActive ()) return;
-var atoms = this.vwr.ms.at;
-this.setVis (this.simpleEllipsoids, bsModels, atoms);
-if (this.atomEllipsoids != null) for (var i = atoms.length; --i >= 0; ) this.setShapeVisibility (atoms[i], false);
-
-this.setVis (this.atomEllipsoids, bsModels, atoms);
+this.setVis (this.simpleEllipsoids, bsModels, this.atoms);
+this.setVis (this.atomEllipsoids, bsModels, this.atoms);
 }, "JU.BS");
 Clazz.defineMethod (c$, "setVis", 
  function (ellipsoids, bs, atoms) {
@@ -250,7 +247,7 @@ var isModTensor = t.isModulated;
 var isUnmodTensor = t.isUnmodulated;
 var isModAtom = this.ms.isModulated (t.atomIndex1);
 isOK = (!isModTensor && !isUnmodTensor || isModTensor == isModAtom);
-}this.setShapeVisibility (atoms[t.atomIndex1], true);
+}atoms[t.atomIndex1].setShapeVisibility (this.vf, true);
 }e.visible = isOK && (e.modelIndex < 0 || bs.get (e.modelIndex));
 }
 }, "java.util.Map,JU.BS,~A");
@@ -259,7 +256,7 @@ function () {
 if (this.atomEllipsoids.isEmpty ()) return;
 for (var e, $e = this.atomEllipsoids.values ().iterator (); $e.hasNext () && ((e = $e.next ()) || true);) {
 var i = e.tensor.atomIndex1;
-var atom = this.ms.at[i];
+var atom = this.atoms[i];
 if ((atom.shapeVisibilityFlags & this.vf) == 0 || this.ms.isAtomHidden (i)) continue;
 atom.setClickable (this.vf);
 }

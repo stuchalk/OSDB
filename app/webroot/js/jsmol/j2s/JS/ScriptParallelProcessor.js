@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JS");
-Clazz.load (["J.api.JmolParallelProcessor", "JS.ScriptFunction", "JU.Lst"], "JS.ScriptParallelProcessor", ["java.util.concurrent.Executors", "JS.ScriptProcess", "$.ScriptProcessRunnable", "JU.Logger", "JV.ShapeManager", "$.Viewer"], function () {
+Clazz.load (["J.api.JmolParallelProcessor", "JS.ScriptFunction", "JU.Lst"], "JS.ScriptParallelProcessor", ["java.util.concurrent.Executors", "JS.ScriptProcess", "$.ScriptProcessRunnable", "J.shape.MeshCollection", "JU.Logger", "JV.ShapeManager", "$.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.counter = 0;
@@ -56,7 +56,7 @@ vwr.setParallel (false);
 Clazz.defineMethod (c$, "mergeResults", 
 function (vShapeManagers) {
 try {
-for (var i = 0; i < vShapeManagers.size (); i++) this.vwr.shm.mergeShapes (vShapeManagers.get (i).getShapes ());
+for (var i = 0; i < vShapeManagers.size (); i++) this.mergeShapes (vShapeManagers.get (i));
 
 } catch (e) {
 if (Clazz.exceptionOf (e, Error)) {
@@ -69,6 +69,16 @@ this.counter = -1;
 vShapeManagers = null;
 }
 }, "JU.Lst");
+Clazz.defineMethod (c$, "mergeShapes", 
+ function (shapeManager) {
+var newShapes = shapeManager.shapes;
+if (newShapes == null) return;
+if (this.vwr.shm.shapes == null) this.vwr.shm.shapes = newShapes;
+ else for (var i = 0; i < newShapes.length; ++i) if (newShapes[i] != null && Clazz.instanceOf (newShapes[i], J.shape.MeshCollection)) {
+if (this.vwr.shm.shapes[i] == null) this.vwr.shm.loadShape (i);
+(this.vwr.shm.shapes[i]).merge (newShapes[i]);
+}
+}, "JV.ShapeManager");
 Clazz.defineMethod (c$, "clearShapeManager", 
 function (er) {
 {
@@ -82,7 +92,7 @@ this.processes.addLast ( new JS.ScriptProcess (name, context));
 Clazz.defineMethod (c$, "runProcess", 
  function (process, shapeManager) {
 var r =  new JS.ScriptProcessRunnable (this, process, this.lock, shapeManager);
-var exec = (shapeManager == null ? null : this.vwr.getExecutor ());
+var exec = (shapeManager == null ? null : this.getMyExecutor ());
 if (exec != null) {
 exec.execute (r);
 } else {
@@ -92,4 +102,27 @@ Clazz.defineMethod (c$, "eval",
 function (context, shapeManager) {
 this.vwr.evalParallel (context, shapeManager);
 }, "JS.ScriptContext,JV.ShapeManager");
+Clazz.defineMethod (c$, "getMyExecutor", 
+ function () {
+if (this.vwr.executor != null || JV.Viewer.nProcessors < 2) return this.vwr.executor;
+try {
+this.vwr.executor = this.getExecutor ();
+} catch (e$$) {
+if (Clazz.exceptionOf (e$$, Exception)) {
+var e = e$$;
+{
+this.vwr.executor = null;
+}
+} else if (Clazz.exceptionOf (e$$, Error)) {
+var er = e$$;
+{
+this.vwr.executor = null;
+}
+} else {
+throw e$$;
+}
+}
+if (this.vwr.executor == null) JU.Logger.error ("parallel processing is not available");
+return this.vwr.executor;
+});
 });

@@ -5,6 +5,8 @@ this.iHaveModelStatement = false;
 this.isCompoundDocument = false;
 this.inputOnly = false;
 this.espCharges = false;
+this.isInputFirst = false;
+this.iHaveNewDir = false;
 this.endCheck = "END Directory Entry ";
 this.title = null;
 this.spartanArchive = null;
@@ -14,46 +16,64 @@ Clazz.instantialize (this, arguments);
 }, J.adapter.readers.quantum, "SpartanSmolReader", J.adapter.readers.quantum.SpartanInputReader);
 Clazz.overrideMethod (c$, "initializeReader", 
 function () {
-this.modelName = "Spartan file";
 this.isCompoundDocument = (this.rd ().indexOf ("Compound Document File Directory") >= 0);
 this.inputOnly = this.checkFilterKey ("INPUT");
 this.espCharges = !this.checkFilterKey ("MULLIKEN");
 });
 Clazz.overrideMethod (c$, "checkLine", 
 function () {
-var lcline;
-if (this.isCompoundDocument && (lcline = this.line.toLowerCase ()).equals ("begin directory entry molecule") || this.line.indexOf ("JMOL_MODEL") >= 0 && !this.line.startsWith ("END")) {
-if (this.modelNumber > 0) this.applySymmetryAndSetTrajectory ();
+var pt = 3;
+var isNewDir = (this.isCompoundDocument && this.line.startsWith ("NEW Directory M") && !this.line.startsWith ("NEW Directory Molecules"));
+if (isNewDir) this.iHaveNewDir = true;
+var isMolecule = (!this.iHaveNewDir && !isNewDir && this.isCompoundDocument && this.line.equals ("BEGIN Directory Entry Molecule"));
+var isMacDir = (!this.isCompoundDocument && (pt = this.line.indexOf ("#JMOL_MODEL")) >= 0);
+if (isNewDir || isMolecule || isMacDir) {
+if (this.modelNumber > 0 && !this.isInputFirst) this.applySymmetryAndSetTrajectory ();
 this.iHaveModelStatement = true;
-var modelNo = this.getModelNumber ();
-this.modelNumber = (this.bsModels == null && modelNo != -2147483648 ? modelNo : this.modelNumber + 1);
+var modelNo = (isMolecule ? 0 : this.parseIntAt (this.line, pt + 12));
+this.modelNumber = (this.bsModels == null && modelNo != -2147483648 && modelNo != 0 ? modelNo : this.modelNumber + 1);
 this.bondData = "";
-if (!this.doGetModel (this.modelNumber, null)) return this.checkLastModel ();
-if (this.modelAtomCount == 0) this.asc.newAtomSet ();
+if (!this.doGetModel (this.modelNumber, null)) {
+if (this.isInputFirst) {
+this.asc.removeCurrentAtomSet ();
+this.discardLinesUntilContains ("BEGIN Directory Entry Input");
+} else if (isNewDir) {
+this.discardLinesUntilContains ("NEW Directory M");
+} else if (isMolecule) {
+this.discardLinesUntilContains ("BEGIN Directory Entry M");
+} else {
+this.discardLinesUntilContains ("#JMOL_MODEL");
+}this.checkLastModel ();
+return false;
+}if (!this.isInputFirst) this.asc.newAtomSet ();
 this.moData =  new java.util.Hashtable ();
 this.moData.put ("isNormalized", Boolean.TRUE);
-if (modelNo == -2147483648) {
+var isOK = false;
+if (modelNo == -2147483648 || this.titles == null) {
 modelNo = this.modelNumber;
 this.title = "Model " + modelNo;
 } else {
+isOK = true;
 this.title = this.titles.get ("Title" + modelNo);
 this.title = "Profile " + modelNo + (this.title == null ? "" : ": " + this.title);
-}JU.Logger.info (this.title);
-this.asc.setAtomSetName (this.title);
+}if (this.constraints == null && (isOK || !this.isInputFirst)) this.asc.setAtomSetName (this.title);
 this.setModelPDB (false);
 this.asc.setCurrentAtomSetNumber (modelNo);
-if (this.isCompoundDocument) this.readMyTransform ();
+if (isMolecule) this.readMyTransform ();
 return true;
 }if (this.iHaveModelStatement && !this.doProcessLines) return true;
 if ((this.line.indexOf ("BEGIN") == 0)) {
-lcline = this.line.toLowerCase ();
+var lcline = this.line.toLowerCase ();
 if (lcline.endsWith ("input")) {
-this.bondData = "";
-this.readInputRecords ();
+if (!this.iHaveModelStatement) this.isInputFirst = true;
+if (this.isInputFirst) {
+this.asc.newAtomSet ();
+}this.bondData = "";
+this.title = this.readInputRecords ();
 if (this.asc.errorMessage != null) {
 this.continuing = false;
 return false;
-}if (this.title != null) this.asc.setAtomSetName (this.title);
+}if (this.title != null && this.constraints == null) this.asc.setAtomSetName (this.title);
 this.setCharges ();
 if (this.inputOnly) {
 this.continuing = false;
@@ -70,7 +90,7 @@ return false;
 this.readProperties ();
 return false;
 } else if (lcline.endsWith ("archive")) {
-this.readArchive ();
+this.asc.setAtomSetName (this.readArchive ());
 return false;
 }return true;
 }if (this.line.indexOf ("5D shell") >= 0) this.moData.put ("calculationType", this.calculationType = this.line);
@@ -79,7 +99,7 @@ return true;
 Clazz.overrideMethod (c$, "finalizeSubclassReader", 
 function () {
 this.finalizeReaderASCR ();
-if (this.ac > 0 && this.spartanArchive != null && this.asc.bondCount == 0 && this.bondData != null) this.spartanArchive.addBonds (this.bondData, 0);
+if (this.asc.ac > 0 && this.spartanArchive != null && this.asc.bondCount == 0 && this.bondData != null) this.spartanArchive.addBonds (this.bondData, 0);
 if (this.moData != null) {
 var n = this.asc.atomSetInfo.get ("HOMO_N");
 if (n != null) {
@@ -114,10 +134,10 @@ this.asc.setInfo ("fileHeader", header.toString ());
 Clazz.defineMethod (c$, "readArchive", 
  function () {
 this.spartanArchive =  new J.adapter.readers.quantum.SpartanArchive (this, this.bondData, this.endCheck);
-if (this.readArchiveHeader ()) {
-this.modelAtomCount = this.spartanArchive.readArchive (this.line, false, this.ac, false);
-if (this.ac == 0 || !this.isTrajectory) this.ac += this.modelAtomCount;
-}});
+var modelName = this.readArchiveHeader ();
+if (modelName != null) this.modelAtomCount = this.spartanArchive.readArchive (this.line, false, this.asc.ac, false);
+return (this.constraints == null ? modelName : null);
+});
 Clazz.defineMethod (c$, "setCharges", 
  function () {
 if (this.haveCharges || this.asc.ac == 0) return;
@@ -132,28 +152,20 @@ return;
 this.rd ();
 this.setCharges ();
 });
-Clazz.defineMethod (c$, "getModelNumber", 
- function () {
-try {
-var pt = this.line.indexOf ("JMOL_MODEL ") + 11;
-return this.parseIntAt (this.line, pt);
-} catch (e) {
-if (Clazz.exceptionOf (e, NumberFormatException)) {
-return 0;
-} else {
-throw e;
-}
-}
-});
 Clazz.defineMethod (c$, "readArchiveHeader", 
  function () {
 var modelInfo = this.rd ();
 if (this.debugging) JU.Logger.debug (modelInfo);
-if (modelInfo.indexOf ("Error:") == 0) return false;
+if (modelInfo.indexOf ("Error:") == 0) return null;
 this.asc.setCollectionName (modelInfo);
-this.modelName = this.rd ();
-if (this.debugging) JU.Logger.debug (this.modelName);
+this.asc.setAtomSetName (modelInfo);
+var modelName = this.rd ();
+if (this.debugging) JU.Logger.debug (modelName);
 this.rd ();
-return true;
+return modelName;
 });
+Clazz.defineMethod (c$, "setEnergy", 
+function (value) {
+this.asc.setAtomSetName (this.constraints + (this.constraints.length == 0 ? "" : " ") + "Energy=" + value + " KJ");
+}, "~N");
 });

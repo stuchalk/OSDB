@@ -207,5 +207,5 @@ this.lcaoColorNeg = lc.lcaoColorNeg;
 this.lcaoTranslucent = lc.lcaoTranslucent;
 this.lcaoTranslucentLevel = lc.lcaoTranslucentLevel;
 Clazz.superCall (this, J.shapesurface.LcaoCartoon, "merge", [shape]);
-}, "J.shape.Shape");
+}, "J.shape.MeshCollection");
 });

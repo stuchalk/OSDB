@@ -1,12 +1,16 @@
 Clazz.declarePackage ("JM");
 Clazz.load (["java.lang.Enum", "JM.BioPolymer"], "JM.AlphaPolymer", ["JU.Measure", "$.P3", "J.c.STR", "JM.Helix", "$.Sheet", "$.Turn", "JU.Logger"], function () {
-c$ = Clazz.declareType (JM, "AlphaPolymer", JM.BioPolymer);
+c$ = Clazz.decorateAsClass (function () {
+this.pt0 = 0;
+Clazz.instantialize (this, arguments);
+}, JM, "AlphaPolymer", JM.BioPolymer);
 Clazz.makeConstructor (c$, 
-function (monomers) {
+function (monomers, pt0) {
 Clazz.superConstructor (this, JM.AlphaPolymer, []);
+this.pt0 = pt0;
 this.set (monomers);
 this.hasStructure = true;
-}, "~A");
+}, "~A,~N");
 Clazz.overrideMethod (c$, "getProteinStructure", 
 function (monomerIndex) {
 return this.monomers[monomerIndex].getStructure ();
@@ -63,9 +67,8 @@ return false;
 ps.structureID = structureID;
 ps.serialID = serialID;
 ps.strandCount = strandCount;
-for (var i = indexStart; i <= indexEnd; ++i) {
-(this.monomers[i]).setStructure (ps);
-}
+for (var i = indexStart; i <= indexEnd; ++i) (this.monomers[i]).setStructure (ps);
+
 return true;
 }, "J.c.STR,~S,~N,~N,~N,~N");
 Clazz.overrideMethod (c$, "clearStructures", 
@@ -160,6 +163,15 @@ this.addStructureProtected (tag, null, 0, 0, i, iMax - 1);
 i = iMax;
 }
 }, "~A");
+Clazz.defineMethod (c$, "setStructureBS", 
+function (count, dsspType, type, bs, doOffset) {
+var offset = (doOffset ? this.pt0 : 0);
+for (var pt = 0, i = bs.nextSetBit (offset), i2 = 0, n = this.monomerCount + offset; i >= 0 && i < n; i = bs.nextSetBit (i2 + 1)) {
+if ((i2 = bs.nextClearBit (i)) < 0 || i2 > n) i2 = n;
+this.addStructureProtected (type, JM.AlphaPolymer.dsspTypes[dsspType] + (++pt), count++, (dsspType == 3 ? 1 : 0), i - offset, i2 - 1 - offset);
+}
+return count;
+}, "~N,~N,J.c.STR,JU.BS,~B");
 Clazz.pu$h(self.c$);
 c$ = Clazz.declareType (JM.AlphaPolymer, "Code", Enum);
 Clazz.defineEnumConstant (c$, "NADA", 0, []);
@@ -169,4 +181,6 @@ Clazz.defineEnumConstant (c$, "LEFT_HELIX", 3, []);
 Clazz.defineEnumConstant (c$, "LEFT_TURN", 4, []);
 Clazz.defineEnumConstant (c$, "RIGHT_TURN", 5, []);
 c$ = Clazz.p0p ();
+Clazz.defineStatics (c$,
+"dsspTypes",  Clazz.newArray (-1, ["H", null, "H", "S", "H", null, "T"]));
 });

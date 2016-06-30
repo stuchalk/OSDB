@@ -241,7 +241,7 @@ this.modelSetName = this.vwr.ms.modelSetName;
 this.modelSetFileName = this.vwr.getModelSetFileName ();
 var i = this.modelSetFileName.lastIndexOf (".");
 this.isZapped = ("zapped".equals (this.modelSetName));
-if (this.isZapped || "string".equals (this.modelSetFileName) || "files".equals (this.modelSetFileName) || "string[]".equals (this.modelSetFileName)) this.modelSetFileName = "";
+if (this.isZapped || "string".equals (this.modelSetFileName) || "String[]".equals (this.modelSetFileName)) this.modelSetFileName = "";
 this.modelSetRoot = this.modelSetFileName.substring (0, i < 0 ? this.modelSetFileName.length : i);
 if (this.modelSetRoot.length == 0) this.modelSetRoot = "Jmol";
 this.modelIndex = this.vwr.am.cmi;

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JV");
-Clazz.load (["JV.JmolChimeMessenger"], "JV.ChimeMessenger", ["java.lang.Boolean", "java.util.Hashtable", "J.c.CBK", "$.STR"], function () {
+Clazz.load (["JV.JmolChimeMessenger"], "JV.ChimeMessenger", ["java.lang.Boolean", "java.util.Hashtable", "J.c.CBK", "$.STR", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 Clazz.instantialize (this, arguments);
@@ -22,7 +22,7 @@ Clazz.overrideMethod (c$, "showHash",
 function (outputBuffer, s) {
 if (s == null) return;
 if (outputBuffer == null) {
-this.vwr.warn (s);
+if (!this.vwr.isPrintOnly) JU.Logger.warn (s);
 this.vwr.scriptStatus (s);
 } else {
 outputBuffer.append (s).appendC ('\n');

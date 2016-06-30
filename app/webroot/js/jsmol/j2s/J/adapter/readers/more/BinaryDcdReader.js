@@ -22,9 +22,8 @@ this.initializeTrajectoryFile ();
 Clazz.overrideMethod (c$, "processBinaryDocument", 
 function () {
 var bytes =  Clazz.newByteArray (40, 0);
-var n = this.binaryDoc.readInt ();
-this.binaryDoc.setStream (this.vwr.getJzt (), null, n != 0x54);
-n = this.binaryDoc.readInt ();
+this.binaryDoc.setStream (this.vwr.getJzt (), null, this.binaryDoc.readInt () == 0x54);
+this.binaryDoc.readInt ();
 this.nModels = this.binaryDoc.readInt ();
 this.binaryDoc.readInt ();
 this.binaryDoc.readInt ();
@@ -38,24 +37,23 @@ var nFixed = this.binaryDoc.readInt ();
 this.binaryDoc.readInt ();
 this.binaryDoc.readByteArray (bytes, 0, 36);
 this.binaryDoc.readInt ();
-n = this.binaryDoc.readInt ();
-n = this.binaryDoc.readInt ();
-n = this.binaryDoc.readInt ();
+this.binaryDoc.readInt ();
+this.binaryDoc.readInt ();
 var sb =  new JU.SB ();
-for (var i = 0; i < n; i++) sb.append (this.binaryDoc.readString (80).trim ()).appendC ('\n');
+for (var i = 0, n = this.binaryDoc.readInt (); i < n; i++) sb.append (this.binaryDoc.readString (80).trim ()).appendC ('\n');
 
-n = this.binaryDoc.readInt ();
+this.binaryDoc.readInt ();
 JU.Logger.info ("BinaryDcdReadaer:\n" + sb);
-n = this.binaryDoc.readInt ();
+this.binaryDoc.readInt ();
 this.nAtoms = this.binaryDoc.readInt ();
-n = this.binaryDoc.readInt ();
+this.binaryDoc.readInt ();
 this.nFree = this.nAtoms - nFixed;
 if (nFixed != 0) {
 this.binaryDoc.readInt ();
 this.bsFree = JU.BS.newN (this.nFree);
 for (var i = 0; i < this.nFree; i++) this.bsFree.set (this.binaryDoc.readInt () - 1);
 
-n = Clazz.doubleToInt (this.binaryDoc.readInt () / 4);
+this.binaryDoc.readInt ();
 JU.Logger.info ("free: " + this.bsFree.cardinality () + " " + JU.Escape.eBS (this.bsFree));
 }this.readCoordinates ();
 JU.Logger.info ("Total number of trajectory steps=" + this.trajectorySteps.size ());

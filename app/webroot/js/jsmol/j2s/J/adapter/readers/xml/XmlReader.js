@@ -1,8 +1,7 @@
 Clazz.declarePackage ("J.adapter.readers.xml");
-Clazz.load (["J.adapter.smarter.AtomSetCollectionReader"], "J.adapter.readers.xml.XmlReader", ["java.io.BufferedInputStream", "java.util.Hashtable", "JU.Rdr", "J.adapter.smarter.AtomSetCollection", "$.Resolver", "J.api.Interface", "JU.Logger"], function () {
+Clazz.load (["J.adapter.smarter.AtomSetCollectionReader", "JU.SB"], "J.adapter.readers.xml.XmlReader", ["java.io.BufferedInputStream", "java.util.Hashtable", "JU.Rdr", "J.adapter.smarter.AtomSetCollection", "$.Resolver", "J.api.Interface", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.atom = null;
-this.domAttributes = null;
 this.parent = null;
 this.atts = null;
 this.keepChars = false;
@@ -14,10 +13,15 @@ this.nullObj = null;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.xml, "XmlReader", J.adapter.smarter.AtomSetCollectionReader);
 Clazz.prepareFields (c$, function () {
+this.chars = JU.SB.newN (2000);
 this.domObj =  new Array (1);
 this.nullObj =  new Array (0);
 });
 Clazz.overrideMethod (c$, "initializeReader", 
+function () {
+this.initCML ();
+});
+Clazz.defineMethod (c$, "initCML", 
 function () {
 this.atts =  new java.util.Hashtable ();
 this.setMyError (this.parseXML ());
@@ -57,16 +61,15 @@ return null;
 }, "~O");
 Clazz.defineMethod (c$, "processXml", 
 function (parent, saxReader) {
-this.PX (parent, saxReader);
+this.processXml2 (parent, saxReader);
 }, "J.adapter.readers.xml.XmlReader,~O");
-Clazz.defineMethod (c$, "PX", 
+Clazz.defineMethod (c$, "processXml2", 
 function (parent, saxReader) {
 this.parent = parent;
 this.asc = parent.asc;
 this.reader = parent.reader;
 this.atts = parent.atts;
 if (saxReader == null) {
-this.domAttributes = this.getDOMAttributes ();
 this.attribs =  new Array (1);
 this.attArgs =  new Array (1);
 this.domObj =  new Array (1);
@@ -85,10 +88,10 @@ Clazz.defineMethod (c$, "createDomNodeJS",
 function (id, data) {
 var applet = this.parent.vwr.html5Applet;
 {
-id = applet._id + "_" + id;
-var d = document.getElementById(id);
-if (d)
-document.body.removeChild(d);
+// id = applet._id + "_" + id;
+// var d = document.getElementById(id);
+// if (d)
+//   document.body.removeChild(d);
 if (!data)
 return;
 if (data.indexOf("<?") == 0)
@@ -111,11 +114,8 @@ break;
 }
 data = D.join('');
 }
-d = document.createElement("_xml");
-d.id = id;
+var d = document.createElement("_xml");
 d.innerHTML = data;
-d.style.display = "none";
-document.body.appendChild(d);
 return d;
 }}, "~S,~O");
 Clazz.overrideMethod (c$, "applySymmetryAndSetTrajectory", 
@@ -137,17 +137,13 @@ function (DOMNode) {
 this.domObj =  Clazz.newArray (-1, [DOMNode]);
 this.setMyError (this.selectReaderAndGo (null));
 }, "~O");
-Clazz.defineMethod (c$, "getDOMAttributes", 
-function () {
-return  Clazz.newArray (-1, ["id"]);
-});
 Clazz.defineMethod (c$, "processStartElement", 
-function (localName) {
-}, "~S");
+function (localName, nodeName) {
+}, "~S,~S");
 Clazz.defineMethod (c$, "setKeepChars", 
 function (TF) {
 this.keepChars = TF;
-this.chars = null;
+this.chars.setLength (0);
 }, "~B");
 Clazz.defineMethod (c$, "processEndElement", 
 function (localName) {
@@ -156,18 +152,21 @@ Clazz.defineMethod (c$, "walkDOMTree",
  function () {
 var localName;
 {
-localName = this.jsObjectGetMember(this.domObj, "nodeName").toLowerCase();
-localName = localName.substring(localName.lastIndexOf(":") + 1);
-}if (localName.equals ("#text")) {
-if (this.keepChars) this.chars = this.jsObjectGetMember (this.domObj, "data");
+localName = "nodeName";
+}var nodeName = (this.jsObjectGetMember (this.domObj, localName));
+localName = this.fixLocal (nodeName);
+if (localName == null) return;
+if (localName.equals ("#text")) {
+if (this.keepChars) this.chars.append (this.jsObjectGetMember (this.domObj, "data"));
 return;
-}this.attribs[0] = this.jsObjectGetMember (this.domObj, "attributes");
+}localName = localName.toLowerCase ();
+nodeName = nodeName.toLowerCase ();
+this.attribs[0] = this.jsObjectGetMember (this.domObj, "attributes");
 this.getDOMAttributesA (this.attribs);
-this.processStartElement (localName);
+this.processStartElement (localName, nodeName);
 var haveChildren;
 {
-haveChildren = this.jsObjectCall(this.domObj, "hasChildNodes",
-null);
+haveChildren = this.domObj[0].hasChildNodes;
 }if (haveChildren) {
 var nextNode = this.jsObjectGetMember (this.domObj, "firstChild");
 while (nextNode != null) {
@@ -178,31 +177,27 @@ nextNode = this.jsObjectGetMember (this.domObj, "nextSibling");
 }
 }this.processEndElement (localName);
 });
+Clazz.defineMethod (c$, "fixLocal", 
+ function (name) {
+{
+var pt = (name== null ? -1 : name.indexOf(":")); return (pt >=
+0 ? name.substring(pt+1) : name);
+}}, "~S");
 Clazz.defineMethod (c$, "getDOMAttributesA", 
  function (attributes) {
 this.atts.clear ();
-if (attributes == null) {
+if (attributes == null) return;
+{
+var nodes = attributes[0]; for (var i = nodes.length; --i >=
+0;) { var key = this.fixLocal(nodes[i].name);
+this.atts.put(key.toLowerCase(), nodes[i].value); }
 return;
-}{
-if (!this.jsObjectGetMember(attributes, "length")) return;
-}var name;
-for (var i = this.domAttributes.length; --i >= 0; ) {
-this.attArgs[0] = name = this.domAttributes[i];
-var att = this.jsObjectCall (attributes, "getNamedItem", this.attArgs);
-if (att != null) {
-this.attArgs[0] = att;
-var attValue = this.jsObjectGetMember (this.attArgs, "value");
-if (attValue != null) this.atts.put (name, attValue);
-}}
-}, "~A");
-Clazz.defineMethod (c$, "jsObjectCall", 
- function (jsObject, method, args) {
-return this.parent.vwr.apiPlatform.getJsObjectInfo (jsObject, method, args == null ? this.nullObj : args);
-}, "~A,~S,~A");
+}}, "~A");
 Clazz.defineMethod (c$, "jsObjectGetMember", 
  function (jsObject, name) {
-return this.parent.vwr.apiPlatform.getJsObjectInfo (jsObject, name, null);
-}, "~A,~S");
+{
+return jsObject[0][name];
+}}, "~A,~S");
 Clazz.defineMethod (c$, "endDocument", 
 function () {
 });

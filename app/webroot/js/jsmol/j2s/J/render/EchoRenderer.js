@@ -8,7 +8,6 @@ var echo = this.shape;
 var scalePixelsPerMicron = (this.vwr.getBoolean (603979845) ? this.vwr.getScalePixelsPerAngstrom (true) * 10000 : 0);
 this.imageFontScaling = this.vwr.imageFontScaling;
 var haveTranslucent = false;
-this.setZcutoff ();
 for (var t, $t = echo.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) {
 if (!t.visible || t.hidden) {
 continue;
@@ -21,8 +20,7 @@ t.setXYZs (this.pt0i.x, this.pt0i.y, this.pt0i.z, this.pt0i.z);
 var z = this.vwr.tm.zValueFromPercent (t.movableZPercent % 1000);
 if (t.valign == 4 && Math.abs (t.movableZPercent) >= 1000) z = this.pt0i.z - this.vwr.tm.zValueFromPercent (0) + z;
 t.setZs (z, z);
-}if (t.zSlab >= this.zCutoff) continue;
-if (t.pointerPt == null) {
+}if (t.pointerPt == null) {
 t.pointer = 0;
 } else {
 t.pointer = 1;

@@ -11,7 +11,6 @@ this.shortSectorSize = 0;
 this.nShortSectorsPerStandardSector = 0;
 this.nIntPerSector = 0;
 this.nDirEntriesperSector = 0;
-this.data = null;
 Clazz.instantialize (this, arguments);
 }, JU, "CompoundDocument", JU.BinaryDocument);
 Clazz.prepareFields (c$, function () {
@@ -40,12 +39,12 @@ return this.directory;
 });
 Clazz.defineMethod (c$, "getDirectoryListing", 
 function (separator) {
-var str = "";
+var sb =  new JU.SB ();
 for (var i = 0; i < this.directory.size (); i++) {
 var thisEntry = this.directory.get (i);
-if (!thisEntry.isEmpty) str += separator + thisEntry.entryName + "\tlen=" + thisEntry.lenStream + "\tSID=" + thisEntry.SIDfirstSector + (thisEntry.isStandard ? "\tfileOffset=" + this.getOffset (thisEntry.SIDfirstSector) : "");
+if (!thisEntry.isEmpty) sb.append (separator).append (thisEntry.entryName).append ("\tlen=").appendI (thisEntry.lenStream).append ("\tSID=").appendI (thisEntry.SIDfirstSector).append (thisEntry.isStandard ? "\tfileOffset=" + this.getOffset (thisEntry.SIDfirstSector) : "");
 }
-return str;
+return sb.toString ();
 }, "~S");
 Clazz.defineMethod (c$, "getAllData", 
 function () {
@@ -62,42 +61,43 @@ var name = thisEntry.entryName;
 System.out.println ("CompoundDocument file " + name);
 var isBinary = (binaryFileList.indexOf ("|" + name + "|") >= 0);
 if (isBinary) name += ":asBinaryString";
-var data =  new JU.SB ();
-data.append ("BEGIN Directory Entry ").append (name).append ("\n");
-data.appendSB (this.getEntryAsString (thisEntry, isBinary));
-data.append ("\nEND Directory Entry ").append (name).append ("\n");
-fileData.put (prefix + "/" + name, data.toString ());
+fileData.put (prefix + "/" + name, this.appendData ( new JU.SB (), name, thisEntry, isBinary).toString ());
 }}
 this.close ();
 }, "~S,~S,java.util.Map");
 Clazz.overrideMethod (c$, "getAllDataFiles", 
 function (binaryFileList, firstFile) {
-if (firstFile != null) {
-for (var i = 0; i < this.directory.size (); i++) {
-var thisEntry = this.directory.get (i);
-if (thisEntry.entryName.equals (firstFile)) {
-this.directory.remove (i);
-this.directory.add (1, thisEntry);
-break;
-}}
-}this.data =  new JU.SB ();
-this.data.append ("Compound Document File Directory: ");
-this.data.append (this.getDirectoryListing ("|"));
-this.data.append ("\n");
+var data =  new JU.SB ();
+data.append ("Compound Document File Directory: ");
+data.append (this.getDirectoryListing ("|"));
+data.append ("\n");
+var thisEntry;
 binaryFileList = "|" + binaryFileList + "|";
-for (var i = 0; i < this.directory.size (); i++) {
-var thisEntry = this.directory.get (i);
-if (!thisEntry.isEmpty && thisEntry.entryType != 5) {
+for (var i = 0, n = this.directory.size (); i < n; i++) {
+thisEntry = this.directory.get (i);
 var name = thisEntry.entryName;
+switch (thisEntry.entryType) {
+case 5:
+break;
+case 1:
+data.append ("NEW Directory ").append (name).append ("\n");
+break;
+case 2:
 if (name.endsWith (".gz")) name = name.substring (0, name.length - 3);
-this.data.append ("BEGIN Directory Entry ").append (name).append ("\n");
-this.data.appendSB (this.getEntryAsString (thisEntry, binaryFileList.indexOf ("|" + thisEntry.entryName + "|") >= 0));
-this.data.append ("\n");
-this.data.append ("END Directory Entry ").append (thisEntry.entryName).append ("\n");
-}}
+this.appendData (data, name, thisEntry, binaryFileList.indexOf ("|" + thisEntry.entryName + "|") >= 0);
+break;
+}
+}
 this.close ();
-return this.data;
+return data;
 }, "~S,~S");
+Clazz.defineMethod (c$, "appendData", 
+ function (data, name, thisEntry, isBinary) {
+data.append ("BEGIN Directory Entry ").append (name).append ("\n");
+data.appendSB (this.getEntryAsString (thisEntry, isBinary));
+data.append ("\nEND Directory Entry ").append (name).append ("\n");
+return data;
+}, "JU.SB,~S,JU.CompoundDocDirEntry,~B");
 Clazz.defineMethod (c$, "getFileAsString", 
 function (entryName) {
 for (var i = 0; i < this.directory.size (); i++) {
@@ -195,9 +195,8 @@ this.gotoSector (thisSID);
 for (var j = this.nDirEntriesperSector; --j >= 0; ) {
 thisEntry =  new JU.CompoundDocDirEntry (this);
 thisEntry.readData ();
-if (thisEntry.lenStream > 0) {
 this.directory.addLast (thisEntry);
-}if (thisEntry.entryType == 5) this.rootEntry = thisEntry;
+if (thisEntry.entryType == 5) this.rootEntry = thisEntry;
 }
 thisSID = this.SAT[thisSID];
 }

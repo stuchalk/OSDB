@@ -112,6 +112,7 @@ break;
 }
 if (isSpin) {
 var f = ms.axesLengths;
+if (f == null) System.out.println ("Modulation.java axis error");
 switch (this.axis) {
 case 'x':
 ms.mxyz.x += v / f[0];

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JU");
-Clazz.load (null, "JU.SimpleUnitCell", ["java.lang.Float", "JU.AU", "$.M4", "$.P3", "$.V3"], function () {
+Clazz.load (null, "JU.SimpleUnitCell", ["java.lang.Float", "JU.AU", "$.M4", "$.P3", "$.PT", "$.V3"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.unitCellParams = null;
 this.matrixCartesianToFractional = null;
@@ -200,6 +200,12 @@ Clazz.defineMethod (c$, "toCartesian",
 function (pt, ignoreOffset) {
 if (this.matrixFractionalToCartesian != null) (ignoreOffset ? this.matrixFtoCNoOffset : this.matrixFractionalToCartesian).rotTrans (pt);
 }, "JU.T3,~B");
+Clazz.defineMethod (c$, "toFractionalM", 
+function (m) {
+if (this.matrixCartesianToFractional == null) return;
+m.mul (this.matrixFractionalToCartesian);
+m.mul2 (this.matrixCartesianToFractional, m);
+}, "JU.M4");
 Clazz.defineMethod (c$, "toFractional", 
 function (pt, isAbsolute) {
 if (this.matrixCartesianToFractional == null) return;
@@ -254,38 +260,40 @@ cell.z = (nnn % f) + offset;
 c$.getCellWeight = Clazz.defineMethod (c$, "getCellWeight", 
 function (pt) {
 var f = 1;
-if (pt.x == 0) f /= 2;
-if (pt.y == 0) f /= 2;
-if (pt.z == 0) f /= 2;
+if (pt.x <= 0.02 || pt.x >= 0.98) f /= 2;
+if (pt.y <= 0.02 || pt.y >= 0.98) f /= 2;
+if (pt.z <= 0.02 || pt.z >= 0.98) f /= 2;
 return f;
 }, "JU.P3");
 c$.getReciprocal = Clazz.defineMethod (c$, "getReciprocal", 
-function (abc) {
+function (abc, ret, scale) {
 var rabc =  new Array (4);
 var off = (abc.length == 4 ? 1 : 0);
 rabc[0] = (off == 1 ? JU.P3.newP (abc[0]) :  new JU.P3 ());
 for (var i = 0; i < 3; i++) {
 rabc[i + 1] =  new JU.P3 ();
 rabc[i + 1].cross (abc[((i + off) % 3) + off], abc[((i + off + 1) % 3) + off]);
-rabc[i + 1].scale (1 / abc[i + off].dot (rabc[i + 1]));
+rabc[i + 1].scale (scale / abc[i + off].dot (rabc[i + 1]));
 }
-return rabc;
-}, "~A");
-c$.transformCubic = Clazz.defineMethod (c$, "transformCubic", 
-function (isPrimitive, type, uc) {
-var offset = uc.length - 3;
-var f = (type.equalsIgnoreCase ("BCC") ? (isPrimitive ?  Clazz.newFloatArray (-1, [.5, .5, -0.5, -0.5, .5, .5, .5, -0.5, .5]) :  Clazz.newFloatArray (-1, [1, 0, 1, 1, 1, 0, 0, 1, 1])) : type.equalsIgnoreCase ("FCC") ? (isPrimitive ?  Clazz.newFloatArray (-1, [.5, .5, 0, 0, .5, .5, .5, 0, .5]) :  Clazz.newFloatArray (-1, [1, -1, 1, 1, 1, -1, -1, 1, 1])) : null);
-if (f == null) return false;
-var b =  new Array (3);
-for (var i = 0, p = 0; i < 3; i++) {
-b[i] =  new JU.P3 ();
-for (var j = offset; j < 3 + offset; j++) b[i].scaleAdd2 (f[p++], uc[j], b[i]);
+if (ret == null) return rabc;
+for (var i = 0; i < 4; i++) ret[i] = rabc[i];
 
-}
-for (var i = 0; i < 3; i++) uc[i + offset] = b[i];
+return ret;
+}, "~A,~A,~N");
+c$.setOabc = Clazz.defineMethod (c$, "setOabc", 
+function (abcabg, params, ucnew) {
+if (abcabg != null) {
+if (params == null) params =  Clazz.newFloatArray (6, 0);
+var tokens = JU.PT.split (abcabg.$replace (',', '='), "=");
+if (tokens.length >= 12) for (var i = 0; i < 6; i++) params[i] = JU.PT.parseFloat (tokens[i * 2 + 1]);
 
-return true;
-}, "~B,~S,~A");
+}if (ucnew == null) return null;
+var f = JU.SimpleUnitCell.newA (params).getUnitCellAsArray (true);
+ucnew[1].set (f[0], f[1], f[2]);
+ucnew[2].set (f[3], f[4], f[5]);
+ucnew[3].set (f[6], f[7], f[8]);
+return ucnew;
+}, "~S,~A,~A");
 Clazz.defineStatics (c$,
 "toRadians", 0.017453292,
 "INFO_DIMENSIONS", 6,
@@ -294,5 +302,7 @@ Clazz.defineStatics (c$,
 "INFO_ALPHA", 3,
 "INFO_C", 2,
 "INFO_B", 1,
-"INFO_A", 0);
+"INFO_A", 0,
+"SLOP", 0.02,
+"SLOP1", 0.98);
 });

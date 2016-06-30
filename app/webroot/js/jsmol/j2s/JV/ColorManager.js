@@ -154,18 +154,20 @@ return JV.JC.altArgbsCpk[JU.Elements.altElementIndexFromNumber (id)];
 }, "~N,~N");
 Clazz.defineMethod (c$, "setElementArgb", 
 function (id, argb) {
-if (argb == 1073741991 && this.argbsCpk === J.c.PAL.argbsCpk) return;
+if (argb == 1073741991 && this.argbsCpk === J.c.PAL.argbsCpk) return 0;
 argb = this.getJmolOrRasmolArgb (id, argb);
 if (this.argbsCpk === J.c.PAL.argbsCpk) {
 this.argbsCpk = JU.AU.arrayCopyRangeI (J.c.PAL.argbsCpk, 0, -1);
 this.altArgbsCpk = JU.AU.arrayCopyRangeI (JV.JC.altArgbsCpk, 0, -1);
 }if (id < JU.Elements.elementNumberMax) {
+if (argb == 2147483647) return JU.C.getColix (this.argbsCpk[id]);
 this.argbsCpk[id] = argb;
 this.g3d.changeColixArgb (id, argb);
-return;
+return 0;
 }id = JU.Elements.altElementIndexFromNumber (id);
 this.altArgbsCpk[id] = argb;
 this.g3d.changeColixArgb (JU.Elements.elementNumberMax + id, argb);
+return 0;
 }, "~N,~N");
 Clazz.defineMethod (c$, "getPropertyColorRange", 
 function () {

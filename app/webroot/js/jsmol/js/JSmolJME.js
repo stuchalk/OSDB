@@ -1,8 +1,9 @@
-//  JSmolJME.js   Bob Hanson hansonr@stolaf.edu  6/14/2012 and 3/20/2013
+//  JSmolJME.js   Bob Hanson hansonr@stolaf.edu  6/14/2012
 
-// see http://peter-ertl.com/jsme/JSME_2013-10-13/api_javadoc/index.html
+// see http://peter-ertl.com/jsme
 
-// BH 15/09/2015 18:10:25 jmolAtoms no var
+// BH 4/24/2016 10:51:22 PM adds getjsmeh Jmol script to derive jsme with H atoms from NCI mrv 
+// BH 9/15/2015 18:10:25 jmolAtoms no var
 // BH 6/19/2015 5:36:23 PM fix for Jmol mouse hook t.x.baseVal not implemented fully on iOS
 // BH 3/26/2015 6:13:01 PM  SMILES fix for stereochem in rings losing H atoms
 // BH 9/13/2014 2:24:29 PM SMILES fix again
@@ -128,7 +129,7 @@
 			jarPath: "jme",
 			jarFile: "JME.jar",
 			use: "HTML5",
-			structureChangedCallback: null, // could be myFunction(); first parameter will be reference to this object
+			structureChangedCallback: null, // could be myFunction; first parameter will be reference to this object
 			editOptions: "editEnabled",
 			highlightColor: 1,  // 1-6
 			options: "autoez"
@@ -156,21 +157,26 @@
 				app._applet = new JSApplet.JSME(app._divId, app.__Info);
 				app._applet.options(app._options);
 				var f = "";
+        var theapp = app;
 				if (app._viewSet) {
-					f = "(function(){" + app._id + "._myEditCallback()})";
+          f = function(event){theapp._myEditCallback(theapp, event);};
+
+//					f = "(function(){" + app._id + "._myEditCallback()})";
 				} else if (app.__Info.structureChangedCallback) {
-					var m = app.__Info.structureChangedCallback;
-					if (!m.endsWith(")"))
-						m += "()";
-					f = "(function(a,b,c,d){"+m.replace(/\(\)/, "(" + app._id +",a,b,c,d)") + "})";
+          f = function(event){theapp.__Info.structureChangedCallback(theapp, event);};
+//					var m = app.__Info.structureChangedCallback;
+//					if (!m.endsWith(")"))
+//						m += "()";
+//					f = "(function(a,b,c,d){"+m.replace(/\(\)/, "(" + app._id +",a,b,c,d)") + "})";
 				}
 				if (f) 
-					app._applet.setNotifyStructuralChangeJSfunction(f);
+	          app._applet.setAfterStructureModifiedCallback(f);
+//				app._applet.setNotifyStructuralChangeJSfunction(f);
 				app._ready = true;
 				if (app._isEmbedded && app._linkedApplet._ready && app.__Info.visible)
 					app._linkedApplet.show2d(true);
 				Jmol._setReady(app);
-				app._setSVG();
+				//app._setSVG();
 			}
 		}
 	}   
@@ -264,60 +270,61 @@
 			this._editEnabled = (o.indexOf("editdisable") < 0);
 	}
 	
-	proto._setSVG = function() {
-		var me = this;
-		Jmol._$(this._divId).find("div").each(function(){this._applet = me})
-		this._starPressed = false;
-	}
+//	proto._setSVG = function() {
+//		var me = this;
+//		Jmol._$(this._divId).find("div").each(function(){this._applet = me})
+//		this._starPressed = false;
+//	}
 	
 	proto._enableEdit = function(tf) {
 	  this._editEnabled = tf;
-		this._setSVG();
+		//this._setSVG();
 	}
 
-	Jmol._jmeHook = function(a, e) {
-		// called from within function C(a) in JSME code
-		// a is the function to send this event to using apply
-		var d;
-		return (!(d = e.target) || !(d._applet || (d = Jmol.$closest(d, 'div')[0])) || !d || !d._applet ? a : d._applet.__allowEvent(a, e));
-	}
+//	Jmol._jmeHook = function(a, e) {
+//  alert("hooked")
+//		// called from within function C(a) in JSME code
+//		// a is the function to send this event to using apply
+//		var d;
+//		return (!(d = e.target) || !(d._applet || (d = Jmol.$closest(d, 'div')[0])) || !d || !d._applet ? a : d._applet.__allowEvent(a, e));
+//	}
 	
-	proto.__allowEvent = function(a, e){
-		var t;
-		if(!e || !(t = e.target) || "DIV rect line text polygon ellipse path".indexOf("" + t.tagName) < 0){
-			// cancel only these specific tags
-			return a;
-		}
-		
-		var isKey = (e.type.indexOf("key") >= 0);
-		if  (!this._editEnabled && isKey) {
-			// cancel all keyboard events
-			return 0;
-		}
-		if ("dblclick mousedown mouseup".indexOf(e.type) < 0) {
-			// cancel only these specific events
-			return a;
-		}	
-    var x = 200;
-    var y = 200;
-    try {
-		x = parseInt(t.getAttribute("x"));//(t.textContent ? t.x.baseVal[0].value : t.points ? t.animatedPoints[0].x : isKey || !t.x && !t.x1 ? 200 : (t.x || t.x1).baseVal.value);
-		y = parseInt(t.getAttribute("y"));//(t.textContent ? t.y.baseVal[0].value : t.points ? t.animatedPoints[0].y : isKey || !t.x && !t.x1 ? 200 : (t.y || t.y1).baseVal.value);
-    } catch(e) {
-    }
-		// when editing is disabled, only the star key and main-panel clicking will be allowed
-		var isStar = (x >= 100 && x < 124 && y < 24); // fifth icon from the left on top row
-		var isMain = (x > 25 && y > 50 || x == 0 && y == 0 && t.width.baseVal.value > 100 && t.height.baseVal.value > 100);
-		if (isStar || this._editEnabled && !isMain)
-			this._starPressed = isStar;			
-		var ok = (isStar || this._editEnabled || isMain && this._starPressed);
-		return (ok ? a : 0);
-	}
+//	proto.__allowEvent = function(a, e){
+//  alert("allowing event")
+//		var t;
+//		if(!e || !(t = e.target) || "DIV rect line text polygon ellipse path".indexOf("" + t.tagName) < 0){
+//			// cancel only these specific tags
+//			return a;
+//		}
+//		
+//		var isKey = (e.type.indexOf("key") >= 0);
+//		if  (!this._editEnabled && isKey) {
+///			// cancel all keyboard events
+//		return 0;
+//		}
+//		if ("dblclick mousedown mouseup".indexOf(e.type) < 0) {
+//			// cancel only these specific events
+//			return a;
+//		}	
+//    var x = 200;
+//    var y = 200;
+//    try {
+//		x = parseInt(t.getAttribute("x"));//(t.textContent ? t.x.baseVal[0].value : t.points ? t.animatedPoints[0].x : isKey || !t.x && !t.x1 ? 200 : (t.x || t.x1).baseVal.value);
+//		y = parseInt(t.getAttribute("y"));//(t.textContent ? t.y.baseVal[0].value : t.points ? t.animatedPoints[0].y : isKey || !t.x && !t.x1 ? 200 : (t.y || t.y1).baseVal.value);
+//    } catch(e) {
+//    }
+//		// when editing is disabled, only the star key and main-panel clicking will be allowed
+//		var isStar = (x >= 100 && x < 124 && y < 24); // fifth icon from the left on top row
+//		var isMain = (x > 25 && y > 50 || x == 0 && y == 0 && t.width.baseVal.value > 100 && t.height.baseVal.value > 100);
+//		if (isStar || this._editEnabled && !isMain)
+//			this._starPressed = isStar;			
+//		var ok = (isStar || this._editEnabled || isMain && this._starPressed);
+//		return (ok ? a : 0);
+//	}
 			
-	proto._myEditCallback = function(_jme_myEditCallback) {
+	proto._myEditCallback = function(me, event,_jme_myEditCallback) {
 		// direct callback from JSME applet
 		var data = this._applet.jmeFile().replace(/\:1/g,"");
-		System.out.println("myEditCallback " + data)
 		this._editMol = this._editMol.replace(/\:1/g,"");
 		if (this._checkEnabled && !this._editEnabled) {
 			// data is not null, and we don't allow editing
@@ -329,7 +336,7 @@
 				setTimeout(function(){
 					me._setCheck(false, "sorry");
 					(m ? me._applet.readMolecule(m) : me._applet.reset());
-					me._setSVG();
+					//me._setSVG();
 					me._editMol = me._applet.jmeFile();
 				},150);
 				return;
@@ -340,8 +347,13 @@
 		data && (this._editMol = data);
 		if (this._viewSet == null)
 			return;
-		var a = this._applet.molFile().split("V2000")[1];
-		var b = ("" + this._molData).split("V2000")[1];
+    if (event.action == "readMolFile" || event.action == "readJME") {
+     // JSME marks the selected atom in the third from last column!
+      this._molData = this._applet.molFile().replace(/1  0  0\n/g, "0  0  0\n");
+      return;
+    }
+		var a = this._applet.molFile().replace(/1  0  0\n/g, "0  0  0\n").split("V2000")[1];
+		var b = ("" + this._molData).replace(/1  0  0\n/g, "0  0  0\n").split("V2000")[1];
 		if (a != b) {
 			this._molData = "<modified>";
 			this._thisJmolModel = null;
@@ -421,9 +433,13 @@
 			  isOK = false;
 			} else if (jme != null) {
 				jmeSMILES = this._getSmiles();
+        alert(jmeSMILES)
 				// testing here to see that we have the same structure as in the JMOL applet
 				// feature change here --- evaluation of an atom set returns an array now, not an uninterpretable string
-				var jmolAtoms = (jmeSMILES ? jmol._evaluate("{*}.find('SMILES', '/noncanonical/" + jmeSMILES.replace(/\\/g,"\\\\")+ "')") : []);
+        // had "/noncanonical/" here - but this is not necessary. Jmol will convert this
+         
+        var script = "{*}.find('SMILES', '" + jmeSMILES.replace(/\\/g,"\\\\")+ "')"
+				var jmolAtoms = (jmeSMILES ? jmol._evaluate(script) : []);
 				var isOK = (jmolAtoms.length > 0);
 			}
 			if (!isOK) {
@@ -442,16 +458,26 @@
 		}
 	}
 	
-	proto._loadFromJmol = function(jmol) {
-		this._molData = jmol._getMol2D();
-		setTimeout(this._id + ".__readMolData()",10);
- }
-
-	proto.__readMolData = function() {
+	proto._loadFromJmol = function(jmol, format) {
+    format || (format = "jme");
+    //alert("OK, loading from Jmol here" + (xxjme=jme) + " " + Clazz.getStackTrace());
+    if (format == "jmeh") {
+      if (!this._getjmeh) {
+        this._getjmeh = true;
+        var f = "function getJMEHs() {select visible;var x= show(\"chemical mrv\");var x2 = x.split('x2=\"')[2].split('\"')[1].split(\" \");var y2 = x.split('y2=\"')[2].split('\"')[1].split(' ');var el = x.split('elementType=\"')[2].split('\"')[1].split(' ');var s =  '' + {*}.size + ' ' + {*}.bonds.size + ' ' + el.join(x2).join(y2).join(' ').replace('\\n',' ');var b = x.split('<bond ');for (var i = 2; i <= b.length; i++) { var bi = b[i]; var at = bi.split('atomRefs2=\"')[2].split('\"')[1].replace('a','');var n = (bi.find('>W<') ? -1 : bi.find('>H<') ? -2 : bi.split('order=\"')[2].split('\"')[1]); s += ' ' +  at + ' ' + n};return s}"
+        jmol._scriptWait(f);
+      }
+      var data = jmol._evaluate("getJMEHs()")
+      format = "jme"
+    } else {
+      var data = jmol._evaluate("script('select visible;show chemical \"file?format="+format+"\"')");
+    }
+    this._molData = data;
 		if (!this._applet)return;
 		this._setCheck(false, "readmoldata");
 		if (this._molData) {
-			this._applet.readMolFile(this._molData);
+    	Jmol.jmeReadMolecule(this, this._molData);
+//			this._applet.readMolecule(this._molData);
 			this._molData = this._applet.molFile();
 			if (this._viewSet) {
 			  var v = this._currentView;
@@ -463,7 +489,7 @@
 			this._molData = "<zapped>";
 		}
 		this._editMol = this._applet.jmeFile();
-		this._setSVG();
+		//this._setSVG();
 	}
   
 	proto.__showContainer = function(tf, andShow) {	
@@ -540,13 +566,14 @@
 	Jmol.jmeReadMolecule = function(jme, jmeOrMolData) {
 		// JME data is a single line with no line ending
 		jme._setCheck(false, "readmolecule");
+    jmeOrMolData = jmeOrMolData.trim();
 		if (jmeOrMolData.indexOf("\n") < 0 && jmeOrMolData.indexOf("\r") < 0)
 			jme._applet.readMolecule(jmeOrMolData);
 		else 
 			jme._applet.readMolFile(jmeOrMolData);   
 	 jme._molData = jme._applet.molFile();
 	 jme._editMol = jme._applet.jmeFile();
-	 jme._setSVG();
+	 //jme._setSVG();
 	}
 
 	Jmol.jmeGetFile = function(jme, asJME) {

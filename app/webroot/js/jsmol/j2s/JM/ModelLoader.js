@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JM");
-Clazz.load (["java.util.Hashtable", "JU.BS"], "JM.ModelLoader", ["java.lang.Boolean", "$.Float", "$.NullPointerException", "java.util.Arrays", "JU.AU", "$.Lst", "$.P3", "$.PT", "$.SB", "$.V3", "J.api.Interface", "JM.Chain", "$.Group", "$.Model", "$.ModelSet", "JS.T", "JU.BSUtil", "$.Elements", "$.JmolMolecule", "$.Logger"], function () {
+Clazz.load (["java.util.Hashtable", "JU.BS"], "JM.ModelLoader", ["java.lang.Boolean", "$.Float", "$.NullPointerException", "java.util.Arrays", "JU.AU", "$.Lst", "$.P3", "$.PT", "$.SB", "$.V3", "J.api.Interface", "JM.Chain", "$.Group", "$.Model", "$.ModelSet", "JS.T", "JU.BSUtil", "$.Elements", "$.JmolMolecule", "$.Logger", "JV.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.ms = null;
@@ -123,6 +123,7 @@ this.ms.someModelsHaveFractionalCoordinates = this.ms.getMSInfoB ("someModelsHav
 if (this.merging) {
 this.ms.haveBioModels = new Boolean (this.ms.haveBioModels | this.modelSet0.haveBioModels).valueOf ();
 this.ms.bioModelset = this.modelSet0.bioModelset;
+if (this.ms.bioModelset != null) this.ms.bioModelset.set (this.vwr, this.ms);
 this.ms.someModelsHaveSymmetry = new Boolean (this.ms.someModelsHaveSymmetry | this.modelSet0.getMSInfoB ("someModelsHaveSymmetry")).valueOf ();
 this.someModelsHaveUnitcells = new Boolean (this.someModelsHaveUnitcells | this.modelSet0.getMSInfoB ("someModelsHaveUnitcells")).valueOf ();
 this.ms.someModelsHaveFractionalCoordinates = new Boolean (this.ms.someModelsHaveFractionalCoordinates | this.modelSet0.getMSInfoB ("someModelsHaveFractionalCoordinates")).valueOf ();
@@ -343,7 +344,6 @@ var modelProperties = modelAuxiliaryInfo.get ("modelProperties");
 this.vwr.setStringProperty ("_fileType", modelAuxiliaryInfo.get ("fileType"));
 if (modelName == null) modelName = (this.jmolData != null && this.jmolData.indexOf (";") > 2 ? this.jmolData.substring (this.jmolData.indexOf (":") + 2, this.jmolData.indexOf (";")) : this.appendNew ? "" + (modelNumber % 1000000) : "");
 this.setModelNameNumberProperties (ipt, iTrajectory, modelName, modelNumber, modelProperties, modelAuxiliaryInfo, this.jmolData);
-if (this.ms.getInfo (ipt, "periodicOriginXyz") != null) this.ms.someModelsHaveSymmetry = true;
 }
 var m = this.ms.am[this.baseModelIndex];
 this.vwr.setSmilesString (this.ms.msInfo.get ("smilesString"));
@@ -460,6 +460,7 @@ var isPdbThisModel = false;
 var addH = false;
 var isLegacyHAddition = false;
 var iterAtom = adapter.getAtomIterator (asc);
+this.ms.setCapacity (adapter.getAtomCount (asc));
 var nRead = 0;
 var models = this.ms.am;
 if (this.ms.mc > 0) this.nullGroup =  new JM.Group ().setGroup ( new JM.Chain (this.ms.am[this.baseModelIndex], 32, 0), "", 0, -1, -1);
@@ -710,7 +711,6 @@ if (autoBonding) {
 this.ms.autoBondBs4 (bs, bs, bsExclude, null, this.ms.defaultCovalentMad, this.vwr.getBoolean (603979873));
 JU.Logger.info ("ModelSet: autobonding; use  autobond=false  to not generate bonds automatically");
 } else {
-this.ms.initializeBspf ();
 JU.Logger.info ("ModelSet: not autobonding; use  forceAutobond=true  to force automatic bond creation");
 }});
 Clazz.defineMethod (c$, "finalizeGroupBuild", 
@@ -729,8 +729,7 @@ for (var i = 0; i < this.group3Counts.length; i++) if (this.group3Counts[i] == n
 Clazz.defineMethod (c$, "distinguishAndPropagateGroup", 
  function (groupIndex, chain, group3, seqcode, firstAtomIndex, lastAtomIndex) {
 if (lastAtomIndex < firstAtomIndex) throw  new NullPointerException ();
-var modelIndex = this.ms.at[firstAtomIndex].mi;
-var group = (group3 == null || this.jbr == null ? null : this.jbr.distinguishAndPropagateGroup (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, modelIndex, this.specialAtomIndexes, this.ms.at));
+var group = (group3 == null || this.jbr == null ? null : this.jbr.distinguishAndPropagateGroup (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, this.specialAtomIndexes, this.ms.at));
 var key;
 if (group == null) {
 group =  new JM.Group ().setGroup (chain, group3, seqcode, firstAtomIndex, lastAtomIndex);
@@ -739,7 +738,7 @@ key = "o>";
 } else {
 key = (group.isProtein () ? "p>" : group.isNucleic () ? "n>" : group.isCarbohydrate () ? "c>" : "o>");
 }if (group3 != null) {
-this.countGroup (modelIndex, key, group3);
+this.countGroup (this.ms.at[firstAtomIndex].mi, key, group3);
 if (group.isNucleic ()) {
 var g1 = (this.htGroup1 == null ? null : this.htGroup1.get (group3));
 if (g1 != null) group.group1 = g1.charAt (0);
@@ -789,7 +788,7 @@ if (!this.ms.haveBioModels || this.isPyMOLsession || this.isMutate) {
 this.ms.freezeModels ();
 return;
 }var asDSSP = this.vwr.getBoolean (603979826);
-var ret = this.ms.calculateStructuresAllExcept (this.structuresDefinedInFile, asDSSP, false, true, true, asDSSP);
+var ret = this.ms.calculateStructuresAllExcept (this.structuresDefinedInFile, asDSSP, false, true, true, asDSSP, JV.JC.versionInt >= 1405000 && this.ms.getInfoM ("DSSP1") == null ? 2 : 1);
 if (ret.length > 0) JU.Logger.info (ret);
 });
 Clazz.defineMethod (c$, "findElementsPresent", 

@@ -1817,6 +1817,8 @@ function(a){
 this.i.add(java.util.Collections.checkType(a,this.type));
 },"~O");
 c$=Clazz.p0p();
+
+
 Clazz.pu$h(self.c$);
 c$=Clazz.decorateAsClass(function(){
 this.l=null;
@@ -1885,9 +1887,13 @@ function(){
 return this.l.hashCode();
 });
 c$=Clazz.p0p();
+
+
 Clazz.pu$h(self.c$);
 c$=Clazz.declareType(java.util.Collections,"CheckedRandomAccessList",java.util.Collections.CheckedList,java.util.RandomAccess);
 c$=Clazz.p0p();
+
+
 Clazz.pu$h(self.c$);
 c$=Clazz.declareType(java.util.Collections,"CheckedSet",java.util.Collections.CheckedCollection,java.util.Set);
 Clazz.overrideMethod(c$,"equals",

@@ -12,17 +12,13 @@ Clazz.makeConstructor (c$,
 function () {
 Clazz.superConstructor (this, J.adapter.readers.xml.XmlChem3dReader, []);
 });
-Clazz.overrideMethod (c$, "getDOMAttributes", 
-function () {
-return  Clazz.newArray (-1, ["id", "symbol", "cartCoords", "bondAtom1", "bondAtom2", "bondOrder", "gridDatXDim", "gridDatYDim", "gridDatZDim", "gridDatXSize", "gridDatYSize", "gridDatZSize", "gridDatOrigin", "gridDatData", "calcPartialCharges", "calcAtoms"]);
-});
 Clazz.overrideMethod (c$, "processXml", 
 function (parent, saxReader) {
-this.PX (parent, saxReader);
+this.processXml2 (parent, saxReader);
 this.finalizeMOData (this.moData);
 }, "J.adapter.readers.xml.XmlReader,~O");
 Clazz.overrideMethod (c$, "processStartElement", 
-function (localName) {
+function (localName, nodeName) {
 var tokens;
 if ("model".equals (localName)) {
 this.asc.newAtomSet ();
@@ -31,35 +27,35 @@ return;
 this.atom =  new J.adapter.smarter.Atom ();
 this.atom.atomName = this.atts.get ("id");
 this.atom.elementSymbol = this.atts.get ("symbol");
-if (this.atts.containsKey ("cartCoords")) {
-var xyz = this.atts.get ("cartCoords");
+if (this.atts.containsKey ("cartcoords")) {
+var xyz = this.atts.get ("cartcoords");
 tokens = JU.PT.getTokens (xyz);
 this.atom.set (this.parseFloatStr (tokens[0]), this.parseFloatStr (tokens[1]), this.parseFloatStr (tokens[2]));
 }return;
 }if ("bond".equals (localName)) {
-var atom1 = this.atts.get ("bondAtom1");
-var atom2 = this.atts.get ("bondAtom2");
+var atom1 = this.atts.get ("bondatom1");
+var atom2 = this.atts.get ("bondatom2");
 var order = 1;
-if (this.atts.containsKey ("bondOrder")) order = this.parseIntStr (this.atts.get ("bondOrder"));
+if (this.atts.containsKey ("bondorder")) order = this.parseIntStr (this.atts.get ("bondorder"));
 this.asc.addNewBondFromNames (atom1, atom2, order);
 return;
-}if ("electronicStructureCalculation".equalsIgnoreCase (localName)) {
-tokens = JU.PT.getTokens (this.atts.get ("calcPartialCharges"));
-var tokens2 = JU.PT.getTokens (this.atts.get ("calcAtoms"));
+}if ("electronicstructurecalculation".equals (localName)) {
+tokens = JU.PT.getTokens (this.atts.get ("calcpartialcharges"));
+var tokens2 = JU.PT.getTokens (this.atts.get ("calcatoms"));
 for (var i = this.parseIntStr (tokens[0]); --i >= 0; ) this.asc.mapPartialCharge (tokens2[i + 1], this.parseFloatStr (tokens[i + 1]));
 
-}if ("gridData".equalsIgnoreCase (localName)) {
-var nPointsX = this.parseIntStr (this.atts.get ("gridDatXDim"));
-var nPointsY = this.parseIntStr (this.atts.get ("gridDatYDim"));
-var nPointsZ = this.parseIntStr (this.atts.get ("gridDatZDim"));
-var xStep = this.parseFloatStr (this.atts.get ("gridDatXSize")) / (nPointsX);
-var yStep = this.parseFloatStr (this.atts.get ("gridDatYSize")) / (nPointsY);
-var zStep = this.parseFloatStr (this.atts.get ("gridDatZSize")) / (nPointsZ);
-tokens = JU.PT.getTokens (this.atts.get ("gridDatOrigin"));
+}if ("griddata".equals (localName)) {
+var nPointsX = this.parseIntStr (this.atts.get ("griddatxdim"));
+var nPointsY = this.parseIntStr (this.atts.get ("griddatydim"));
+var nPointsZ = this.parseIntStr (this.atts.get ("griddatzdim"));
+var xStep = this.parseFloatStr (this.atts.get ("griddatxsize")) / (nPointsX);
+var yStep = this.parseFloatStr (this.atts.get ("griddatysize")) / (nPointsY);
+var zStep = this.parseFloatStr (this.atts.get ("griddatzsize")) / (nPointsZ);
+tokens = JU.PT.getTokens (this.atts.get ("griddatorigin"));
 var ox = this.parseFloatStr (tokens[0]);
 var oy = this.parseFloatStr (tokens[1]);
 var oz = this.parseFloatStr (tokens[2]);
-tokens = JU.PT.getTokens (this.atts.get ("gridDatData"));
+tokens = JU.PT.getTokens (this.atts.get ("griddatdata"));
 var pt = 1;
 var voxelData =  Clazz.newFloatArray (nPointsX, nPointsY, nPointsZ, 0);
 var sum = 0;
@@ -95,7 +91,7 @@ mo.put ("volumeData", vd);
 this.orbitals.addLast (mo);
 JU.Logger.info ("Chem3D molecular orbital data displayable using ISOSURFACE MO " + this.orbitals.size ());
 return;
-}}, "~S");
+}}, "~S,~S");
 Clazz.overrideMethod (c$, "processEndElement", 
 function (localName) {
 if ("atom".equals (localName)) {
@@ -104,7 +100,6 @@ this.parent.setAtomCoord (this.atom);
 this.asc.addAtomWithMappedName (this.atom);
 }this.atom = null;
 return;
-}this.keepChars = false;
-this.chars = null;
+}this.setKeepChars (false);
 }, "~S");
 });

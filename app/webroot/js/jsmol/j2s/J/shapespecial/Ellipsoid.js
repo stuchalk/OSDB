@@ -37,7 +37,7 @@ e.modelIndex = t.modelIndex;
 e.colix = 0;
 e.center = center;
 return e;
-}, "JU.Tensor,JU.P3");
+}, "JU.Tensor,JM.Atom");
 Clazz.defineMethod (c$, "setCenter", 
 function (center) {
 this.center = center;

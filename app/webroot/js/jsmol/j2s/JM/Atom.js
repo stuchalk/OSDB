@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JM");
-Clazz.load (["JU.BNode", "$.Point3fi", "J.c.PAL"], "JM.Atom", ["java.lang.Float", "JU.BS", "$.CU", "$.P3", "$.PT", "$.SB", "J.atomdata.RadiusData", "J.c.VDW", "JM.Group", "JU.C", "$.Elements"], function () {
+Clazz.load (["JU.Node", "$.Point3fi", "J.c.PAL"], "JM.Atom", ["java.lang.Float", "JU.BS", "$.CU", "$.P3", "$.PT", "$.SB", "J.atomdata.RadiusData", "J.c.VDW", "JM.Group", "JU.C", "$.Elements"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.altloc = '\0';
 this.atomID = 0;
@@ -19,7 +19,7 @@ this.nBackbonesDisplayed = 0;
 this.clickabilityFlags = 0;
 this.shapeVisibilityFlags = 0;
 Clazz.instantialize (this, arguments);
-}, JM, "Atom", JU.Point3fi, JU.BNode);
+}, JM, "Atom", JU.Point3fi, JU.Node);
 Clazz.prepareFields (c$, function () {
 this.paletteID = J.c.PAL.CPK.id;
 });
@@ -150,26 +150,6 @@ Clazz.defineMethod (c$, "getRasMolRadius",
 function () {
 return Math.abs (Clazz.doubleToInt (this.madAtom / 8));
 });
-Clazz.overrideMethod (c$, "getCovalentBondCount", 
-function () {
-if (this.bonds == null) return 0;
-var n = 0;
-var b;
-for (var i = this.bonds.length; --i >= 0; ) if (((b = this.bonds[i]).order & 1023) != 0 && !b.getOtherAtom (this).isDeleted ()) ++n;
-
-return n;
-});
-Clazz.overrideMethod (c$, "getCovalentHydrogenCount", 
-function () {
-if (this.bonds == null) return 0;
-var n = 0;
-for (var i = this.bonds.length; --i >= 0; ) {
-if ((this.bonds[i].order & 1023) == 0) continue;
-var a = this.bonds[i].getOtherAtom (this);
-if (a.valence >= 0 && a.getElementNumber () == 1) ++n;
-}
-return n;
-});
 Clazz.overrideMethod (c$, "getEdges", 
 function () {
 return (this.bonds == null ?  new Array (0) : this.bonds);
@@ -269,7 +249,7 @@ return (this.valence < 0);
 });
 Clazz.defineMethod (c$, "setValence", 
 function (nBonds) {
-if (!this.isDeleted ()) this.valence = (nBonds < 0 ? 0 : nBonds < 0xEF ? nBonds : 0xEF);
+if (!this.isDeleted ()) this.valence = (nBonds < 0 ? 0 : nBonds <= 0x7F ? nBonds : 0x7F);
 }, "~N");
 Clazz.overrideMethod (c$, "getValence", 
 function () {
@@ -279,9 +259,45 @@ if (n == 0 && this.bonds != null) for (var i = this.bonds.length; --i >= 0; ) n 
 
 return n;
 });
+Clazz.overrideMethod (c$, "getCovalentBondCount", 
+function () {
+if (this.bonds == null) return 0;
+var n = 0;
+var b;
+for (var i = this.bonds.length; --i >= 0; ) if (((b = this.bonds[i]).order & 1023) != 0 && !b.getOtherAtom (this).isDeleted ()) ++n;
+
+return n;
+});
+Clazz.overrideMethod (c$, "getCovalentHydrogenCount", 
+function () {
+if (this.bonds == null) return 0;
+var n = 0;
+for (var i = this.bonds.length; --i >= 0; ) {
+if ((this.bonds[i].order & 1023) == 0) continue;
+var a = this.bonds[i].getOtherAtom (this);
+if (a.valence >= 0 && a.getElementNumber () == 1) ++n;
+}
+return n;
+});
 Clazz.overrideMethod (c$, "getImplicitHydrogenCount", 
 function () {
-return this.group.chain.model.ms.getImplicitHydrogenCount (this, false);
+return this.group.chain.model.ms.getMissingHydrogenCount (this, false);
+});
+Clazz.overrideMethod (c$, "getTotalHydrogenCount", 
+function () {
+return this.getCovalentHydrogenCount () + this.getImplicitHydrogenCount ();
+});
+Clazz.overrideMethod (c$, "getTotalValence", 
+function () {
+var v = this.getValence ();
+if (v < 0) return v;
+var h = this.getImplicitHydrogenCount ();
+var sp2 = this.group.chain.model.ms.aaRet[4];
+return v + h + sp2;
+});
+Clazz.overrideMethod (c$, "getCovalentBondCountPlusMissingH", 
+function () {
+return this.getCovalentBondCount () + this.getImplicitHydrogenCount ();
 });
 Clazz.defineMethod (c$, "getTargetValence", 
 function () {
@@ -438,7 +454,7 @@ Clazz.overrideMethod (c$, "getModelIndex",
 function () {
 return this.mi;
 });
-Clazz.defineMethod (c$, "getMoleculeNumber", 
+Clazz.overrideMethod (c$, "getMoleculeNumber", 
 function (inModel) {
 return (this.group.chain.model.ms.getMoleculeIndex (this.i, inModel) + 1);
 }, "~B");
@@ -494,7 +510,7 @@ c.toFractional (ptTemp2, true);
 c.toUnitCell (ptTemp1, null);
 c.toUnitCell (ptTemp2, null);
 }return ptTemp1.distance (ptTemp2);
-}, "JU.P3,JU.P3,JU.P3");
+}, "JU.T3,JU.T3,JU.T3");
 Clazz.defineMethod (c$, "setFractionalCoord", 
 function (tok, fValue, asAbsolute) {
 var c = this.getUnitCell ();
@@ -758,7 +774,7 @@ case 1237320707:
 return this.group.getProteinStructureSubType ().getId ();
 case 1094713367:
 return this.group.getStrucNo ();
-case 1296041474:
+case 1296041986:
 return this.getSymOp ();
 case 1094715417:
 return this.getValence ();
@@ -977,7 +993,7 @@ return this.getFractionalCoordPt (!vwr.g.legacyJavaFloat, false, ptTemp);
 case 1145045006:
 return (this.group.chain.model.isJmolDataFrame ? this.getFractionalCoordPt (!vwr.g.legacyJavaFloat, false, ptTemp) : this.getFractionalUnitCoordPt (!vwr.g.legacyJavaFloat, false, ptTemp));
 case 1145047052:
-return JU.P3.new3 (this.sX, this.group.chain.model.ms.vwr.getScreenHeight () - this.sY, this.sZ);
+return JU.P3.new3 (vwr.antialiased ? Clazz.doubleToInt (this.sX / 2) : this.sX, vwr.getScreenHeight () - (vwr.antialiased ? Clazz.doubleToInt (this.sY / 2) : this.sY), vwr.antialiased ? Clazz.doubleToInt (this.sZ / 2) : this.sZ);
 case 1145047055:
 return this.getVibrationVector ();
 case 1145045008:
@@ -997,7 +1013,7 @@ return this.group.getAtomIndex (name, offset);
 Clazz.overrideMethod (c$, "isCrossLinked", 
 function (node) {
 return this.group.isCrossLinked ((node).group);
-}, "JU.BNode");
+}, "JU.Node");
 Clazz.overrideMethod (c$, "getCrossLinkVector", 
 function (vReturn, crosslinkCovalent, crosslinkHBond) {
 return this.group.getCrossLinkVector (vReturn, crosslinkCovalent, crosslinkHBond);
@@ -1015,6 +1031,21 @@ function (flags) {
 var m = this.group.getModel ();
 return (m.isBioModel ? (m).getUnitID (this, flags) : "");
 }, "~N");
+Clazz.overrideMethod (c$, "getFloatProperty", 
+function (property) {
+var data = this.group.chain.model.ms.vwr.getDataObj (property, null, 1);
+var f = NaN;
+if (data != null) {
+try {
+f = (data)[this.i];
+} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+} else {
+throw e;
+}
+}
+}return f;
+}, "~S");
 Clazz.defineStatics (c$,
 "ATOM_INFRAME", 1,
 "ATOM_VISSET", 2,

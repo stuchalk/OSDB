@@ -57,6 +57,7 @@ if (this.bsr.setBioColix (this.colix)) this.renderNucleicBaseStep (i);
 }, "J.renderbio.BioShapeRenderer");
 Clazz.defineMethod (c$, "renderNucleicBaseStep", 
  function (im) {
+if (this.bsr.isPhosphorusOnly) return;
 var nucleotide = this.bsr.monomers[im];
 var thisMad = this.bsr.mads[im];
 if (this.rScr[0] == null) {

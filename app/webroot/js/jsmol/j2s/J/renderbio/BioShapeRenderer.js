@@ -1,9 +1,8 @@
 Clazz.declarePackage ("J.renderbio");
-Clazz.load (["J.render.MeshRenderer", "JU.A4", "$.BS", "$.M3", "$.P3", "$.V3"], "J.renderbio.BioShapeRenderer", ["J.c.STR", "JM.CarbohydratePolymer", "$.NucleicPolymer", "J.shape.Mesh", "JU.C", "$.GData", "$.Logger", "$.Normix"], function () {
+Clazz.load (["J.render.ShapeRenderer", "JU.BS", "$.P3"], "J.renderbio.BioShapeRenderer", ["javajs.api.Interface", "J.c.STR", "JM.CarbohydratePolymer", "$.NucleicPolymer", "$.PhosphorusPolymer", "JU.C"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.invalidateMesh = false;
 this.invalidateSheets = false;
-this.isHighRes = false;
 this.isTraceAlpha = false;
 this.ribbonBorder = false;
 this.haveControlPointScreens = false;
@@ -11,12 +10,10 @@ this.aspectRatio = 0;
 this.hermiteLevel = 0;
 this.sheetSmoothing = 0;
 this.cartoonsFancy = false;
-this.meshes = null;
-this.meshReady = null;
-this.bsRenderMesh = null;
 this.monomerCount = 0;
 this.monomers = null;
 this.isNucleic = false;
+this.isPhosphorusOnly = false;
 this.isCarbohydrate = false;
 this.bsVisible = null;
 this.ribbonTopScreens = null;
@@ -29,7 +26,11 @@ this.mads = null;
 this.colixes = null;
 this.colixesBack = null;
 this.structureTypes = null;
+this.isHighRes = false;
 this.wireframeOnly = false;
+this.needTranslucent = false;
+this.meshRenderer = null;
+this.bioShape = null;
 this.pointT = null;
 this.iPrev = 0;
 this.iNext = 0;
@@ -38,31 +39,18 @@ this.iNext3 = 0;
 this.diameterBeg = 0;
 this.diameterMid = 0;
 this.diameterEnd = 0;
-this.doCap0 = false;
-this.doCap1 = false;
+this.madBeg = 0;
+this.madMid = 0;
+this.madEnd = 0;
 this.colixBack = 0;
 this.reversed = null;
+this.isCyclic = false;
 this.screenArrowTop = null;
 this.screenArrowTopPrev = null;
 this.screenArrowBot = null;
 this.screenArrowBotPrev = null;
-this.controlHermites = null;
-this.wingHermites = null;
-this.radiusHermites = null;
-this.norm = null;
-this.wing = null;
-this.wing1 = null;
-this.wingT = null;
-this.aa = null;
-this.pt = null;
-this.pt1 = null;
-this.ptPrev = null;
-this.ptNext = null;
-this.mat = null;
-this.bsTemp = null;
-this.norml = null;
 Clazz.instantialize (this, arguments);
-}, J.renderbio, "BioShapeRenderer", J.render.MeshRenderer);
+}, J.renderbio, "BioShapeRenderer", J.render.ShapeRenderer);
 Clazz.prepareFields (c$, function () {
 this.bsVisible =  new JU.BS ();
 this.pointT =  new JU.P3 ();
@@ -70,17 +58,6 @@ this.screenArrowTop =  new JU.P3 ();
 this.screenArrowTopPrev =  new JU.P3 ();
 this.screenArrowBot =  new JU.P3 ();
 this.screenArrowBotPrev =  new JU.P3 ();
-this.norm =  new JU.V3 ();
-this.wing =  new JU.V3 ();
-this.wing1 =  new JU.V3 ();
-this.wingT =  new JU.V3 ();
-this.aa =  new JU.A4 ();
-this.pt =  new JU.P3 ();
-this.pt1 =  new JU.P3 ();
-this.ptPrev =  new JU.P3 ();
-this.ptNext =  new JU.P3 ();
-this.mat =  new JU.M3 ();
-this.norml =  new JU.V3 ();
 });
 Clazz.overrideMethod (c$, "render", 
 function () {
@@ -93,7 +70,6 @@ Clazz.defineMethod (c$, "setGlobals",
  function () {
 this.invalidateMesh = false;
 this.needTranslucent = false;
-this.isPrecision = true;
 this.g3d.addRenderer (553648147);
 var TF = (!this.isExport && !this.vwr.checkMotionRendering (1112152066));
 if (TF != this.wireframeOnly) this.invalidateMesh = true;
@@ -116,7 +92,12 @@ if (this.cartoonsFancy && val >= 16) val = 4;
 if (this.wireframeOnly || this.hermiteLevel == 0) val = 0;
 if (val != this.aspectRatio && val != 0 && val1 != 0) this.invalidateMesh = true;
 this.aspectRatio = val;
-TF = this.vwr.getBoolean (603979966);
+if (this.aspectRatio > 0) {
+if (this.meshRenderer == null) {
+this.meshRenderer = javajs.api.Interface.getInterface ("J.renderbio.BioMeshRenderer");
+this.meshRenderer.setViewerG3dShapeID (this.vwr, this.shape.shapeID);
+}this.meshRenderer.setup (this.g3d, this.vwr.ms, this.shape);
+}TF = this.vwr.getBoolean (603979966);
 if (TF != this.isTraceAlpha) this.invalidateMesh = true;
 this.isTraceAlpha = TF;
 this.invalidateSheets = false;
@@ -130,12 +111,13 @@ Clazz.defineMethod (c$, "renderShapes",
  function () {
 var mps = this.shape;
 for (var c = mps.bioShapes.length; --c >= 0; ) {
-var bioShape = mps.getBioShape (c);
-if ((bioShape.modelVisibilityFlags & this.myVisibilityFlag) == 0) continue;
-if (bioShape.monomerCount >= 2 && this.initializePolymer (bioShape)) {
-this.bsRenderMesh.clearAll ();
-this.renderBioShape (bioShape);
-this.renderMeshes ();
+this.bioShape = mps.getBioShape (c);
+if ((this.bioShape.modelVisibilityFlags & this.myVisibilityFlag) == 0) continue;
+if (this.bioShape.monomerCount >= 2 && this.initializePolymer (this.bioShape)) {
+if (this.meshRenderer != null) this.meshRenderer.initBS ();
+this.isCyclic = this.bioShape.bioPolymer.isCyclic ();
+this.renderBioShape (this.bioShape);
+if (this.meshRenderer != null) this.meshRenderer.renderMeshes ();
 this.freeTempArrays ();
 }}
 });
@@ -158,7 +140,6 @@ this.controlPoints = bioShape.bioPolymer.getControlPoints (true, 0, false);
 } else {
 this.controlPoints = bioShape.bioPolymer.getControlPoints (this.isTraceAlpha, this.sheetSmoothing, this.invalidateSheets);
 }this.monomerCount = bioShape.monomerCount;
-this.bsRenderMesh = JU.BS.newN (this.monomerCount);
 this.monomers = bioShape.monomers;
 this.reversed = bioShape.bioPolymer.reversed;
 this.leadAtomIndices = bioShape.bioPolymer.getLeadAtomIndices ();
@@ -175,11 +156,11 @@ haveVisible = true;
 if (!haveVisible) return false;
 this.ribbonBorder = this.vwr.getBoolean (603979899);
 this.isNucleic = Clazz.instanceOf (bioShape.bioPolymer, JM.NucleicPolymer);
+this.isPhosphorusOnly = !this.isNucleic && Clazz.instanceOf (bioShape.bioPolymer, JM.PhosphorusPolymer);
 this.isCarbohydrate = Clazz.instanceOf (bioShape.bioPolymer, JM.CarbohydratePolymer);
 this.haveControlPointScreens = false;
 this.wingVectors = bioShape.wingVectors;
-this.meshReady = bioShape.meshReady;
-this.meshes = bioShape.meshes;
+if (this.meshRenderer != null) this.meshRenderer.initialize (this, bioShape, this.monomerCount);
 this.mads = bioShape.mads;
 this.colixes = bioShape.colixes;
 this.colixesBack = bioShape.colixesBack;
@@ -229,11 +210,23 @@ function (i) {
 return (this.colixesBack == null || this.colixesBack.length <= i ? 0 : this.colixesBack[i]);
 }, "~N");
 Clazz.defineMethod (c$, "setNeighbors", 
- function (i) {
+function (i) {
+if (this.isCyclic) {
+i += this.monomerCount;
+this.iPrev = (i - 1) % this.monomerCount;
+this.iNext = (i + 1) % this.monomerCount;
+this.iNext2 = (i + 2) % this.monomerCount;
+this.iNext3 = (i + 3) % this.monomerCount;
+} else {
 this.iPrev = Math.max (i - 1, 0);
 this.iNext = Math.min (i + 1, this.monomerCount);
 this.iNext2 = Math.min (i + 2, this.monomerCount);
 this.iNext3 = Math.min (i + 3, this.monomerCount);
+}}, "~N");
+Clazz.defineMethod (c$, "setColix", 
+function (colix) {
+this.colix = colix;
+return this.g3d.setC (colix);
 }, "~N");
 Clazz.defineMethod (c$, "setMads", 
  function (i, thisTypeOnly) {
@@ -253,14 +246,10 @@ if (!thisTypeOnly || this.structureTypes[i] === this.structureTypes[this.iNext])
 }this.diameterBeg = Clazz.floatToInt (this.vwr.tm.scaleToScreen (Clazz.floatToInt (this.controlPointScreens[i].z), this.madBeg));
 this.diameterMid = Clazz.floatToInt (this.vwr.tm.scaleToScreen (this.monomers[i].getLeadAtom ().sZ, this.madMid));
 this.diameterEnd = Clazz.floatToInt (this.vwr.tm.scaleToScreen (Clazz.floatToInt (this.controlPointScreens[this.iNext].z), this.madEnd));
-this.doCap0 = (i == this.iPrev || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iPrev]);
-this.doCap1 = (this.iNext == this.iNext2 || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iNext]);
-return ((this.aspectRatio > 0 && (this.exportType == 1 || this.checkDiameter (this.diameterBeg) || this.checkDiameter (this.diameterMid) || this.checkDiameter (this.diameterEnd))));
+var doCap0 = (i == this.iPrev || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iPrev]);
+var doCap1 = (this.iNext == this.iNext2 || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iNext]);
+return (this.aspectRatio > 0 && this.meshRenderer != null && this.meshRenderer.check (doCap0, doCap1));
 }, "~N,~B");
-Clazz.defineMethod (c$, "checkDiameter", 
- function (d) {
-return ( new Boolean ( new Boolean (this.isHighRes & d > 3).valueOf () || d >= 8).valueOf ());
-}, "~N");
 Clazz.defineMethod (c$, "renderHermiteCylinder", 
 function (screens, i) {
 this.colix = this.getLeadColix (i);
@@ -274,20 +263,8 @@ this.setNeighbors (i);
 this.colix = this.getLeadColix (i);
 if (!this.setBioColix (this.colix)) return;
 if (this.setMads (i, thisTypeOnly) || this.isExport) {
-try {
-if ((this.meshes[i] == null || !this.meshReady[i]) && !this.createMesh (i, this.madBeg, this.madMid, this.madEnd, 1, tension)) return;
-this.meshes[i].setColix (this.colix);
-this.bsRenderMesh.set (i);
+this.meshRenderer.setFancyConic (i, tension);
 return;
-} catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
-this.bsRenderMesh.clear (i);
-this.meshes[i] = null;
-JU.Logger.error ("render mesh error hermiteConic: " + e.toString ());
-} else {
-throw e;
-}
-}
 }if (this.diameterBeg == 0 && this.diameterEnd == 0 || this.wireframeOnly) this.g3d.drawLineAB (this.controlPointScreens[i], this.controlPointScreens[this.iNext]);
  else {
 this.g3d.fillHermite (this.isNucleic ? 4 : 7, this.diameterBeg, this.diameterMid, this.diameterEnd, this.controlPointScreens[this.iPrev], this.controlPointScreens[i], this.controlPointScreens[this.iNext], this.controlPointScreens[this.iNext2]);
@@ -295,28 +272,22 @@ this.g3d.fillHermite (this.isNucleic ? 4 : 7, this.diameterBeg, this.diameterMid
 Clazz.defineMethod (c$, "renderHermiteRibbon", 
 function (doFill, i, thisTypeOnly) {
 this.setNeighbors (i);
-this.colix = this.getLeadColix (i);
+var c0 = this.colix = this.getLeadColix (i);
 if (!this.setBioColix (this.colix)) return;
-this.colixBack = this.getLeadColixBack (i);
+var cb = this.colixBack = this.getLeadColixBack (i);
 if (doFill && (this.aspectRatio != 0 || this.isExport)) {
 if (this.setMads (i, thisTypeOnly) || this.isExport) {
-try {
-if ((this.meshes[i] == null || !this.meshReady[i]) && !this.createMesh (i, this.madBeg, this.madMid, this.madEnd, this.aspectRatio, this.isNucleic ? 4 : 7)) return;
-this.meshes[i].setColix (this.colix);
-this.meshes[i].setColixBack (this.colixBack);
-this.bsRenderMesh.set (i);
+this.meshRenderer.setFancyRibbon (i);
 return;
-} catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
-this.bsRenderMesh.clear (i);
-this.meshes[i] = null;
-JU.Logger.error ("render mesh error hermiteRibbon: " + e.toString ());
-} else {
-throw e;
-}
-}
-}}this.g3d.drawHermite7 (doFill, this.ribbonBorder, (this.reversed.get (i) ? -1 : 1) * (this.isNucleic ? 4 : 7), this.ribbonTopScreens[this.iPrev], this.ribbonTopScreens[i], this.ribbonTopScreens[this.iNext], this.ribbonTopScreens[this.iNext2], this.ribbonBottomScreens[this.iPrev], this.ribbonBottomScreens[i], this.ribbonBottomScreens[this.iNext], this.ribbonBottomScreens[this.iNext2], Clazz.floatToInt (this.aspectRatio), this.colixBack);
-}, "~B,~N,~B");
+}}var isReversed = this.reversed.get (i);
+if (isReversed && this.colixBack != 0) {
+this.setColix (this.colixBack);
+cb = c0;
+}this.g3d.drawHermite7 (doFill, this.ribbonBorder, (isReversed ? -1 : 1) * (this.isNucleic ? 4 : 7), this.ribbonTopScreens[this.iPrev], this.ribbonTopScreens[i], this.ribbonTopScreens[this.iNext], this.ribbonTopScreens[this.iNext2], this.ribbonBottomScreens[this.iPrev], this.ribbonBottomScreens[i], this.ribbonBottomScreens[this.iNext], this.ribbonBottomScreens[this.iNext2], Clazz.floatToInt (this.aspectRatio), cb);
+if (isReversed && this.colixBack != 0) {
+this.setColix (c0);
+cb = this.colixBack;
+}}, "~B,~N,~B");
 Clazz.defineMethod (c$, "renderHermiteArrowHead", 
 function (i) {
 this.colix = this.getLeadColix (i);
@@ -324,22 +295,8 @@ if (!this.setBioColix (this.colix)) return;
 this.colixBack = this.getLeadColixBack (i);
 this.setNeighbors (i);
 if (this.setMads (i, false) || this.isExport) {
-try {
-this.doCap0 = true;
-this.doCap1 = false;
-if ((this.meshes[i] == null || !this.meshReady[i]) && !this.createMesh (i, Clazz.doubleToInt (Math.floor (this.madBeg * 1.2)), Clazz.doubleToInt (Math.floor (this.madBeg * 0.6)), 0, (this.aspectRatio == 1 ? this.aspectRatio : this.aspectRatio / 2), 7)) return;
-this.meshes[i].setColix (this.colix);
-this.bsRenderMesh.set (i);
+this.meshRenderer.setFancyArrowHead (i);
 return;
-} catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
-this.bsRenderMesh.clear (i);
-this.meshes[i] = null;
-JU.Logger.error ("render mesh error hermiteArrowHead: " + e.toString ());
-} else {
-throw e;
-}
-}
 }var cp = this.controlPoints[i];
 var wv = this.wingVectors[i];
 this.calc1Screen (cp, wv, this.madBeg, .0007, this.screenArrowTop);
@@ -351,165 +308,4 @@ this.g3d.setC (this.colix);
 if (this.ribbonBorder && this.aspectRatio == 0) {
 this.g3d.fillCylinderBits (3, 3, this.screenArrowTop, this.screenArrowBot);
 }}, "~N");
-Clazz.defineMethod (c$, "createMesh", 
- function (i, madBeg, madMid, madEnd, aspectRatio, tension) {
-this.setNeighbors (i);
-if (this.controlPoints[i].distanceSquared (this.controlPoints[this.iNext]) == 0) return false;
-var isEccentric = (aspectRatio != 1 && this.wingVectors != null);
-var isFlatMesh = (aspectRatio == 0);
-var isElliptical = (this.cartoonsFancy || this.hermiteLevel >= 6);
-var nHermites = (this.hermiteLevel + 1) * 2 + 1;
-var nPer = (isFlatMesh ? 4 : (this.hermiteLevel + 1) * 4 - 2);
-var angle = ((isFlatMesh ? 3.141592653589793 / (nPer - 1) : 6.283185307179586 / nPer));
-var mesh = this.meshes[i] =  new J.shape.Mesh ().mesh1 (this.vwr, "mesh_" + this.shapeID + "_" + i, 0, i);
-var variableRadius = (madBeg != madMid || madMid != madEnd);
-if (this.controlHermites == null || this.controlHermites.length < nHermites + 1) {
-this.controlHermites =  new Array (nHermites + 1);
-}JU.GData.getHermiteList (tension, this.controlPoints[this.iPrev], this.controlPoints[i], this.controlPoints[this.iNext], this.controlPoints[this.iNext2], this.controlPoints[this.iNext3], this.controlHermites, 0, nHermites, true);
-if (this.wingHermites == null || this.wingHermites.length < nHermites + 1) {
-this.wingHermites =  new Array (nHermites + 1);
-}this.wing.setT (this.wingVectors[this.iPrev]);
-if (madEnd == 0) this.wing.scale (2.0);
-JU.GData.getHermiteList (tension, this.wing, this.wingVectors[i], this.wingVectors[this.iNext], this.wingVectors[this.iNext2], this.wingVectors[this.iNext3], this.wingHermites, 0, nHermites, false);
-var radius1 = madBeg / 2000;
-var radius2 = madMid / 2000;
-var radius3 = madEnd / 2000;
-if (variableRadius) {
-if (this.radiusHermites == null || this.radiusHermites.length < ((nHermites + 1) >> 1) + 1) {
-this.radiusHermites =  new Array (((nHermites + 1) >> 1) + 1);
-}this.ptPrev.set (radius1, radius1, 0);
-this.pt.set (radius1, radius2, 0);
-this.pt1.set (radius2, radius3, 0);
-this.ptNext.set (radius3, radius3, 0);
-JU.GData.getHermiteList (4, this.ptPrev, this.pt, this.pt1, this.ptNext, this.ptNext, this.radiusHermites, 0, (nHermites + 1) >> 1, true);
-}var nPoints = 0;
-var iMid = nHermites >> 1;
-var kpt1 = Clazz.doubleToInt ((nPer + 2) / 4);
-var kpt2 = Clazz.doubleToInt ((3 * nPer + 2) / 4);
-var mode = (!isEccentric ? 0 : isFlatMesh ? 1 : isElliptical ? 2 : 3);
-var useMat = (mode == 0 || mode == 3);
-for (var p = 0; p < nHermites; p++) {
-this.norm.sub2 (this.controlHermites[p + 1], this.controlHermites[p]);
-var scale = (!variableRadius ? radius1 : p < iMid ? this.radiusHermites[p].x : this.radiusHermites[p - iMid].y);
-this.wing.setT (this.wingHermites[p]);
-this.wing1.setT (this.wing);
-switch (mode) {
-case 1:
-break;
-case 2:
-this.wing1.cross (this.norm, this.wing);
-this.wing1.normalize ();
-this.wing1.scale (this.wing.length () / aspectRatio);
-break;
-case 3:
-this.wing.scale (2 / aspectRatio);
-this.wing1.sub (this.wing);
-break;
-case 0:
-this.wing.cross (this.wing, this.norm);
-this.wing.normalize ();
-break;
-}
-this.wing.scale (scale);
-this.wing1.scale (scale);
-if (useMat) {
-this.aa.setVA (this.norm, angle);
-this.mat.setAA (this.aa);
-}this.pt1.setT (this.controlHermites[p]);
-var theta = (isFlatMesh ? 0 : angle);
-for (var k = 0; k < nPer; k++, theta += angle) {
-if (useMat && k > 0) this.mat.rotate (this.wing);
-switch (mode) {
-case 1:
-this.wingT.setT (this.wing1);
-this.wingT.scale (Math.cos (theta));
-break;
-case 2:
-this.wingT.setT (this.wing1);
-this.wingT.scale (Math.sin (theta));
-this.wingT.scaleAdd2 (Math.cos (theta), this.wing, this.wingT);
-break;
-case 3:
-this.wingT.setT (this.wing);
-if (k == kpt1 || k == kpt2) this.wing1.scale (-1);
-this.wingT.add (this.wing1);
-break;
-case 0:
-this.wingT.setT (this.wing);
-break;
-}
-this.pt.add2 (this.pt1, this.wingT);
-mesh.addV (this.pt, true);
-}
-if (p > 0) {
-var nLast = (isFlatMesh ? nPer - 1 : nPer);
-for (var k = 0; k < nLast; k++) {
-var a = nPoints - nPer + k;
-var b = nPoints - nPer + ((k + 1) % nPer);
-var c = nPoints + ((k + 1) % nPer);
-var d = nPoints + k;
-if (k < Clazz.doubleToInt (nLast / 2)) mesh.addQuad (a, b, c, d);
- else mesh.addQuad (b, c, d, a);
-}
-}nPoints += nPer;
-}
-if (!isFlatMesh) {
-var nPointsPreCap = nPoints;
-if (this.doCap0) {
-for (var l = 0; l < nPer; l++) mesh.addV (mesh.vs[l], true);
-
-nPoints += nPer;
-for (var k = this.hermiteLevel * 2; --k >= 0; ) mesh.addQuad (nPoints - nPer + k + 2, nPoints - nPer + k + 1, nPoints - nPer + (nPer - k) % nPer, nPoints - k - 1);
-
-}if (this.doCap1) {
-for (var l = 0; l < nPer; l++) mesh.addV (mesh.vs[nPointsPreCap - nPer + l], true);
-
-nPoints += nPer;
-for (var k = this.hermiteLevel * 2; --k >= 0; ) mesh.addQuad (nPoints - k - 1, nPoints - nPer + (nPer - k) % nPer, nPoints - nPer + k + 1, nPoints - nPer + k + 2);
-
-}}this.meshReady[i] = true;
-this.adjustCartoonSeamNormals (i, nPer);
-mesh.setVisibilityFlags (1);
-return true;
-}, "~N,~N,~N,~N,~N,~N");
-Clazz.defineMethod (c$, "adjustCartoonSeamNormals", 
-function (i, nPer) {
-if (this.bsTemp == null) this.bsTemp = JU.Normix.newVertexBitSet ();
-if (i == this.iNext - 1 && this.iNext < this.monomerCount && this.monomers[i].getStrucNo () == this.monomers[this.iNext].getStrucNo () && this.meshReady[i] && this.meshReady[this.iNext]) {
-try {
-var normals2 = this.meshes[this.iNext].getNormalsTemp ();
-var normals = this.meshes[i].getNormalsTemp ();
-var normixCount = normals.length;
-if (this.doCap0) normixCount -= nPer;
-for (var j = 1; j <= nPer; ++j) {
-this.norml.add2 (normals[normixCount - j], normals2[nPer - j]);
-this.norml.normalize ();
-this.meshes[i].normalsTemp[normixCount - j].setT (this.norml);
-this.meshes[this.iNext].normalsTemp[nPer - j].setT (this.norml);
-}
-} catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
-} else {
-throw e;
-}
-}
-}}, "~N,~N");
-Clazz.defineMethod (c$, "renderMeshes", 
- function () {
-for (var i = this.bsRenderMesh.nextSetBit (0); i >= 0; i = this.bsRenderMesh.nextSetBit (i + 1)) {
-if (this.meshes[i].normalsTemp != null) {
-this.meshes[i].setNormixes (this.meshes[i].normalsTemp);
-this.meshes[i].normalsTemp = null;
-} else if (this.meshes[i].normixes == null) {
-this.meshes[i].initialize (1073741958, null, null);
-}this.renderMesh2 (this.meshes[i]);
-}
-});
-Clazz.defineStatics (c$,
-"ABSOLUTE_MIN_MESH_SIZE", 3,
-"MIN_MESH_RENDER_SIZE", 8,
-"MODE_TUBE", 0,
-"MODE_FLAT", 1,
-"MODE_ELLIPTICAL", 2,
-"MODE_NONELLIPTICAL", 3);
 });

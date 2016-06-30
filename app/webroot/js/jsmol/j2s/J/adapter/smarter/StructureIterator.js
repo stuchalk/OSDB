@@ -77,4 +77,8 @@ Clazz.overrideMethod (c$, "getModelIndices",
 function () {
 return this.structure.modelStartEnd;
 });
+Clazz.overrideMethod (c$, "getBSAll", 
+function () {
+return this.structure.bsAll;
+});
 });

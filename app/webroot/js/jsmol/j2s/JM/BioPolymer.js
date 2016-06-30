@@ -12,6 +12,7 @@ this.leadAtomIndices = null;
 this.type = 0;
 this.bioPolymerIndexInModel = 0;
 this.monomerCount = 0;
+this.cyclicFlag = 0;
 this.invalidLead = false;
 this.invalidControl = false;
 this.sheetSmoothing = 0;
@@ -308,6 +309,10 @@ function (polymer, bsA, bsB, vHBonds, nMaxPerResidue, min, checkDistances, dsspI
 Clazz.defineMethod (c$, "getType", 
 function () {
 return this.type;
+});
+Clazz.defineMethod (c$, "isCyclic", 
+function () {
+return ((this.cyclicFlag == 0 ? (this.cyclicFlag = (this.monomerCount >= 4 && this.monomers[0].isConnectedAfter (this.monomers[this.monomerCount - 1])) ? 1 : -1) : this.cyclicFlag) == 1);
 });
 Clazz.defineStatics (c$,
 "TYPE_NOBONDING", 0,

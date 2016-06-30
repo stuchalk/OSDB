@@ -250,8 +250,10 @@ var bond = this.bo[i];
 if (this.bsAromatic.get (i)) bond.setOrder (515);
 switch (bond.order & -131073) {
 case 515:
+if (!this.assignAromaticMustBeSingle (bond.atom1) && !this.assignAromaticMustBeSingle (bond.atom2)) {
 this.bsAromatic.set (i);
 break;
+}bond.order = 513;
 case 513:
 this.bsAromaticSingle.set (i);
 break;
@@ -273,21 +275,24 @@ if (!this.assignAromaticDouble (bond)) this.assignAromaticSingle (bond);
 } else {
 bsTest.set (i);
 }}
-for (var i = bsTest.nextSetBit (0); i >= 0; i = bsTest.nextSetBit (i + 1)) {
-bond = this.bo[i];
-if (!this.assignAromaticDouble (bond)) this.assignAromaticSingle (bond);
-}
+for (var i = bsTest.nextSetBit (0); i >= 0; i = bsTest.nextSetBit (i + 1)) if (!this.assignAromaticDouble (bond = this.bo[i])) this.assignAromaticSingle (bond);
+
+var bsModels =  new JU.BS ();
 for (var i = i0; i >= 0; i = (isAll ? i - 1 : bsBonds.nextSetBit (i + 1))) {
 bond = this.bo[i];
 if (this.bsAromaticDouble.get (i)) {
 if (!bond.is (514)) {
 this.bsAromatic.set (i);
+bsModels.set (bond.atom1.mi);
 bond.setOrder (514);
 }} else if (this.bsAromaticSingle.get (i) || bond.isAromatic ()) {
 if (!bond.is (513)) {
 this.bsAromatic.set (i);
 bond.setOrder (513);
 }}}
+var models = (this).am;
+for (var i = bsModels.nextSetBit (0); i >= 0; i = bsModels.nextSetBit (i + 1)) if (models[i].isBioModel) models[i].isPdbWithMultipleBonds = true;
+
 this.assignAromaticNandO (bsBonds);
 this.bsAromaticSingle = null;
 this.bsAromaticDouble = null;
@@ -439,10 +444,11 @@ bs.set (this.bo[i].atom2.i);
 return bs;
 }
 }, "~N,~O");
-Clazz.defineMethod (c$, "setBondOrder", 
+Clazz.defineMethod (c$, "assignBond", 
 function (bondIndex, type) {
 var bondOrder = type.charCodeAt (0) - 48;
 var bond = this.bo[bondIndex];
+(this).clearDB (bond.atom1.i);
 switch (type) {
 case '0':
 case '1':

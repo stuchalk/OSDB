@@ -17,27 +17,128 @@ J.adapter.readers.pymol.PyMOL.moreColors.put (id, Integer.$valueOf (value));
 c$.getDefaultSetting = Clazz.defineMethod (c$, "getDefaultSetting", 
 function (i, pymolVersion) {
 switch (i) {
-case 453:
-return 14;
+case 173:
 case 236:
 case 570:
 case 235:
 case 526:
+case 210:
 case 376:
+case 144:
+case 574:
+case 146:
+case 378:
 case 530:
 case 531:
 case 532:
+case 156:
 return -1;
 case 327:
 case 569:
+case 155:
+case 90:
+case 448:
+case 214:
+case 194:
+case 193:
+case 84:
+case 88:
+case 111:
+case 118:
+case 529:
+case 19:
 return 1;
-default:
-JU.Logger.info ("PyMOL " + pymolVersion + " does not have setting " + i);
+case 172:
 case 571:
 case 666:
 case 524:
+case 279:
+case 198:
+case 138:
+case 6:
+case 180:
+case 143:
+case 338:
+case 49:
+case 64:
+case 441:
+case 581:
+case 23:
+case 20:
+case 237:
+case 203:
+case 344:
+return 0;
+case 92:
+return 0.2;
+case 96:
+return 1.4;
+case 65:
+return 0.25;
+case 192:
+return 0.45;
+case 453:
+return 14;
+case 66:
+return -6;
+case 328:
+return 5;
+case 213:
+case 382:
+case 431:
+return 2;
+case 361:
+case 380:
+return 4;
+case 377:
+return 0.4;
+case 379:
+return 0.6;
+case 381:
+return 1.5;
+case 103:
+return 0.5;
+case 4:
+return 1.4;
+case 107:
+return 2.5;
+case 44:
+return 1.49;
+case 106:
+return 3;
+case 152:
+return 20;
+case 550:
+return 30;
+case 21:
+return 0.25;
+default:
+JU.Logger.error ("PyMOL " + pymolVersion + " default float setting not found: " + i);
 return 0;
 }
+}, "~N,~N");
+c$.getDefaultSettingPt = Clazz.defineMethod (c$, "getDefaultSettingPt", 
+function (i, pymolVersion, pt) {
+switch (i) {
+case 471:
+pt.set (0, 0, 0.75);
+break;
+default:
+JU.Logger.error ("PyMOL " + pymolVersion + " default point setting not found: " + i);
+break;
+}
+return pt;
+}, "~N,~N,JU.P3");
+c$.getDefaultSettingS = Clazz.defineMethod (c$, "getDefaultSettingS", 
+function (i, pymolVersion) {
+switch (i) {
+case 342:
+break;
+default:
+JU.Logger.info ("PyMOL " + pymolVersion + " does not have String setting " + i);
+break;
+}
+return "";
 }, "~N,~N");
 Clazz.defineStatics (c$,
 "OBJECT_SELECTION", -1,
@@ -444,7 +545,7 @@ Clazz.defineStatics (c$,
 "offscreen_rendering_for_antialiasing", 695,
 "offscreen_rendering_multiplier", 696,
 "opaque_background", 435,
-"ortho", 23,
+"orthoscopic", 23,
 "overlay", 61,
 "overlay_lines", 311,
 "pdb_conect_all", 329,

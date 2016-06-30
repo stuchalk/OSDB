@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.jvxl.data");
-Clazz.load (["J.api.VolumeDataInterface", "JU.M3", "$.P3", "$.V3"], "J.jvxl.data.VolumeData", ["java.lang.Float", "java.util.Hashtable", "JU.SB", "JU.Escape", "$.Logger"], function () {
+Clazz.load (["JU.M3", "$.P3", "$.V3"], "J.jvxl.data.VolumeData", ["java.lang.Float", "java.util.Hashtable", "JU.SB", "JU.Escape", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.sr = null;
 this.doIterate = true;
@@ -32,7 +32,7 @@ this.isSquared = false;
 this.edgeVector = null;
 this.ptTemp = null;
 Clazz.instantialize (this, arguments);
-}, J.jvxl.data, "VolumeData", null, J.api.VolumeDataInterface);
+}, J.jvxl.data, "VolumeData");
 Clazz.prepareFields (c$, function () {
 this.volumetricOrigin =  new JU.P3 ();
 this.origin =  Clazz.newFloatArray (3, 0);
@@ -46,11 +46,11 @@ this.ptXyzTemp =  new JU.P3 ();
 this.edgeVector =  new JU.V3 ();
 this.ptTemp =  new JU.P3 ();
 });
-Clazz.overrideMethod (c$, "getVoxelData", 
+Clazz.defineMethod (c$, "getVoxelData", 
 function () {
 return this.voxelData;
 });
-Clazz.overrideMethod (c$, "setVoxelDataAsArray", 
+Clazz.defineMethod (c$, "setVoxelDataAsArray", 
 function (voxelData) {
 this.voxelData = voxelData;
 if (voxelData != null) this.sr = null;
@@ -78,11 +78,11 @@ Clazz.defineMethod (c$, "distanceToMappingPlane",
 function (pt) {
 return (this.mappingPlane.x * pt.x + this.mappingPlane.y * pt.y + this.mappingPlane.z * pt.z + this.mappingPlane.w) / this.mappingPlaneNormalMag;
 }, "JU.T3");
-Clazz.overrideMethod (c$, "setVolumetricOrigin", 
+Clazz.defineMethod (c$, "setVolumetricOrigin", 
 function (x, y, z) {
 this.volumetricOrigin.set (x, y, z);
 }, "~N,~N,~N");
-Clazz.overrideMethod (c$, "getOriginFloat", 
+Clazz.defineMethod (c$, "getOriginFloat", 
 function () {
 return this.origin;
 });
@@ -97,22 +97,22 @@ this.maxGrid = Math.max (this.maxGrid, this.volumetricVectors[2].length ());
 this.nPoints = this.voxelCounts[0] * this.voxelCounts[1] * this.voxelCounts[2];
 return this.yzCount = this.voxelCounts[1] * this.voxelCounts[2];
 });
-Clazz.overrideMethod (c$, "getVolumetricVectorLengths", 
+Clazz.defineMethod (c$, "getVolumetricVectorLengths", 
 function () {
 return this.volumetricVectorLengths;
 });
-Clazz.overrideMethod (c$, "setVolumetricVector", 
+Clazz.defineMethod (c$, "setVolumetricVector", 
 function (i, x, y, z) {
 this.volumetricVectors[i].x = x;
 this.volumetricVectors[i].y = y;
 this.volumetricVectors[i].z = z;
 this.setUnitVectors ();
 }, "~N,~N,~N,~N");
-Clazz.overrideMethod (c$, "getVoxelCounts", 
+Clazz.defineMethod (c$, "getVoxelCounts", 
 function () {
 return this.voxelCounts;
 });
-Clazz.overrideMethod (c$, "setVoxelCounts", 
+Clazz.defineMethod (c$, "setVoxelCounts", 
 function (nPointsX, nPointsY, nPointsZ) {
 this.voxelCounts[0] = nPointsX;
 this.voxelCounts[1] = nPointsY;
@@ -168,16 +168,16 @@ throw e;
 }
 return true;
 });
-Clazz.overrideMethod (c$, "transform", 
+Clazz.defineMethod (c$, "transform", 
 function (v1, v2) {
 this.volumetricMatrix.rotate2 (v1, v2);
 }, "JU.V3,JU.V3");
-Clazz.overrideMethod (c$, "setPlaneParameters", 
+Clazz.defineMethod (c$, "setPlaneParameters", 
 function (plane) {
 this.thePlane = plane;
 this.thePlaneNormalMag = Math.sqrt (plane.x * plane.x + plane.y * plane.y + plane.z * plane.z);
 }, "JU.P4");
-Clazz.overrideMethod (c$, "calcVoxelPlaneDistance", 
+Clazz.defineMethod (c$, "calcVoxelPlaneDistance", 
 function (x, y, z) {
 this.voxelPtToXYZ (x, y, z, this.ptXyzTemp);
 return this.distancePointToPlane (this.ptXyzTemp);
@@ -191,11 +191,11 @@ function (x, y, z, toPlaneParameter) {
 this.voxelPtToXYZ (x, y, z, this.ptXyzTemp);
 return ((this.thePlane.x * this.ptXyzTemp.x + this.thePlane.y * this.ptXyzTemp.y + this.thePlane.z * this.ptXyzTemp.z + this.thePlane.w) < toPlaneParameter);
 }, "~N,~N,~N,~N");
-Clazz.overrideMethod (c$, "distancePointToPlane", 
+Clazz.defineMethod (c$, "distancePointToPlane", 
 function (pt) {
 return (this.thePlane.x * pt.x + this.thePlane.y * pt.y + this.thePlane.z * pt.z + this.thePlane.w) / this.thePlaneNormalMag;
 }, "JU.T3");
-Clazz.overrideMethod (c$, "voxelPtToXYZ", 
+Clazz.defineMethod (c$, "voxelPtToXYZ", 
 function (x, y, z, pt) {
 pt.scaleAdd2 (x, this.volumetricVectors[0], this.volumetricOrigin);
 pt.scaleAdd2 (y, this.volumetricVectors[1], pt);
@@ -225,14 +225,14 @@ v.scaleAdd2 (this.voxelCounts[i] - 1, this.volumetricVectors[i], v);
 }
 return this.setMatrix ();
 });
-Clazz.overrideMethod (c$, "xyzToVoxelPt", 
+Clazz.defineMethod (c$, "xyzToVoxelPt", 
 function (x, y, z, pt3i) {
 this.ptXyzTemp.set (x, y, z);
 this.ptXyzTemp.sub (this.volumetricOrigin);
 this.inverseMatrix.rotate (this.ptXyzTemp);
 pt3i.set (Math.round (this.ptXyzTemp.x), Math.round (this.ptXyzTemp.y), Math.round (this.ptXyzTemp.z));
 }, "~N,~N,~N,JU.T3i");
-Clazz.overrideMethod (c$, "lookupInterpolatedVoxelValue", 
+Clazz.defineMethod (c$, "lookupInterpolatedVoxelValue", 
 function (point, getSource) {
 if (this.mappingPlane != null) return this.distanceToMappingPlane (point);
 if (this.sr != null) {
@@ -291,7 +291,7 @@ pt.scaleAdd2 ((this.voxelCounts[1] - 1) / 2, this.volumetricVectors[1], pt);
 pt.scaleAdd2 ((this.voxelCounts[2] - 1) / 2, this.volumetricVectors[2], pt);
 this.volumetricOrigin.sub2 (center, pt);
 }, "JU.P3");
-Clazz.overrideMethod (c$, "setDataDistanceToPlane", 
+Clazz.defineMethod (c$, "setDataDistanceToPlane", 
 function (plane) {
 this.setPlaneParameters (plane);
 var nx = this.voxelCounts[0];
@@ -303,7 +303,7 @@ for (var x = 0; x < nx; x++) for (var y = 0; y < ny; y++) for (var z = 0; z < nz
 
 
 }, "JU.P4");
-Clazz.overrideMethod (c$, "filterData", 
+Clazz.defineMethod (c$, "filterData", 
 function (isSquared, invertCutoff) {
 var doInvert = (!Float.isNaN (invertCutoff));
 if (this.sr != null) {
@@ -321,7 +321,7 @@ if (doInvert) for (var x = 0; x < nx; x++) for (var y = 0; y < ny; y++) for (var
 
 
 }, "~B,~N");
-Clazz.overrideMethod (c$, "capData", 
+Clazz.defineMethod (c$, "capData", 
 function (plane, cutoff) {
 if (this.voxelData == null) return;
 var nx = this.voxelCounts[0];

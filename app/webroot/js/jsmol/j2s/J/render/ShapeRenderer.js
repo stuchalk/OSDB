@@ -10,9 +10,6 @@ this.myVisibilityFlag = 0;
 this.shapeID = 0;
 this.colix = 0;
 this.mad = 0;
-this.madBeg = 0;
-this.madMid = 0;
-this.madEnd = 0;
 this.exportType = 0;
 this.isExport = false;
 Clazz.instantialize (this, arguments);
@@ -30,15 +27,19 @@ this.initRenderer ();
 }, "JV.Viewer,~N");
 Clazz.defineMethod (c$, "renderShape", 
 function (g3d, modelSet, shape) {
+this.setup (g3d, modelSet, shape);
+var needsTranslucent = this.render ();
+this.exportType = 0;
+this.isExport = false;
+return needsTranslucent;
+}, "J.api.JmolRendererInterface,JM.ModelSet,J.shape.Shape");
+Clazz.defineMethod (c$, "setup", 
+function (g3d, modelSet, shape) {
 this.g3d = g3d;
 this.ms = modelSet;
 this.shape = shape;
 this.exportType = g3d.getExportType ();
 this.isExport = (this.exportType != 0);
-var needsTranslucent = this.render ();
-this.exportType = 0;
-this.isExport = false;
-return needsTranslucent;
 }, "J.api.JmolRendererInterface,JM.ModelSet,J.shape.Shape");
 Clazz.defineMethod (c$, "isVisibleForMe", 
 function (a) {

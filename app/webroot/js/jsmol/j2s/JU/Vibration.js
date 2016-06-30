@@ -1,8 +1,11 @@
 Clazz.declarePackage ("JU");
-Clazz.load (["JU.V3"], "JU.Vibration", null, function () {
+Clazz.load (["JU.V3"], "JU.Vibration", ["JU.P3"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.modDim = -1;
 this.modScale = NaN;
+this.showTrace = false;
+this.trace = null;
+this.tracePt = 0;
 Clazz.instantialize (this, arguments);
 }, JU, "Vibration", JU.V3);
 Clazz.defineMethod (c$, "setCalcPoint", 
@@ -45,6 +48,26 @@ Clazz.defineMethod (c$, "getOccupancy100",
 function (isTemp) {
 return -2147483648;
 }, "~B");
+Clazz.defineMethod (c$, "startTrace", 
+function (n) {
+this.trace =  new Array (n);
+this.tracePt = n;
+}, "~N");
+Clazz.defineMethod (c$, "addTracePt", 
+function (n, ptNew) {
+if (this.trace == null || n == 0 || n != this.trace.length) this.startTrace (n);
+if (ptNew != null && n > 2) {
+if (--this.tracePt <= 0) {
+var p0 = this.trace[this.trace.length - 1];
+for (var i = this.trace.length; --i >= 1; ) this.trace[i] = this.trace[i - 1];
+
+this.trace[1] = p0;
+this.tracePt = 1;
+}var p = this.trace[this.tracePt];
+if (p == null) p = this.trace[this.tracePt] =  new JU.P3 ();
+p.setT (ptNew);
+}return this.trace;
+}, "~N,JU.Point3fi");
 Clazz.defineStatics (c$,
 "twoPI", 6.283185307179586,
 "TYPE_VIBRATION", -1,

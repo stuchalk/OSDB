@@ -28,7 +28,7 @@ var Info = {
 	jarFile: "JmolAppletSigned0.jar",
 	isSigned: true,
 	loadStructCallback: "enableButtons",
-	script: "background black;set defaultLoadScript '"+ stemScript + ";javascript enableButtons();if (!_M.dssr){calculate structure dssr};if(!h2oOn){display !water};color grey';load =1ehz/dssr;" + _1ehzScript
+	script: "background black;set defaultLoadScript '"+ stemScript + ";javascript enableButtons();if (!_M.dssr){calculate structure dssr};display nucleic;if(h2oOn){display add water};if(protOn){display add protein};color grey';load =1ehz/dssr;" + _1ehzScript
 }
 
 var hbondsON = false;
@@ -46,11 +46,11 @@ function enableButtons(app,fullPath,fileName,modelName,errorMsg,status) {
 
 Models = []
 
-template = "xid='%1';zap;set echo top left;echo loading...;refresh;load %4;%3|%2 (%1)"
+template = "xid='%1';zap;set echo top left;echo loading...;refresh;load %4;%3;|%2 (%1)"
 function addModel(xxxx, load, text, script, selected) {
 	script || (script = "");
   selected || (selected = false);
-	load || (load = "=%1/dssr 1");
+	load || (load = "=%1/dssr 1;");
   var t = template.replace(/%4/, load)
     .replace(/%1/g, xxxx)
     .replace(/%2/, text)
@@ -167,7 +167,7 @@ $(document).ready(function() {
 
 <table><tr>
 <td valign=top style="width:300px" rowspan=2>
-This page demonstrates capabilities in Jmol 14.2 
+This page demonstrates capabilities in Jmol 
 that involve RNA and DNA secondary structure
 using real-time DSSR analysis provided by <a href=http://goo.gl/ap12xJ>3DNA</a>.
 <br>
@@ -185,7 +185,7 @@ dssrBtn('hairpins', 'hairpins');
 dssrBtn('helices', 'helices');
 jmolBr();
 dssrBtn('internal loops', 'iloops');
-dssrBtn('isocanonical pairs', 'isocanonPairs');
+dssrBtn('isocanonical pairs', 'isoCanonPairs');
 jmolBr();
 dssrBtn('junctions', 'junctions');
 dssrBtn('kissing loops', 'kissingLoops');
@@ -225,11 +225,18 @@ jmolApplet0 = Jmol.getApplet("jmolApplet0", Info)
 <script type="text/javascript">
 Jmol.setButtonCss(null,"style='width:160px'")
 Jmol.setMenuCss(null,"style='width:160px'")
-jmolButton("if (!xid) { xid = '1ehz'};var x = prompt('Enter a four-digit PDB ID',xid);if (!x) { quit }; xid = x; load @{'=' + x + '/dssr'} 1;set echo top center;echo @x","Load PDB by ID")
+jmolButton("if (!xid) { xid = '1ehz'};var x = prompt('Enter a four-digit PDB ID',xid);if (!x || x == 'null') { quit }; xid = x; load @{'=' + x + '/dssr'} 1;set echo top center;echo @x","Load PDB by ID")
 jmolBr()
+Jmol.jmolButton("jmolApplet0", [function(){Jmol.loadFileFromDialog(jmolApplet0)}],"Open CIF or DSSR File")
+jmolBr()
+Jmol.jmolButton("jmolApplet0", [enableButtons],"Refresh DSSR Buttons")
+jmolBr()
+
 jmolCheckbox("set pdbAddHydrogens TRUE","set pdbAddHydrogens FALSE","with hydrogens",false)
 jmolBr()
-jmolCheckbox("h2oOn=true;display *","h2oOn=false;display !water","display water",false)
+jmolCheckbox("h2oOn=true;display add water","h2oOn=false;display remove water","display water",false)
+jmolBr()
+jmolCheckbox("protOn=true;display add protein","protOn=false;display remove protein","display protein",false)
 jmolBr()
 jmolHtml("Examples:")
 jmolBr()

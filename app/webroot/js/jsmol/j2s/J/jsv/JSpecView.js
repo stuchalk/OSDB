@@ -77,28 +77,33 @@ return modelIndex;
 }, "~N");
 Clazz.overrideMethod (c$, "processSync", 
 function (script, jsvMode) {
+if (JU.Logger.debugging) JU.Logger.info ("J.jsv.JSpecView jsvMode=" + jsvMode + " script=" + script);
 switch (jsvMode) {
 default:
 return null;
 case 0:
-case 28:
 this.vwr.sm.syncSend (this.vwr.fullName + "JSpecView" + script.substring (10), ">", 0);
+return null;
+case 77:
+case 28:
+case 35:
+this.vwr.sm.syncSend (this.vwr.fullName + "JSpecView:" + script, ">", 0);
 return null;
 case 21:
 if (this.vwr.isApplet) return null;
 return null;
 case 14:
 var filename = JU.PT.getQuotedAttribute (script, "file");
-var isSimulation = filename.startsWith (JV.FileManager.SIMULATION_PROTOCOL);
+var isSimulation = (filename != null && filename.startsWith (JV.FileManager.SIMULATION_PROTOCOL));
 var id = (!isSimulation || this.vwr.isApplet ? "" : JU.PT.getQuotedAttribute (filename.$replace ('\'', '"'), "id"));
-if (isSimulation && !this.vwr.isApplet && filename.startsWith (JV.FileManager.SIMULATION_PROTOCOL + "MOL=")) filename = null;
+if (isSimulation && !this.vwr.isApplet && (filename.startsWith (JV.FileManager.SIMULATION_PROTOCOL + "C13/MOL=") || filename.startsWith (JV.FileManager.SIMULATION_PROTOCOL + "H1/MOL="))) filename = null;
  else filename = JU.PT.rep (filename, "#molfile", "");
 var modelID = (isSimulation ? "molfile" : JU.PT.getQuotedAttribute (script, "model"));
 var baseModel = JU.PT.getQuotedAttribute (script, "baseModel");
 var atoms = JU.PT.getQuotedAttribute (script, "atoms");
 var select = JU.PT.getQuotedAttribute (script, "select");
 var script2 = JU.PT.getQuotedAttribute (script, "script");
-if (id.length == 0) id = (modelID == null ? null : (filename == null ? "" : filename + "#") + modelID);
+if (id == null || id.length == 0) id = (modelID == null ? null : (filename == null ? "" : filename + "#") + modelID);
 if ("".equals (baseModel)) id += ".baseModel";
 var modelIndex = (id == null ? -3 : this.vwr.getModelIndexFromId (id));
 if (modelIndex == -2) return null;
@@ -117,9 +122,12 @@ return script;
 case 7:
 var list = JU.Escape.unescapeStringArray (script.substring (7));
 var peaks =  new JU.Lst ();
-for (var i = 0; i < list.length; i++) peaks.addLast (list[i]);
-
-this.vwr.ms.setInfo (this.vwr.am.cmi, "jdxAtomSelect_1HNMR", peaks);
+var type = "1HNMR";
+for (var i = 0; i < list.length; i++) {
+if (i == 0 && list[i].indexOf (JV.FileManager.SIMULATION_PROTOCOL + "C13/") >= 0) type = "13CNMR";
+peaks.addLast (list[i]);
+}
+this.vwr.ms.setInfo (this.vwr.am.cmi, "jdxAtomSelect_" + type, peaks);
 return null;
 }
 }, "~S,~N");

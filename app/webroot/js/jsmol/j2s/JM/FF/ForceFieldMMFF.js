@@ -509,7 +509,7 @@ nUsed++;
 }
 JU.Logger.info (nUsed + " SMARTS matches used");
 try {
-smartsMatcher.getSubstructureSets (smarts, atoms, atoms.length, 40, bsConnected, bitSets, vRings);
+smartsMatcher.getMMFF94AtomTypes (smarts, atoms, atoms.length, bsConnected, bitSets, vRings);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 JU.Logger.error (e.toString ());

@@ -1,36 +1,26 @@
 Clazz.declarePackage ("J.adapter.readers.xml");
 Clazz.load (["J.adapter.readers.xml.XmlReader"], "J.adapter.readers.xml.XmlMagResReader", ["JU.Logger"], function () {
-c$ = Clazz.decorateAsClass (function () {
-this.myAttributes = null;
-Clazz.instantialize (this, arguments);
-}, J.adapter.readers.xml, "XmlMagResReader", J.adapter.readers.xml.XmlReader);
-Clazz.prepareFields (c$, function () {
-this.myAttributes =  Clazz.newArray (-1, []);
-});
+c$ = Clazz.declareType (J.adapter.readers.xml, "XmlMagResReader", J.adapter.readers.xml.XmlReader);
 Clazz.makeConstructor (c$, 
 function () {
 Clazz.superConstructor (this, J.adapter.readers.xml.XmlMagResReader, []);
 });
-Clazz.overrideMethod (c$, "getDOMAttributes", 
-function () {
-return this.myAttributes;
-});
 Clazz.overrideMethod (c$, "processXml", 
 function (parent, saxReader) {
 parent.doProcessLines = true;
-this.PX (parent, saxReader);
+this.processXml2 (parent, saxReader);
 }, "J.adapter.readers.xml.XmlReader,~O");
 Clazz.overrideMethod (c$, "processStartElement", 
-function (localName) {
+function (localName, nodeName) {
 if (this.debugging) JU.Logger.debug ("xmlmagres: start " + localName);
 if (!this.parent.continuing) return;
 if ("calculation".equals (localName)) {
-this.keepChars = true;
+this.setKeepChars (true);
 return;
 }if ("atoms".equals (localName)) {
-this.keepChars = true;
+this.setKeepChars (true);
 return;
-}}, "~S");
+}}, "~S,~S");
 Clazz.overrideMethod (c$, "processEndElement", 
 function (localName) {
 if (this.debugging) JU.Logger.debug ("xmlmagres: end " + localName);
@@ -42,7 +32,6 @@ if ("atoms".equals (localName)) {
 break;
 }return;
 }
-this.chars = null;
-this.keepChars = false;
+this.setKeepChars (false);
 }, "~S");
 });

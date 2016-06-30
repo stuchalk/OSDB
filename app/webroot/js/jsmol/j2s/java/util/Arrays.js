@@ -1,22 +1,23 @@
 // BH adjusted to have only one sort method.
 // BH -- added Java 6  copyOfRange
+// BH -- REMOVED copyOfRange (because it is only int[] and is not necessary)
 
 Clazz.load(["java.util.AbstractList","$.RandomAccess"],"java.util.Arrays",["java.lang.ArrayIndexOutOfBoundsException","$.IllegalArgumentException","$.NullPointerException"],function(){
 c$=Clazz.declareType(java.util,"Arrays");
 
-c$.copyOfRange = Clazz.defineMethod (c$, "copyOfRange", 
-function (original, from, to) {
-to = Math.min(original.length, to);
-var newLength = to - from;
-if (newLength < 0) throw  new IllegalArgumentException (from + " > " + to);
-if (original.slice)
-  return original.slice(from, to);
-  // MSIE and Chrome do not have Int32Array.slice()
-var c = Clazz.newIntArray(newLength, 0);
-for (var i = 0; i < newLength; i++)
-  c[i] = original[from++];
-return c;  
-}, "~A,~N,~N");
+//c$.copyOfRange = Clazz.defineMethod (c$, "copyOfRange", 
+//function (original, from, to) {
+//to = Math.min(original.length, to);
+//var newLength = to - from;
+//if (newLength < 0) throw  new IllegalArgumentException (from + " > " + to);
+//if (original.slice)
+//  return original.slice(from, to);
+//  // MSIE and Chrome do not have Int32Array.slice()
+//var c = Clazz.newIntArray(newLength, 0);
+//for (var i = 0; i < newLength; i++)
+//  c[i] = original[from++];
+//return c;  
+//}, "~A,~N,~N");
 
 c$.sort=Clazz.overrideMethod(c$,"sort",
 function(a,c,d,e){

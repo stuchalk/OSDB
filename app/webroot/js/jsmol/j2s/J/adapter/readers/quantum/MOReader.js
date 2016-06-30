@@ -11,14 +11,14 @@ this.getNBOCharges = false;
 this.haveNboCharges = false;
 this.haveNboOrbitals = false;
 this.orbitalsRead = false;
+this.lastMoData = null;
+this.allowNoOrbitals = false;
 this.HEADER_GAMESS_UK_MO = 3;
 this.HEADER_GAMESS_OCCUPANCIES = 2;
 this.HEADER_GAMESS_ORIGINAL = 1;
 this.HEADER_NONE = 0;
 this.haveCoeffMap = false;
 this.iMo0 = 1;
-this.lastMoData = null;
-this.allowNoOrbitals = false;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.quantum, "MOReader", J.adapter.readers.quantum.BasisFunctionReader);
 Clazz.overrideMethod (c$, "initializeReader", 
@@ -28,13 +28,12 @@ this.getNBOs = (this.filter != null && this.filterMO ());
 this.line = "\nNBOCHARGES";
 this.getNBOCharges = (this.filter != null && this.filterMO ());
 this.checkAndRemoveFilterKey ("NBOCHARGES");
-if (this.filter != null && this.filter.length < 3) this.filter = null;
 });
 Clazz.defineMethod (c$, "checkAndRemoveFilterKey", 
 function (key) {
 if (!this.checkFilterKey (key)) return false;
 this.filter = JU.PT.rep (this.filter, key, "");
-if (this.filter.length == 0) this.filter = null;
+if (this.filter.length < 3) this.filter = null;
 return true;
 }, "~S");
 Clazz.defineMethod (c$, "checkNboLine", 
@@ -135,11 +134,11 @@ this.haveCoeffMap = true;
 var isOK = true;
 if (pCoeffLabels.length > 0) isOK = this.getDFMap (pCoeffLabels, 1, "(PX)  (PY)  (PZ)", 4);
 if (dCoeffLabels.length > 0) {
-if (dCoeffLabels.indexOf ("X") >= 0) isOK = this.getDFMap (dCoeffLabels, 4, J.adapter.readers.quantum.BasisFunctionReader.CANONICAL_DC_LIST, 2);
+if (dCoeffLabels.indexOf ("X") >= 0) isOK = this.getDFMap (dCoeffLabels, 4, "DXX   DYY   DZZ   DXY   DXZ   DYZ", 2);
  else if (dCoeffLabels.indexOf ("(D6)") >= 0) isOK = this.getDFMap (dCoeffLabels, 4, "(D1)  (D4)  (D6)  (D2)  (D3)  (D5)", 4);
  else isOK = this.getDFMap (dCoeffLabels, 3, "(D5)  (D2)  (D3)  (D4)  (D1)", 4);
 }if (fCoeffLabels.length > 0) {
-if (fCoeffLabels.indexOf ("X") >= 0) isOK = this.getDFMap (fCoeffLabels, 6, J.adapter.readers.quantum.BasisFunctionReader.CANONICAL_FC_LIST, 2);
+if (fCoeffLabels.indexOf ("X") >= 0) isOK = this.getDFMap (fCoeffLabels, 6, "XXX   YYY   ZZZ   XYY   XXY   XXZ   XZZ   YZZ   YYZ   XYZ", 2);
  else if (fCoeffLabels.indexOf ("(F10)") >= 0) isOK = this.getDFMap (fCoeffLabels, 6, J.adapter.readers.quantum.MOReader.FC_LIST, 5);
  else isOK = this.getDFMap (fCoeffLabels, 5, "(F1)  (F2)  (F3)  (F4)  (F5)  (F6)  (F7)", 4);
 }if (!isOK) {
@@ -155,9 +154,7 @@ coefs[iCoeff] = this.parseFloatStr (data[iMo].get (iCoeff));
 iCoeff++;
 }
 haveMOs = true;
-mos[iMo].put ("coefficients", coefs);
-moCount = this.setMOType (mos[iMo], moCount);
-this.setMO (mos[iMo]);
+this.addCoef (mos[iMo], coefs, null, NaN, NaN, moCount++);
 }
 nThisLine = 0;
 if (this.line.length == 0) continue;
@@ -216,17 +213,19 @@ this.setMOData (!this.alphaBeta.equals ("alpha"));
 this.haveCoeffMap = false;
 this.dfCoefMaps = null;
 }, "~N");
-Clazz.defineMethod (c$, "setMOType", 
-function (mo, i) {
+Clazz.defineMethod (c$, "addCoef", 
+function (mo, coefs, type, energy, occ, moCount) {
+mo.put ("coefficients", coefs);
 if (this.moTypes != null) {
-var s = this.moTypes.get (i % this.moTypes.size ());
-i++;
-mo.put ("type", s);
-mo.put ("occupancy", Float.$valueOf (s.indexOf ("*") >= 0 ? 0 : 2));
+type = this.moTypes.get (moCount % this.moTypes.size ());
+occ = (type.indexOf ("*") >= 0 ? 0 : 2);
 } else if (this.alphaBeta.length > 0) {
-mo.put ("type", this.alphaBeta);
-}return i;
-}, "java.util.Map,~N");
+type = this.alphaBeta;
+}if (type != null) mo.put ("type", type);
+if (!Float.isNaN (energy)) mo.put ("energy", Float.$valueOf (energy));
+if (!Float.isNaN (occ)) mo.put ("occupancy", Float.$valueOf (occ));
+this.setMO (mo);
+}, "java.util.Map,~A,~S,~N,~N,~N");
 Clazz.defineMethod (c$, "getMOHeader", 
 function (headerType, tokens, mos, nThisLine) {
 this.rd ();
@@ -315,5 +314,5 @@ Clazz.defineStatics (c$,
 "DS_LIST", "(D5)  (D2)  (D3)  (D4)  (D1)",
 "DC_LIST", "(D1)  (D4)  (D6)  (D2)  (D3)  (D5)",
 "FS_LIST", "(F1)  (F2)  (F3)  (F4)  (F5)  (F6)  (F7)",
-"FC_LIST", "(F1)  (F2)  (F10) (F4)  (F2)  (F3)  (F6)  (F9)  (F8)  F(5)");
+"FC_LIST", "(F1)  (F2)  (F10) (F4)  (F2)  (F3)  (F6)  (F9)  (F8)  (F5)");
 });

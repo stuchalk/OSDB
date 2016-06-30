@@ -1,10 +1,10 @@
 Clazz.declarePackage ("JS");
-Clazz.load (["JU.SimpleUnitCell", "JU.P3", "JV.JC"], "JS.UnitCell", ["java.lang.Float", "JU.M4", "$.Quat", "$.T4", "$.V3", "J.api.Interface", "JU.BoxInfo", "$.Escape"], function () {
+Clazz.load (["JU.SimpleUnitCell", "JU.P3", "JV.JC"], "JS.UnitCell", ["java.lang.Float", "JU.M3", "$.M4", "$.Quat", "$.T4", "$.V3", "J.api.Interface", "JS.Symmetry", "JU.BoxInfo", "$.Escape"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vertices = null;
-this.cartesianOffset = null;
 this.fractionalOffset = null;
 this.allFractionalRelative = false;
+this.cartesianOffset = null;
 this.unitCellMultiplier = null;
 this.moreInfo = null;
 this.name = "";
@@ -16,6 +16,7 @@ this.cartesianOffset =  new JU.P3 ();
 c$.newP = Clazz.defineMethod (c$, "newP", 
 function (points, setRelative) {
 var c =  new JS.UnitCell ();
+if (points.length == 3) points =  Clazz.newArray (-1, [ new JU.P3 (), points[0], points[1], points[2]]);
 var parameters =  Clazz.newFloatArray (-1, [-1, 0, 0, 0, 0, 0, points[1].x, points[1].y, points[1].z, points[2].x, points[2].y, points[2].z, points[3].x, points[3].y, points[3].z]);
 c.init (parameters);
 c.allFractionalRelative = setRelative;
@@ -52,7 +53,7 @@ this.matrixCtoFANoOffset.rotTrans (pt);
 this.unitize (pt);
 pt.add (offset);
 this.matrixFtoCNoOffset.rotTrans (pt);
-}}, "JU.P3,JU.P3");
+}}, "JU.T3,JU.T3");
 Clazz.defineMethod (c$, "unitize", 
 function (pt) {
 switch (this.dimension) {
@@ -63,7 +64,7 @@ pt.y = JS.UnitCell.toFractionalX (pt.y);
 case 1:
 pt.x = JS.UnitCell.toFractionalX (pt.x);
 }
-}, "JU.P3");
+}, "JU.T3");
 Clazz.defineMethod (c$, "reset", 
 function () {
 this.unitCellMultiplier = null;
@@ -279,24 +280,158 @@ var b = JU.V3.newVsub (this.vertices[2], this.vertices[0]);
 var c = JU.V3.newVsub (this.vertices[1], this.vertices[0]);
 var x =  new JU.V3 ();
 var v =  new JU.V3 ();
-switch ("abc".indexOf (abc)) {
+var mul = (abc.charAt (0) == '-' ? -1 : 1);
+if (mul < 0) abc = abc.substring (1);
+var quadrant = 0;
+if (abc.length == 2) {
+quadrant = abc.charCodeAt (1) - 48;
+abc = abc.substring (0, 1);
+}var isEven = (quadrant % 2 == 0);
+var axis = "abc".indexOf (abc);
+var v1;
+var v2;
+switch (axis) {
 case 0:
-x.cross (a, c);
-v.cross (x, a);
-break;
+default:
+v1 = a;
+v2 = c;
+if (quadrant > 0) {
+if (mul > 0 == isEven) {
+v2 = b;
+v1.scale (-1);
+}}break;
 case 1:
-x.cross (b, a);
-v.cross (x, b);
+v1 = b;
+v2 = a;
+if (quadrant > 0) {
+if (mul > 0 == isEven) {
+v2 = c;
+v1.scale (-1);
+}}break;
+case 2:
+v1 = c;
+v2 = a;
+if (quadrant > 0) {
+quadrant = 5 - quadrant;
+if (mul > 0 != isEven) {
+v2 = b;
+v1.scale (-1);
+}}break;
+}
+switch (quadrant) {
+case 0:
+default:
+case 1:
 break;
 case 2:
-x.cross (c, b);
-v.cross (x, c);
+v1.scale (-1);
+v2.scale (-1);
 break;
-default:
-return null;
+case 3:
+v2.scale (-1);
+break;
+case 4:
+v1.scale (-1);
+break;
 }
+x.cross (v1, v2);
+v.cross (x, v1);
 return JU.Quat.getQuaternionFrame (null, v, x).inv ();
 }, "~S");
+Clazz.defineMethod (c$, "getV0abc", 
+function (def) {
+var m;
+var isRev = false;
+var pts =  new Array (4);
+var pt = pts[0] = JU.V3.new3 (0, 0, 0);
+pts[1] = JU.V3.new3 (1, 0, 0);
+pts[2] = JU.V3.new3 (0, 1, 0);
+pts[3] = JU.V3.new3 (0, 0, 1);
+var m3 =  new JU.M3 ();
+if (Clazz.instanceOf (def, String)) {
+var sdef = def;
+if (sdef.indexOf ("a=") == 0) return JU.SimpleUnitCell.setOabc (sdef, null, pts);
+if (sdef.indexOf (";") < 0) sdef += ";0,0,0";
+isRev = sdef.startsWith ("!");
+if (isRev) sdef = sdef.substring (1);
+var symTemp =  new JS.Symmetry ();
+symTemp.setSpaceGroup (false);
+var i = symTemp.addSpaceGroupOperation ("=" + sdef, 0);
+if (i < 0) return null;
+m = symTemp.getSpaceGroupOperation (i);
+(m).doFinalize ();
+} else if (Clazz.instanceOf (def, JU.M3)) {
+m = JU.M4.newMV (def,  new JU.P3 ());
+} else if (Clazz.instanceOf (def, JU.M4)) {
+m = def;
+} else {
+m = (def)[0];
+m.getRotationScale (m3);
+this.toCartesian (pt, false);
+m.rotTrans (pt);
+for (var i = 1; i < 4; i++) {
+this.toCartesian (pts[i], true);
+m3.rotate (pts[i]);
+}
+return pts;
+}m.getRotationScale (m3);
+m.getTranslation (pt);
+if (isRev) {
+m3.invert ();
+m3.transpose ();
+m3.rotate (pt);
+pt.scale (-1);
+} else {
+m3.transpose ();
+}this.toCartesian (pt, false);
+for (var i = 1; i < 4; i++) {
+m3.rotate (pts[i]);
+this.toCartesian (pts[i], true);
+}
+return pts;
+}, "~O");
+Clazz.defineMethod (c$, "toFromPrimitive", 
+function (toPrimitive, type, uc) {
+var offset = uc.length - 3;
+var mf;
+switch (type) {
+default:
+return false;
+case 'r':
+JU.SimpleUnitCell.getReciprocal (uc, uc, 1);
+return true;
+case 'P':
+mf = JU.M3.newA9 ( Clazz.newFloatArray (-1, [1, 0, 0, 0, 1, 0, 0, 0, 1]));
+toPrimitive = true;
+break;
+case 'A':
+mf = JU.M3.newA9 ( Clazz.newFloatArray (-1, [1, 0, 0, 0, 0.5, 0.5, 0, -0.5, 0.5]));
+break;
+case 'B':
+mf = JU.M3.newA9 ( Clazz.newFloatArray (-1, [0.5, 0, 0.5, 0, 1, 0, -0.5, 0, 0.5]));
+break;
+case 'C':
+mf = JU.M3.newA9 ( Clazz.newFloatArray (-1, [0.5, 0.5, 0, -0.5, 0.5, 0, 0, 0, 1]));
+break;
+case 'R':
+mf = JU.M3.newA9 ( Clazz.newFloatArray (-1, [0.33333334, 0.33333334, -0.6666667, -0.33333334, 0.6666667, -0.33333334, 0.33333334, 0.33333334, 0.33333334]));
+break;
+case 'I':
+mf = JU.M3.newA9 ( Clazz.newFloatArray (-1, [-0.5, .5, .5, .5, -0.5, .5, .5, .5, -0.5]));
+break;
+case 'F':
+mf = JU.M3.newA9 ( Clazz.newFloatArray (-1, [0, 0.5, 0.5, 0.5, 0, 0.5, 0.5, 0.5, 0]));
+break;
+}
+if (!toPrimitive) mf.invert ();
+for (var i = uc.length; --i >= offset; ) {
+var p = uc[i];
+this.toFractional (p, false);
+mf.rotate (p);
+this.toCartesian (p, false);
+}
+return true;
+}, "~B,~S,~A");
 Clazz.defineStatics (c$,
 "twoP2", 19.739208802178716);
 c$.unitVectors = c$.prototype.unitVectors =  Clazz.newArray (-1, [JV.JC.axisX, JV.JC.axisY, JV.JC.axisZ]);

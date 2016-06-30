@@ -4,9 +4,8 @@ c$ = Clazz.decorateAsClass (function () {
 this.bsSelected = null;
 Clazz.instantialize (this, arguments);
 }, J.shapebio, "Backbone", J.shapebio.BioShapeCollection);
-Clazz.defineMethod (c$, "initShape", 
+Clazz.overrideMethod (c$, "initShape", 
 function () {
-Clazz.superCall (this, J.shapebio.Backbone, "initShape", []);
 this.madOn = 1;
 this.madHelixSheet = 1500;
 this.madTurnRandom = 500;
@@ -34,9 +33,10 @@ var atomIndices = bioShape.bioPolymer.getLeadAtomIndices ();
 var isVisible = (mad != 0);
 if (bioShape.bsSizeSet == null) bioShape.bsSizeSet =  new JU.BS ();
 bioShape.isActive = true;
-for (var i = bioShape.monomerCount - 1; --i >= 0; ) {
+var n = bioShape.monomerCount;
+for (var i = n - (bioShape.bioPolymer.isCyclic () ? 0 : 1); --i >= 0; ) {
 var index1 = atomIndices[i];
-var index2 = atomIndices[i + 1];
+var index2 = atomIndices[(i + 1) % n];
 var isAtom1 = bsSelected.get (index1);
 var isAtom2 = bsSelected.get (index2);
 if (isAtom1 && isAtom2 || useThisBsSelected && isAtom1 || bondSelectionModeOr && (isAtom1 || isAtom2)) {
@@ -61,7 +61,7 @@ if (useThisBsSelected) this.bsSelected = null;
 Clazz.defineMethod (c$, "addDisplayedBackbone", 
 function (a, isVisible) {
 a.nBackbonesDisplayed += (isVisible ? 1 : -1);
-this.setShapeVisibility (a, isVisible);
+a.setShapeVisibility (this.vf, isVisible);
 }, "JM.Atom,~B");
 Clazz.overrideMethod (c$, "setAtomClickability", 
 function () {

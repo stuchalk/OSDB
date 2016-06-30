@@ -9,6 +9,7 @@ this.lstRegions = null;
 this.nTriangles = 0;
 this.nRegions = 0;
 this.lstTriangles = null;
+this.nPoints = 0;
 if (!Clazz.isClassDefined ("JU.MeshCapper.CapVertex")) {
 JU.MeshCapper.$MeshCapper$CapVertex$ ();
 }
@@ -31,15 +32,16 @@ this.vertices =  new JU.Lst ();
 Clazz.defineMethod (c$, "triangulatePolygon", 
 function (points) {
 this.clear ();
-var n = points.length;
+this.nPoints = points.length;
 var v0 = null;
-for (var i = 0; i < n; i++) {
+for (var i = 0; i < this.nPoints; i++) {
 var v = Clazz.innerTypeInstance (JU.MeshCapper.CapVertex, this, null, points[i], i);
 this.vertices.addLast (v);
-if (v0 != null) v.link (v0);
-v0 = v;
+if (v0 != null) {
+v0.link (v);
+}v0 = v;
 }
-this.vertices.get (0).link (v0);
+v0.link (this.vertices.get (0));
 this.lstTriangles =  new JU.Lst ();
 this.createCap (null);
 var a = JU.AU.newInt2 (this.lstTriangles.size ());
@@ -72,9 +74,19 @@ return (this.slicer == null ? JU.P3.newP (v) : this.slicer.m.vs[v.ipt]);
 }, "JU.MeshCapper.CapVertex");
 Clazz.defineMethod (c$, "outputTriangle", 
  function (ipt1, ipt2, ipt3) {
-if (this.slicer == null) this.lstTriangles.addLast ( Clazz.newIntArray (-1, [ipt1, ipt2, ipt3, 7]));
- else this.slicer.addTriangle (ipt1, ipt2, ipt3);
-}, "~N,~N,~N");
+if (this.slicer == null) {
+var mask = 0;
+if (this.isEdge (ipt1, ipt2)) mask |= 1;
+if (this.isEdge (ipt2, ipt3)) mask |= 2;
+if (this.isEdge (ipt3, ipt1)) mask |= 4;
+this.lstTriangles.addLast ( Clazz.newIntArray (-1, [ipt1, ipt2, ipt3, mask]));
+} else {
+this.slicer.addTriangle (ipt1, ipt2, ipt3);
+}}, "~N,~N,~N");
+Clazz.defineMethod (c$, "isEdge", 
+ function (i, j) {
+return (j == (i + 1) % this.nPoints);
+}, "~N,~N");
 Clazz.defineMethod (c$, "test", 
  function (vs) {
 return vs;
@@ -87,7 +99,7 @@ if (vs.length < 3) return;
 var vab = JU.V3.newVsub (this.vertices.get (0), this.vertices.get (1));
 var vac;
 if (norm == null) {
-vac = JU.V3.newVsub (this.vertices.get (this.vertices.size () - 1), this.vertices.get (0));
+vac = JU.V3.newVsub (this.vertices.get (0), this.vertices.get (this.vertices.size () - 1));
 } else {
 vac = JU.V3.newV (norm);
 vac.cross (vac, vab);
@@ -96,9 +108,9 @@ var m3 = q.getMatrix ();
 var m4 = JU.M4.newMV (m3, this.vertices.get (0));
 var m4inv = JU.M4.newM4 (m4).invert ();
 this.vertices.toArray (vs);
+this.vertices = null;
 for (var i = vs.length; --i >= 0; ) m4inv.rotTrans2 (vs[i], vs[i]);
 
-this.vertices = null;
 vs = this.test (vs);
 JU.Logger.info ("MeshCapper using " + vs.length + " vertices");
 var v0 = vs[0].sort (vs);
@@ -114,6 +126,7 @@ v = this.process (v);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 System.out.println ("MeshCapper exception " + e);
+e.printStackTrace ();
 } else {
 throw e;
 }
@@ -127,6 +140,7 @@ var q = v.qnext;
 v.qnext = null;
 if (this.dumping) JU.Logger.info (v.toString ());
 if (v.prev === v.next) return q;
+if (v.next == null) System.out.println ("OHO");
 var isDescending = (v.prev.region != null);
 var isAscending = (v.next.region != null);
 if (this.dumping) JU.Logger.info ("#" + (isAscending ? v.next.id : "    ") + "    " + (isDescending ? v.prev.id : "") + "\n#" + (isAscending ? "   \\" : "    ") + (isDescending ? "    /\n" : "\n") + "#    " + v.id);
@@ -287,6 +301,7 @@ this.prev = null;
 this.next = null;
 this.region = null;
 this.ok = 1;
+this.disabled = false;
 Clazz.instantialize (this, arguments);
 }, JU.MeshCapper, "CapVertex", JU.T3, [Cloneable, java.util.Comparator]);
 Clazz.makeConstructor (c$, 
@@ -310,16 +325,49 @@ throw e;
 });
 Clazz.defineMethod (c$, "sort", 
 function (a) {
+var b = null;
+var c = null;
+var d = a.length;
+for (var e = d; --e >= 0; ) {
+if (a[e].next == null) {
+if (b == null) {
+c = a[e];
+} else {
+a[e].link (b);
+b = null;
+}} else if (a[e].prev == null) {
+if (c == null) {
+b = a[e];
+} else {
+c.link (a[e]);
+c = null;
+}}}
+this.ok = 0;
+while (this.ok == 0) {
+this.ok = 1;
 java.util.Arrays.sort (a, this);
-if (this.ok == 0) return null;
-for (var b = a.length - 1; --b >= 0; ) a[b].qnext = a[b + 1];
-
-a[a.length - 1].qnext = a[0];
+System.out.println (this.ok);
+}
+for (var f = d; --f >= 0; ) {
+if (a[f].x == 3.4028235E38) d = f;
+a[f].qnext = a[(f + 1) % d];
+}
+a[d - 1].qnext = a[0];
 return a[0];
 }, "~A");
 Clazz.overrideMethod (c$, "compare", 
 function (a, b) {
-return (a.y < b.y ? 1 : a.y > b.y || a.x < b.x ? -1 : a.x > b.x ? 1 : (this.ok = 0));
+return (a.y < b.y ? 1 : a.y > b.y || a.x < b.x ? -1 : a.x > b.x ? 1 : this.disable (a, b));
+}, "JU.MeshCapper.CapVertex,JU.MeshCapper.CapVertex");
+Clazz.defineMethod (c$, "disable", 
+ function (a, b) {
+if (b.x == 3.4028235E38) return 0;
+var c = (a.x == 3.4028235E38 ? a : b);
+c.x = 3.4028235E38;
+c.y = -3.4028235E38;
+c.link (null);
+this.ok = 0;
+return (a.x > b.x ? 1 : -1);
 }, "JU.MeshCapper.CapVertex,JU.MeshCapper.CapVertex");
 Clazz.defineMethod (c$, "interpolateX", 
 function (a, b) {
@@ -355,7 +403,7 @@ return a + "\n";
 });
 Clazz.overrideMethod (c$, "toString", 
 function () {
-return "draw p" + this.id + " {" + this.x + " " + this.y + " " + this.z + "} # " + (this.prev == null ? "" : this.prev.id) + (this.next == null ? "" : " " + this.next.id) + (this.region == null ? "" : this.dumpRegion ());
+return "draw p" + this.id + " {" + this.x + " " + this.y + " " + this.z + "} # " + (this.prev == null ? "null" : this.prev.id) + (this.next == null ? " null" : " " + this.next.id) + (this.region == null ? "" : this.dumpRegion ());
 });
 c$ = Clazz.p0p ();
 };

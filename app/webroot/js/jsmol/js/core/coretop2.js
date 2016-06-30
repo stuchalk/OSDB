@@ -1,4 +1,5 @@
 (function(Clazz
+,Clazz_getClassName
 ,Clazz_newLongArray
 ,Clazz_doubleToByte
 ,Clazz_doubleToInt
@@ -42,6 +43,7 @@
 ,Clazz_getInheritedLevel
 ,Clazz_getParamsType
 ,Clazz_isAF
+,Clazz_isAB
 ,Clazz_isAI
 ,Clazz_isAS
 ,Clazz_isASS

@@ -32,7 +32,7 @@ jmol_isReady = function(applet) {
 }		
 
 var Info = {
-	width: 300,
+	width: 420,
 	height: 300,
 	debug: false,
 	color: "0xFFFFFF",
@@ -42,7 +42,7 @@ var Info = {
 	jarPath: "./java",// this needs to point to where the java directory is.
 	jarFile: "JmolAppletSigned.jar",
 	isSigned: true,
-	script: "set antialiasDisplay;load data/caffeine.mol",
+	script: "set zoomlarge false;set antialiasDisplay;load data/caffeine.mol",
 	serverURL: "http://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
 	readyFunction: jmol_isReady,
 	disableJ2SLoadMonitor: true,
@@ -73,11 +73,14 @@ Jzlib written by <b>Atsuhiko Yamanaka</b>.
 <tr><td valign="top">
 <div id="appdiv"></div>
 <br>
+<a href="javascript:Jmol.loadFileFromDialog(jmolApplet0)">open...</a>
 <a href="javascript:Jmol.script(jmolApplet0,'console')">console</a>
 <a href="javascript:Jmol.script(jmolApplet0,'image')">image</a>
 display
 <a href="javascript:Jmol.script(jmolApplet0,'set antialiasDisplay false')">faster</a>
 <a href="javascript:Jmol.script(jmolApplet0,'set antialiasDisplay true')">sharper</a>
+<a href="javascript:Jmol.script(jmolApplet0,'set window 610 450')">large</a>
+<a href="javascript:Jmol.script(jmolApplet0,'set window 420 300')">small</a>
 <br>
 platformSpeed:
 <a href="javascript:Jmol.script(jmolApplet0,'set platformSpeed 8')" title='all features'>8</a>
@@ -212,6 +215,8 @@ Enter "!" and a command into the search box and press ENTER or open the <a href=
  <a href="javascript:Jmol.loadFile(jmolApplet0,'data/caffeine.mol',';isosurface &quot;data/caffeine.jvxl&quot;')">isosurface "caffeine.jvxl"</a>
  <br>
  <a href="javascript:Jmol.loadFile(jmolApplet0,'data/1crn.pdb',';if (_is2D) {set hermitelevel 0} else {set hermitelevel 6;set ribbonAspectRatio 4};cartoons only;color structure;')">load data/1crn.pdb</a>
+ <br> 
+ <a href="javascript:Jmol.loadFile(jmolApplet0,'=1crn.mmtf',';if (_is2D) {set hermitelevel 0} else {set hermitelevel 6;set ribbonAspectRatio 4};cartoons only;color structure;')">load =1crn.mmtf</a>
  <br> 
  <a href="javascript:Jmol.loadFile(jmolApplet0,'data/k04041.cif','load &quot;&quot; {1 1 1}')">load data/k04041.cif {1 1 1}</a>
  <br> 

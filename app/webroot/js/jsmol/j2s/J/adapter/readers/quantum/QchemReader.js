@@ -1,7 +1,8 @@
 Clazz.declarePackage ("J.adapter.readers.quantum");
-Clazz.load (["J.adapter.readers.quantum.MOReader", "$.BasisFunctionReader"], "J.adapter.readers.quantum.QchemReader", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.PT", "J.api.JmolAdapter", "J.quantum.QS", "JU.Logger"], function () {
+Clazz.load (["J.adapter.readers.quantum.MOReader"], "J.adapter.readers.quantum.QchemReader", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.PT", "J.adapter.readers.quantum.BasisFunctionReader", "J.api.JmolAdapter", "J.quantum.QS", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.calculationNumber = 1;
+this.isFirstJob = true;
 this.alphas = null;
 this.betas = null;
 this.nBasis = 0;
@@ -26,6 +27,9 @@ if (this.line.indexOf ("Standard Nuclear Orientation") >= 0) {
 this.readAtoms ();
 this.moData = null;
 return true;
+}if (this.line.indexOf ("Total energy") >= 0 || this.line.indexOf ("total energy") >= 0 || this.line.indexOf ("Energy is") >= 0) {
+if (this.line.indexOf ("Excitation") == -1) this.readEnergy ();
+return true;
 }if (this.line.indexOf ("Requested basis set is") >= 0) {
 this.readCalculationType ();
 return true;
@@ -35,8 +39,10 @@ return true;
 }if (this.line.indexOf ("Mulliken Net Atomic Charges") >= 0) {
 this.readPartialCharges ();
 return true;
-}if (this.line.startsWith ("Job ")) {
+}if (this.line.startsWith ("Job ") || this.line.startsWith ("Running Job")) {
+if (this.isFirstJob && this.line.startsWith ("Running")) this.calculationNumber = 0;
 this.calculationNumber++;
+this.isFirstJob = false;
 this.moData = null;
 return true;
 }if (this.line.indexOf ("Basis set in general basis input format") >= 0) {
@@ -63,6 +69,7 @@ Clazz.defineMethod (c$, "readAtoms",
  function () {
 this.asc.newAtomSet ();
 this.setMOData (true);
+this.dFixed = this.fFixed = false;
 this.readLines (2);
 var tokens;
 while (this.rd () != null && !this.line.startsWith (" --")) {
@@ -71,7 +78,7 @@ if (tokens.length < 5) continue;
 var symbol = tokens[1];
 if (J.api.JmolAdapter.getElementNumber (symbol) > 0) this.addAtomXYZSymName (tokens, 2, symbol, null);
 }
-this.asc.setAtomSetModelProperty (".PATH", "Calculation " + this.calculationNumber);
+this.asc.setAtomSetModelProperty (".PATH", "Job " + this.calculationNumber);
 });
 Clazz.defineMethod (c$, "readFrequencies", 
  function () {
@@ -86,7 +93,7 @@ for (var i = 0; i < frequencyCount; ++i) {
 ignore[i] = !this.doGetVibration (++this.vibrationNumber);
 if (ignore[i]) continue;
 this.asc.cloneLastAtomSet ();
-this.asc.setAtomSetFrequency ("Calculation " + this.calculationNumber, null, frequencies[i + 1], null);
+this.asc.setAtomSetFrequency ("Job " + this.calculationNumber, null, frequencies[i + 1], null);
 }
 this.discardLinesUntilStartsWith ("               X");
 this.fillFrequencyData (iAtom0, ac, ac, ignore, true, 0, 0, null, 0);
@@ -100,6 +107,16 @@ var atoms = this.asc.atoms;
 var ac = this.asc.getLastAtomSetAtomCount ();
 for (var i = 0; i < ac && this.rd () != null; ++i) atoms[i].partialCharge = this.parseFloatStr (this.getTokens ()[2]);
 
+});
+Clazz.defineMethod (c$, "readEnergy", 
+ function () {
+var ac = this.asc.getLastAtomSetAtomCount ();
+var tokens = this.getTokens ();
+var energyKey = "E(" + tokens[0] + ")";
+var energyString = tokens[tokens.length - 1];
+this.asc.setAtomSetEnergy (energyString, this.parseFloatStr (energyString));
+this.asc.setAtomSetName (energyKey + " = " + energyString);
+this.asc.setModelInfoForSet ("name", energyKey + " " + energyString, ac);
 });
 Clazz.defineMethod (c$, "readBasis", 
  function () {
@@ -187,7 +204,7 @@ if (!readBetas) this.betas = this.alphas;
 Clazz.defineMethod (c$, "readQchemMolecularOrbitals", 
  function () {
 var orbitalType = this.getTokens ()[0];
-this.alphaBeta = (orbitalType.equals ("RESTRICTTED") ? "" : "A");
+this.alphaBeta = "A";
 this.readMOs (orbitalType.equals ("RESTRICTED"), this.alphas);
 if (orbitalType.equals ("ALPHA")) {
 this.discardLinesUntilContains ("BETA");
@@ -293,10 +310,10 @@ Clazz.instantialize (this, arguments);
 }, J.adapter.readers.quantum.QchemReader, "MOInfo");
 c$ = Clazz.p0p ();
 };
-c$.$DC_LIST = c$.prototype.$DC_LIST = J.adapter.readers.quantum.BasisFunctionReader.CANONICAL_DC_LIST;
+c$.$DC_LIST = c$.prototype.$DC_LIST = "DXX   DYY   DZZ   DXY   DXZ   DYZ";
 Clazz.defineStatics (c$,
 "$DS_LIST", "D3    D4    D2    D5    D1");
-c$.$FC_LIST = c$.prototype.$FC_LIST = J.adapter.readers.quantum.BasisFunctionReader.CANONICAL_FC_LIST;
+c$.$FC_LIST = c$.prototype.$FC_LIST = "XXX   YYY   ZZZ   XYY   XXY   XXZ   XZZ   YZZ   YYZ   XYZ";
 Clazz.defineStatics (c$,
 "$FS_LIST", "F4    F5    F3    F6    F2    F7    F1");
 });

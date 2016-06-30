@@ -14,63 +14,58 @@ Clazz.makeConstructor (c$,
 function () {
 Clazz.superConstructor (this, J.adapter.readers.xml.XmlXsdReader, []);
 });
-Clazz.overrideMethod (c$, "getDOMAttributes", 
-function () {
-return  Clazz.newArray (-1, ["ID", "XYZ", "Connections", "Components", "IsBackboneAtom", "Connects", "Type", "Name"]);
-});
 Clazz.overrideMethod (c$, "processXml", 
 function (parent, saxReader) {
 parent.htParams.put ("backboneAtoms", this.bsBackbone);
-this.PX (parent, saxReader);
+this.processXml2 (parent, saxReader);
 this.asc.atomSymbolicMap.clear ();
 }, "J.adapter.readers.xml.XmlReader,~O");
 Clazz.overrideMethod (c$, "processStartElement", 
-function (localName) {
+function (localName, nodeName) {
 var tokens;
-if ("Molecule".equalsIgnoreCase (localName)) {
+if ("molecule".equals (localName)) {
 this.asc.newAtomSet ();
-this.asc.setAtomSetName (this.atts.get ("Name"));
+this.asc.setAtomSetName (this.atts.get ("name"));
 return;
-}if ("LinearChain".equalsIgnoreCase (localName)) {
+}if ("linearchain".equals (localName)) {
 this.iGroup = 0;
 this.iChain++;
-}if ("RepeatUnit".equalsIgnoreCase (localName)) {
+}if ("repeatunit".equals (localName)) {
 this.iGroup++;
-}if ("Atom3d".equalsIgnoreCase (localName)) {
+}if ("atom3d".equals (localName)) {
 this.atom =  new J.adapter.smarter.Atom ();
-this.atom.elementSymbol = this.atts.get ("Components");
-this.atom.atomName = this.atts.get ("ID");
+this.atom.elementSymbol = this.atts.get ("components");
+this.atom.atomName = this.atts.get ("id");
 this.atom.atomSerial = ++this.iAtom;
 if (this.iChain >= 0) this.parent.setChainID (this.atom, "" + String.fromCharCode ((this.iChain - 1) % 26 + 65));
 this.atom.group3 = "UNK";
 if (this.iGroup == 0) this.iGroup = 1;
 this.atom.sequenceNumber = this.iGroup;
-var xyz = this.atts.get ("XYZ");
+var xyz = this.atts.get ("xyz");
 if (xyz != null) {
 tokens = JU.PT.getTokens (xyz.$replace (',', ' '));
 this.atom.set (this.parseFloatStr (tokens[0]), this.parseFloatStr (tokens[1]), this.parseFloatStr (tokens[2]));
-}var isBackbone = "1".equals (this.atts.get ("IsBackboneAtom"));
+}var isBackbone = "1".equals (this.atts.get ("isbackboneatom"));
 if (isBackbone) this.bsBackbone.set (this.iAtom);
 return;
-}if ("Bond".equalsIgnoreCase (localName)) {
-var atoms = JU.PT.split (this.atts.get ("Connects"), ",");
+}if ("bond".equals (localName)) {
+var atoms = JU.PT.split (this.atts.get ("connects"), ",");
 var order = 1;
-if (this.atts.containsKey ("Type")) {
-var type = this.atts.get ("Type");
+if (this.atts.containsKey ("type")) {
+var type = this.atts.get ("type");
 if (type.equals ("Double")) order = 2;
  else if (type.equals ("Triple")) order = 3;
 }this.asc.addNewBondFromNames (atoms[0], atoms[1], order);
 return;
-}}, "~S");
+}}, "~S,~S");
 Clazz.overrideMethod (c$, "processEndElement", 
 function (localName) {
-if ("Atom3d".equalsIgnoreCase (localName)) {
+if ("atom3d".equalsIgnoreCase (localName)) {
 if (this.atom.elementSymbol != null && !Float.isNaN (this.atom.z)) {
 this.parent.setAtomCoord (this.atom);
 this.asc.addAtomWithMappedName (this.atom);
 }this.atom = null;
 return;
-}this.keepChars = false;
-this.chars = null;
+}this.setKeepChars (false);
 }, "~S");
 });

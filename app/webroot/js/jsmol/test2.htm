@@ -36,7 +36,7 @@ jmol_isReady = function(applet) {
 }		
 
 Info = {
-	width: 400,
+	width: 420,
 	height: 300,
 	debug: false,
 	color: "#F0F0F0",
@@ -51,10 +51,11 @@ Info = {
 	jarFile: "JmolApplet.jar",
 	isSigned: false,
 	disableJ2SLoadMonitor: false,
-	disableInitialConsole: false,
+	disableInitialConsole: false, // default now is true
 	readyFunction: jmol_isReady,
-  allowjavascript: true,
-	script: "load async data/caffeine.mol;t2.spt;"
+	allowjavascript: true,
+//	appletLoadingImage: "none",
+	script: "set zoomlarge false;set antialiasdisplay;load async data/caffeine.mol;"
 //	script: "set antialiasDisplay;set showtiming;load async data/caffeine.mol;"
 	//,defaultModel: ":dopamine"
   //,noscript: true

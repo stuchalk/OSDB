@@ -12,7 +12,7 @@ if (this.desiredVibrationNumber <= 0 ? this.doGetModel (this.modelNumber, null) 
 this.rd ();
 this.checkCurrentLineForScript ();
 this.asc.newAtomSet ();
-var name = this.line;
+var name = this.line.trim ();
 this.readAtoms (modelAtomCount);
 this.applySymmetryAndSetTrajectory ();
 this.asc.setAtomSetName (name);

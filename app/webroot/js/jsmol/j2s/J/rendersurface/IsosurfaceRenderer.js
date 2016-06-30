@@ -27,7 +27,7 @@ function () {
 this.setGlobals ();
 for (var i = this.isosurface.meshCount; --i >= 0; ) {
 this.mesh = this.imesh = this.isosurface.meshes[i];
-if (this.imesh.connections != null && !this.vwr.ms.at[this.imesh.connections[0]].checkVisible ()) continue;
+if (this.imesh.connectedAtoms != null && !this.vwr.ms.at[this.imesh.connectedAtoms[0]].checkVisible ()) continue;
 this.hasColorRange = false;
 if (this.renderMeshSlab ()) {
 this.renderInfo ();
@@ -104,6 +104,7 @@ Clazz.defineMethod (c$, "renderMeshSlab",
 this.volumeRender = (this.imesh.jvxlData.colorDensity && this.imesh.jvxlData.allowVolumeRender);
 var thisSlabValue = this.mySlabValue;
 this.frontOnly = this.mesh.frontOnly || this.shapeID == 26;
+this.isShell = this.mesh.isShell && this.shapeID != 26;
 if (!this.isNavigationMode) {
 this.meshSlabValue = this.imesh.jvxlData.slabValue;
 if (this.meshSlabValue != -2147483648 && this.imesh.jvxlData.isSlabbable) {
@@ -118,6 +119,7 @@ if (this.pt2f.z > z1) z1 = this.pt2f.z;
 }
 thisSlabValue = Math.round (z0 + (z1 - z0) * (100 - this.meshSlabValue) / 100);
 this.frontOnly = new Boolean (this.frontOnly & (this.meshSlabValue >= 100)).valueOf ();
+this.isShell = new Boolean (this.isShell & (this.meshSlabValue >= 100)).valueOf ();
 }}var tCover = this.vwr.gdata.translucentCoverOnly;
 this.vwr.gdata.translucentCoverOnly = (this.frontOnly || !this.vwr.getBoolean (603979967));
 this.thePlane = this.imesh.jvxlData.jvxlPlane;
@@ -212,7 +214,7 @@ var incr = this.imesh.vertexIncrement;
 var diam;
 if (this.mesh.diameter <= 0) {
 diam = this.vwr.getInt (553648144);
-this.frontOnly = false;
+this.frontOnly = this.isShell = false;
 } else {
 diam = Clazz.doubleToInt (this.vwr.getScreenDim () / (this.volumeRender ? 50 : 100));
 }var ptSize = Math.round (Float.isNaN (this.mesh.volumeRenderPointSize) ? 150 : this.mesh.volumeRenderPointSize * 1000);
@@ -221,7 +223,7 @@ var cX = (this.showNumbers ? Clazz.doubleToInt (this.vwr.getScreenWidth () / 2) 
 var cY = (this.showNumbers ? Clazz.doubleToInt (this.vwr.getScreenHeight () / 2) : 0);
 if (this.showNumbers) this.vwr.gdata.setFontFid (this.vwr.gdata.getFontFidFS ("Monospaced", 24));
 for (var i = (!this.imesh.hasGridPoints || this.imesh.firstRealVertex < 0 ? 0 : this.imesh.firstRealVertex); i < this.vertexCount; i += incr) {
-if (this.vertexValues != null && Float.isNaN (this.vertexValues[i]) || this.frontOnly && this.transformedVectors[this.normixes[i]].z < 0 || this.imesh.jvxlData.thisSet >= 0 && this.mesh.vertexSets[i] != this.imesh.jvxlData.thisSet || !this.mesh.isColorSolid && this.mesh.vcs != null && !this.setColix (this.mesh.vcs[i]) || this.haveBsDisplay && !this.mesh.bsDisplay.get (i) || slabPoints && !this.bsPolygons.get (i)) continue;
+if (this.vertexValues != null && Float.isNaN (this.vertexValues[i]) || this.frontOnly && !this.isVisibleNormix (this.normixes[i]) || this.imesh.jvxlData.thisSet >= 0 && this.mesh.vertexSets[i] != this.imesh.jvxlData.thisSet || !this.mesh.isColorSolid && this.mesh.vcs != null && !this.setColix (this.mesh.vcs[i]) || this.haveBsDisplay && !this.mesh.bsDisplay.get (i) || slabPoints && !this.bsPolygons.get (i)) continue;
 this.hasColorRange = true;
 if (this.showNumbers && this.screens[i].z > 10 && Math.abs (this.screens[i].x - cX) < 150 && Math.abs (this.screens[i].y - cY) < 150) {
 var s = i + (this.mesh.isColorSolid ? "" : " " + this.mesh.vvs[i]);
@@ -287,7 +289,7 @@ if (this.haveBsDisplay && (!this.mesh.bsDisplay.get (iA) || !this.mesh.bsDisplay
 var nA = this.normixes[iA];
 var nB = this.normixes[iB];
 var nC = this.normixes[iC];
-var check = this.checkNormals (nA, nB, nC);
+var check = (this.frontOnly || this.isShell ? this.checkFront (nA, nB, nC) : 7);
 if (fill && check == 0) continue;
 var colixA;
 var colixB;
@@ -365,14 +367,13 @@ this.vwr.gdata.setFontFid (this.vwr.gdata.getFontFidFS ("Monospaced", 24));
 var vertexVectors = JU.Normix.getVertexVectors ();
 for (var i = this.vertexCount; --i >= 0; ) {
 if (this.vertexValues != null && Float.isNaN (this.vertexValues[i])) continue;
-if (i > 100) continue;
 this.pt1f.setT (this.vertices[i]);
 var n = this.mesh.normixes[i];
 if (n >= 0) {
-this.pt1f.scaleAdd2 (3, vertexVectors[n], this.pt1f);
-this.tm.transformPtScrT3 (this.pt1f, this.pt1f);
+this.pt2f.scaleAdd2 (0.3, vertexVectors[n], this.pt1f);
+this.tm.transformPtScrT3 (this.pt2f, this.pt2f);
 this.pt1f.set (this.screens[i].x, this.screens[i].y, this.screens[i].z);
-this.g3d.drawLineAB (this.pt1f, this.pt1f);
+this.g3d.drawLineAB (this.pt1f, this.pt2f);
 }}
 });
 });

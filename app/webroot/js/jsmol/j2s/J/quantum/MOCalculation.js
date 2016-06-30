@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.quantum");
-Clazz.load (["J.api.MOCalculationInterface", "J.quantum.QuantumCalculation"], "J.quantum.MOCalculation", ["J.quantum.QS", "JU.Logger"], function () {
+Clazz.load (["J.quantum.QuantumCalculation"], "J.quantum.MOCalculation", ["J.quantum.QS", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.CX = null;
 this.CY = null;
@@ -32,10 +32,11 @@ this.doShowShellType = false;
 this.warned = null;
 this.coeffs = null;
 this.map = null;
+this.lastGaussianPtr = -1;
 this.integration = 0;
 this.isSquaredLinear = false;
 Clazz.instantialize (this, arguments);
-}, J.quantum, "MOCalculation", J.quantum.QuantumCalculation, J.api.MOCalculationInterface);
+}, J.quantum, "MOCalculation", J.quantum.QuantumCalculation);
 Clazz.prepareFields (c$, function () {
 this.dfCoefMaps =  Clazz.newArray (-1, [ Clazz.newIntArray (1, 0),  Clazz.newIntArray (3, 0),  Clazz.newIntArray (4, 0),  Clazz.newIntArray (5, 0),  Clazz.newIntArray (6, 0),  Clazz.newIntArray (7, 0),  Clazz.newIntArray (10, 0)]);
 });
@@ -43,8 +44,8 @@ Clazz.makeConstructor (c$,
 function () {
 Clazz.superConstructor (this, J.quantum.MOCalculation, []);
 });
-Clazz.overrideMethod (c$, "setupCalculation", 
-function (volumeData, bsSelected, bsExclude, bsMolecules, calculationType, atomCoordAngstroms, firstAtomOffset, shells, gaussians, dfCoefMaps, slaters, moCoefficients, linearCombination, isSquaredLinear, coefs, partialCharges, doNormalize, points, parameters, testFlags) {
+Clazz.defineMethod (c$, "setupCalculation", 
+function (volumeData, bsSelected, calculationType, xyz, atoms, firstAtomOffset, shells, gaussians, dfCoefMaps, slaters, moCoefficients, linearCombination, isSquaredLinear, coefs, doNormalize, points) {
 this.havePoints = (points != null);
 this.calculationType = calculationType;
 this.firstAtomOffset = firstAtomOffset;
@@ -63,10 +64,10 @@ this.countsXYZ = volumeData.getVoxelCounts ();
 this.initialize (this.countsXYZ[0], this.countsXYZ[1], this.countsXYZ[2], points);
 this.voxelData = volumeData.getVoxelData ();
 this.voxelDataTemp = (isSquaredLinear ?  Clazz.newFloatArray (this.nX, this.nY, this.nZ, 0) : this.voxelData);
-this.setupCoordinates (volumeData.getOriginFloat (), volumeData.getVolumetricVectorLengths (), bsSelected, atomCoordAngstroms, points, false);
+this.setupCoordinates (volumeData.getOriginFloat (), volumeData.getVolumetricVectorLengths (), bsSelected, xyz, atoms, points, false);
 this.doDebug = (JU.Logger.debugging);
 return (slaters != null || this.checkCalculationType ());
-}, "J.api.VolumeDataInterface,JU.BS,JU.BS,~A,~S,~A,~N,JU.Lst,~A,~A,~O,~A,~A,~B,~A,~A,~B,~A,~A,~N");
+}, "J.jvxl.data.VolumeData,JU.BS,~S,~A,~A,~N,JU.Lst,~A,~A,~O,~A,~A,~B,~A,~B,~A");
 Clazz.overrideMethod (c$, "initialize", 
 function (nX, nY, nZ, points) {
 this.initialize0 (nX, nY, nZ, points);
@@ -238,7 +239,11 @@ Clazz.defineMethod (c$, "setCoeffs",
  function (type, isProcess) {
 var isOK = false;
 this.map = this.dfCoefMaps[type];
-if (isProcess && this.thisAtom == null) {
+if (type > J.quantum.QS.MAX_TYPE_SUPPORTED) {
+if (isProcess && this.doDebug) this.dumpInfo (type);
+this.moCoeff += this.map.length;
+return false;
+}if (isProcess && this.thisAtom == null) {
 this.moCoeff += this.map.length;
 return false;
 }for (var i = 0; i < this.map.length; i++) isOK = new Boolean (isOK | ((this.coeffs[i] = this.moCoefficients[this.map[i] + this.moCoeff++]) != 0)).valueOf ();
@@ -553,9 +558,9 @@ norm1 = this.getContractionNormalization (3, 1);
 norm2 = norm1;
 norm3 = norm1;
 } else {
-norm1 = Math.pow (1056.818280307081, 0.25);
-norm2 = norm1 / Math.sqrt (3);
-norm3 = norm1 / Math.sqrt (15);
+norm1 = 5.701643762839922;
+norm2 = 3.2918455612989796;
+norm3 = 1.4721580892990938;
 }} else {
 norm1 = norm2 = norm3 = 1;
 }var mxxx = this.coeffs[0];
@@ -659,24 +664,24 @@ norm2 = norm3 * Math.sqrt (5);
 norm1 = norm3 * Math.sqrt (15);
 norm4 = -1;
 } else {
-norm1 = Math.pow (1056.818280307081, 0.25);
-norm2 = norm1 / Math.sqrt (3);
-norm3 = norm1 / Math.sqrt (15);
+norm1 = 5.701643762839922;
+norm2 = 3.2918455612989796;
+norm3 = 1.4721580892990938;
 norm4 = 1;
 }} else {
 norm1 = norm2 = norm3 = norm4 = 1;
-}var c0_xxz_yyz = (3.0 / (2.0 * Math.sqrt (5)));
-var c1p_xzz = Math.sqrt (1.2);
-var c1p_xxx = Math.sqrt (0.375);
-var c1p_xyy = Math.sqrt (0.075);
-var c1n_yzz = c1p_xzz;
-var c1n_yyy = c1p_xxx;
-var c1n_xxy = c1p_xyy;
-var c2p_xxz_yyz = Math.sqrt (0.75);
-var c3p_xxx = Math.sqrt (0.625);
-var c3p_xyy = 0.75 * Math.sqrt (2);
-var c3n_yyy = c3p_xxx;
-var c3n_xxy = c3p_xyy;
+}var c0_xxz_yyz = 0.6708203932499369;
+var c1p_xzz = 1.0954451150103321;
+var c1p_xxx = 0.6123724356957945;
+var c1p_xyy = 0.27386127875258304;
+var c1n_yzz = 1.0954451150103321;
+var c1n_yyy = 0.6123724356957945;
+var c1n_xxy = 0.27386127875258304;
+var c2p_xxz_yyz = 0.8660254037844386;
+var c3p_xxx = 0.7905694150420949;
+var c3p_xyy = 1.0606601717798214;
+var c3n_yyy = 0.7905694150420949;
+var c3n_xxy = 1.0606601717798214;
 var m0 = this.coeffs[0];
 var m1p = this.coeffs[1];
 var m1n = this.coeffs[2];
@@ -720,13 +725,13 @@ cxzz = norm2 * x * zz;
 cyyz = norm2 * yy * z;
 cyzz = norm2 * y * zz;
 cxyz = norm1 * x * y * z;
-f0 = af0 * (czzz - c0_xxz_yyz * (cxxz + cyyz));
-f1p = norm4 * af1p * (c1p_xzz * cxzz - c1p_xxx * cxxx - c1p_xyy * cxyy);
-f1n = af1n * (c1n_yzz * cyzz - c1n_yyy * cyyy - c1n_xxy * cxxy);
-f2p = af2p * (c2p_xxz_yyz * (cxxz - cyyz));
+f0 = af0 * (czzz - 0.6708203932499369 * (cxxz + cyyz));
+f1p = norm4 * af1p * (1.0954451150103321 * cxzz - 0.6123724356957945 * cxxx - 0.27386127875258304 * cxyy);
+f1n = af1n * (1.0954451150103321 * cyzz - 0.6123724356957945 * cyyy - 0.27386127875258304 * cxxy);
+f2p = af2p * (0.8660254037844386 * (cxxz - cyyz));
 f2n = af2n * cxyz;
-f3p = norm4 * af3p * (c3p_xxx * cxxx - c3p_xyy * cxyy);
-f3n = -af3n * (c3n_yyy * cyyy - c3n_xxy * cxxy);
+f3p = norm4 * af3p * (0.7905694150420949 * cxxx - 1.0606601717798214 * cxyy);
+f3n = -af3n * (0.7905694150420949 * cyyy - 1.0606601717798214 * cxxy);
 this.vd[(this.havePoints ? 0 : iz)] += (f0 + f1p + f1n + f2p + f2n + f3p + f3n) * eXY * this.EZ[iz];
 }
 }
@@ -880,12 +885,14 @@ Clazz.defineMethod (c$, "dumpInfo",
 if (this.doShowShellType) {
 JU.Logger.debug ("\n\t\t\tprocessShell: " + shell + " type=" + J.quantum.QS.getQuantumShellTag (shell) + " nGaussians=" + this.nGaussians + " atom=" + this.atomIndex);
 this.doShowShellType = false;
-}if (JU.Logger.isActiveLevel (6)) for (var ig = 0; ig < this.nGaussians; ig++) {
+}if (JU.Logger.isActiveLevel (6) && this.gaussianPtr != this.lastGaussianPtr) {
+this.lastGaussianPtr = this.gaussianPtr;
+for (var ig = 0; ig < this.nGaussians; ig++) {
 var alpha = this.gaussians[this.gaussianPtr + ig][0];
 var c1 = this.gaussians[this.gaussianPtr + ig][1];
 JU.Logger.debug ("\t\t\tGaussian " + (ig + 1) + " alpha=" + alpha + " c=" + c1);
 }
-var so = J.quantum.MOCalculation.getShellOrder (shell);
+}var so = J.quantum.MOCalculation.getShellOrder (shell);
 for (var i = 0; i < this.map.length; i++) {
 var n = this.map[i] + this.moCoeff - this.map.length + i + 1;
 var c = this.coeffs[i];

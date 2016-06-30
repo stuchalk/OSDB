@@ -85,7 +85,7 @@ Clazz.defineMethod (c$, "isRenderScalable",
 function () {
 switch (this.drawType) {
 case J.shapespecial.Draw.EnumDrawType.ARROW:
-return (this.connections != null);
+return (this.connectedAtoms != null);
 case J.shapespecial.Draw.EnumDrawType.ARC:
 case J.shapespecial.Draw.EnumDrawType.CIRCLE:
 case J.shapespecial.Draw.EnumDrawType.CIRCULARPLANE:

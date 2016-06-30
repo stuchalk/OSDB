@@ -39,10 +39,13 @@ this.repaintNow (why);
 }}}, "~B,~S");
 Clazz.overrideMethod (c$, "requestRepaintAndWait", 
 function (why) {
+var jmol = null;
 {
-if (typeof Jmol != "undefined" && Jmol._repaint)
-Jmol._repaint(this.vwr.html5Applet, false);
-this.repaintDone();
+jmol = (self.Jmol && Jmol._repaint ? Jmol : null);
+}if (jmol != null) {
+jmol._repaint (this.vwr.html5Applet, false);
+this.repaintDone ();
+}{
 }}, "~S");
 Clazz.overrideMethod (c$, "repaintIfReady", 
 function (why) {
@@ -124,8 +127,7 @@ if (!isOK) throw  new NullPointerException ();
 Clazz.overrideMethod (c$, "renderExport", 
 function (gdata, modelSet, params) {
 var isOK;
-this.vwr.finalizeTransformParameters ();
-this.shapeManager.finalizeAtoms (null, null);
+this.shapeManager.finalizeAtoms (null, true);
 var exporter3D = this.vwr.initializeExporter (params);
 isOK = (exporter3D != null);
 if (!isOK) {

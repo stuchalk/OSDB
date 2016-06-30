@@ -43,8 +43,9 @@ m.bsSlabDisplay.setBits (0, (m.pc == 0 ? m.vc : m.pc));
 m.slabOptions =  new JU.SB ().append (m.meshType + " slab none");
 m.bsSlabGhost = null;
 m.slabMeshType = 1073742333;
-}if (slabType == 1073742333) return false;
-}var slabbingObject = slabObject[1];
+}if (slabType == 1073742333) {
+return false;
+}}var slabbingObject = slabObject[1];
 var andCap = (slabObject[2]).booleanValue () && !(slabType == 1073741872);
 if (andCap && !allowCap) return false;
 var colorData = slabObject[3];
@@ -84,7 +85,7 @@ var plane = slabbingObject;
 sb.append (JU.Escape.eP4 (plane));
 this.getIntersection (0, plane, null, null, null, null, null, andCap, false, 134217750, isGhost);
 break;
-case 1747587102:
+case 1814695966:
 case 1678381065:
 var box = slabbingObject;
 sb.append ("within ").append (JU.Escape.eAP (box));
@@ -162,33 +163,47 @@ if (andCap && this.capper == null) this.capper = (J.api.Interface.getInterface (
 if (this.capper != null) this.capper.clear ();
 var absD = Math.abs (distance);
 var mapEdge =  new java.util.Hashtable ();
-for (var i = m.mergePolygonCount0, iLast = m.pc; i < iLast; i++) {
-var d1;
-var d2;
-var d3;
+var bsD = JU.BS.newN (m.vc);
+var d =  Clazz.newFloatArray (m.vc, 0);
+var d1 = 0;
+var d2 = 0;
+var d3 = 0;
 var valA;
 var valB;
 var valC;
+for (var i = m.mergePolygonCount0, iLast = m.pc; i < iLast; i++) {
 var face = m.setABC (i);
 if (face == null) continue;
 var bsSlab = (m.bsSlabGhost != null && m.bsSlabGhost.get (i) ? m.bsSlabGhost : m.bsSlabDisplay);
 var check1 = face[3];
 var iContour = (m.dataOnly ? 0 : face[4]);
-var vA = m.vs[m.iA];
-var vB = m.vs[m.iB];
-var vC = m.vs[m.iC];
-valA = fData[m.iA];
-valB = fData[m.iB];
-valC = fData[m.iC];
+var ia = m.iA;
+var ib = m.iB;
+var ic = m.iC;
+var vA = m.vs[ia];
+var vB = m.vs[ib];
+var vC = m.vs[ic];
+valA = fData[ia];
+valB = fData[ib];
+valC = fData[ic];
 if (m.vertexSource != null) {
-this.sources[0] = m.vertexSource[m.iA];
-this.sources[1] = m.vertexSource[m.iB];
-this.sources[2] = m.vertexSource[m.iC];
-}var thisSet = (m.vertexSets == null ? 0 : m.vertexSets[m.iA]);
-d1 = this.checkSlab (tokType, vA, valA, (bsSource == null ? distance : this.sources[0]), bsSource);
-d2 = this.checkSlab (tokType, vB, valB, (bsSource == null ? distance : this.sources[1]), bsSource);
-d3 = this.checkSlab (tokType, vC, valC, (bsSource == null ? distance : this.sources[2]), bsSource);
+this.sources[0] = m.vertexSource[ia];
+this.sources[1] = m.vertexSource[ib];
+this.sources[2] = m.vertexSource[ic];
+}if (!bsD.get (ia)) {
+bsD.set (ia);
+d[ia] = this.checkSlab (tokType, vA, valA, (bsSource == null ? distance : this.sources[0]), bsSource);
+}if (!bsD.get (ib)) {
+bsD.set (ib);
+d[ib] = this.checkSlab (tokType, vB, valB, (bsSource == null ? distance : this.sources[1]), bsSource);
+}if (!bsD.get (ic)) {
+bsD.set (ic);
+d[ic] = this.checkSlab (tokType, vC, valC, (bsSource == null ? distance : this.sources[2]), bsSource);
+}d1 = d[ia];
+d2 = d[ib];
+d3 = d[ic];
 var test1 = (d1 != 0 && d1 < 0 ? 1 : 0) + (d2 != 0 && d2 < 0 ? 2 : 0) + (d3 != 0 && d3 < 0 ? 4 : 0);
+var thisSet = (m.vertexSets == null ? 0 : m.vertexSets[ia]);
 switch (test1) {
 default:
 case 7:
@@ -225,58 +240,58 @@ case 1:
 case 6:
 var tossBC = (test1 == 1);
 if (tossBC || isGhost) {
-if (!this.getDE (this.fracs, 0, m.iA, m.iB, m.iC, tossBC)) break;
-if (this.iD < 0) this.iD = this.addIntersectionVertex (p[0], this.values[0], this.sources[0], thisSet, mapEdge, m.iA, m.iB);
-if (this.iE < 0) this.iE = this.addIntersectionVertex (p[1], this.values[1], this.sources[0], thisSet, mapEdge, m.iA, m.iC);
+if (!this.getDE (this.fracs, 0, ia, ib, ic, tossBC)) break;
+if (this.iD < 0) this.iD = this.addIntersectionVertex (p[0], this.values[0], this.sources[0], thisSet, mapEdge, ia, ib);
+if (this.iE < 0) this.iE = this.addIntersectionVertex (p[1], this.values[1], this.sources[0], thisSet, mapEdge, ia, ic);
 bs = (tossBC ? bsSlab : m.bsSlabGhost);
-m.addPolygonV3 (m.iA, this.iD, this.iE, check1 & 5 | 2, iContour, 0, bs);
+m.addPolygonV3 (ia, this.iD, this.iE, check1 & 5 | 2, iContour, 0, bs);
 if (!isGhost) break;
-}if (!this.getDE (this.fracs, 1, m.iA, m.iC, m.iB, tossBC)) break;
+}if (!this.getDE (this.fracs, 1, ia, ic, ib, tossBC)) break;
 bs = (tossBC ? m.bsSlabGhost : bsSlab);
 if (this.iE < 0) {
-this.iE = this.addIntersectionVertex (p[0], this.values[0], this.sources[1], thisSet, mapEdge, m.iA, m.iB);
-m.addPolygonV3 (this.iE, m.iB, m.iC, check1 & 3, iContour, 0, bs);
+this.iE = this.addIntersectionVertex (p[0], this.values[0], this.sources[1], thisSet, mapEdge, ia, ib);
+m.addPolygonV3 (this.iE, ib, ic, check1 & 3, iContour, 0, bs);
 }if (this.iD < 0) {
-this.iD = this.addIntersectionVertex (p[1], this.values[1], this.sources[2], thisSet, mapEdge, m.iA, m.iC);
-m.addPolygonV3 (this.iD, this.iE, m.iC, check1 & 4 | 1, iContour, 0, bs);
+this.iD = this.addIntersectionVertex (p[1], this.values[1], this.sources[2], thisSet, mapEdge, ia, ic);
+m.addPolygonV3 (this.iD, this.iE, ic, check1 & 4 | 1, iContour, 0, bs);
 }break;
 case 5:
 case 2:
 var tossAC = (test1 == 2);
 if (tossAC || isGhost) {
-if (!this.getDE (this.fracs, 0, m.iB, m.iC, m.iA, tossAC)) break;
+if (!this.getDE (this.fracs, 0, ib, ic, ia, tossAC)) break;
 bs = (tossAC ? bsSlab : m.bsSlabGhost);
-if (this.iE < 0) this.iE = this.addIntersectionVertex (p[0], this.values[0], this.sources[1], thisSet, mapEdge, m.iB, m.iA);
-if (this.iD < 0) this.iD = this.addIntersectionVertex (p[1], this.values[1], this.sources[1], thisSet, mapEdge, m.iB, m.iC);
-m.addPolygonV3 (this.iE, m.iB, this.iD, check1 & 3 | 4, iContour, 0, bs);
+if (this.iE < 0) this.iE = this.addIntersectionVertex (p[0], this.values[0], this.sources[1], thisSet, mapEdge, ib, ia);
+if (this.iD < 0) this.iD = this.addIntersectionVertex (p[1], this.values[1], this.sources[1], thisSet, mapEdge, ib, ic);
+m.addPolygonV3 (this.iE, ib, this.iD, check1 & 3 | 4, iContour, 0, bs);
 if (!isGhost) break;
-}if (!this.getDE (this.fracs, 1, m.iB, m.iA, m.iC, tossAC)) break;
+}if (!this.getDE (this.fracs, 1, ib, ia, ic, tossAC)) break;
 bs = (tossAC ? m.bsSlabGhost : bsSlab);
 if (this.iD < 0) {
-this.iD = this.addIntersectionVertex (p[0], this.values[0], this.sources[0], thisSet, mapEdge, m.iB, m.iA);
-m.addPolygonV3 (m.iA, this.iD, m.iC, check1 & 5, iContour, 0, bs);
+this.iD = this.addIntersectionVertex (p[0], this.values[0], this.sources[0], thisSet, mapEdge, ib, ia);
+m.addPolygonV3 (ia, this.iD, ic, check1 & 5, iContour, 0, bs);
 }if (this.iE < 0) {
-this.iE = this.addIntersectionVertex (p[1], this.values[1], this.sources[2], thisSet, mapEdge, m.iB, m.iC);
-m.addPolygonV3 (this.iD, this.iE, m.iC, check1 & 2 | 1, iContour, 0, bs);
+this.iE = this.addIntersectionVertex (p[1], this.values[1], this.sources[2], thisSet, mapEdge, ib, ic);
+m.addPolygonV3 (this.iD, this.iE, ic, check1 & 2 | 1, iContour, 0, bs);
 }break;
 case 4:
 case 3:
 var tossAB = (test1 == 4);
 if (tossAB || isGhost) {
-if (!this.getDE (this.fracs, 0, m.iC, m.iA, m.iB, tossAB)) break;
-if (this.iD < 0) this.iD = this.addIntersectionVertex (p[0], this.values[0], this.sources[2], thisSet, mapEdge, m.iA, m.iC);
-if (this.iE < 0) this.iE = this.addIntersectionVertex (p[1], this.values[1], this.sources[2], thisSet, mapEdge, m.iB, m.iC);
+if (!this.getDE (this.fracs, 0, ic, ia, ib, tossAB)) break;
+if (this.iD < 0) this.iD = this.addIntersectionVertex (p[0], this.values[0], this.sources[2], thisSet, mapEdge, ia, ic);
+if (this.iE < 0) this.iE = this.addIntersectionVertex (p[1], this.values[1], this.sources[2], thisSet, mapEdge, ib, ic);
 bs = (tossAB ? bsSlab : m.bsSlabGhost);
-m.addPolygonV3 (this.iD, this.iE, m.iC, check1 & 6 | 1, iContour, 0, bs);
+m.addPolygonV3 (this.iD, this.iE, ic, check1 & 6 | 1, iContour, 0, bs);
 if (!isGhost) break;
-}if (!this.getDE (this.fracs, 1, m.iC, m.iB, m.iA, tossAB)) break;
+}if (!this.getDE (this.fracs, 1, ic, ib, ia, tossAB)) break;
 bs = (tossAB ? m.bsSlabGhost : bsSlab);
 if (this.iE < 0) {
-this.iE = this.addIntersectionVertex (p[0], this.values[0], this.sources[0], thisSet, mapEdge, m.iA, m.iC);
-m.addPolygonV3 (m.iA, m.iB, this.iE, check1 & 5, iContour, 0, bs);
+this.iE = this.addIntersectionVertex (p[0], this.values[0], this.sources[0], thisSet, mapEdge, ia, ic);
+m.addPolygonV3 (ia, ib, this.iE, check1 & 5, iContour, 0, bs);
 }if (this.iD < 0) {
-this.iD = this.addIntersectionVertex (p[1], this.values[1], this.sources[1], thisSet, mapEdge, m.iB, m.iC);
-m.addPolygonV3 (this.iE, m.iB, this.iD, check1 & 2 | 4, iContour, 0, bs);
+this.iD = this.addIntersectionVertex (p[1], this.values[1], this.sources[1], thisSet, mapEdge, ib, ic);
+m.addPolygonV3 (this.iE, ib, this.iD, check1 & 2 | 4, iContour, 0, bs);
 }break;
 }
 if (this.doClear) {
@@ -328,7 +343,7 @@ this.doCap = false;
 return false;
 }if (this.iD == i2 && this.iE == i3) {
 this.doClear = !toss23;
-return false;
+return !this.doClear;
 }if (this.iD == i1 || this.iE == i1) {
 this.doClear = toss23;
 if (this.iD < 0) {

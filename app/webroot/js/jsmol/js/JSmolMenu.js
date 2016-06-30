@@ -1,6 +1,7 @@
 // JSmolMenu.js
 // author: Bob Hanson, hansonr@stolaf.edu
 
+// BH 10/17/2015 6:18:38 PM wraps with Jmol.__$ to use same version of jQuery as Jmol is using
 // BH 5/27/2014 11:01:46 PM frank menu fix; better event handling
 // BH 5/26/2014 allow for a user callback for customization of menu
 //    using Jmol._showMenuCallback(menu, x, y);
@@ -13,6 +14,8 @@
 * http://jqueryui.com
 * Includes: jquery.ui.core.js, jquery.ui.widget.js, jquery.ui.mouse.js, jquery.ui.position.js, jquery.ui.menu.js
 * Copyright (c) 2012 jQuery Foundation and other contributors Licensed MIT */
+
+(function(jQuery) {
 
 if (!jQuery.ui)
 try{
@@ -190,3 +193,5 @@ Swing.bindMenuActionCommands = function(menu, isBind) {
 }
 
 })(Jmol.Swing);
+
+})(Jmol.__$);

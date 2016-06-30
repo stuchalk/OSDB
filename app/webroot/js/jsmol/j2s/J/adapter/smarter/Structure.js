@@ -16,6 +16,7 @@ this.endChainStr = null;
 this.endInsertionCode = '\0';
 this.atomStartEnd = null;
 this.modelStartEnd = null;
+this.bsAll = null;
 Clazz.instantialize (this, arguments);
 }, J.adapter.smarter, "Structure");
 Clazz.prepareFields (c$, function () {
@@ -35,15 +36,19 @@ return J.c.STR.HELIX310;
 return J.c.STR.HELIX;
 }, "~N");
 Clazz.makeConstructor (c$, 
-function (modelIndex, structureType, substructureType, structureID, serialID, strandCount) {
-this.structureType = structureType;
+function (modelIndex, structureType, substructureType, structureID, serialID, strandCount, bsAll) {
+if (bsAll != null) {
+this.modelStartEnd =  Clazz.newIntArray (-1, [0, modelIndex]);
+this.bsAll = bsAll;
+return;
+}this.structureType = structureType;
 this.substructureType = substructureType;
 if (structureID == null) return;
-this.setModels (modelIndex, 0);
+this.modelStartEnd[0] = this.modelStartEnd[1] = modelIndex;
 this.structureID = structureID;
 this.strandCount = strandCount;
 this.serialID = serialID;
-}, "~N,J.c.STR,J.c.STR,~S,~N,~N");
+}, "~N,J.c.STR,J.c.STR,~S,~N,~N,~A");
 Clazz.defineMethod (c$, "set", 
 function (startChainID, startSequenceNumber, startInsertionCode, endChainID, endSequenceNumber, endInsertionCode, istart, iend) {
 this.startChainID = startChainID;
@@ -55,9 +60,4 @@ this.endInsertionCode = endInsertionCode;
 this.atomStartEnd[0] = istart;
 this.atomStartEnd[1] = iend;
 }, "~N,~N,~S,~N,~N,~S,~N,~N");
-Clazz.defineMethod (c$, "setModels", 
-function (model1, model2) {
-this.modelStartEnd[0] = model1;
-this.modelStartEnd[1] = (model2 == 0 ? model1 : model2);
-}, "~N,~N");
 });

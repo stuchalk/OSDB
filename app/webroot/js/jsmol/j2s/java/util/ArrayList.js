@@ -1,3 +1,5 @@
+//BH 12/18/2015 7:30:28 AM using slice for toArray()
+
 Clazz.load(["java.util.AbstractList","$.List","$.RandomAccess"],"java.util.ArrayList",["java.lang.IllegalArgumentException","$.IndexOutOfBoundsException","java.lang.reflect.Array","java.util.Arrays"],function(){
 c$=Clazz.decorateAsClass(function(){
 this.firstIndex=0;
@@ -386,12 +388,14 @@ return result;
 Clazz.overrideMethod(c$,"toArray",
 function(contents){
 var size=this.size();
-if(!contents || size>contents.length)
-	contents= new Array(size);
+if(!contents || size>contents.length) {
+  return this.array.slice(this.firstIndex, this.firstIndex + size);
+}
 System.arraycopy(this.array,this.firstIndex,contents,0,size);
 if(size<contents.length){
 contents[size]=null;
-}return contents;
+}
+return contents;
 },"~O");
 Clazz.defineMethod(c$,"trimToSize",
 function(){

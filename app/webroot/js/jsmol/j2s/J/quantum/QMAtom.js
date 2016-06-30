@@ -14,7 +14,7 @@ this.iMolecule = 0;
 Clazz.instantialize (this, arguments);
 }, J.quantum, "QMAtom", JU.P3);
 Clazz.overrideConstructor (c$, 
-function (i, atom, X, Y, Z, X2, Y2, Z2, unitFactor) {
+function (i, xyzAng, atom, X, Y, Z, X2, Y2, Z2, unitFactor) {
 this.index = i;
 this.myX = X;
 this.myY = Y;
@@ -23,10 +23,10 @@ this.myX2 = X2;
 this.myY2 = Y2;
 this.myZ2 = Z2;
 this.atom = atom;
-this.setT (atom);
+this.setT (xyzAng);
 this.scale (unitFactor);
 this.znuc = atom.getElementNumber ();
-}, "~N,JM.Atom,~A,~A,~A,~A,~A,~A,~N");
+}, "~N,JU.T3,JM.Atom,~A,~A,~A,~A,~A,~A,~N");
 Clazz.defineMethod (c$, "setXYZ", 
 function (qc, setMinMax) {
 var i;

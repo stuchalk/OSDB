@@ -35,11 +35,11 @@ var draw = this.shape;
 this.isPrecision = true;
 for (var i = draw.meshCount; --i >= 0; ) {
 var mesh = this.dmesh = draw.meshes[i];
-if (mesh.connections != null) {
-if (mesh.connections[0] < 0) continue;
+if (mesh.connectedAtoms != null) {
+if (mesh.connectedAtoms[0] < 0) continue;
 mesh.vs =  new Array (4);
 mesh.vc = 4;
-var c = mesh.connections;
+var c = mesh.connectedAtoms;
 for (var j = 0; j < 4; j++) mesh.vs[j] = (c[j] < 0 ? mesh.vs[j - 1] : this.vwr.ms.at[c[j]]);
 
 mesh.recalcAltVertices = true;
@@ -59,7 +59,7 @@ function (isExport) {
 this.drawType = this.dmesh.drawType;
 this.diameter = this.dmesh.diameter;
 this.width = this.dmesh.width;
-if (this.mesh.connections != null) this.getConnectionPoints ();
+if (this.mesh.connectedAtoms != null) this.getConnectionPoints ();
 if (this.mesh.lineData != null) {
 this.drawLineData (this.mesh.lineData);
 return;
@@ -74,13 +74,16 @@ this.pt1f.scale (1 / n);
 this.tm.transformPtScr (this.pt1f, this.pt1i);
 this.diameter = Clazz.floatToInt (this.vwr.tm.scaleToScreen (this.pt1i.z, Clazz.doubleToInt (Math.floor (this.width * 1000))));
 if (this.diameter == 0) this.diameter = 1;
-}if ((this.dmesh.isVector) && this.dmesh.haveXyPoints) {
+}if (this.dmesh.haveXyPoints) {
+if (this.dmesh.isVector) {
 var ptXY = 0;
 for (var i = 0; i < 2; i++) if (this.vertices[i].z == 3.4028235E38 || this.vertices[i].z == -3.4028235E38) ptXY += i + 1;
 
 if (--ptXY < 2) {
 this.renderXyArrow (ptXY);
 return;
+}} else if (this.drawType === J.shapespecial.Draw.EnumDrawType.POINT) {
+this.renderXyPoint ();
 }}var tension = 5;
 switch (this.drawType) {
 default:
@@ -237,6 +240,19 @@ this.tm.transformPtScr (pts[1], this.pt2i);
 this.drawEdge (-1, -2, true, pts[0], pts[1], this.pt1i, this.pt2i);
 }
 }, "JU.Lst");
+Clazz.defineMethod (c$, "renderXyPoint", 
+ function () {
+var f = (this.g3d.isAntialiased () ? 2 : 1);
+this.pt0.setT (this.vertices[0]);
+if (this.diameter == 0) this.diameter = Clazz.floatToInt (this.width);
+if (this.pt0.z == -3.4028235E38) {
+this.pt0.x *= this.vwr.tm.width / 100;
+this.pt0.y *= this.vwr.tm.height / 100;
+this.diameter = Clazz.floatToInt (this.diameter * this.vwr.getScreenDim () / 100);
+}this.diameter *= f;
+this.pt1i.set (Clazz.floatToInt (this.pt0.x * f), Clazz.floatToInt (this.vwr.tm.height - this.pt0.y * f), Clazz.floatToInt (this.vwr.tm.cameraDistance));
+this.g3d.fillSphereI (this.diameter, this.pt1i);
+});
 Clazz.defineMethod (c$, "renderXyArrow", 
  function (ptXY) {
 var ptXYZ = 1 - ptXY;
@@ -296,7 +312,7 @@ if (withShaft) this.g3d.fillCylinderScreen3I (4, this.diameter, this.s0f, this.s
 Clazz.defineMethod (c$, "getArrowScale", 
  function () {
 var fScale = (this.dmesh.isScaleSet ? this.dmesh.scale : 0);
-if (fScale == 0) fScale = this.vwr.getFloat (570425352) * (this.dmesh.connections == null ? 1 : 0.5);
+if (fScale == 0) fScale = this.vwr.getFloat (570425352) * (this.dmesh.connectedAtoms == null ? 1 : 0.5);
 if (fScale <= 0) fScale = 0.5;
 return fScale;
 });

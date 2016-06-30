@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JU");
-Clazz.load (["javajs.api.JSONEncodable"], "JU.T3", ["java.lang.Float"], function () {
+Clazz.load (["javajs.api.JSONEncodable"], "JU.T3", null, function () {
 c$ = Clazz.decorateAsClass (function () {
 this.x = 0;
 this.y = 0;
@@ -122,7 +122,7 @@ return (bits ^ (bits >> 32));
 });
 c$.floatToIntBits0 = Clazz.defineMethod (c$, "floatToIntBits0", 
 function (f) {
-return (f == 0 ? 0 : Float.floatToIntBits (f));
+return (f == 0 ? 0 : String.valueOf (f).hashCode ());
 }, "~N");
 Clazz.overrideMethod (c$, "equals", 
 function (t1) {

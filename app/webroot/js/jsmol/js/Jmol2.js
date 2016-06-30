@@ -33,7 +33,7 @@ Procedure:
 
 2) Rename your current Jmol.js file Jmol_old.js in case you want to undo this.
 
-3) Concatenate Jmol.min.js if you are not using jQuery (or Jmol.min.nojq.js if you are)
+3) Concatenate JSmol.min.js if you are not using jQuery (or JSmol.min.nojq.js if you are)
 	 with this file to form a new file (Jmol.min.js first, then Jmol2.js) and replace your
 	 current Jmol.js with it. Note that if you are using your own version of jQuery, it
 	 must be version 1.9 or higher, and note that 2.0 or higher will not work with MSIE

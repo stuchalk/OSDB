@@ -1,5 +1,5 @@
 Clazz.declarePackage ("javajs.img");
-Clazz.load (["javajs.img.ImageEncoder", "JU.AU"], ["javajs.img.DCT", "$.JpgEncoder", "$.JpegObj", "$.Huffman"], null, function () {
+Clazz.load (["javajs.img.ImageEncoder", "JU.AU"], ["javajs.img.DCT", "$.Huffman", "$.JpgEncoder", "$.JpegObj"], null, function () {
 c$ = Clazz.decorateAsClass (function () {
 this.jpegObj = null;
 this.huf = null;

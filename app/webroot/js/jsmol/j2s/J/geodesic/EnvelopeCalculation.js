@@ -183,7 +183,7 @@ var iDot = this.dotsConvexMaps[i].size ();
 if (iDot > dotCount) iDot = dotCount;
 while (--iDot >= 0) if (this.dotsConvexMaps[i].get (iDot)) {
 var pt =  new JU.P3 ();
-pt.scaleAdd2 (this.atomData.atomRadius[i], JU.Geodesic.getVertexVector (iDot), this.atomData.atomXyz[i]);
+pt.scaleAdd2 (this.atomData.atomRadius[i], JU.Geodesic.getVertexVector (iDot), this.atomData.xyz[i]);
 points[nPoints++] = pt;
 }
 }
@@ -206,7 +206,7 @@ return (this.mads != null ? (atomIndex >= this.mads.length ? 0 : this.mads[atomI
 Clazz.defineMethod (c$, "setAtomI", 
  function (indexI) {
 this.indexI = indexI;
-this.centerI = this.atomData.atomXyz[indexI];
+this.centerI = this.atomData.xyz[indexI];
 this.radiusI = this.atomData.atomRadius[indexI];
 this.radiiIP2 = this.radiusI + this.radiusP;
 this.radiiIP2 *= this.radiiIP2;
@@ -329,13 +329,13 @@ this.vwr.setIteratorForAtom (iter, this.indexI, this.radiusI + this.diameterP + 
 while (iter.hasNext ()) {
 var indexN = iter.next ();
 var neighborRadius = this.atomData.atomRadius[indexN];
-if (this.centerI.distance (this.atomData.atomXyz[indexN]) > this.radiusI + this.radiusP + this.radiusP + neighborRadius) continue;
+if (this.centerI.distance (this.atomData.xyz[indexN]) > this.radiusI + this.radiusP + this.radiusP + neighborRadius) continue;
 if (this.neighborCount == this.neighborIndices.length) {
 this.neighborIndices = JU.AU.doubleLengthI (this.neighborIndices);
 this.neighborCenters = JU.AU.doubleLength (this.neighborCenters);
 this.neighborPlusProbeRadii2 = JU.AU.doubleLengthF (this.neighborPlusProbeRadii2);
 this.neighborRadii2 = JU.AU.doubleLengthF (this.neighborRadii2);
-}this.neighborCenters[this.neighborCount] = this.atomData.atomXyz[indexN];
+}this.neighborCenters[this.neighborCount] = this.atomData.xyz[indexN];
 this.neighborIndices[this.neighborCount] = indexN;
 var r = neighborRadius + this.radiusP;
 this.neighborPlusProbeRadii2[this.neighborCount] = r * r;
@@ -350,7 +350,7 @@ this.dotsConvexMaps = JU.AU.deleteElements (this.dotsConvexMaps, firstAtomDelete
 this.dotsConvexMax = this.dotsConvexMaps.length;
 if (this.mads != null) this.mads = JU.AU.deleteElements (this.mads, firstAtomDeleted, nAtomsDeleted);
 this.atomData.atomRadius = JU.AU.deleteElements (this.atomData.atomRadius, firstAtomDeleted, nAtomsDeleted);
-this.atomData.atomXyz = JU.AU.deleteElements (this.atomData.atomXyz, firstAtomDeleted, nAtomsDeleted);
+this.atomData.xyz = JU.AU.deleteElements (this.atomData.xyz, firstAtomDeleted, nAtomsDeleted);
 this.atomData.ac -= nAtomsDeleted;
 this.ac = this.atomData.ac;
 }, "~N,~N");

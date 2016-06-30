@@ -13,12 +13,8 @@ Clazz.makeConstructor (c$,
 function () {
 Clazz.superConstructor (this, J.adapter.readers.xml.XmlArgusReader, []);
 });
-Clazz.overrideMethod (c$, "getDOMAttributes", 
-function () {
-return  Clazz.newArray (-1, ["order"]);
-});
 Clazz.overrideMethod (c$, "processStartElement", 
-function (localName) {
+function (localName, nodeName) {
 for (var i = J.adapter.readers.xml.XmlArgusReader.keepCharsList.length; --i >= 0; ) if (J.adapter.readers.xml.XmlArgusReader.keepCharsList[i].equals (localName)) {
 this.setKeepChars (true);
 break;
@@ -40,7 +36,7 @@ return;
 this.elementContext = 4;
 this.trans =  Clazz.newFloatArray (16, 0);
 return;
-}}, "~S");
+}}, "~S,~S");
 Clazz.defineMethod (c$, "parseBondToken", 
  function (str) {
 var floatOrder = this.parseFloatStr (str);
@@ -64,7 +60,8 @@ return 1;
 }, "~S");
 Clazz.overrideMethod (c$, "processEndElement", 
 function (localName) {
-if (this.chars != null && this.chars.length > 0 && this.chars.charAt (this.chars.length - 1) == '\n') this.chars = this.chars.substring (0, this.chars.length - 1);
+var n = this.chars.length ();
+if (n > 0 && this.chars.charAt (n - 1) == '\n') this.chars.setLength (n - 1);
 if ("molecule".equals (localName)) {
 this.elementContext = 0;
 return;
@@ -85,35 +82,35 @@ this.parent.setTransform (this.trans[0], this.trans[1], this.trans[2], this.tran
 return;
 }if (this.elementContext == 1) {
 if ("name".equals (localName)) {
-this.asc.setAtomSetName (this.chars);
+this.asc.setAtomSetName (this.chars.toString ());
 this.setKeepChars (false);
 }return;
 }if (this.atom != null && this.elementContext == 2) {
 if ("x".equals (localName)) {
-this.atom.x = this.parseFloatStr (this.chars);
+this.atom.x = this.parseFloatStr (this.chars.toString ());
 } else if ("y".equals (localName)) {
-this.atom.y = this.parseFloatStr (this.chars);
+this.atom.y = this.parseFloatStr (this.chars.toString ());
 return;
 } else if ("z".equals (localName)) {
-this.atom.z = this.parseFloatStr (this.chars);
+this.atom.z = this.parseFloatStr (this.chars.toString ());
 return;
 } else if ("atsym".equals (localName)) {
-this.atom.elementSymbol = this.chars;
+this.atom.elementSymbol = this.chars.toString ();
 return;
 } else if ("formalchg".equals (localName)) {
-this.atom.formalCharge = this.parseIntStr (this.chars);
+this.atom.formalCharge = this.parseIntStr (this.chars.toString ());
 } else if ("atomkey".equals (localName)) {
-this.atom.atomName = this.chars;
+this.atom.atomName = this.chars.toString ();
 }this.setKeepChars (false);
 return;
 }if (this.elementContext == 3) {
 if ("atomkey".equals (localName)) {
-if (this.atomName1 == null) this.atomName1 = this.chars;
- else this.atomName2 = this.chars;
+if (this.atomName1 == null) this.atomName1 = this.chars.toString ();
+ else this.atomName2 = this.chars.toString ();
 this.setKeepChars (false);
 }return;
 }if (this.elementContext == 4) {
-this.trans[this.ptTrans++] = this.parseFloatStr (this.chars);
+this.trans[this.ptTrans++] = this.parseFloatStr (this.chars.toString ());
 this.setKeepChars (false);
 return;
 }}, "~S");

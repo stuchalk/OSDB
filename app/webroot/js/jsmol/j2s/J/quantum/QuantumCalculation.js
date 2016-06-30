@@ -65,7 +65,8 @@ this.Y2 =  Clazz.newFloatArray (nY, 0);
 this.Z2 =  Clazz.newFloatArray (nZ, 0);
 }, "~N,~N,~N,~A");
 Clazz.defineMethod (c$, "setupCoordinates", 
-function (originXYZ, stepsXYZ, bsSelected, atomCoordAngstroms, points, renumber) {
+function (originXYZ, stepsXYZ, bsSelected, xyz, atoms, points, renumber) {
+if (atoms == null) atoms = xyz;
 if (points == null) {
 this.volume = 1;
 for (var i = 3; --i >= 0; ) {
@@ -74,13 +75,12 @@ this.stepBohr[i] = stepsXYZ[i] * this.unitFactor;
 this.volume *= this.stepBohr[i];
 }
 JU.Logger.info ("QuantumCalculation:\n origin = " + JU.Escape.eAF (originXYZ) + "\n steps = " + JU.Escape.eAF (stepsXYZ) + "\n origin(Bohr)= " + JU.Escape.eAF (this.originBohr) + "\n steps(Bohr)= " + JU.Escape.eAF (this.stepBohr) + "\n counts= " + this.nX + " " + this.nY + " " + this.nZ);
-}if (atomCoordAngstroms != null) {
-this.qmAtoms =  new Array (renumber ? bsSelected.cardinality () : atomCoordAngstroms.length);
+}this.qmAtoms =  new Array (renumber ? bsSelected.cardinality () : xyz.length);
 var isAll = (bsSelected == null);
 var i0 = (isAll ? this.qmAtoms.length - 1 : bsSelected.nextSetBit (0));
-for (var i = i0, j = 0; i >= 0; i = (isAll ? i - 1 : bsSelected.nextSetBit (i + 1))) this.qmAtoms[renumber ? j++ : i] =  new J.quantum.QMAtom (i, atomCoordAngstroms[i], this.X, this.Y, this.Z, this.X2, this.Y2, this.Z2, this.unitFactor);
+for (var i = i0, j = 0; i >= 0; i = (isAll ? i - 1 : bsSelected.nextSetBit (i + 1))) this.qmAtoms[renumber ? j++ : i] =  new J.quantum.QMAtom (i, xyz[i], atoms[i], this.X, this.Y, this.Z, this.X2, this.Y2, this.Z2, this.unitFactor);
 
-}}, "~A,~A,JU.BS,~A,~A,~B");
+}, "~A,~A,JU.BS,~A,~A,~A,~B");
 Clazz.defineMethod (c$, "processPt", 
 function (pt) {
 this.doDebug = false;

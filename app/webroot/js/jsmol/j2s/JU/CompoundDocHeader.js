@@ -32,7 +32,7 @@ Clazz.defineMethod (c$, "readData",
 function () {
 try {
 this.cd.readByteArray (this.magicNumbers, 0, 8);
-if (this.magicNumbers[0] != 0xD0 || this.magicNumbers[1] != 0xCF || this.magicNumbers[2] != 0x11 || this.magicNumbers[3] != 0xE0 || this.magicNumbers[4] != 0xA1 || this.magicNumbers[5] != 0xB1 || this.magicNumbers[6] != 0x1A || this.magicNumbers[7] != 0xE1) return false;
+if ((this.magicNumbers[0] & 0xFF) != 0xD0 || (this.magicNumbers[1] & 0xFF) != 0xCF || (this.magicNumbers[2] & 0xFF) != 0x11 || (this.magicNumbers[3] & 0xFF) != 0xE0 || (this.magicNumbers[4] & 0xFF) != 0xA1 || (this.magicNumbers[5] & 0xFF) != 0xB1 || (this.magicNumbers[6] & 0xFF) != 0x1A || (this.magicNumbers[7] & 0xFF) != 0xE1) return false;
 this.cd.readByteArray (this.uniqueID16, 0, 16);
 this.revNumber = this.cd.readByte ();
 this.cd.readByte ();

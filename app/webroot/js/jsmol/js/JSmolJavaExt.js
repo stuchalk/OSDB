@@ -7,6 +7,8 @@
 // (local scope) Clazz_xxx, allowing them to be further compressed using
 // Google Closure Compiler in that same ANT task.
 
+// BH 3/9/2016 6:25:08 PM at least allow Error() by itself to work as before (inchi.js uses this)
+// BH 12/21/2015 1:31:41 PM fixing String.instantialize for generic typed array
 // BH 9/19/2015 11:05:45 PM Float.isInfinite(), Float.isNaN(), Double.isInfinite(), Double.isNaN() all not implemented
 // BH 5/31/2015 5:53:04 PM Number.compareTo added
 // BH 5/21/2015 5:46:30 PM Number("0xFFFFFFFF") is not -1
@@ -60,7 +62,7 @@
 	Clazz._Loader.ignore([
 		"net.sf.j2s.ajax.HttpRequest",
 		sJU + ".MapEntry.Type",
-		//"java.net.UnknownServiceException",
+		"java.net.UnknownServiceException", // unnecessary for Jmol
 		"java.lang.Runtime",
 		"java.security.AccessController",
 		"java.security.PrivilegedExceptionAction",
@@ -1359,181 +1361,17 @@ sp.codePointAt || (sp.codePointAt = sp.charCodeAt); // Firefox only
 
 })(String.prototype);
 
-/*
-
-String.indexOf=function(source,sourceOffset,sourceCount,
-target,targetOffset,targetCount,fromIndex){
-if(fromIndex>=sourceCount){
-return(targetCount==0?sourceCount:-1);
-}
-if(fromIndex<0){
-fromIndex=0;
-}
-if(targetCount==0){
-return fromIndex;
-}
-
-var first=target[targetOffset];
-var i=sourceOffset+fromIndex;
-var max=sourceOffset+(sourceCount-targetCount);
-
-startSearchForFirstChar:
-while(true){
-
-while(i<=max&&source[i]!=first){
-i++;
-}
-if(i>max){
-return-1;
-}
-
-
-var j=i+1;
-var end=j+targetCount-1;
-var k=targetOffset+1;
-while(j<end){
-if(source[j++]!=target[k++]){
-i++;
-
-continue startSearchForFirstChar;
-}
-}
-return i-sourceOffset;
-}
-};
-
-
-
-String.instantialize=function(){
-if(arguments.length==0){
-return new String();
-}else if(arguments.length==1){
-var x=arguments[0];
-if(typeof x=="string"||x instanceof String){
-return new String(x);
-}else if(x instanceof Array){
-if(x.length>0&&typeof x[0]=="number"){
-var arr=new Array(x.length);
-for(var i=0;i<x.length;i++){
-arr[i]=String.fromCharCode(x[i]&0xff);
-}
-return Encoding.readUTF8(arr.join(''));
-}
-return x.join('');
-}else if(x.__CLASS_NAME__=="StringBuffer"
-||x.__CLASS_NAME__=="java.lang.StringBuffer"){
-var value=x.shareValue();
-var length=x.length();
-var valueCopy=new Array(length);
-for(var i=0;i<length;i++){
-valueCopy[i]=value[i];
-}
-return valueCopy.join('')
-
-}else{
-return""+x;
-}
-}else if(arguments.length==2){
-var x=arguments[0];
-var hibyte=arguments[1];
-if(typeof hibyte=="string"){
-return String.instantialize(x,0,x.length,hibyte);
-}else{
-return String.instantialize(x,hibyte,0,x.length);
-}
-}else if(arguments.length==3){
-var bytes=arguments[0];
-var offset=arguments[1];
-var length=arguments[2];
-if(arguments[2]instanceof Array){
-bytes=arguments[2];
-offset=arguments[0];
-length=arguments[1];
-}
-var arr=new Array(length);
-if(offset<0||length+offset>bytes.length){
-throw new IndexOutOfBoundsException();
-}
-if(length>0){
-var isChar=(bytes[offset].length!=null);
-if(isChar){
-for(var i=0;i<length;i++){
-arr[i]=bytes[offset+i];
-}
-}else{
-for(var i=0;i<length;i++){
-arr[i]=String.fromCharCode(bytes[offset+i]);
-}
-}
-}
-return arr.join('');
-}else if(arguments.length==4){
-var bytes=arguments[0];
-var y=arguments[3];
-if(typeof y=="string"||y instanceof String){
-var offset=arguments[1];
-var length=arguments[2];
-var arr=new Array(length);
-for(var i=0;i<length;i++){
-arr[i]=bytes[offset+i];
-if(typeof arr[i]=="number"){
-arr[i]=String.fromCharCode(arr[i]&0xff);
-}
-}
-var cs=y.toLowerCase();
-if(cs=="utf-8"||cs=="utf8"){
-return Encoding.readUTF8(arr.join(''));
-}else{
-return arr.join('');
-}
-}else{
-var count=arguments[3];
-var offset=arguments[2];
-var hibyte=arguments[1];
-var value=new Array(count);
-if(hibyte==0){
-for(var i=count;i-->0;){
-value[i]=String.fromCharCode(bytes[i+offset]&0xff);
-}
-}else{
-hibyte<<=8;
-for(var i=count;i-->0;){
-value[i]=String.fromCharCode(hibyte|(bytes[i+offset]&0xff));
-}
-}
-return value.join('');
-}
-}else{
-var s="";
-for(var i=0;i<arguments.length;i++){
-s+=arguments[i];
-}
-return s;
-}
-};
-
-
-*/
-
-
 String.instantialize=function(){
 switch (arguments.length) {
 case 0:
 	return new String();
 case 1:
 	var x=arguments[0];
+  if (x.BYTES_PER_ELEMENT || x instanceof Array){
+		return (x.length == 0 ? "" : typeof x[0]=="number" ? Encoding.readUTF8(String.fromCharCode.apply(null, x)) : x.join(''));
+  }
 	if(typeof x=="string"||x instanceof String){
 		return new String(x);
-	}
-	if(x instanceof Array || x instanceof Int32Array){
-		if(x.length == 0)
-			return "";
-		if(typeof x[0]!="number")
-			return x.join('');
-		var arr=new Array(x.length);
-		for(var i=0;i<x.length;i++)
-			arr[i]=String.fromCharCode(x[i]&0xff);
-		return Encoding.readUTF8(arr.join(''));
 	}
 	if(x.__CLASS_NAME__=="StringBuffer"||x.__CLASS_NAME__=="java.lang.StringBuffer"){
 		var value=x.shareValue();
@@ -2079,7 +1917,26 @@ buf.append(lineNum);
 }}return buf.toString();
 });
 TypeError.prototype.getMessage || (TypeError.prototype.getMessage = function(){ return (this.message || this.toString()) + (this.getStackTrace ? this.getStackTrace() : Clazz.getStackTrace())});
-c$=Clazz.declareType(java.lang,"Error",Throwable);
+
+
+Clazz.Error = Error;
+
+Clazz.declareTypeError = function (prefix, name, clazzParent, interfacez, 
+		parentClazzInstance, _declareType) {
+	var f = function () {
+		Clazz.instantialize (this, arguments);
+    return Clazz.Error();
+	};
+	return Clazz.decorateAsClass (f, prefix, name, clazzParent, interfacez, 
+			parentClazzInstance);
+};
+
+// at least allow Error() by itself to work as before
+Clazz._Error || (Clazz._Error = Error);
+Clazz.decorateAsClass (function (){Clazz.instantialize(this, arguments);return Clazz._Error();}, java.lang, "Error", Throwable);
+
+//c$=Clazz.declareTypeError(java.lang,"Error",Throwable);
+
 
 c$=Clazz.declareType(java.lang,"LinkageError",Error);
 

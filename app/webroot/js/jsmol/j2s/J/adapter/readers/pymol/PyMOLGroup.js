@@ -8,6 +8,7 @@ this.object = null;
 this.visible = true;
 this.occluded = false;
 this.bsAtoms = null;
+this.firstAtom = 0;
 this.type = 0;
 this.parent = null;
 Clazz.instantialize (this, arguments);
@@ -35,7 +36,6 @@ Clazz.defineMethod (c$, "addGroupAtoms",
 function (bs) {
 this.bsAtoms.or (bs);
 if (this.parent != null) this.parent.addGroupAtoms (this.bsAtoms);
-return this.bsAtoms;
 }, "JU.BS");
 Clazz.overrideMethod (c$, "toString", 
 function () {

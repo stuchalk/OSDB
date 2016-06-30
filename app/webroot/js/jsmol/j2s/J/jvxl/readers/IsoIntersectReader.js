@@ -57,7 +57,7 @@ var bsSelected =  new JU.BS ();
 bsSelected.or (bsA);
 bsSelected.or (bsB);
 this.doUseIterator = true;
-this.getAtoms (bsSelected, this.doAddHydrogens, true, true, false, false, false, NaN);
+this.getAtoms (bsSelected, this.doAddHydrogens, true, true, false, false, false, NaN, null);
 for (var i = bsA.nextSetBit (0); i >= 0; i = bsA.nextSetBit (i + 1)) this.myBsA.set (this.myIndex[i]);
 
 for (var i = bsB.nextSetBit (0); i >= 0; i = bsB.nextSetBit (i + 1)) this.myBsB.set (this.myIndex[i]);
@@ -128,7 +128,7 @@ Clazz.defineMethod (c$, "getValueAtPoint2",
  function (pt, bs) {
 var value = 3.4028235E38;
 for (var iAtom = bs.nextSetBit (0); iAtom >= 0; iAtom = bs.nextSetBit (iAtom + 1)) {
-var r = pt.distance (this.atomXyz[iAtom]) - this.atomRadius[iAtom];
+var r = pt.distance (this.atomXyzTruncated[iAtom]) - this.atomRadius[iAtom];
 if (r < value) value = r;
 }
 return (value == 3.4028235E38 ? NaN : value);

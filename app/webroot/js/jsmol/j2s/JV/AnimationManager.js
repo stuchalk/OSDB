@@ -106,7 +106,7 @@ return this.vwr.getModelNumberDotted (i);
 }, "~N");
 Clazz.defineMethod (c$, "setDisplay", 
 function (bs) {
-this.bsDisplay = (bs == null || bs.cardinality () == 0 ? null : JU.BSUtil.copy (bs));
+this.bsDisplay = (bs == null || bs.isEmpty () ? null : JU.BSUtil.copy (bs));
 }, "JU.BS");
 Clazz.defineMethod (c$, "setMorphCount", 
 function (n) {
@@ -308,20 +308,27 @@ this.vwr.ms.setTrajectory (this.cmi);
 this.vwr.tm.setFrameOffset (this.cmi);
 if (this.cmi == -1 && clearBackgroundModel) this.setBackgroundModelIndex (-1);
 this.vwr.setTainted (true);
-this.setFrameRangeVisible ();
+var nDisplay = this.setFrameRangeVisible ();
 this.vwr.setStatusFrameChanged (false, false);
-if (this.vwr.ms != null && !this.vwr.g.selectAllModels) this.vwr.slm.setSelectionSubset (this.vwr.getModelUndeletedAtomsBitSet (this.cmi));
+if (!this.vwr.g.selectAllModels) this.setSelectAllSubset (nDisplay < 2);
+}, "~B");
+Clazz.defineMethod (c$, "setSelectAllSubset", 
+function (justOne) {
+if (this.vwr.ms != null) this.vwr.slm.setSelectionSubset (justOne ? this.vwr.ms.getModelAtomBitSetIncludingDeleted (this.cmi, true) : this.vwr.ms.getModelAtomBitSetIncludingDeletedBs (this.bsVisibleModels));
 }, "~B");
 Clazz.defineMethod (c$, "setFrameRangeVisible", 
  function () {
-this.bsVisibleModels.clearAll ();
-if (this.backgroundModelIndex >= 0) this.bsVisibleModels.set (this.backgroundModelIndex);
-if (this.cmi >= 0) {
-this.bsVisibleModels.set (this.cmi);
-return;
-}if (this.frameStep == 0) return;
 var nDisplayed = 0;
+this.bsVisibleModels.clearAll ();
+if (this.backgroundModelIndex >= 0) {
+this.bsVisibleModels.set (this.backgroundModelIndex);
+nDisplayed = 1;
+}if (this.cmi >= 0) {
+this.bsVisibleModels.set (this.cmi);
+return ++nDisplayed;
+}if (this.frameStep == 0) return nDisplayed;
 var frameDisplayed = 0;
+nDisplayed = 0;
 for (var iframe = this.firstFrameIndex; iframe != this.lastFrameIndex; iframe += this.frameStep) {
 var i = this.modelIndexForFrame (iframe);
 if (!this.vwr.ms.isJmolDataFrameForModel (i)) {
@@ -335,6 +342,7 @@ this.bsVisibleModels.set (i);
 if (nDisplayed == 0) this.firstFrameIndex = this.lastFrameIndex;
 nDisplayed = 0;
 }if (nDisplayed == 1 && this.cmi < 0) this.setFrame (frameDisplayed);
+return nDisplayed;
 });
 Clazz.defineMethod (c$, "animation", 
  function (TF) {

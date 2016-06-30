@@ -25,7 +25,7 @@ if (JU.Logger.debugging) JU.Logger.debug ("Process " + this.process.processName 
 if (Clazz.exceptionOf (e$$, Exception)) {
 var e = e$$;
 {
-if (this.parallelProcessor.getTok () != 364558) e.printStackTrace ();
+e.printStackTrace ();
 }
 } else if (Clazz.exceptionOf (e$$, Error)) {
 var er = e$$;

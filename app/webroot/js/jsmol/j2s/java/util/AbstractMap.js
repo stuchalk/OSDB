@@ -100,10 +100,16 @@ throw new UnsupportedOperationException();
 },"~O,~O");
 Clazz.overrideMethod(c$,"putAll",
 function(map){
+  this.putAllAM(map);
+},"java.util.Map");
+
+Clazz.overrideMethod(c$,"putAllAM",
+function(map){
 for(var entry,$entry=map.entrySet().iterator();$entry.hasNext()&&((entry=$entry.next())||true);){
 this.put(entry.getKey(),entry.getValue());
 }
 },"java.util.Map");
+
 Clazz.overrideMethod(c$,"remove",
 function(key){
 var it=this.entrySet().iterator();
@@ -161,11 +167,17 @@ this.valuesCollection=((Clazz.isClassDefined("java.util.AbstractMap$2")?0:java.u
 });
 Clazz.defineMethod(c$,"clone",
 function(){
-var result=Clazz.superCall(this,java.util.AbstractMap,"clone",[]);
+return  this.cloneAM();
+});
+
+Clazz.defineMethod(c$,"cloneAM",
+function(){
+var result = Clazz.clone(this);
 result.$keySet=null;
 result.valuesCollection=null;
 return result;
 });
+
 c$.$AbstractMap$1$=function(){
 Clazz.pu$h(self.c$);
 c$=Clazz.declareAnonymous(java.util,"AbstractMap$1",java.util.AbstractSet);

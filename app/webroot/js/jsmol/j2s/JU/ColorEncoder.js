@@ -240,7 +240,7 @@ colix = JU.C.getColixTranslucent3 (colix, true, f);
 }return colix;
 }, "~N,~N,~N,~N,~B");
 Clazz.defineMethod (c$, "getPaletteColorCount", 
-function (palette) {
+ function (palette) {
 switch (palette) {
 case -1:
 return this.thisScale.length;
@@ -260,7 +260,7 @@ case -13:
 case -14:
 return this.ce.userScale.length;
 case 2:
-return this.argbsCpk.length;
+return this.ce.argbsCpk.length;
 case 3:
 return JU.ColorEncoder.getRasmolScale ().length;
 case 4:

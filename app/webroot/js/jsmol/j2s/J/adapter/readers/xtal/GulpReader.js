@@ -3,7 +3,7 @@ Clazz.load (["J.adapter.smarter.AtomSetCollectionReader"], "J.adapter.readers.xt
 c$ = Clazz.decorateAsClass (function () {
 this.isSlab = false;
 this.isPolymer = false;
-this.isMolecular = false;
+this.$isMolecular = false;
 this.isPrimitive = false;
 this.sep = "-------";
 this.coordinatesArePrimitive = false;
@@ -45,7 +45,7 @@ return true;
 }if (this.line.contains ("Monopole - monopole (total)")) {
 this.readEnergy ();
 return true;
-}if (this.line.contains ("Fractional coordinates of asymmetric unit :") || (this.bTest = this.line.contains ("Final asymmetric unit coordinates")) || (this.bTest = this.line.contains ("Final fractional coordinates ")) || this.line.contains ("Mixed fractional/Cartesian coordinates") || this.line.contains ("Cartesian coordinates of cluster ") || this.line.contains ("Final cartesian coordinates of atoms :") && this.isMolecular) {
+}if (this.line.contains ("Fractional coordinates of asymmetric unit :") || (this.bTest = this.line.contains ("Final asymmetric unit coordinates")) || (this.bTest = this.line.contains ("Final fractional coordinates ")) || this.line.contains ("Mixed fractional/Cartesian coordinates") || this.line.contains ("Cartesian coordinates of cluster ") || this.line.contains ("Final cartesian coordinates of atoms :") && this.$isMolecular) {
 if (this.doGetModel (++this.modelNumber, null)) this.readAtomicPos (!this.bTest);
 return true;
 }if (this.line.contains ("Species output for all configurations")) {
@@ -63,7 +63,7 @@ this.discardLinesUntilContains ("Dimensionality");
 var tokens = this.getTokens ();
 switch (this.parseIntStr (tokens[2])) {
 case 0:
-this.isMolecular = true;
+this.$isMolecular = true;
 this.isPrimitive = false;
 return false;
 case 1:

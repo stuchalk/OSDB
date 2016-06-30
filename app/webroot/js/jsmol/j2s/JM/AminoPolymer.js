@@ -5,13 +5,13 @@ this.structureList = null;
 Clazz.instantialize (this, arguments);
 }, JM, "AminoPolymer", JM.AlphaPolymer);
 Clazz.makeConstructor (c$, 
-function (monomers) {
-Clazz.superConstructor (this, JM.AminoPolymer, [monomers]);
+function (monomers, pt0) {
+Clazz.superConstructor (this, JM.AminoPolymer, [monomers, pt0]);
 this.type = 1;
 for (var i = 0; i < this.monomerCount; ++i) if (!(monomers[i]).hasOAtom ()) return;
 
 this.hasWingPoints = true;
-}, "~A");
+}, "~A,~N");
 Clazz.overrideMethod (c$, "resetHydrogenPoints", 
 function () {
 var ps;

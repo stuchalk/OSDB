@@ -2,7 +2,6 @@ Clazz.declarePackage ("J.jvxl.readers");
 Clazz.load (["J.jvxl.readers.AtomDataReader"], "J.jvxl.readers.IsoMOReader", ["java.lang.Float", "java.util.Random", "JU.AU", "$.Measure", "$.P3", "$.PT", "$.V3", "J.api.Interface", "J.quantum.QS", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.random = null;
-this.vDist = null;
 this.points = null;
 this.vTemp = null;
 this.q = null;
@@ -13,6 +12,7 @@ this.dfCoefMaps = null;
 this.linearCombination = null;
 this.coefs = null;
 this.isElectronDensityCalc = false;
+this.vDist = null;
 this.qSetupDone = false;
 Clazz.instantialize (this, arguments);
 }, J.jvxl.readers, "IsoMOReader", J.jvxl.readers.AtomDataReader);
@@ -41,11 +41,15 @@ var haveVolumeData = this.params.moData.containsKey ("haveVolumeData");
 if (haveVolumeData && mo != null) this.params.volumeData = mo.get ("volumeData");
 this.setup2 ();
 this.doAddHydrogens = false;
-this.getAtoms (this.params.bsSelected, this.doAddHydrogens, !this.isNci, this.isNci, this.isNci, false, false, this.params.qm_marginAngstroms);
-if (this.isNci) this.setHeader ("NCI (promolecular)", "see NCIPLOT: A Program for Plotting Noncovalent Interaction Regions, Julia Contreras-Garcia, et al., J. of Chemical Theory and Computation, 2011, 7, 625-632");
- else this.setHeader ("MO", "calculation type: " + this.params.moData.get ("calculationType"));
-this.setRanges (this.params.qm_ptsPerAngstrom, this.params.qm_gridMax, 0);
-var className = (this.isNci ? "quantum.NciCalculation" : "quantum.MOCalculation");
+this.getAtoms (this.params.bsSelected, this.doAddHydrogens, !this.isNci, this.isNci, this.isNci, false, false, this.params.qm_marginAngstroms, (this.isNci ? null : this.params.modelInvRotation));
+var className;
+if (this.isNci) {
+className = "quantum.NciCalculation";
+this.setHeader ("NCI (promolecular)", "see NCIPLOT: A Program for Plotting Noncovalent Interaction Regions, Julia Contreras-Garcia, et al., J. of Chemical Theory and Computation, 2011, 7, 625-632");
+} else {
+className = "quantum.MOCalculation";
+this.setHeader ("MO", "calculation type: " + this.params.moData.get ("calculationType"));
+}this.setRanges (this.params.qm_ptsPerAngstrom, this.params.qm_gridMax, 0);
 if (haveVolumeData) {
 for (var i = this.params.title.length; --i >= 0; ) this.fixTitleLine (i, mo);
 
@@ -53,7 +57,8 @@ for (var i = this.params.title.length; --i >= 0; ) this.fixTitleLine (i, mo);
 this.q = J.api.Interface.getOption (className, this.sg.atomDataServer, "file");
 if (this.isNci) {
 this.qpc = this.q;
-} else if (this.linearCombination == null) {
+} else {
+if (this.linearCombination == null) {
 for (var i = this.params.title.length; --i >= 0; ) this.fixTitleLine (i, mo);
 
 this.coef = mo.get ("coefficients");
@@ -67,7 +72,7 @@ this.coefs[j - 1] = this.mos.get (j - 1).get ("coefficients");
 }
 for (var i = this.params.title.length; --i >= 0; ) this.fixTitleLine (i, null);
 
-}this.isElectronDensityCalc = (this.coef == null && this.linearCombination == null && !this.isNci);
+}}this.isElectronDensityCalc = (this.coef == null && this.linearCombination == null && !this.isNci);
 }this.volumeData.sr = null;
 if (isMapData && !this.isElectronDensityCalc && !haveVolumeData) {
 this.volumeData.doIterate = false;
@@ -93,12 +98,11 @@ var line = this.params.title[iLine];
 if (line.indexOf (" MO ") >= 0) {
 var nboType = this.params.moData.get ("nboType");
 if (nboType != null) line = JU.PT.rep (line, " MO ", " " + nboType + " ");
-}if (line.indexOf ("%M") > 0) line = this.params.title[iLine] = JU.PT.formatStringS (line, "M", this.atomData.modelName);
-if (line.indexOf ("%F") > 0) line = this.params.title[iLine] = JU.PT.formatStringS (line, "F", this.atomData.fileName);
+}if (line.indexOf ("%M") >= 0) line = this.params.title[iLine] = JU.PT.formatStringS (line, "M", this.atomData.modelName);
+if (line.indexOf ("%F") >= 0) line = this.params.title[iLine] = JU.PT.formatStringS (line, "F", JU.PT.rep (this.params.fileName, "DROP_", ""));
 var pt = line.indexOf ("%");
 if (line.length == 0 || pt < 0) return;
 var rep = 0;
-if (line.indexOf ("%F") >= 0) line = JU.PT.formatStringS (line, "F", this.params.fileName);
 if (line.indexOf ("%I") >= 0) line = JU.PT.formatStringS (line, "I", this.params.qm_moLinearCombination == null ? "" + this.params.qm_moNumber : J.quantum.QS.getMOString (this.params.qm_moLinearCombination));
 if (line.indexOf ("%N") >= 0) line = JU.PT.formatStringS (line, "N", "" + this.params.qmOrbitalCount);
 var energy = null;
@@ -207,7 +211,7 @@ this.q.createCube ();
 Clazz.overrideMethod (c$, "getPlane", 
 function (x) {
 if (!this.qSetupDone) this.setupCalculation ();
-return this.getPlane2 (x);
+return this.getPlaneSR (x);
 }, "~N");
 Clazz.defineMethod (c$, "setupCalculation", 
  function () {
@@ -216,11 +220,11 @@ switch (this.params.qmOrbitalType) {
 case 5:
 break;
 case 1:
-return this.q.setupCalculation (this.volumeData, this.bsMySelected, null, null, this.params.moData.get ("calculationType"), this.atomData.atomXyz, this.atomData.firstAtomIndex, this.params.moData.get ("shells"), this.params.moData.get ("gaussians"), this.dfCoefMaps, null, this.coef, this.linearCombination, this.params.isSquaredLinear, this.coefs, null, this.params.moData.get ("isNormalized") == null, this.points, this.params.parameters, this.params.testFlags);
+return (this.q).setupCalculation (this.volumeData, this.bsMySelected, this.params.moData.get ("calculationType"), this.atomData.xyz, this.atomData.atoms, this.atomData.firstAtomIndex, this.params.moData.get ("shells"), this.params.moData.get ("gaussians"), this.dfCoefMaps, null, this.coef, this.linearCombination, this.params.isSquaredLinear, this.coefs, this.params.moData.get ("isNormalized") == null, this.points);
 case 2:
-return this.q.setupCalculation (this.volumeData, this.bsMySelected, null, null, this.params.moData.get ("calculationType"), this.atomData.atomXyz, this.atomData.firstAtomIndex, null, null, null, this.params.moData.get ("slaters"), this.coef, this.linearCombination, this.params.isSquaredLinear, this.coefs, null, true, this.points, this.params.parameters, this.params.testFlags);
+return (this.q).setupCalculation (this.volumeData, this.bsMySelected, this.params.moData.get ("calculationType"), this.atomData.xyz, this.atomData.atoms, this.atomData.firstAtomIndex, null, null, null, this.params.moData.get ("slaters"), this.coef, this.linearCombination, this.params.isSquaredLinear, this.coefs, true, this.points);
 case 3:
-return this.q.setupCalculation (this.volumeData, this.bsMySelected, this.params.bsSolvent, this.atomData.bsMolecules, null, this.atomData.atomXyz, this.atomData.firstAtomIndex, null, null, null, null, null, null, this.params.isSquaredLinear, null, null, true, this.points, this.params.parameters, this.params.testFlags);
+return (this.q).setupCalculation (this.volumeData, this.bsMySelected, this.params.bsSolvent, this.atomData.bsMolecules, this.atomData.atoms, this.atomData.firstAtomIndex, true, this.points, this.params.parameters, this.params.testFlags);
 }
 return false;
 });

@@ -48,10 +48,6 @@ function (data) {
 var s = "" + data;
 return (s.indexOf ("&") < 0 && s.indexOf ("<") < 0 ? (s.startsWith ("\n") ? "" : "\n") + s : "<![CDATA[" + JU.PT.rep (s, "]]>", "]]]]><![CDATA[>") + "]]>");
 }, "~O");
-c$.unwrapCdata = Clazz.defineMethod (c$, "unwrapCdata", 
-function (s) {
-return (s.startsWith ("<![CDATA[") && s.endsWith ("]]>") ? JU.PT.rep (s.substring (9, s.length - 3), "]]]]><![CDATA[>", "]]>") : s);
-}, "~S");
 c$.appendTagObj = Clazz.defineMethod (c$, "appendTagObj", 
 function (sb, name, attributes, data) {
 JU.XmlUtil.appendTagAll (sb, name, attributes, data, false, true);

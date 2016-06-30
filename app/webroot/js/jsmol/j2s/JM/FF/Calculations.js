@@ -250,20 +250,21 @@ this.appendLogData ("---------------------\n");
 });
 Clazz.defineMethod (c$, "getAtomList", 
 function (title) {
-var trailer = "-----------------------------------------------------------------------------------------------\n";
+var trailer = "--------------------------------------------------------------------------------------------------\n";
 var sb =  new JU.SB ();
-sb.append ("\n" + title + "\n\n" + " ATOM    X        Y        Z    TYPE     GRADX    GRADY    GRADZ  " + "---------BONDED ATOMS--------\n" + trailer);
+sb.append ("\n" + title + "\n\n" + " ATOM    X        Y        Z    TYPE       GRADX    GRADY    GRADZ  " + "---------BONDED ATOMS--------\n" + trailer);
 for (var i = 0; i < this.ac; i++) {
 var atom = this.minAtoms[i];
 var others = atom.getBondedAtomIndexes ();
-var iVal =  Clazz.newIntArray (others.length + 1, 0);
+var iVal =  Clazz.newIntArray (others.length + 2, 0);
 iVal[0] = atom.atom.getAtomNumber ();
+iVal[1] = (atom.ffAtomType == null ? 0 : atom.ffAtomType.mmType);
 var s = "   ";
 for (var j = 0; j < others.length; j++) {
 s += " %3d";
-iVal[j + 1] = this.minAtoms[others[j]].atom.getAtomNumber ();
+iVal[j + 2] = this.minAtoms[others[j]].atom.getAtomNumber ();
 }
-sb.append (JU.PT.sprintf ("%3d %8.3f %8.3f %8.3f  %-5s %8.3f %8.3f %8.3f" + s + "\n", "sFI",  Clazz.newArray (-1, [atom.sType,  Clazz.newFloatArray (-1, [atom.coord[0], atom.coord[1], atom.coord[2], atom.force[0], atom.force[1], atom.force[2]]), iVal])));
+sb.append (JU.PT.sprintf ("%3d %8.3f %8.3f %8.3f %-5s %2d %8.3f %8.3f %8.3f" + s + "\n", "sFI",  Clazz.newArray (-1, [atom.sType,  Clazz.newFloatArray (-1, [atom.coord[0], atom.coord[1], atom.coord[2], atom.force[0], atom.force[1], atom.force[2]]), iVal])));
 }
 sb.append (trailer + "\n\n");
 return sb.toString ();

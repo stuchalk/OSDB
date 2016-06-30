@@ -283,7 +283,7 @@ Clazz.defineMethod (c$, "findRecord",
  function (tag) {
 if (this.line == null) this.readLine ();
 if (this.line.indexOf ("<" + tag) < 0) this.line = this.loader.discardLinesUntilContains2 ("<" + tag, "##");
-return (this.line.indexOf ("<" + tag) >= 0);
+return (this.line != null && this.line.indexOf ("<" + tag) >= 0);
 }, "~S");
 Clazz.defineMethod (c$, "readLine", 
  function () {

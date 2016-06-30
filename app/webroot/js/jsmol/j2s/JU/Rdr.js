@@ -42,11 +42,11 @@ return  String.instantialize (bytes);
 }, "~A");
 c$.getUTFEncoding = Clazz.defineMethod (c$, "getUTFEncoding", 
  function (bytes) {
-if (bytes.length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF) return JU.Encoding.UTF8;
-if (bytes.length >= 4 && bytes[0] == 0 && bytes[1] == 0 && bytes[2] == 0xFE && bytes[3] == 0xFF) return JU.Encoding.UTF_32BE;
-if (bytes.length >= 4 && bytes[0] == 0xFF && bytes[1] == 0xFE && bytes[2] == 0 && bytes[3] == 0) return JU.Encoding.UTF_32LE;
-if (bytes.length >= 2 && bytes[0] == 0xFF && bytes[1] == 0xFE) return JU.Encoding.UTF_16LE;
-if (bytes.length >= 2 && bytes[0] == 0xFE && bytes[1] == 0xFF) return JU.Encoding.UTF_16BE;
+if (bytes.length >= 3 && (bytes[0] & 0xFF) == 0xEF && (bytes[1] & 0xFF) == 0xBB && (bytes[2] & 0xFF) == 0xBF) return JU.Encoding.UTF8;
+if (bytes.length >= 4 && (bytes[0] & 0xFF) == 0 && (bytes[1] & 0xFF) == 0 && (bytes[2] & 0xFF) == 0xFE && (bytes[3] & 0xFF) == 0xFF) return JU.Encoding.UTF_32BE;
+if (bytes.length >= 4 && (bytes[0] & 0xFF) == 0xFF && (bytes[1] & 0xFF) == 0xFE && (bytes[2] & 0xFF) == 0 && (bytes[3] & 0xFF) == 0) return JU.Encoding.UTF_32LE;
+if (bytes.length >= 2 && (bytes[0] & 0xFF) == 0xFF && (bytes[1] & 0xFF) == 0xFE) return JU.Encoding.UTF_16LE;
+if (bytes.length >= 2 && (bytes[0] & 0xFF) == 0xFE && (bytes[1] & 0xFF) == 0xFF) return JU.Encoding.UTF_16BE;
 return JU.Encoding.NONE;
 }, "~A");
 c$.getUTFEncodingForStream = Clazz.defineMethod (c$, "getUTFEncodingForStream", 
@@ -78,7 +78,7 @@ return JU.Rdr.isCompoundDocumentB (JU.Rdr.getMagic (is, 8));
 }, "java.io.InputStream");
 c$.isCompoundDocumentB = Clazz.defineMethod (c$, "isCompoundDocumentB", 
 function (bytes) {
-return (bytes.length >= 8 && bytes[0] == 0xD0 && bytes[1] == 0xCF && bytes[2] == 0x11 && bytes[3] == 0xE0 && bytes[4] == 0xA1 && bytes[5] == 0xB1 && bytes[6] == 0x1A && bytes[7] == 0xE1);
+return (bytes.length >= 8 && (bytes[0] & 0xFF) == 0xD0 && (bytes[1] & 0xFF) == 0xCF && (bytes[2] & 0xFF) == 0x11 && (bytes[3] & 0xFF) == 0xE0 && (bytes[4] & 0xFF) == 0xA1 && (bytes[5] & 0xFF) == 0xB1 && (bytes[6] & 0xFF) == 0x1A && (bytes[7] & 0xFF) == 0xE1);
 }, "~A");
 c$.isGzipS = Clazz.defineMethod (c$, "isGzipS", 
 function (is) {
@@ -86,7 +86,7 @@ return JU.Rdr.isGzipB (JU.Rdr.getMagic (is, 2));
 }, "java.io.InputStream");
 c$.isGzipB = Clazz.defineMethod (c$, "isGzipB", 
 function (bytes) {
-return (bytes != null && bytes.length >= 2 && bytes[0] == 0x1F && bytes[1] == 0x8B);
+return (bytes != null && bytes.length >= 2 && (bytes[0] & 0xFF) == 0x1F && (bytes[1] & 0xFF) == 0x8B);
 }, "~A");
 c$.isPickleS = Clazz.defineMethod (c$, "isPickleS", 
 function (is) {
@@ -94,7 +94,15 @@ return JU.Rdr.isPickleB (JU.Rdr.getMagic (is, 2));
 }, "java.io.InputStream");
 c$.isPickleB = Clazz.defineMethod (c$, "isPickleB", 
 function (bytes) {
-return (bytes != null && bytes.length >= 2 && bytes[0] == 0x7D && bytes[1] == 0x71);
+return (bytes != null && bytes.length >= 2 && (bytes[0] & 0xFF) == 0x7D && (bytes[1] & 0xFF) == 0x71);
+}, "~A");
+c$.isMessagePackS = Clazz.defineMethod (c$, "isMessagePackS", 
+function (is) {
+return JU.Rdr.isMessagePackB (JU.Rdr.getMagic (is, 1));
+}, "java.io.InputStream");
+c$.isMessagePackB = Clazz.defineMethod (c$, "isMessagePackB", 
+function (bytes) {
+return (bytes != null && bytes.length >= 1 && (bytes[0] & 0xFF) == 0xDE);
 }, "~A");
 c$.isPngZipStream = Clazz.defineMethod (c$, "isPngZipStream", 
 function (is) {
@@ -113,7 +121,7 @@ function (bytes) {
 return (bytes.length >= 4 && bytes[0] == 0x50 && bytes[1] == 0x4B && bytes[2] == 0x03 && bytes[3] == 0x04);
 }, "~A");
 c$.getMagic = Clazz.defineMethod (c$, "getMagic", 
- function (is, n) {
+function (is, n) {
 var abMagic =  Clazz.newByteArray (n, 0);
 {
 is.resetStream();

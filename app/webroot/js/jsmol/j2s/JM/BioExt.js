@@ -1,11 +1,24 @@
 Clazz.declarePackage ("JM");
 Clazz.load (null, "JM.BioExt", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.Lst", "$.P3", "$.PT", "$.Quat", "JM.AminoMonomer", "JU.BSUtil", "$.Escape", "$.Logger", "JV.Viewer"], function () {
-c$ = Clazz.declareType (JM, "BioExt");
+c$ = Clazz.decorateAsClass (function () {
+this.vwr = null;
+this.ms = null;
+Clazz.instantialize (this, arguments);
+}, JM, "BioExt");
+Clazz.makeConstructor (c$, 
+function () {
+});
+Clazz.defineMethod (c$, "set", 
+function (vwr, ms) {
+this.vwr = vwr;
+this.ms = ms;
+return this;
+}, "JV.Viewer,JM.ModelSet");
 Clazz.defineMethod (c$, "getAllPolymerInfo", 
-function (ms, bs, fullInfo) {
+function (bs, fullInfo) {
 var modelVector =  new JU.Lst ();
-var modelCount = ms.mc;
-var models = ms.am;
+var modelCount = this.ms.mc;
+var models = this.ms.am;
 for (var i = 0; i < modelCount; ++i) if (models[i].isBioModel) {
 var m = models[i];
 var modelInfo =  new java.util.Hashtable ();
@@ -52,21 +65,21 @@ modelInfo.put ("polymers", info);
 modelVector.addLast (modelInfo);
 }}
 fullInfo.put ("models", modelVector);
-}, "JM.ModelSet,JU.BS,java.util.Map");
+}, "JU.BS,java.util.Map");
 Clazz.defineMethod (c$, "calculateStraightnessAll", 
-function (vwr, ms) {
-var qtype = vwr.getQuaternionFrame ();
-var mStep = vwr.getInt (553648146);
-for (var i = ms.mc; --i >= 0; ) if (ms.am[i].isBioModel) {
-var m = ms.am[i];
+function () {
+var qtype = this.vwr.getQuaternionFrame ();
+var mStep = this.vwr.getInt (553648146);
+for (var i = this.ms.mc; --i >= 0; ) if (this.ms.am[i].isBioModel) {
+var m = this.ms.am[i];
 var ptTemp =  new JU.P3 ();
-for (var p = 0; p < m.bioPolymerCount; p++) JM.BioExt.getPdbData (m.bioPolymers[p], vwr, 'S', qtype, mStep, 2, null, null, false, false, false, null, null, null,  new JU.BS (), ptTemp);
+for (var p = 0; p < m.bioPolymerCount; p++) this.getPdbData (m.bioPolymers[p], 'S', qtype, mStep, 2, null, null, false, false, false, null, null, null,  new JU.BS (), ptTemp);
 
 }
-ms.haveStraightness = true;
-}, "JV.Viewer,JM.ModelSet");
-c$.getPdbData = Clazz.defineMethod (c$, "getPdbData", 
- function (bp, vwr, ctype, qtype, mStep, derivType, bsAtoms, bsSelected, bothEnds, isDraw, addHeader, tokens, pdbATOM, pdbCONECT, bsWritten, ptTemp) {
+this.ms.haveStraightness = true;
+});
+Clazz.defineMethod (c$, "getPdbData", 
+ function (bp, ctype, qtype, mStep, derivType, bsAtoms, bsSelected, bothEnds, isDraw, addHeader, tokens, pdbATOM, pdbCONECT, bsWritten, ptTemp) {
 var calcRamachandranStraightness = (qtype == 'C' || qtype == 'P');
 var isRamachandran = (ctype == 'R' || ctype == 'S' && calcRamachandranStraightness);
 if (isRamachandran && !bp.calcPhiPsiAngles ()) return;
@@ -107,12 +120,12 @@ if (qtype == 'n') pdbATOM.append ("  NHX_______ NHY_______ NHZ_______");
 pdbATOM.append ("\n\n");
 }var factor = (ctype == 'R' ? 1 : 10);
 bothEnds = false;
-for (var j = 0; j < (bothEnds ? 2 : 1); j++, factor *= -1) for (var i = 0; i < (mStep < 1 ? 1 : mStep); i++) if (bp.hasStructure) JM.BioExt.getData (vwr, i, mStep, bp, ctype, qtype, derivType, bsAtoms, bsSelected, isDraw, isRamachandran, calcRamachandranStraightness, useQuaternionStraightness, writeRamachandranStraightness, quaternionStraightness, factor, isAmino, isRelativeAlias, tokens, pdbATOM, pdbCONECT, bsWritten, ptTemp);
+for (var j = 0; j < (bothEnds ? 2 : 1); j++, factor *= -1) for (var i = 0; i < (mStep < 1 ? 1 : mStep); i++) if (bp.hasStructure) this.getData (i, mStep, bp, ctype, qtype, derivType, bsAtoms, bsSelected, isDraw, isRamachandran, calcRamachandranStraightness, useQuaternionStraightness, writeRamachandranStraightness, quaternionStraightness, factor, isAmino, isRelativeAlias, tokens, pdbATOM, pdbCONECT, bsWritten, ptTemp);
 
 
-}, "JM.BioPolymer,JV.Viewer,~S,~S,~N,~N,JU.BS,JU.BS,~B,~B,~B,~A,JU.OC,JU.SB,JU.BS,JU.P3");
-c$.getData = Clazz.defineMethod (c$, "getData", 
- function (vwr, m0, mStep, p, ctype, qtype, derivType, bsAtoms, bsSelected, isDraw, isRamachandran, calcRamachandranStraightness, useQuaternionStraightness, writeRamachandranStraightness, quaternionStraightness, factor, isAmino, isRelativeAlias, tokens, pdbATOM, pdbCONECT, bsWritten, ptTemp) {
+}, "JM.BioPolymer,~S,~S,~N,~N,JU.BS,JU.BS,~B,~B,~B,~A,JU.OC,JU.SB,JU.BS,JU.P3");
+Clazz.defineMethod (c$, "getData", 
+ function (m0, mStep, p, ctype, qtype, derivType, bsAtoms, bsSelected, isDraw, isRamachandran, calcRamachandranStraightness, useQuaternionStraightness, writeRamachandranStraightness, quaternionStraightness, factor, isAmino, isRelativeAlias, tokens, pdbATOM, pdbCONECT, bsWritten, ptTemp) {
 var prefix = (derivType > 0 ? "dq" + (derivType == 2 ? "2" : "") : "q");
 var q;
 var aprev = null;
@@ -256,13 +269,13 @@ strExtra += JU.PT.sprintf ("  %10.5p %10.5p %10.5p", "p",  Clazz.newArray (-1, [
 strExtra += JU.PT.sprintf (" %10.5f %10.5f", "F",  Clazz.newArray (-1, [ Clazz.newFloatArray (-1, [val1, val2])]));
 }}if (pdbATOM == null) continue;
 bsWritten.set ((a.group).leadAtomIndex);
-pdbATOM.append (vwr.ms.getLabeler ().formatLabelAtomArray (vwr, a, tokens, '\0', null, ptTemp));
+pdbATOM.append (this.ms.getLabeler ().formatLabelAtomArray (this.vwr, a, tokens, '\0', null, ptTemp));
 pdbATOM.append (JU.PT.sprintf ("%8.2f%8.2f%8.2f      %6.3f          %2s    %s\n", "ssF",  Clazz.newArray (-1, [a.getElementSymbolIso (false).toUpperCase (), strExtra,  Clazz.newFloatArray (-1, [x * factor, y * factor, z * factor, w * factor])])));
 if (atomLast != null && atomLast.group.getBioPolymerIndexInModel () == a.group.getBioPolymerIndexInModel ()) {
 pdbCONECT.append ("CONECT").append (JU.PT.formatStringI ("%5i", "i", atomLast.getAtomNumber ())).append (JU.PT.formatStringI ("%5i", "i", a.getAtomNumber ())).appendC ('\n');
 }atomLast = a;
 }}
-}, "JV.Viewer,~N,~N,JM.BioPolymer,~S,~S,~N,JU.BS,JU.BS,~B,~B,~B,~B,~B,~B,~N,~B,~B,~A,JU.OC,JU.SB,JU.BS,JU.P3");
+}, "~N,~N,JM.BioPolymer,~S,~S,~N,JU.BS,JU.BS,~B,~B,~B,~B,~B,~B,~N,~B,~B,~A,JU.OC,JU.SB,JU.BS,JU.P3");
 c$.getQInfo = Clazz.defineMethod (c$, "getQInfo", 
  function (q) {
 var axis = q.toAxisAngle4f ();
@@ -302,7 +315,7 @@ bothEnds = true;
 if (ctype == 'R') out.append ("REMARK   6 Jmol data min = {-180 -180 -180} max = {180 180 180} unScaledXyz = xyz * {1 1 1} + {0 0 0} plotScale = {100 100 100}\n");
  else out.append ("REMARK   6 Jmol data min = {-1 -1 -1} max = {1 1 1} unScaledXyz = xyz * {0.1 0.1 0.1} + {0 0 0} plotScale = {100 100 100}\n");
 }var ptTemp =  new JU.P3 ();
-for (var p = 0; p < m.bioPolymerCount; p++) JM.BioExt.getPdbData (m.bioPolymers[p], vwr, ctype, qtype, mStep, derivType, m.bsAtoms, bsSelected, bothEnds, isDraw, p == 0, tokens, out, pdbCONECT, bsWritten, ptTemp);
+for (var p = 0; p < m.bioPolymerCount; p++) this.getPdbData (m.bioPolymers[p], ctype, qtype, mStep, derivType, m.bsAtoms, bsSelected, bothEnds, isDraw, p == 0, tokens, out, pdbCONECT, bsWritten, ptTemp);
 
 }, "JM.BioModel,JV.Viewer,~S,~S,~B,JU.BS,JU.OC,~A,JU.SB,JU.BS");
 Clazz.defineMethod (c$, "calculateAllstruts", 
@@ -545,6 +558,104 @@ if (a0 != null && a1 != null) a1.setT (a0);
 }
 }return b;
 }, "JM.AminoMonomer,~A");
+Clazz.defineMethod (c$, "getFullPDBHeader", 
+function (auxiliaryInfo) {
+var info = this.vwr.getCurrentFileAsString ("biomodel");
+var ichMin = info.length;
+for (var i = JM.BioExt.pdbRecords.length; --i >= 0; ) {
+var ichFound;
+var strRecord = JM.BioExt.pdbRecords[i];
+switch (ichFound = (info.startsWith (strRecord) ? 0 : info.indexOf ("\n" + strRecord))) {
+case -1:
+continue;
+case 0:
+auxiliaryInfo.put ("fileHeader", "");
+return "";
+default:
+if (ichFound < ichMin) ichMin = ++ichFound;
+}
+}
+info = info.substring (0, ichMin);
+auxiliaryInfo.put ("fileHeader", info);
+return info;
+}, "java.util.Map");
+Clazz.defineMethod (c$, "getAminoAcidValenceAndCharge", 
+function (res, name, ret) {
+var valence = ret[4];
+ret[4] = 0;
+if (res == null || res.length == 0 || res.length > 3 || name.equals ("CA") || name.equals ("CB")) return false;
+var ch0 = name.charAt (0);
+var ch1 = (name.length == 1 ? '\0' : name.charAt (1));
+var isSp2 = false;
+var bondCount = ret[3];
+switch (res.length) {
+case 3:
+if (name.length == 1) {
+switch (ch0) {
+case 'N':
+if (bondCount > 1) return false;
+ret[1] = 1;
+break;
+case 'O':
+if (valence == 1) {
+return true;
+}isSp2 = ("HOH;DOD;WAT".indexOf (res) < 0);
+break;
+default:
+isSp2 = true;
+}
+} else {
+var id = res + ch0;
+isSp2 = ("ARGN;ASNN;ASNO;ASPO;GLNN;GLNO;GLUO;HISN;HISC;PHECTRPC;TRPN;TYRC".indexOf (id) >= 0);
+if ("LYSN".indexOf (id) >= 0) {
+ret[1] = 1;
+} else if (ch0 == 'O' && ch1 == 'X') {
+ret[1] = -1;
+}}break;
+case 1:
+case 2:
+if (name.length > 2 && name.charAt (2) == '\'') return false;
+switch (ch0) {
+case 'C':
+if (ch1 == '7') return false;
+break;
+case 'N':
+switch (ch1) {
+case '1':
+case '3':
+if ("A3;A1;C3;G3;I3".indexOf ("" + res.charAt (res.length - 1) + ch1) >= 0) ret[0]--;
+break;
+case '7':
+ret[0]--;
+break;
+}
+break;
+}
+isSp2 = true;
+}
+if (isSp2) {
+ret[4] = ("ARGNE;ARGNH1;ASNNH2;GLNNE2;TRPNE1;HISNE2".indexOf (res + name) >= 0 ? 0 : 1);
+switch (ch0) {
+case 'N':
+ret[2] = 2;
+if (valence == 2 && bondCount == 1) ret[4]++;
+break;
+case 'C':
+ret[2] = 2;
+ret[0]--;
+break;
+case 'O':
+if (valence == 2 && bondCount == 1) ret[4]--;
+ret[0]--;
+break;
+}
+}return true;
+}, "~S,~S,~A");
 Clazz.defineStatics (c$,
-"qColor",  Clazz.newArray (-1, ["yellow", "orange", "purple"]));
+"qColor",  Clazz.newArray (-1, ["yellow", "orange", "purple"]),
+"pdbRecords",  Clazz.newArray (-1, ["ATOM  ", "MODEL ", "HETATM"]),
+"naNoH", "A3;A1;C3;G3;I3",
+"aaSp2", "ARGN;ASNN;ASNO;ASPO;GLNN;GLNO;GLUO;HISN;HISC;PHECTRPC;TRPN;TYRC",
+"aaSp21", "ARGNE;ARGNH1;ASNNH2;GLNNE2;TRPNE1;HISNE2",
+"aaPlus", "LYSN");
 });

@@ -68,7 +68,7 @@ bs.set (i);
 this.ms.validateBspfForModel (baseModelIndex, false);
 this.ms.recalculateLeadMidpointsAndWingVectors (baseModelIndex);
 this.ms.sm.notifyAtomPositionsChanged (baseModelIndex, bs, null);
-if (am[baseModelIndex].hasRasmolHBonds) (am[baseModelIndex]).resetRasmolBonds (bs);
+if (am[baseModelIndex].hasRasmolHBonds) (am[baseModelIndex]).resetRasmolBonds (bs, 2);
 }, "~N,~N,~A,~A,~N,~A,~B");
 Clazz.defineMethod (c$, "getModelsSelected", 
 function () {

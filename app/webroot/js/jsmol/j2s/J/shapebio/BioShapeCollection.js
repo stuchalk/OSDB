@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shapebio");
-Clazz.load (["J.shape.Shape"], "J.shapebio.BioShapeCollection", ["JU.AU", "J.c.PAL", "J.shapebio.BioShape", "JU.BSUtil", "$.C"], function () {
+Clazz.load (["J.shape.Shape"], "J.shapebio.BioShapeCollection", ["java.util.Hashtable", "JU.AU", "J.c.PAL", "J.shapebio.BioShape", "JU.BSUtil", "$.C", "JV.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.atoms = null;
 this.madOn = -2;
@@ -15,6 +15,9 @@ function () {
 this.isBioShape = true;
 this.atoms = this.ms.at;
 this.initialize ();
+});
+Clazz.overrideMethod (c$, "initShape", 
+function () {
 });
 Clazz.overrideMethod (c$, "getSizeG", 
 function (group) {
@@ -97,7 +100,7 @@ var colix = JU.C.getColixO (twoColors[1]);
 for (var i = this.bioShapes.length; --i >= 0; ) {
 var bioShape = this.bioShapes[i];
 if (bioShape.monomerCount > 0) {
-bioShape.setColixBS (colix, 0, bsSelected);
+bioShape.setColixBS (colix, 64, bsSelected);
 bioShape.setColixBack (colixBack, bsSelected);
 }}
 return;
@@ -112,7 +115,13 @@ return;
 }, "~S,~O,JU.BS");
 Clazz.overrideMethod (c$, "getShapeState", 
 function () {
-return this.vwr.getAtomShapeSetState (this, this.bioShapes);
+var temp =  new java.util.Hashtable ();
+var temp2 =  new java.util.Hashtable ();
+var type = JV.JC.shapeClassBases[this.shapeID];
+for (var iShape = this.bioShapes.length; --iShape >= 0; ) this.bioShapes[iShape].getBioShapeState (type, this.translucentAllowed, temp, temp2);
+
+var s = "\n" + this.vwr.getCommands (temp, temp2, this.shapeID == 9 ? "Backbone" : "select");
+return s;
 });
 Clazz.defineMethod (c$, "initialize", 
 function () {

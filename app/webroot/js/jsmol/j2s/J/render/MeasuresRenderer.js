@@ -36,7 +36,6 @@ if (!this.isExport && this.m != null && (this.count = this.m.count) != 0) this.r
 if (!this.vwr.getBoolean (603979926)) return false;
 var showMeasurementLabels = this.vwr.getBoolean (603979879);
 measures.setVisibilityInfo ();
-this.setZcutoff ();
 for (var i = measures.measurementCount; --i >= 0; ) {
 this.m = measures.measurements.get (i);
 if (!this.m.isVisible || !this.m.$isValid || (this.count = this.m.count) == 1 && this.m.traceX == -2147483648) continue;
@@ -131,7 +130,7 @@ return;
 }var zA = a.sZ - a.sD - 10;
 var zB = b.sZ - b.sD - 10;
 var radius = this.drawLine (a.sX, a.sY, zA, b.sX, b.sY, zB, this.mad);
-if (s == null || zB >= this.zCutoff) return;
+if (s == null) return;
 if (this.mad > 0) radius <<= 1;
 var z = Clazz.doubleToInt ((zA + zB) / 2);
 if (z < 1) z = 1;
@@ -154,7 +153,7 @@ var zB = b.sZ - zOffset;
 var zC = c.sZ - c.sD - 10;
 var radius = this.drawLine (a.sX, a.sY, zA, b.sX, b.sY, zB, this.mad);
 radius += this.drawLine (b.sX, b.sY, zB, c.sX, c.sY, zC, this.mad);
-if (s == null || zB >= this.zCutoff) return;
+if (s == null) return;
 radius = Clazz.doubleToInt ((radius + 1) / 2);
 if (this.m.value > 175) {
 if (this.m.text == null) {
@@ -212,8 +211,8 @@ var zD = d.sZ - d.sD - 10;
 var radius = this.drawLine (a.sX, a.sY, zA, b.sX, b.sY, zB, this.mad);
 radius += this.drawLine (b.sX, b.sY, zB, c.sX, c.sY, zC, this.mad);
 radius += this.drawLine (c.sX, c.sY, zC, d.sX, d.sY, zD, this.mad);
+if (s == null) return;
 var zLabel = Clazz.doubleToInt ((zA + zB + zC + zD) / 4);
-if (s == null || zLabel >= this.zCutoff) return;
 radius /= 3;
 if (this.m.text == null) {
 this.g3d.setC (this.labelColix);

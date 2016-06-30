@@ -4,29 +4,22 @@ c$ = Clazz.decorateAsClass (function () {
 this.modelName = null;
 this.formula = null;
 this.phase = null;
-this.myAttributes = null;
+this.formalCharge = -2147483648;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.xml, "XmlOdysseyReader", J.adapter.readers.xml.XmlReader);
-Clazz.prepareFields (c$, function () {
-this.myAttributes =  Clazz.newArray (-1, ["id", "label", "xyz", "element", "hybrid", "a", "b", "order", "box"]);
-});
 Clazz.makeConstructor (c$, 
 function () {
 Clazz.superConstructor (this, J.adapter.readers.xml.XmlOdysseyReader, []);
 });
-Clazz.overrideMethod (c$, "getDOMAttributes", 
-function () {
-return this.myAttributes;
-});
 Clazz.overrideMethod (c$, "processStartElement", 
-function (localName) {
+function (localName, nodeName) {
 if ("structure".equals (localName)) {
 this.asc.newAtomSet ();
 return;
 }if ("atom".equals (localName)) {
-this.atom =  new J.adapter.smarter.Atom ();
-if (this.atts.containsKey ("label")) this.atom.atomName = this.atts.get ("label");
- else this.atom.atomName = this.atts.get ("id");
+var id = this.atts.get ("id");
+(this.atom =  new J.adapter.smarter.Atom ()).atomName = this.atts.get (this.atts.containsKey ("label") ? "label" : "id");
+if (id != null && this.stateScriptVersionInt >= 140400) this.asc.atomSymbolicMap.put (id, this.atom);
 if (this.atts.containsKey ("xyz")) {
 var xyz = this.atts.get ("xyz");
 var tokens = JU.PT.getTokens (xyz);
@@ -41,6 +34,15 @@ var order = 1;
 if (this.atts.containsKey ("order")) order = this.parseBondToken (this.atts.get ("order"));
 this.asc.addNewBondFromNames (atom1, atom2, order);
 return;
+}if ("group".equals (localName)) {
+var charge = this.atts.get ("charge");
+if (charge != null && charge.indexOf (".") < 0) {
+this.formalCharge = JU.PT.parseInt (charge);
+}return;
+}if ("member".equals (localName) && this.formalCharge != -2147483648) {
+var atom = this.asc.getAtomFromName (this.atts.get ("entity"));
+if (atom != null) atom.formalCharge = this.formalCharge;
+return;
 }if ("boundary".equals (localName)) {
 var boxDim = JU.PT.getTokens (this.atts.get ("box"));
 var x = this.parseFloatStr (boxDim[0]);
@@ -53,23 +55,19 @@ this.parent.setUnitCellItem (3, 90);
 this.parent.setUnitCellItem (4, 90);
 this.parent.setUnitCellItem (5, 90);
 var pt = JU.P3.new3 (-x / 2, -y / 2, -z / 2);
-this.asc.setCurrentModelInfo ("periodicOriginXyz", pt);
 var atoms = this.asc.atoms;
 for (var i = this.asc.ac; --i >= 0; ) {
 atoms[i].sub (pt);
 this.parent.setAtomCoord (atoms[i]);
 }
 if (this.parent.latticeCells[0] == 0) this.parent.latticeCells[0] = this.parent.latticeCells[1] = this.parent.latticeCells[2] = 1;
-this.parent.setSymmetryOperator ("x,y,z");
-this.parent.setSpaceGroupName ("P1");
-this.parent.applySymmetryAndSetTrajectory ();
 return;
 }if ("odyssey_simulation".equals (localName)) {
 if (this.modelName != null && this.phase != null) this.modelName += " - " + this.phase;
 if (this.modelName != null) this.asc.setAtomSetName (this.modelName);
 if (this.formula != null) this.asc.setCurrentModelInfo ("formula", this.formula);
-}if ("title".equals (localName) || "formula".equals (localName) || "phase".equals (localName)) this.keepChars = true;
-}, "~S");
+}if ("title".equals (localName) || "formula".equals (localName) || "phase".equals (localName)) this.setKeepChars (true);
+}, "~S,~S");
 Clazz.defineMethod (c$, "parseBondToken", 
  function (str) {
 if (str.length >= 1) {
@@ -93,13 +91,14 @@ if (this.atom.elementSymbol != null && !Float.isNaN (this.atom.z)) {
 this.asc.addAtomWithMappedName (this.atom);
 }this.atom = null;
 return;
-}if ("title".equals (localName)) {
-this.modelName = this.chars;
-}if ("formula".equals (localName)) {
-this.formula = this.chars;
-}if ("phase".equals (localName)) {
-this.phase = this.chars;
-}this.keepChars = false;
-this.chars = null;
+}if ("group".equals (localName)) {
+this.formalCharge = -2147483648;
+} else if ("title".equals (localName)) {
+this.modelName = this.chars.toString ();
+} else if ("formula".equals (localName)) {
+this.formula = this.chars.toString ();
+} else if ("phase".equals (localName)) {
+this.phase = this.chars.toString ();
+}this.setKeepChars (false);
 }, "~S");
 });

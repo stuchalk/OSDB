@@ -186,7 +186,7 @@ result = (asc.length == 1 ? asc[0] :  new J.adapter.smarter.AtomSetCollection ("
 Clazz.overrideMethod (c$, "getAtomSetCollectionFromDOM", 
 function (DOMNode, htParams) {
 try {
-var ret = J.adapter.smarter.Resolver.DOMResolve (DOMNode, htParams);
+var ret = J.adapter.smarter.Resolver.DOMResolve (htParams);
 if (!(Clazz.instanceOf (ret, J.adapter.smarter.AtomSetCollectionReader))) return ret;
 var a = ret;
 a.setup ("DOM node", htParams, null);

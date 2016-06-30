@@ -3,8 +3,8 @@ Clazz.load (["J.adapter.readers.quantum.SpartanInputReader"], "J.adapter.readers
 c$ = Clazz.declareType (J.adapter.readers.quantum, "OdysseyReader", J.adapter.readers.quantum.SpartanInputReader);
 Clazz.overrideMethod (c$, "initializeReader", 
 function () {
-this.modelName = "Odyssey file";
-this.readInputRecords ();
+var title = this.readInputRecords ();
+this.asc.setAtomSetName (title == null ? "Odyssey file" : title);
 this.continuing = false;
 });
 });

@@ -113,7 +113,7 @@ vAB.sub2 (pointB, pointA);
 vNormNorm.sub2 (pointC, pointA);
 vNormNorm.cross (vAB, vNormNorm);
 vNormNorm.normalize ();
-}, "JU.T3,JU.T3,JU.T3,JU.V3,JU.V3");
+}, "JU.T3,JU.T3,JU.T3,JU.T3,JU.T3");
 c$.getDirectedNormalThroughPoints = Clazz.defineMethod (c$, "getDirectedNormalThroughPoints", 
 function (pointA, pointB, pointC, ptRef, vNorm, vAB) {
 var nd = JU.Measure.getNormalThroughPoints (pointA, pointB, pointC, vNorm, vAB);
@@ -132,7 +132,7 @@ function (pointA, pointB, pointC, vNorm, vTemp) {
 JU.Measure.calcNormalizedNormal (pointA, pointB, pointC, vNorm, vTemp);
 vTemp.setT (pointA);
 return -vTemp.dot (vNorm);
-}, "JU.T3,JU.T3,JU.T3,JU.V3,JU.V3");
+}, "JU.T3,JU.T3,JU.T3,JU.T3,JU.T3");
 c$.getPlaneProjection = Clazz.defineMethod (c$, "getPlaneProjection", 
 function (pt, plane, ptProj, vNorm) {
 var dist = JU.Measure.distanceToPlane (plane, pt);

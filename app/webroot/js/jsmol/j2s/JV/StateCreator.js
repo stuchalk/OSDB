@@ -134,38 +134,44 @@ if (bs.isEmpty ()) ms.haveHiddenBonds = false;
  else commands.append ("  hide ").append (JU.Escape.eBond (bs)).append (";\n");
 }this.vwr.setModelVisibility ();
 if (withProteinStructure) commands.append (ms.getProteinStructureState (null, isAll ? 1073742327 : 1073742158));
-this.getShapeState (commands, isAll, 2147483647);
+for (var i = 0; i < modelCount; i++) if (models[i].mat4 != null) commands.append ("  frame orientation " + ms.getModelNumberDotted (i) + JU.Escape.matrixToScript (models[i].mat4) + ";\n");
+
+this.getShapeStatePriv (commands, isAll, 2147483647);
 if (isAll) {
 var needOrientations = false;
 for (var i = 0; i < modelCount; i++) if (models[i].isJmolDataFrame) {
 needOrientations = true;
 break;
 }
+var sb =  new JU.SB ();
 for (var i = 0; i < modelCount; i++) {
-var fcmd = "  frame " + ms.getModelNumberDotted (i);
+var m = models[i];
+sb.setLength (0);
 var s = ms.getInfo (i, "modelID");
-if (s != null && !s.equals (ms.getInfo (i, "modelID0"))) commands.append (fcmd).append ("; frame ID ").append (JU.PT.esc (s)).append (";\n");
+if (s != null && !s.equals (ms.getInfo (i, "modelID0"))) sb.append ("  frame ID ").append (JU.PT.esc (s)).append (";\n");
 var t = ms.frameTitles[i];
-if (t != null && t.length > 0) commands.append (fcmd).append ("; frame title ").append (JU.PT.esc (t)).append (";\n");
-if (needOrientations && models[i].orientation != null && !ms.isTrajectorySubFrame (i)) commands.append (fcmd).append ("; ").append (models[i].orientation.getMoveToText (false)).append (";\n");
-if (models[i].frameDelay != 0 && !ms.isTrajectorySubFrame (i)) commands.append (fcmd).append ("; frame delay ").appendF (models[i].frameDelay / 1000).append (";\n");
-if (models[i].simpleCage != null) {
-commands.append (fcmd).append ("; unitcell ").append (JU.Escape.eAP (models[i].simpleCage.getUnitCellVectors ())).append (";\n");
-this.getShapeState (commands, isAll, 33);
-}}
+if (t != null && t.length > 0) sb.append ("  frame title ").append (JU.PT.esc (t)).append (";\n");
+if (needOrientations && m.orientation != null && !ms.isTrajectorySubFrame (i)) sb.append ("  ").append (m.orientation.getMoveToText (false)).append (";\n");
+if (m.frameDelay != 0 && !ms.isTrajectorySubFrame (i)) sb.append ("  frame delay ").appendF (m.frameDelay / 1000).append (";\n");
+if (m.simpleCage != null) {
+sb.append ("  unitcell ").append (JU.Escape.eAP (m.simpleCage.getUnitCellVectors ())).append (";\n");
+this.getShapeStatePriv (sb, isAll, 33);
+}if (sb.length () > 0) commands.append ("  frame " + ms.getModelNumberDotted (i) + ";\n").appendSB (sb);
+}
 var loadUC = false;
 if (ms.unitCells != null) {
 var haveModulation = false;
 for (var i = 0; i < modelCount; i++) {
 var symmetry = ms.getUnitCell (i);
 if (symmetry == null) continue;
-commands.append ("  frame ").append (ms.getModelNumberDotted (i));
-if (symmetry.getState (commands)) loadUC = true;
-commands.append (";\n");
-haveModulation = new Boolean (haveModulation | (this.vwr.ms.getLastVibrationVector (i, 1275072532) >= 0)).valueOf ();
+sb.setLength (0);
+if (symmetry.getState (sb)) {
+loadUC = true;
+commands.append ("  frame ").append (ms.getModelNumberDotted (i)).appendSB (sb).append (";\n");
+}haveModulation = new Boolean (haveModulation | (this.vwr.ms.getLastVibrationVector (i, 1275072532) >= 0)).valueOf ();
 }
 if (loadUC) this.vwr.shm.loadShape (33);
-this.getShapeState (commands, isAll, 33);
+this.getShapeStatePriv (commands, isAll, 33);
 if (haveModulation) {
 var temp =  new java.util.Hashtable ();
 var ivib;
@@ -180,23 +186,6 @@ commands.append (this.getCommands (temp, null, "select"));
 }if (sfunc != null) commands.append ("\n}\n\n");
 return commands.toString ();
 }, "JU.SB,~B,~B");
-Clazz.defineMethod (c$, "getShapeState", 
- function (commands, isAll, iShape) {
-var shapes = this.vwr.shm.shapes;
-if (shapes == null) return;
-var cmd;
-var shape;
-var i;
-var imax;
-if (iShape == 2147483647) {
-i = 0;
-imax = 37;
-} else {
-imax = (i = iShape) + 1;
-}for (; i < imax; ++i) if ((shape = shapes[i]) != null && (isAll || i >= 9 && i < 16) && (cmd = shape.getShapeState ()) != null && cmd.length > 1) commands.append (cmd);
-
-commands.append ("  select *;\n");
-}, "JU.SB,~B,~N");
 Clazz.defineMethod (c$, "getWindowState", 
  function (sfunc, width, height) {
 var global = this.vwr.g;
@@ -208,7 +197,7 @@ str.append ("\nfunction _setWindowState() {\n");
 str.append ("# width ").appendI (width == 0 ? this.vwr.getScreenWidth () : width).append (";\n# height ").appendI (height == 0 ? this.vwr.getScreenHeight () : height).append (";\n");
 this.app (str, "stateVersion = " + JV.JC.versionInt);
 this.app (str, "background " + JU.Escape.escapeColor (global.objColors[0]));
-for (var i = 1; i < 8; i++) if (global.objColors[i] != 0) this.app (str, JV.StateManager.getObjectNameFromId (i) + "Color = \"" + JU.Escape.escapeColor (global.objColors[i]) + '"');
+for (var i = 1; i < 7; i++) if (global.objColors[i] != 0) this.app (str, JV.StateManager.getObjectNameFromId (i) + "Color = \"" + JU.Escape.escapeColor (global.objColors[i]) + '"');
 
 if (global.backgroundImageFileName != null) {
 this.app (str, "background IMAGE " + (global.backgroundImageFileName.startsWith (";base64,") ? "" : "/*file*/") + JU.PT.esc (global.backgroundImageFileName));
@@ -453,10 +442,11 @@ if (tm.depthPlane != null) commands.append ("  depth plane ").append (JU.Escape.
 this.getZshadeState (commands, tm, false);
 commands.append (this.getSpinState (true)).append ("\n");
 if (this.vwr.ms.modelSetHasVibrationVectors () && tm.vibrationOn) this.app (commands, "set vibrationPeriod " + tm.vibrationPeriod + ";vibration on");
+var slabInternal = (tm.depthPlane != null || tm.slabPlane != null);
 if (navigating) {
 commands.append (tm.getNavigationState ());
-if (tm.depthPlane != null || tm.slabPlane != null) commands.append ("  slab on;\n");
-}if (sfunc != null) commands.append ("}\n\n");
+}if (!tm.slabEnabled && slabInternal) commands.append ("  slab off;\n");
+if (sfunc != null) commands.append ("}\n\n");
 return commands.toString ();
 }, "JV.TransformManager,JU.SB");
 Clazz.defineMethod (c$, "getZshadeState", 
@@ -523,28 +513,18 @@ Clazz.defineMethod (c$, "addBs",
 if (bs == null || bs.length () == 0) return;
 this.app (sb, key + JU.Escape.eBS (bs));
 }, "JU.SB,~S,JU.BS");
-Clazz.overrideMethod (c$, "getFontState", 
-function (myType, font3d) {
+Clazz.defineMethod (c$, "getFontState", 
+ function (myType, font3d) {
 var objId = JV.StateManager.getObjectIdFromName (myType.equalsIgnoreCase ("axes") ? "axis" : myType);
 if (objId < 0) return "";
-var mad = this.vwr.getObjectMad (objId);
+var mad = this.vwr.getObjectMad10 (objId);
 var s =  new JU.SB ().append ("\n");
-this.app (s, myType + (mad == 0 ? " off" : mad == 1 ? " on" : mad == -1 ? " dotted" : mad < 20 ? " " + mad : " " + (mad / 2000)));
+this.app (s, myType + (mad == 0 ? " off" : mad == 1 ? " on" : mad == -1 ? " dotted" : mad < 20 ? " " + mad : " " + (mad / 20000)));
 if (s.length () < 3) return "";
 var fcmd = J.shape.Shape.getFontCommand (myType, font3d);
 if (fcmd.length > 0) fcmd = "  " + fcmd + ";\n";
 return (s + fcmd);
 }, "~S,javajs.awt.Font");
-Clazz.overrideMethod (c$, "getFontLineShapeState", 
-function (s, myType, tickInfos) {
-var isOff = (s.indexOf (" off") >= 0);
-var sb =  new JU.SB ();
-sb.append (s);
-for (var i = 0; i < 4; i++) if (tickInfos[i] != null) this.appendTickInfo (myType, sb, tickInfos[i]);
-
-if (isOff) sb.append ("  " + myType + " off;\n");
-return sb.toString ();
-}, "~S,~S,~A");
 Clazz.defineMethod (c$, "appendTickInfo", 
  function (myType, sb, t) {
 sb.append ("  ");
@@ -562,22 +542,12 @@ if (!isUnitCell && tickInfo.scale != null) sb.append (" scale ").append (JU.Esca
 if (addFirst && !Float.isNaN (tickInfo.first) && tickInfo.first != 0) sb.append (" first ").appendF (tickInfo.first);
 if (tickInfo.reference != null) sb.append (" point ").append (JU.Escape.eP (tickInfo.reference));
 }, "JU.SB,JM.TickInfo,~B");
-Clazz.overrideMethod (c$, "getShapeSetState", 
-function (as, shape, monomerCount, monomers, bsSizeDefault, temp, temp2) {
-var type = JV.JC.shapeClassBases[shape.shapeID];
-for (var i = 0; i < monomerCount; i++) {
-var atomIndex1 = monomers[i].firstAtomIndex;
-var atomIndex2 = monomers[i].lastAtomIndex;
-if (as.bsSizeSet != null && (as.bsSizeSet.get (i) || as.bsColixSet != null && as.bsColixSet.get (i))) {
-if (bsSizeDefault.get (i)) {
-JU.BSUtil.setMapBitSet (temp, atomIndex1, atomIndex2, type + (as.bsSizeSet.get (i) ? " on" : " off"));
-} else {
-JU.BSUtil.setMapBitSet (temp, atomIndex1, atomIndex2, type + " " + JU.PT.escF (as.mads[i] / 2000));
-}}if (as.bsColixSet != null && as.bsColixSet.get (i)) JU.BSUtil.setMapBitSet (temp2, atomIndex1, atomIndex2, J.shape.Shape.getColorCommand (type, as.paletteIDs[i], as.colixes[i], shape.translucentAllowed));
-}
-}, "J.shape.AtomShape,J.shape.Shape,~N,~A,JU.BS,java.util.Map,java.util.Map");
-Clazz.overrideMethod (c$, "getMeasurementState", 
-function (shape, mList, measurementCount, font3d, ti) {
+Clazz.defineMethod (c$, "getMeasurementState", 
+ function (shape) {
+var mList = shape.measurements;
+var measurementCount = shape.measurementCount;
+var font3d = shape.font3d;
+var ti = shape.defaultTickInfo;
 var commands =  new JU.SB ();
 this.app (commands, "measures delete");
 for (var i = 0; i < measurementCount; i++) {
@@ -623,9 +593,30 @@ if (s != null && s.length != 0) {
 commands.append (s);
 this.app (commands, "select measures ({null})");
 }return commands.toString ();
-}, "J.shape.Measures,JU.Lst,~N,javajs.awt.Font,JM.TickInfo");
-Clazz.overrideMethod (c$, "getBondState", 
-function (shape, bsOrderSet, reportAll) {
+}, "J.shape.Measures");
+Clazz.defineMethod (c$, "getShapeStatePriv", 
+ function (commands, isAll, iShape) {
+var shapes = this.vwr.shm.shapes;
+if (shapes == null) return;
+var i;
+var imax;
+if (iShape == 2147483647) {
+i = 0;
+imax = 37;
+} else {
+imax = (i = iShape) + 1;
+}for (; i < imax; ++i) {
+var shape = shapes[i];
+if (shape != null && (isAll || i >= 9 && i < 16)) {
+var cmd = this.getShapeState (shape);
+if (cmd != null && cmd.length > 1) commands.append (cmd);
+}}
+commands.append ("  select *;\n");
+}, "JU.SB,~B,~N");
+Clazz.defineMethod (c$, "getBondState", 
+ function (shape) {
+var bsOrderSet = shape.bsOrderSet;
+var reportAll = shape.reportAll;
 this.clearTemp ();
 var modelSet = this.vwr.ms;
 var haveTainted = false;
@@ -650,29 +641,45 @@ if ((colix & -30721) == 2) JU.BSUtil.setMapBitSet (this.temp, i, i, J.shape.Shap
 var s = this.getCommands (this.temp, null, "select BONDS") + "\n" + (haveTainted ? this.getCommands (this.temp2, null, "select BONDS") + "\n" : "");
 this.clearTemp ();
 return s;
-}, "J.shape.Shape,JU.BS,~B");
+}, "J.shape.Sticks");
 Clazz.defineMethod (c$, "clearTemp", 
  function () {
 this.temp.clear ();
 this.temp2.clear ();
 });
-Clazz.overrideMethod (c$, "getAtomShapeSetState", 
-function (shape, bioShapes) {
-this.clearTemp ();
-for (var i = bioShapes.length; --i >= 0; ) {
-var bs = bioShapes[i];
-if (bs.monomerCount > 0) {
-if (!bs.isActive || bs.bsSizeSet == null && bs.bsColixSet == null) continue;
-this.vwr.getShapeSetState (bs, shape, bs.monomerCount, bs.getMonomers (), bs.bsSizeDefault, this.temp, this.temp2);
-}}
-var s = "\n" + this.getCommands (this.temp, this.temp2, shape.shapeID == 9 ? "Backbone" : "select");
-this.clearTemp ();
-return s;
-}, "J.shape.Shape,~A");
 Clazz.defineMethod (c$, "getShapeState", 
-function (shape) {
+ function (shape) {
 var s;
 switch (shape.shapeID) {
+case 34:
+s = this.getAxesState (shape);
+break;
+case 33:
+if (!this.vwr.ms.haveUnitCells) return "";
+var st = s = this.getFontLineShapeState (shape);
+var iAtom = this.vwr.am.cai;
+if (iAtom >= 0) s += "  unitcell ({" + iAtom + "});\n";
+var uc = this.vwr.getCurrentUnitCell ();
+if (uc != null) {
+s += uc.getUnitCellState ();
+s += st;
+}break;
+case 32:
+s = this.getFontLineShapeState (shape);
+break;
+case 36:
+s = this.getFontState (shape.myType, (shape).baseFont3d);
+break;
+case 6:
+s = this.getMeasurementState (shape);
+break;
+case 7:
+case 18:
+s = this.getAtomShapeState (shape);
+break;
+case 1:
+s = this.getBondState (shape);
+break;
 case 31:
 var es = shape;
 var sb =  new JU.SB ();
@@ -697,8 +704,9 @@ s = "\n  hover " + JU.PT.esc ((h.labelFormat == null ? "" : h.labelFormat)) + ";
 this.clearTemp ();
 break;
 case 5:
-this.clearTemp ();
 var l = shape;
+if (!l.isActive || l.bsSizeSet == null) return "";
+this.clearTemp ();
 for (var i = l.bsSizeSet.nextSetBit (0); i >= 0; i = l.bsSizeSet.nextSetBit (i + 1)) {
 var t = l.getLabel (i);
 var cmd = "label ";
@@ -750,14 +758,60 @@ s = this.getCommands (this.temp, this.temp2, "select");
 this.clearTemp ();
 break;
 default:
-s = "";
+s = shape.getShapeState ();
+break;
 }
 return s;
 }, "J.shape.Shape");
+Clazz.defineMethod (c$, "getFontLineShapeState", 
+ function (shape) {
+var s = this.getFontState (shape.myType, shape.font3d);
+if (shape.tickInfos == null) return s;
+var isOff = (s.indexOf (" off") >= 0);
+var sb =  new JU.SB ();
+sb.append (s);
+for (var i = 0; i < 4; i++) if (shape.tickInfos[i] != null) this.appendTickInfo (shape.myType, sb, shape.tickInfos[i]);
+
+if (isOff) sb.append ("  " + shape.myType + " off;\n");
+return sb.toString ();
+}, "J.shape.FontLineShape");
+Clazz.defineMethod (c$, "getAxesState", 
+ function (axes) {
+var sb =  new JU.SB ();
+sb.append (this.getFontLineShapeState (axes));
+sb.append ("  axes scale ").appendF (this.vwr.getFloat (570425346)).append (";\n");
+if (axes.fixedOrigin != null) sb.append ("  axes center ").append (JU.Escape.eP (axes.fixedOrigin)).append (";\n");
+var axisXY = axes.axisXY;
+if (axisXY.z != 0) sb.append ("  axes position [").appendI (Clazz.floatToInt (axisXY.x)).append (" ").appendI (Clazz.floatToInt (axisXY.y)).append (" ").append (axisXY.z < 0 ? " %" : "").append ("];\n");
+var labels = axes.labels;
+if (labels != null) {
+sb.append ("  axes labels ");
+for (var i = 0; i < labels.length; i++) if (labels[i] != null) sb.append (JU.PT.esc (labels[i])).append (" ");
+
+sb.append (";\n");
+}if (axes.axisType != null) {
+sb.append ("  axes type " + JU.PT.esc (axes.axisType));
+}return sb.toString ();
+}, "J.shape.Axes");
+Clazz.overrideMethod (c$, "getAtomShapeState", 
+function (shape) {
+if (!shape.isActive) return "";
+this.clearTemp ();
+var type = JV.JC.shapeClassBases[shape.shapeID];
+var isVector = (shape.shapeID == 18);
+var mad;
+if (shape.bsSizeSet != null) for (var i = shape.bsSizeSet.nextSetBit (0); i >= 0; i = shape.bsSizeSet.nextSetBit (i + 1)) JU.BSUtil.setMapBitSet (this.temp, i, i, type + " " + ((mad = shape.mads[i]) < 0 ? (isVector && mad < -1 ? "" + -mad : "on") : JU.PT.escF (mad / 2000)));
+
+if (shape.bsColixSet != null) for (var i = shape.bsColixSet.nextSetBit (0); i >= 0; i = shape.bsColixSet.nextSetBit (i + 1)) JU.BSUtil.setMapBitSet (this.temp2, i, i, J.shape.Shape.getColorCommand (type, shape.paletteIDs[i], shape.colixes[i], shape.translucentAllowed));
+
+var s = this.getCommands (this.temp, this.temp2, "select");
+this.clearTemp ();
+return s;
+}, "J.shape.AtomShape");
 Clazz.defineMethod (c$, "getTextState", 
  function (t) {
 var s =  new JU.SB ();
-var text = t.getText ();
+var text = t.text;
 if (text == null || t.isLabelOrHover || t.target.equals ("error")) return "";
 var isImage = (t.image != null);
 var strOff = null;
@@ -840,20 +894,6 @@ sb.append ((pt == 0 ? "" : sep)).append (s.substring (pt, i));
 sb.append (sep).append (s.substring (pt, len));
 return sb.toString ();
 }, "~S");
-Clazz.overrideMethod (c$, "getAtomShapeState", 
-function (shape) {
-this.clearTemp ();
-var type = JV.JC.shapeClassBases[shape.shapeID];
-var isVector = (shape.shapeID == 18);
-var mad;
-if (shape.bsSizeSet != null) for (var i = shape.bsSizeSet.nextSetBit (0); i >= 0; i = shape.bsSizeSet.nextSetBit (i + 1)) JU.BSUtil.setMapBitSet (this.temp, i, i, type + " " + ((mad = shape.mads[i]) < 0 ? (isVector && mad < -1 ? "" + -mad : "on") : JU.PT.escF (mad / 2000)));
-
-if (shape.bsColixSet != null) for (var i = shape.bsColixSet.nextSetBit (0); i >= 0; i = shape.bsColixSet.nextSetBit (i + 1)) JU.BSUtil.setMapBitSet (this.temp2, i, i, J.shape.Shape.getColorCommand (type, shape.paletteIDs[i], shape.colixes[i], shape.translucentAllowed));
-
-var s = this.getCommands (this.temp, this.temp2, "select");
-this.clearTemp ();
-return s;
-}, "J.shape.AtomShape");
 Clazz.overrideMethod (c$, "getFunctionCalls", 
 function (f) {
 if (f == null) f = "";
@@ -1089,17 +1129,19 @@ if (disableSend) sm.setSyncDriver (3);
 if (script.indexOf ("Mouse: ") != 0) {
 var serviceMode = JV.JC.getServiceCommand (script);
 switch (serviceMode) {
-case 63:
-case 35:
+case 70:
 case 42:
 case 49:
 case 56:
+case 63:
 sm.syncSend (script, ".", port);
 return;
 case -1:
 break;
 case 0:
+case 77:
 case 28:
+case 35:
 if (disableSend) return;
 case 21:
 case 7:

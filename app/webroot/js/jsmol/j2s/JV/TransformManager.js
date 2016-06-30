@@ -595,8 +595,7 @@ this.slabRange = value;
 }, "~N");
 Clazz.defineMethod (c$, "setSlabEnabled", 
 function (slabEnabled) {
-this.slabEnabled = slabEnabled;
-this.vwr.g.setB ("slabEnabled", slabEnabled);
+this.vwr.g.setB ("slabEnabled", this.slabEnabled = slabEnabled);
 }, "~B");
 Clazz.defineMethod (c$, "setZShadeEnabled", 
 function (zShadeEnabled) {
@@ -655,14 +654,15 @@ this.slabDepthChanged ();
 }, "~N");
 Clazz.defineMethod (c$, "slabToPercent", 
 function (percentSlab) {
+this.slabPlane = null;
 this.vwr.setFloatProperty ("slabRange", 0);
 this.slabPercentSetting = percentSlab;
-this.slabPlane = null;
 if (this.depthPercentSetting >= this.slabPercentSetting) this.depthPercentSetting = this.slabPercentSetting - 1;
 this.slabDepthChanged ();
 }, "~N");
 Clazz.defineMethod (c$, "depthToPercent", 
 function (percentDepth) {
+this.depthPlane = null;
 this.vwr.g.setI ("depth", percentDepth);
 this.depthPercentSetting = percentDepth;
 if (this.slabPercentSetting <= this.depthPercentSetting) this.slabPercentSetting = this.depthPercentSetting + 1;
@@ -692,16 +692,18 @@ Clazz.defineMethod (c$, "setSlabDepthInternal",
 function (isDepth) {
 if (isDepth) this.depthPlane = null;
  else this.slabPlane = null;
+this.finalizeTransformParameters ();
 this.slabInternal (this.getSlabDepthPlane (isDepth), isDepth);
 }, "~B");
 Clazz.defineMethod (c$, "getSlabDepthPlane", 
  function (isDepth) {
 if (isDepth) {
 if (this.depthPlane != null) return this.depthPlane;
-} else {
-if (this.slabPlane != null) return this.slabPlane;
+} else if (this.slabPlane != null) {
+return this.slabPlane;
 }var m = this.matrixTransform;
-return JU.P4.new4 (-m.m20, -m.m21, -m.m22, -m.m23 + (isDepth ? this.depthValue : this.slabValue));
+var plane = JU.P4.new4 (-m.m20, -m.m21, -m.m22, -m.m23 + (isDepth ? this.depthValue : this.slabValue));
+return plane;
 }, "~B");
 Clazz.defineMethod (c$, "getCameraFactors", 
 function () {
@@ -899,6 +901,11 @@ function (ptXYZ, pointScreen) {
 this.transformPt (ptXYZ);
 pointScreen.setT (this.fScrPt);
 }, "JU.T3,JU.T3");
+Clazz.defineMethod (c$, "transformPt3f", 
+function (ptXYZ, screen) {
+this.applyPerspective (ptXYZ, ptXYZ);
+screen.setT (this.fScrPt);
+}, "JU.T3,JU.P3");
 Clazz.defineMethod (c$, "transformPtNoClip", 
 function (ptXYZ, pointScreen) {
 this.applyPerspective (ptXYZ, null);
@@ -917,11 +924,6 @@ Clazz.defineMethod (c$, "getVibrationPoint",
 function (v, pt, scale) {
 return v.setCalcPoint (pt, this.vibrationT, (Float.isNaN (scale) ? this.vibrationScale : scale), this.vwr.g.modulationScale);
 }, "JU.Vibration,JU.T3,~N");
-Clazz.defineMethod (c$, "transformPt3f", 
-function (ptXYZ, screen) {
-this.applyPerspective (ptXYZ, ptXYZ);
-screen.setT (this.fScrPt);
-}, "JU.T3,JU.P3");
 Clazz.defineMethod (c$, "transformPt2D", 
 function (ptXyp) {
 if (ptXyp.z == -3.4028235E38) {
@@ -978,9 +980,13 @@ if (Float.isNaN (this.fScrPt.x) && !this.haveNotifiedNaN) {
 if (JU.Logger.debugging) JU.Logger.debug ("NaN found in transformPoint ");
 this.haveNotifiedNaN = true;
 }this.iScrPt.set (Clazz.floatToInt (this.fScrPt.x), Clazz.floatToInt (this.fScrPt.y), Clazz.floatToInt (this.fScrPt.z));
-if (ptRef != null && (this.slabPlane != null && ptRef.x * this.slabPlane.x + ptRef.y * this.slabPlane.y + ptRef.z * this.slabPlane.z + this.slabPlane.w > 0 || this.depthPlane != null && ptRef.x * this.depthPlane.x + ptRef.y * this.depthPlane.y + ptRef.z * this.depthPlane.z + this.depthPlane.w < 0)) this.fScrPt.z = this.iScrPt.z = 1;
+if (ptRef != null && this.xyzIsSlabbedInternal (ptRef)) this.fScrPt.z = this.iScrPt.z = 1;
 return this.iScrPt;
 }, "JU.T3,JU.T3");
+Clazz.defineMethod (c$, "xyzIsSlabbedInternal", 
+function (ptRef) {
+return (this.slabPlane != null && ptRef.x * this.slabPlane.x + ptRef.y * this.slabPlane.y + ptRef.z * this.slabPlane.z + this.slabPlane.w > 0 || this.depthPlane != null && ptRef.x * this.depthPlane.x + ptRef.y * this.depthPlane.y + ptRef.z * this.depthPlane.z + this.depthPlane.w < 0);
+}, "JU.T3");
 Clazz.defineMethod (c$, "move", 
 function (eval, dRot, dZoom, dTrans, dSlab, floatSecondsTotal, fps) {
 this.movetoThread = J.api.Interface.getOption ("thread.MoveToThread", this.vwr, "tm");

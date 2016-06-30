@@ -56,20 +56,7 @@ if (dimValue < this.minRight) this.minRight = dimValue;
  else if (dimValue > this.maxRight) this.maxRight = dimValue;
 this.eleRight = this.eleRight.addTuple (level + 1, tuple);
 }return this;
-}, "~N,JU.P3");
-Clazz.defineMethod (c$, "dump", 
-function (level, sb) {
-sb.append ("\nnode LEFT" + level);
-this.eleLeft.dump (level + 1, sb);
-for (var i = 0; i < level; ++i) sb.append ("->");
-
-sb.append (" RIGHT" + level);
-this.eleRight.dump (level + 1, sb);
-}, "~N,JU.SB");
-Clazz.defineMethod (c$, "toString", 
-function () {
-return this.eleLeft.toString () + this.dim + ":" + "\n" + this.eleRight.toString ();
-});
+}, "~N,JU.T3");
 c$.getDimensionValue = Clazz.defineMethod (c$, "getDimensionValue", 
 function (pt, dim) {
 switch (dim) {
@@ -80,5 +67,5 @@ return pt.y;
 default:
 return pt.z;
 }
-}, "JU.P3,~N");
+}, "JU.T3,~N");
 });

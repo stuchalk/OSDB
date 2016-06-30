@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JV");
-Clazz.load (["java.util.Hashtable"], ["JV.Connections", "$.Connection", "$.StateManager", "$.Scene"], ["java.util.Arrays", "JU.BS", "$.SB", "JM.Orientation", "JU.BSUtil"], function () {
+Clazz.load (["java.util.Hashtable"], ["JV.Connection", "$.Scene", "$.StateManager", "$.Connections"], ["java.util.Arrays", "JU.BS", "$.SB", "JM.Orientation", "JU.BSUtil"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.saved = null;
@@ -40,7 +40,7 @@ return (objID < 0 ? objID : Clazz.doubleToInt (objID / 11));
 }, "~S");
 c$.getObjectNameFromId = Clazz.defineMethod (c$, "getObjectNameFromId", 
 function (objId) {
-if (objId < 0 || objId >= 8) return null;
+if (objId < 0 || objId >= 7) return null;
 return "background axis1      axis2      axis3      boundbox   unitcell   frank      ".substring (objId * 11, objId * 11 + 11).trim ();
 }, "~N");
 Clazz.makeConstructor (c$, 
@@ -288,7 +288,7 @@ Clazz.defineStatics (c$,
 "OBJ_BOUNDBOX", 4,
 "OBJ_UNITCELL", 5,
 "OBJ_FRANK", 6,
-"OBJ_MAX", 8,
+"OBJ_MAX", 7,
 "objectNameList", "background axis1      axis2      axis3      boundbox   unitcell   frank      ");
 c$ = Clazz.decorateAsClass (function () {
 this.saveName = null;
@@ -339,7 +339,7 @@ var b = modelSet.bondAtoms (modelSet.at[c.atomIndex1], modelSet.at[c.atomIndex2]
 b.colix = c.colix;
 b.shapeVisibilityFlags = c.shapeVisibilityFlags;
 }
-for (var i = this.bondCount; --i >= 0; ) modelSet.bo[i].index = i;
+for (var i = modelSet.bondCount; --i >= 0; ) modelSet.bo[i].index = i;
 
 this.vwr.setShapeProperty (1, "reportAll", null);
 return true;

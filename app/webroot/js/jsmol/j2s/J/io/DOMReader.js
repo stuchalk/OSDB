@@ -22,8 +22,9 @@ this.htParams = htParams;
 }, "JV.FileManager,JV.Viewer,~O,java.util.Map");
 Clazz.defineMethod (c$, "run", 
 function () {
-var info = this.vwr.apiPlatform.getJsObjectInfo (this.aDOMNode, null, null);
-if (info != null) this.htParams.put ("nameSpaceInfo", info);
+var info = null;
+{
+}if (info != null) this.htParams.put ("nameSpaceInfo", info);
 this.vwr.zap (false, true, false);
 this.atomSetCollection = this.vwr.getModelAdapter ().getAtomSetCollectionFromDOM (this.aDOMNode, this.htParams);
 if (Clazz.instanceOf (this.atomSetCollection, String)) return;

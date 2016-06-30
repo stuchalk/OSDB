@@ -11,9 +11,8 @@ Clazz.instantialize (this, arguments);
 Clazz.prepareFields (c$, function () {
 this.ptXY =  new JU.P3i ();
 });
-Clazz.defineMethod (c$, "initShape", 
+Clazz.overrideMethod (c$, "initShape", 
 function () {
-Clazz.superCall (this, J.shape.Sticks, "initShape", []);
 this.myMask = 1023;
 this.reportAll = false;
 });
@@ -50,7 +49,7 @@ this.selectedBonds = null;
 return;
 }if ("bondOrder" === propertyName) {
 if (this.bsOrderSet == null) this.bsOrderSet =  new JU.BS ();
-var order = (value).shortValue ();
+var order = (value).intValue ();
 var iter = (this.selectedBonds != null ? this.ms.getBondIterator (this.selectedBonds) : this.ms.getBondIteratorForType (65535, bs));
 while (iter.hasNext ()) {
 this.bsOrderSet.set (iter.nextIndex ());
@@ -109,7 +108,7 @@ bond.atom2.setClickable (this.vf);
 });
 Clazz.overrideMethod (c$, "getShapeState", 
 function () {
-return this.vwr.getBondState (this, this.bsOrderSet, this.reportAll);
+return null;
 });
 Clazz.overrideMethod (c$, "checkObjectHovered", 
 function (x, y, bsVisible) {

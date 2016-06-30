@@ -44,7 +44,7 @@ var tFactor = wdd.sub (sigma_nu.mul (w3d));
 JU.Logger.info ("sigma_nu = " + sigma_nu);
 var s0 = this.msRdr.cr.asc.getSymmetry ();
 var vu43 = s0.getUnitCellVectors ();
-var vr43 = JU.SimpleUnitCell.getReciprocal (vu43);
+var vr43 = JU.SimpleUnitCell.getReciprocal (vu43, null, 1);
 var mard3 =  new JU.Matrix (null, 3 + this.d, 3);
 var mar3 =  new JU.Matrix (null, 3, 3);
 var mard3a = mard3.getArray ();
@@ -60,7 +60,7 @@ var uc_nu =  new Array (4);
 uc_nu[0] = vu43[0];
 for (var i = 0; i < 3; i++) uc_nu[i + 1] = JU.V3.new3 (a[i][0], a[i][1], a[i][2]);
 
-uc_nu = JU.SimpleUnitCell.getReciprocal (uc_nu);
+uc_nu = JU.SimpleUnitCell.getReciprocal (uc_nu, null, 1);
 this.symmetry = (this.msRdr.cr.getInterface ("JS.Symmetry")).getUnitCell (uc_nu, false, null);
 this.modMatrices =  Clazz.newArray (-1, [sigma_nu, tFactor]);
 if (!setOperators) return;

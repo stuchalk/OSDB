@@ -163,7 +163,6 @@ this.parser.nextStartTag ();
 });
 Clazz.defineMethod (c$, "getYValues", 
  function () {
-var bc =  new JU.BC ();
 var vectorType = this.parser.getAttrValueLC ("type");
 if (vectorType.length == 0) vectorType = this.parser.getAttrValueLC ("vectorType");
 this.parser.nextTag ();

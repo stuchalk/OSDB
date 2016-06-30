@@ -14,7 +14,7 @@ c$.getBondOrderNumberFromOrder = Clazz.defineMethod (c$, "getBondOrderNumberFrom
 function (order) {
 order &= -131073;
 if (order == 131071 || order == 65535) return "0";
-if (JM.Bond.isOrderH (order) || (order & 256) != 0) return JU.Edge.EnumBondOrder.SINGLE.number;
+if (JU.Edge.isOrderH (order) || JU.Edge.isAtropism (order) || (order & 256) != 0) return JU.Edge.EnumBondOrder.SINGLE.number;
 if ((order & 224) != 0) return (order >> 5) + "." + (order & 0x1F);
 return JU.Edge.EnumBondOrder.getNumberFromCode (order);
 }, "~N");
@@ -51,9 +51,37 @@ case 2:
 return JU.Edge.EnumBondOrder.DOUBLE.$$name;
 }
 if ((order & 224) != 0) return "partial " + JU.Edge.getBondOrderNumberFromOrder (order);
-if (JM.Bond.isOrderH (order)) return JU.Edge.EnumBondOrder.H_REGULAR.$$name;
-if ((order & 256) != 0) return JU.Edge.EnumBondOrder.SINGLE.$$name;
+if (JU.Edge.isOrderH (order)) return JU.Edge.EnumBondOrder.H_REGULAR.$$name;
+if ((order & 65537) == 65537) {
+var code = JU.Edge.getAtropismCode (order);
+return "atropisomer_" + (Clazz.doubleToInt (code / 4)) + (code % 4);
+}if ((order & 256) != 0) return JU.Edge.EnumBondOrder.SINGLE.$$name;
 return JU.Edge.EnumBondOrder.getNameFromCode (order);
+}, "~N");
+c$.getAtropismOrder = Clazz.defineMethod (c$, "getAtropismOrder", 
+function (nn, mm) {
+return JU.Edge.getAtropismOrder12 (((nn + 1) << 2) + mm + 1);
+}, "~N,~N");
+c$.getAtropismOrder12 = Clazz.defineMethod (c$, "getAtropismOrder12", 
+function (nnmm) {
+return ((nnmm << 11) | 65537);
+}, "~N");
+c$.getAtropismCode = Clazz.defineMethod (c$, "getAtropismCode", 
+ function (order) {
+return (order >> (11)) & 0xF;
+}, "~N");
+c$.getAtropismNode = Clazz.defineMethod (c$, "getAtropismNode", 
+function (order, a1, isFirst) {
+var i1 = (order >> (11 + (isFirst ? 2 : 0))) & 3;
+return a1.getEdges ()[i1 - 1].getOtherAtomNode (a1);
+}, "~N,JU.Node,~B");
+c$.isAtropism = Clazz.defineMethod (c$, "isAtropism", 
+function (order) {
+return (order & 65537) == 65537;
+}, "~N");
+c$.isOrderH = Clazz.defineMethod (c$, "isOrderH", 
+function (order) {
+return (order & 30720) != 0 && (order & 65537) == 0;
 }, "~N");
 c$.getPartialBondDotted = Clazz.defineMethod (c$, "getPartialBondDotted", 
 function (order) {
@@ -99,7 +127,16 @@ return 131071;
 }, "~N");
 c$.getBondOrderFromString = Clazz.defineMethod (c$, "getBondOrderFromString", 
 function (name) {
-return JU.Edge.EnumBondOrder.getCodeFromName (name);
+var order = JU.Edge.EnumBondOrder.getCodeFromName (name);
+try {
+if (order == 131071 && name.length == 14 && name.toLowerCase ().startsWith ("atropisomer_")) order = JU.Edge.getAtropismOrder (Integer.parseInt (name.substring (12, 13)), Integer.parseInt (name.substring (13, 14)));
+} catch (e) {
+if (Clazz.exceptionOf (e, NumberFormatException)) {
+} else {
+throw e;
+}
+}
+return order;
 }, "~S");
 Clazz.pu$h(self.c$);
 c$ = Clazz.decorateAsClass (function () {
@@ -145,9 +182,14 @@ Clazz.defineEnumConstant (c$, "PARTIAL23", 9, [97, "2.5", "partialTriple"]);
 Clazz.defineEnumConstant (c$, "PARTIAL32", 10, [100, "2.5", "partialTriple2"]);
 Clazz.defineEnumConstant (c$, "AROMATIC_SINGLE", 11, [513, "1", "aromaticSingle"]);
 Clazz.defineEnumConstant (c$, "AROMATIC_DOUBLE", 12, [514, "2", "aromaticDouble"]);
-Clazz.defineEnumConstant (c$, "UNSPECIFIED", 13, [17, "1", "unspecified"]);
+Clazz.defineEnumConstant (c$, "ATROPISOMER", 13, [65537, "1", "atropisomer"]);
+Clazz.defineEnumConstant (c$, "UNSPECIFIED", 14, [17, "1", "unspecified"]);
 c$ = Clazz.p0p ();
 Clazz.defineStatics (c$,
+"BOND_RENDER_SINGLE", 0x10000,
+"TYPE_ATROPISOMER", 0x10001,
+"TYPE_ATROPISOMER_REV", 0x10002,
+"ATROPISOMER_SHIFT", 11,
 "BOND_STEREO_MASK", 0x400,
 "BOND_STEREO_NEAR", 0x401,
 "BOND_STEREO_FAR", 0x411,
@@ -170,7 +212,7 @@ Clazz.defineStatics (c$,
 "BOND_ORDER_ANY", 0x0FFFF,
 "BOND_ORDER_NULL", 0x1FFFF,
 "BOND_STRUT", 0x08000,
-"BOND_PYMOL_SINGLE", 0x10000,
+"BOND_PYMOL_NOMULT", 0x10000,
 "BOND_PYMOL_MULT", 0x18000,
 "BOND_NEW", 0x20000,
 "BOND_HBOND_SHIFT", 11,
@@ -185,12 +227,5 @@ Clazz.defineStatics (c$,
 "BOND_H_MINUS_3", 14336,
 "BOND_H_MINUS_4", 16384,
 "BOND_H_NUCLEOTIDE", 18432,
-"argbsHbondType",  Clazz.newIntArray (-1, [0xFFFF69B4, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFFFF, 0xFFFF00FF, 0xFFFF0000, 0xFFFFA500, 0xFF00FFFF, 0xFF00FF00, 0xFFFF8080]),
-"FLAG_AROMATIC_NONCANONICAL", 64,
-"FLAG_AROMATIC_DOUBLE", 32,
-"FLAG_AROMATIC_DEFINED", 16,
-"FLAG_AROMATIC_STRICT", 8,
-"FLAG_INVERT_STEREOCHEMISTRY", 4,
-"FLAG_IGNORE_STEREOCHEMISTRY", 2,
-"FLAG_NO_AROMATIC", 1);
+"argbsHbondType",  Clazz.newIntArray (-1, [0xFFFF69B4, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFFFF, 0xFFFF00FF, 0xFFFF0000, 0xFFFFA500, 0xFF00FFFF, 0xFF00FF00, 0xFFFF8080]));
 });

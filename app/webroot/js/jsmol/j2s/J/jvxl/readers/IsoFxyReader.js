@@ -63,7 +63,7 @@ this.readSurfaceDataVDR (isMapData);
 }, "~B");
 Clazz.overrideMethod (c$, "getPlane", 
 function (x) {
-var plane = this.getPlane2 (x);
+var plane = this.getPlaneSR (x);
 this.setPlane (x, plane);
 return plane;
 }, "~N");

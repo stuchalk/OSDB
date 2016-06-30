@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.bspt");
-Clazz.load (null, "J.bspt.Bspf", ["JU.AU", "J.bspt.Bspt", "JU.Logger"], function () {
+Clazz.load (null, "J.bspt.Bspf", ["JU.AU", "J.bspt.Bspt"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.dimMax = 0;
 this.bspts = null;
@@ -37,14 +37,6 @@ Clazz.defineMethod (c$, "stats",
 function () {
 for (var i = 0; i < this.bspts.length; ++i) if (this.bspts[i] != null) this.bspts[i].stats ();
 
-});
-Clazz.defineMethod (c$, "dump", 
-function () {
-for (var i = 0; i < this.bspts.length; ++i) {
-JU.Logger.info (">>>>\nDumping bspt #" + i + "\n>>>>");
-this.bspts[i].dump ();
-}
-JU.Logger.info ("<<<<");
 });
 Clazz.defineMethod (c$, "getCubeIterator", 
 function (bsptIndex) {

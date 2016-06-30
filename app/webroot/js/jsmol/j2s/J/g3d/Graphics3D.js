@@ -61,7 +61,9 @@ Clazz.overrideMethod (c$, "destroy",
 function () {
 this.releaseBuffers ();
 this.platform = null;
-this.pixel = this.pixel0 = this.pixelScreened = this.pixelShaded = null;
+this.pixel = this.pixel0 = this.pixelShaded = null;
+this.pixelT0 = null;
+this.pixelScreened = null;
 this.graphicsForMetrics = null;
 });
 Clazz.defineMethod (c$, "setZMargin", 
@@ -140,6 +142,7 @@ this.pass2Flag01 = 0;
 this.colixCurrent = 0;
 this.$haveTranslucentObjects = this.wasScreened = false;
 this.pixel = this.pixel0;
+this.pixel.bgcolor = this.bgcolor;
 this.translucentCoverOnly = !translucentMode;
 if (this.pbuf == null) {
 this.platform.allocateBuffers (this.windowWidth, this.windowHeight, this.antialiasThisFrame, isImageWrite);
@@ -148,6 +151,7 @@ this.zbuf = this.platform.zBuffer;
 this.aobuf = null;
 this.pixel0.setBuf ();
 if (this.pixelT0 != null) this.pixelT0.setBuf ();
+if (this.pixelShaded != null) this.pixelShaded.setBuf ();
 }this.setWidthHeight (this.antialiasThisFrame);
 if (this.pixelScreened != null) this.pixelScreened.width = this.width;
 this.platform.clearBuffer ();
@@ -190,7 +194,7 @@ Clazz.overrideMethod (c$, "endRendering",
 function () {
 if (!this.currentlyRendering) return;
 if (this.pbuf != null) {
-if (this.isPass2 && this.pbufT != null) for (var offset = this.pbufT.length; --offset >= 0; ) J.g3d.Graphics3D.mergeBufferPixel (this.pbuf, offset, this.pbufT[offset], this.bgcolor);
+if (this.isPass2 && this.pbufT != null) for (var offset = this.pbufT.length; --offset >= 0; ) this.pbuf[offset] = J.g3d.Graphics3D.mergeBufferPixel (this.pbuf[offset], this.pbufT[offset], this.bgcolor);
 
 if (this.pixel === this.pixelShaded && this.pixelShaded.zShadePower == 0) this.pixelShaded.showZBuffer ();
 if (this.antialiasThisFrame) this.downsampleFullSceneAntialiasing (false);
@@ -199,10 +203,8 @@ this.platform.notifyEndOfRendering ();
 this.currentlyRendering = this.isPass2 = false;
 });
 c$.mergeBufferPixel = Clazz.defineMethod (c$, "mergeBufferPixel", 
-function (pbuf, offset, argbB, bgcolor) {
-if (argbB == 0) return;
-var argbA = pbuf[offset];
-if (argbA == argbB) return;
+function (argbA, argbB, bgcolor) {
+if (argbB == 0 || argbA == argbB) return argbA;
 if (argbA == 0) argbA = bgcolor;
 var rbA = (argbA & 0x00FF00FF);
 var gA = (argbA & 0x0000FF00);
@@ -243,8 +245,8 @@ rbA = (((rbA << 2) + (rbA << 1) + rbA + rbB) >> 3) & 0x00FF00FF;
 gA = (((gA << 2) + (gA << 1) + gA + gB) >> 3) & 0x0000FF00;
 break;
 }
-pbuf[offset] = 0xFF000000 | rbA | gA;
-}, "~A,~N,~N,~N");
+return 0xFF000000 | rbA | gA;
+}, "~N,~N,~N");
 Clazz.overrideMethod (c$, "getScreenImage", 
 function (isImageWrite) {
 {
@@ -649,7 +651,7 @@ this.line3d.plotDashedLineBits (this.argbCurrent, run, rise, pointA, pointB);
 }, "~N,~N,JU.P3,JU.P3");
 Clazz.overrideMethod (c$, "drawDottedLineBits", 
 function (pointA, pointB) {
-this.line3d.plotDashedLineBits (this.argbCurrent, 2, 1, pointA, pointB);
+this.line3d.plotDashedLineBits (this.argbCurrent, 8, 4, pointA, pointB);
 }, "JU.P3,JU.P3");
 Clazz.overrideMethod (c$, "drawLineXYZ", 
 function (x1, y1, z1, x2, y2, z2) {
@@ -832,13 +834,8 @@ if (z < zbuf[offset]) p.addPixel (offset, z, argb);
 Clazz.defineMethod (c$, "plotImagePixel", 
 function (argb, x, y, z, shade, bgargb, width, height, zbuf, p, transpLog) {
 if (x < 0 || x >= width || y < 0 || y >= height) return;
-var offset = y * width + x;
-if (z < zbuf[offset]) {
-if (shade == 8) (p).addPixel (offset, z, argb);
- else {
-shade += transpLog;
-if (shade <= 7) this.shadeTextPixel (offset, z, argb, bgargb, shade, zbuf);
-}}}, "~N,~N,~N,~N,~N,~N,~N,~N,~A,~O,~N");
+(p).addImagePixel (shade, transpLog, y * width + x, z, argb, bgargb);
+}, "~N,~N,~N,~N,~N,~N,~N,~N,~A,~O,~N");
 Clazz.defineMethod (c$, "plotPixelsClippedRaster", 
 function (count, x, y, zAtLeft, zPastRight, rgb16Left, rgb16Right) {
 var depth;
@@ -1141,12 +1138,6 @@ Clazz.overrideMethod (c$, "initializeOutput",
 function (vwr, privateKey, params) {
 return false;
 }, "JV.Viewer,~N,java.util.Map");
-Clazz.defineMethod (c$, "shadeTextPixel", 
-function (offset, z, argb, bgargb, shade, zbuf) {
-if (bgargb != 0) J.g3d.Graphics3D.mergeBufferPixel (this.pbuf, offset, bgargb, this.bgcolor);
-J.g3d.Graphics3D.mergeBufferPixel (this.pbuf, offset, (argb & 0xFFFFFF) | shade << 24, this.bgcolor);
-zbuf[offset] = z;
-}, "~N,~N,~N,~N,~N,~A");
 Clazz.defineStatics (c$,
 "sort", null,
 "nullShadeIndex", 50);

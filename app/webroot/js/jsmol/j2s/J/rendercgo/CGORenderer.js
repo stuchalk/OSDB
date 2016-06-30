@@ -48,7 +48,7 @@ Clazz.defineMethod (c$, "render2",
 this.diameter = this.cgoMesh.diameter;
 this.width = this.cgoMesh.width;
 this.cmds = this.cgoMesh.cmds;
-if (this.cmds == null || !this.cgoMesh.visible) return;
+if (this.cmds == null || !this.cgoMesh.visible || this.cgoMesh.visibilityFlags == 0) return;
 if (!this.g3d.setC (this.cgoMesh.colix)) {
 this.needTranslucent = true;
 return;

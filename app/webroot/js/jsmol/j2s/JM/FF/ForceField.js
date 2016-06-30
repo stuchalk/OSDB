@@ -278,5 +278,5 @@ Clazz.defineStatics (c$,
 "R3", 0,
 "R4", 1,
 "R5", 2,
-"R56", 3);
+"Raromatic", 3);
 });

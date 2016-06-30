@@ -135,8 +135,7 @@ this.nPointsX = this.voxelCounts[0];
 this.nPointsY = this.voxelCounts[1];
 this.nPointsZ = this.voxelCounts[2];
 this.jvxlData.isSlabbable = ((this.params.dataType & 1024) != 0);
-this.jvxlData.insideOut = this.params.insideOut;
-this.jvxlData.dataXYReversed = this.params.dataXYReversed;
+this.jvxlData.insideOut = this.params.isInsideOut ();
 this.jvxlData.isBicolorMap = this.params.isBicolorMap;
 this.jvxlData.nPointsX = this.nPointsX;
 this.jvxlData.nPointsY = this.nPointsY;
@@ -163,6 +162,7 @@ this.jvxlData.dataMin = this.dataMin;
 this.jvxlData.dataMax = this.dataMax;
 this.jvxlData.cutoff = (this.isJvxl ? this.jvxlCutoff : this.params.cutoff);
 this.jvxlData.isCutoffAbsolute = this.params.isCutoffAbsolute;
+this.jvxlData.isModelConnected = this.params.isModelConnected;
 this.jvxlData.pointsPerAngstrom = 1 / this.volumeData.volumetricVectorLengths[0];
 this.jvxlData.jvxlColorData = "";
 this.jvxlData.jvxlPlane = this.params.thePlane;
@@ -264,9 +264,9 @@ return "-";
 });
 Clazz.overrideMethod (c$, "getPlane", 
 function (x) {
-return this.getPlane2 (x);
+return this.getPlaneSR (x);
 }, "~N");
-Clazz.defineMethod (c$, "getPlane2", 
+Clazz.defineMethod (c$, "getPlaneSR", 
 function (x) {
 if (this.yzCount == 0) this.initPlanes ();
 if (this.qpc != null) this.qpc.getPlane (x, this.yzPlanes[x % 2]);

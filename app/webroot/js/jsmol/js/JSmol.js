@@ -2,6 +2,8 @@
 // author: Bob Hanson, hansonr@stolaf.edu	4/16/2012
 // author: Takanori Nakane biochem_fan 6/12/2012
 
+// BH 12/17/2015 4:43:05 PM adding Jmol._requestRepaint to allow for MSIE9 not having 3imationFrame
+// BH 12/13/2015 11:44:39 AM using requestAnimationFrame instead of setTimeout (fixes Chrome slowness)
 // BH 10/12/2015 1:15:39 PM fix for set echo image in JavaScript
 // BH 6/12/2015 6:08:08 AM image loading from PNGJ file bytes using data uri not working
 // BH 3/28/2015 6:18:33 AM refactoring to generalize for non-Jmol-related SwingJS applications
@@ -432,7 +434,7 @@
         applet._appletPanel.update(null)
     };
 		if (asNewThread) {
-			setTimeout(f);
+			requestAnimationFrame(f); // requestAnimationFrame or (MSIE 9) setTimeout
 		} else {
       f();
 		}
@@ -457,9 +459,8 @@
           image.onload = function() {Jmol._loadImage(platform, echoName, path, null, fOnload, image)};
     			image.src = path;
           return null;
-        } else {
-              System.out.println("Jsmol.js Jmol._loadImage using data URI for " + id) 
         }
+        System.out.println("Jsmol.js Jmol._loadImage using data URI for " + id) 
         image.src = (typeof bytes == "string" ? bytes : 
           "data:" + JU.Rdr.guessMimeTypeForBytes(bytes) + ";base64," + JU.Base64.getBase64(bytes));
       }

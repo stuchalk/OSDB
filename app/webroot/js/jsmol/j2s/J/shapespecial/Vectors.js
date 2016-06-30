@@ -3,8 +3,7 @@ Clazz.load (["J.shape.AtomShape"], "J.shapespecial.Vectors", ["J.atomdata.Radius
 c$ = Clazz.declareType (J.shapespecial, "Vectors", J.shape.AtomShape);
 Clazz.defineMethod (c$, "initModelSet", 
 function () {
-if (!(this.isActive = this.ms.modelSetHasVibrationVectors ())) return;
-Clazz.superCall (this, J.shapespecial.Vectors, "initModelSet", []);
+if (!!(this.isActive = this.ms.modelSetHasVibrationVectors ())) Clazz.superCall (this, J.shapespecial.Vectors, "initModelSet", []);
 });
 Clazz.overrideMethod (c$, "setProperty", 
 function (propertyName, value, bsSelected) {

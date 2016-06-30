@@ -268,11 +268,11 @@ this.shellCount = 0;
 this.nBasisFunctions = 0;
 var isD6F10 = (this.line.indexOf ("cartesian") >= 0);
 if (isD6F10) {
-this.getDFMap (J.adapter.readers.quantum.NWChemReader.$DC_LIST, 4, J.adapter.readers.quantum.BasisFunctionReader.CANONICAL_DC_LIST, 3);
-this.getDFMap (J.adapter.readers.quantum.NWChemReader.$FC_LIST, 6, J.adapter.readers.quantum.BasisFunctionReader.CANONICAL_FC_LIST, 3);
+this.getDFMap (J.adapter.readers.quantum.NWChemReader.$DC_LIST, 4, "DXX   DYY   DZZ   DXY   DXZ   DYZ", 3);
+this.getDFMap (J.adapter.readers.quantum.NWChemReader.$FC_LIST, 6, "XXX   YYY   ZZZ   XYY   XXY   XXZ   XZZ   YZZ   YYZ   XYZ", 3);
 } else {
-this.getDFMap (J.adapter.readers.quantum.NWChemReader.$DS_LIST, 3, J.adapter.readers.quantum.BasisFunctionReader.CANONICAL_DS_LIST, 2);
-this.getDFMap (J.adapter.readers.quantum.NWChemReader.$FS_LIST, 5, J.adapter.readers.quantum.BasisFunctionReader.CANONICAL_FS_LIST, 2);
+this.getDFMap (J.adapter.readers.quantum.NWChemReader.$DS_LIST, 3, "d0    d1+   d1-   d2+   d2-", 2);
+this.getDFMap (J.adapter.readers.quantum.NWChemReader.$FS_LIST, 5, "f0    f1+   f1-   f2+   f2-   f3+   f3-", 2);
 }this.shells =  new JU.Lst ();
 var atomInfo =  new java.util.Hashtable ();
 var atomSym = null;

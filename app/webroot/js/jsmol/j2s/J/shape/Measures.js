@@ -66,7 +66,7 @@ for (var i = this.measurements.size (); --i >= 0; ) if ((mt = this.measurements.
 return;
 }if ("select" === propertyName) {
 var bs = value;
-if (bs == null || JU.BSUtil.cardinalityOf (bs) == 0) {
+if (JU.BSUtil.cardinalityOf (bs) == 0) {
 this.bsSelected = null;
 } else {
 this.bsSelected =  new JU.BS ();
@@ -485,9 +485,5 @@ if (modelIndex >= 0 && !bsModels.get (modelIndex)) continue out;
 }}
 m.isVisible = true;
 }
-});
-Clazz.overrideMethod (c$, "getShapeState", 
-function () {
-return this.vwr.getMeasurementState (this, this.measurements, this.measurementCount, this.font3d, this.defaultTickInfo);
 });
 });

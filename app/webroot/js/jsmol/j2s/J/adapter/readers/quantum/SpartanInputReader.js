@@ -1,22 +1,20 @@
 Clazz.declarePackage ("J.adapter.readers.quantum");
 Clazz.load (["J.adapter.readers.quantum.BasisFunctionReader"], "J.adapter.readers.quantum.SpartanInputReader", ["JU.PT", "J.adapter.smarter.Bond", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
-this.modelName = null;
 this.modelAtomCount = 0;
-this.ac = 0;
 this.bondData = "";
 this.constraints = "";
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.quantum, "SpartanInputReader", J.adapter.readers.quantum.BasisFunctionReader);
 Clazz.defineMethod (c$, "readInputRecords", 
 function () {
-var ac0 = this.ac;
-this.readInputHeader ();
+var ac0 = this.asc.ac;
+var modelName = this.readInputHeader ();
 while (this.rd () != null) {
 var tokens = this.getTokens ();
 if (tokens.length == 2 && this.parseIntStr (tokens[0]) != -2147483648 && this.parseIntStr (tokens[1]) >= 0) break;
 }
-if (this.line == null) return;
+if (this.line == null) return null;
 this.readInputAtoms ();
 this.discardLinesUntilContains ("ATOMLABELS");
 if (this.line != null) this.readAtomNames ();
@@ -27,7 +25,7 @@ if (this.line != null && this.line.indexOf ("BEGINCONSTRAINTS") >= 0) this.readC
 }while (this.line != null && this.line.indexOf ("END ") < 0 && this.line.indexOf ("MOLSTATE") < 0) this.rd ();
 
 if (this.line != null && this.line.indexOf ("MOLSTATE") >= 0) this.readTransform ();
-if (this.asc.ac > 0) this.asc.setAtomSetName (this.modelName);
+return modelName;
 });
 Clazz.defineMethod (c$, "readConstraints", 
  function () {
@@ -51,8 +49,7 @@ Clazz.defineMethod (c$, "readInputHeader",
 while (this.rd () != null && !this.line.startsWith (" ")) {
 }
 this.rd ();
-this.modelName = this.line + ";";
-this.modelName = this.modelName.substring (0, this.modelName.indexOf (";")).trim ();
+return this.line.substring (0, (this.line + ";").indexOf (";")).trim ();
 });
 Clazz.defineMethod (c$, "readInputAtoms", 
  function () {
@@ -62,12 +59,11 @@ var tokens = this.getTokens ();
 this.addAtomXYZSymName (tokens, 1, J.adapter.smarter.AtomSetCollectionReader.getElementSymbol (this.parseIntStr (tokens[0])), null);
 this.modelAtomCount++;
 }
-this.ac = this.asc.ac;
-if (this.debugging) JU.Logger.debug (this.ac + " atoms read");
+if (this.debugging) JU.Logger.debug (this.asc.ac + " atoms read");
 });
 Clazz.defineMethod (c$, "readAtomNames", 
  function () {
-var atom0 = this.ac - this.modelAtomCount;
+var atom0 = this.asc.ac - this.modelAtomCount;
 for (var i = 0; i < this.modelAtomCount; i++) {
 this.line = this.rd ().trim ();
 var name = this.line.substring (1, this.line.length - 1);

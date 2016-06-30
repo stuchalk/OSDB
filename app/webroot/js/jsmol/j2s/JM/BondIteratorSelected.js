@@ -26,7 +26,7 @@ return (this.iBond >= 0 && this.iBond < this.bondCount);
 var bond = this.bonds[this.iBond];
 if (this.bondType != 65535 && (bond.order & this.bondType) == 0) {
 continue;
-} else if (this.bondType == 65535 && bond.order != 32768) continue;
+} else if (this.bondType == 65535 && bond.order == 32768) continue;
 var isSelected1 = this.bsSelected.get (bond.atom1.i);
 var isSelected2 = this.bsSelected.get (bond.atom2.i);
 if ((!this.bondSelectionModeOr && isSelected1 && isSelected2) || (this.bondSelectionModeOr && (isSelected1 || isSelected2))) return true;

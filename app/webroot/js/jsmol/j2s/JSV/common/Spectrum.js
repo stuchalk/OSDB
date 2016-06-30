@@ -136,7 +136,12 @@ return (this.selectedPeak != null ? this.selectedPeak.getTitle () : this.highlig
 Clazz.defineMethod (c$, "getTitleLabel", 
 function () {
 var type = (this.peakList == null || this.peakList.size () == 0 ? this.getQualifiedDataType () : this.peakList.get (0).getType ());
-return (type != null && type.length > 0 ? type + " " : "") + this.getTitle ();
+if (type != null && type.startsWith ("NMR")) {
+if (this.nucleusY != null && !this.nucleusY.equals ("?")) {
+type = "2D" + type;
+} else {
+type = this.nucleusX + type;
+}}return (type != null && type.length > 0 ? type + " " : "") + this.getTitle ();
 });
 Clazz.defineMethod (c$, "setNextPeak", 
 function (coord, istep) {

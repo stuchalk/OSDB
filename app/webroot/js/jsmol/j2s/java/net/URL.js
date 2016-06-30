@@ -1,5 +1,5 @@
 Clazz.declarePackage ("java.net");
-Clazz.load (["java.util.Hashtable"], "java.net.URL", ["java.io.IOException", "java.lang.Character", "$.Error", "java.net.MalformedURLException"], function () {
+Clazz.load (["java.util.Hashtable"], "java.net.URL", ["java.lang.Character", "$.Error", "java.net.MalformedURLException"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.protocol = null;
 this.host = null;
@@ -13,7 +13,7 @@ this.ref = null;
 this.handler = null;
 this.$hashCode = -1;
 Clazz.instantialize (this, arguments);
-}, java.net, "URL", null, java.io.Serializable);
+}, java.net, "URL");
 Clazz.makeConstructor (c$, 
 function (context, spec, handler) {
 {

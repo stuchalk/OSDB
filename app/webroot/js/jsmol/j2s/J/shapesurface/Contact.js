@@ -78,6 +78,7 @@ this.thisMesh.setMerged (true);
 this.thisMesh.nSets = 0;
 this.thisMesh.info = null;
 var func = null;
+var fullyLit = true;
 switch (displayType) {
 case 1073741961:
 func = "(a>b?a:b)";
@@ -92,7 +93,7 @@ break;
 }
 switch (displayType) {
 case 1073742036:
-colorByType = false;
+colorByType = fullyLit = false;
 bs = JU.BSUtil.copy (bsA);
 bs.or (bsB);
 if (parameters[0] < 0) parameters[0] = 0;
@@ -104,12 +105,12 @@ this.setPropI ("nci", Boolean.TRUE, null);
 break;
 case 1073742135:
 case 2097180:
-colorByType = false;
+colorByType = fullyLit = false;
 this.thisMesh.nSets = 1;
 this.newSurface (2097180, null, bsA, bsB, rd, null, null, colorDensity, null, saProbeRadius);
 break;
 case 1073741875:
-colorByType = false;
+colorByType = fullyLit = false;
 this.thisMesh.nSets = 1;
 this.newSurface (554176565, null, bsA, bsB, rd, null, null, false, null, 0);
 this.sg.initState ();
@@ -152,7 +153,7 @@ this.thisMesh.bsVdw.or (bsB);
 if (colorDensity) {
 this.setPropI ("pointSize", Float.$valueOf (ptSize), null);
 } else {
-this.setPropI ("token", Integer.$valueOf (1073741964), null);
+this.setPropI ("token", Integer.$valueOf (fullyLit ? 1073741964 : 1073741958), null);
 }if (this.thisMesh.slabOptions != null) {
 this.thisMesh.slabOptions = null;
 this.thisMesh.polygonCount0 = -1;
@@ -256,7 +257,7 @@ var iter = this.vwr.getSelectedAtomIterator (bsB, isSelf, false, isMultiModel);
 for (var ia = bsA.nextSetBit (0); ia >= 0; ia = bsA.nextSetBit (ia + 1)) {
 var atomA = this.atoms[ia];
 var vdwA = atomA.getVanderwaalsRadiusFloat (this.vwr, J.c.VDW.AUTO);
-if (isMultiModel) this.vwr.setIteratorForPoint (iter, -1, ad.atomXyz[ia], ad.atomRadius[ia] + maxRadius);
+if (isMultiModel) this.vwr.setIteratorForPoint (iter, -1, ad.atoms[ia], ad.atomRadius[ia] + maxRadius);
  else this.vwr.setIteratorForAtom (iter, ia, ad.atomRadius[ia] + maxRadius);
 while (iter.hasNext ()) {
 var ib = iter.next ();

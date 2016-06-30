@@ -31,11 +31,10 @@ this.nx = this.binarydoc.readInt ();
 if (this.nx < 0 || this.nx > 256) {
 this.setStream (null, false);
 this.nx = this.binarydoc.swapBytesI (this.nx);
-if (this.params.thePlane == null) this.params.insideOut = !this.params.insideOut;
 if (this.nx < 0 || this.nx > 1000) {
 JU.Logger.info ("nx=" + this.nx + " not displayable as MRC file");
 throw  new Exception ("MRC file type not readable");
-}JU.Logger.info ("reading nonstandard little-endian MRC file");
+}JU.Logger.info ("reading little-endian MRC file");
 }this.ny = this.binarydoc.readInt ();
 this.nz = this.binarydoc.readInt ();
 this.mode = this.binarydoc.readInt ();
@@ -72,9 +71,12 @@ if (this.params.thePlane == null) this.params.insideOut = !this.params.insideOut
 }this.mapc = this.binarydoc.readInt ();
 this.mapr = this.binarydoc.readInt ();
 this.maps = this.binarydoc.readInt ();
-JU.Logger.info ("MRC header: mapc mapr maps: " + this.mapc + " " + this.mapr + " " + this.maps);
-if (this.mapc != 1 && this.params.thePlane == null) this.params.dataXYReversed = true;
-this.dmin = this.binarydoc.readFloat ();
+var s = "" + this.mapc + this.mapr + this.maps;
+JU.Logger.info ("MRC header: mapc mapr maps: " + s);
+if (this.params.thePlane == null && "21321".indexOf (s) >= 1) {
+JU.Logger.info ("MRC header: data are xy-reversed");
+this.params.dataXYReversed = true;
+}this.dmin = this.binarydoc.readFloat ();
 this.dmax = this.binarydoc.readFloat ();
 this.dmean = this.binarydoc.readFloat ();
 JU.Logger.info ("MRC header: dmin,dmax,dmean: " + this.dmin + "," + this.dmax + "," + this.dmean);
@@ -95,14 +97,14 @@ JU.Logger.info ("MRC header: labels: " + nlabel);
 this.labels =  new Array (nlabel);
 if (nlabel > 0) this.labels[0] = "Jmol MrcBinaryReader";
 for (var i = 0; i < 10; i++) {
-var s = this.binarydoc.readString (80).trim ();
+s = this.binarydoc.readString (80).trim ();
 if (i < nlabel) {
 this.labels[i] = s;
 JU.Logger.info (this.labels[i]);
 }}
 for (var i = 0; i < nsymbt; i += 80) {
 var position = this.binarydoc.getPosition ();
-var s = this.binarydoc.readString (80).trim ();
+s = this.binarydoc.readString (80).trim ();
 if (s.indexOf ('\0') != s.lastIndexOf ('\0')) {
 JU.Logger.error ("File indicates " + nsymbt + " symmetry lines, but " + i + " found!");
 this.binarydoc.seek (position);

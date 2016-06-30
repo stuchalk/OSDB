@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JU");
-Clazz.load (["JU.Triangulator", "JU.P3i"], "JU.TriangleData", ["JU.AU", "$.BS", "$.P3", "JU.BSUtil"], function () {
+Clazz.load (["JU.Triangulator", "JU.P3i"], "JU.TriangleData", ["JU.AU", "$.BS", "$.P3"], function () {
 c$ = Clazz.declareType (JU, "TriangleData", null, JU.Triangulator);
 Clazz.overrideMethod (c$, "intersectPlane", 
 function (plane, v, flags) {
@@ -33,7 +33,7 @@ for (var i = 0; i < triangles.length; i++) {
 bsPoints.set (triangles[i]);
 if (i % 4 == 2) i++;
 }
-var nPoints = JU.BSUtil.cardinalityOf (bsPoints);
+var nPoints = bsPoints.cardinality ();
 var pts =  new Array (nPoints);
 v.addLast (pts);
 var list =  Clazz.newIntArray (12, 0);

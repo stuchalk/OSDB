@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.jvxl.readers");
-Clazz.load (null, "J.jvxl.readers.XmlReader", ["JU.P3", "$.PT", "$.SB", "$.XmlUtil", "JU.Escape"], function () {
+Clazz.load (null, "J.jvxl.readers.XmlReader", ["JU.P3", "$.PT", "$.SB", "JU.Escape"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.br = null;
 this.line = null;
@@ -81,8 +81,12 @@ if ((ch = data.charAt (pt1)) == '"') quoted = !quoted;
 if (pt1 >= pt2) return "";
 while (JU.PT.isWhitespace (data.charAt (++pt1))) {
 }
-return JU.XmlUtil.unwrapCdata (data.substring (pt1, pt2));
+return J.jvxl.readers.XmlReader.unwrapCdata (data.substring (pt1, pt2));
 }, "~S,~S,~S,~B");
+c$.unwrapCdata = Clazz.defineMethod (c$, "unwrapCdata", 
+function (s) {
+return (s.startsWith ("<![CDATA[") && s.endsWith ("]]>") ? JU.PT.rep (s.substring (9, s.length - 3), "]]]]><![CDATA[>", "]]>") : s);
+}, "~S");
 c$.getXmlAttrib = Clazz.defineMethod (c$, "getXmlAttrib", 
 function (data, what) {
 var nexta =  Clazz.newIntArray (1, 0);

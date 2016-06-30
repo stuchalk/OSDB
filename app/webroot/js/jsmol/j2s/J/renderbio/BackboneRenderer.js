@@ -9,18 +9,21 @@ function (bioShape) {
 var checkPass2 = (!this.isExport && !this.vwr.gdata.isPass2);
 var showSteps = this.vwr.getBoolean (603979811) && bioShape.bioPolymer.isNucleic ();
 this.isDataFrame = this.vwr.ms.isJmolDataFrameForModel (bioShape.modelIndex);
+var n = this.monomerCount;
+var atoms = this.ms.at;
 for (var i = this.bsVisible.nextSetBit (0); i >= 0; i = this.bsVisible.nextSetBit (i + 1)) {
-var atomA = this.ms.at[this.leadAtomIndices[i]];
+var atomA = atoms[this.leadAtomIndices[i]];
 var cA = this.colixes[i];
 this.mad = this.mads[i];
-this.drawSegment (atomA, this.ms.at[this.leadAtomIndices[i + 1]], cA, this.colixes[i + 1], 100, checkPass2);
+var i1 = (i + 1) % n;
+this.drawSegment (atomA, atoms[this.leadAtomIndices[i1]], cA, this.colixes[i1], 100, checkPass2);
 if (showSteps) {
 var g = this.monomers[i];
 var bps = g.getBasePairs ();
 if (bps != null) {
 for (var j = bps.size (); --j >= 0; ) {
 var iAtom = bps.get (j).getPartnerAtom (g);
-if (iAtom > i) this.drawSegment (atomA, this.ms.at[iAtom], cA, cA, 1000, checkPass2);
+if (iAtom > i) this.drawSegment (atomA, atoms[iAtom], cA, cA, 1000, checkPass2);
 }
 }}}
 }, "J.shapebio.BioShape");

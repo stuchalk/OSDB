@@ -55,8 +55,7 @@ this.atomSymbolicMap =  new java.util.Hashtable ();
 });
 Clazz.defineMethod (c$, "setCollectionName", 
 function (collectionName) {
-if (collectionName == null || (collectionName = collectionName.trim ()).length == 0) return;
-this.collectionName = collectionName;
+if (collectionName != null && (collectionName = collectionName.trim ()).length > 0) this.collectionName = collectionName;
 }, "~S");
 Clazz.defineMethod (c$, "clearGlobalBoolean", 
 function (globalIndex) {
@@ -610,6 +609,7 @@ this.setCurrentModelInfo ("title", this.collectionName);
 }, "~B");
 Clazz.defineMethod (c$, "getAtomSetAtomIndex", 
 function (i) {
+if (i < 0) System.out.println ("??");
 return this.atomSetAtomIndexes[i];
 }, "~N");
 Clazz.defineMethod (c$, "getAtomSetAtomCount", 
@@ -622,10 +622,13 @@ return this.atomSetBondCounts[i];
 }, "~N");
 Clazz.defineMethod (c$, "setAtomSetName", 
 function (atomSetName) {
+if (atomSetName == null) return;
 if (this.isTrajectory) {
 this.setTrajectoryName (atomSetName);
 return;
-}this.setModelInfoForSet ("name", atomSetName, this.iSet);
+}var name0 = (this.iSet < 0 ? null : this.getAtomSetName (this.iSet));
+this.setModelInfoForSet ("name", atomSetName, this.iSet);
+if (this.reader != null && atomSetName.length > 0 && !atomSetName.equals (name0)) this.reader.appendLoadNote (atomSetName);
 if (!this.allowMultiple) this.setCollectionName (atomSetName);
 }, "~S");
 Clazz.defineMethod (c$, "setTrajectoryName", 

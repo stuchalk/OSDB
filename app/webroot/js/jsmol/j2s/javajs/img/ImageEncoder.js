@@ -17,6 +17,7 @@ this.out = out;
 this.logging = (Boolean.TRUE === params.get ("logging"));
 this.width = (params.get ("imageWidth")).intValue ();
 this.height = (params.get ("imageHeight")).intValue ();
+System.out.println ("ImageEncoder width height " + this.width + " " + this.height);
 this.pixels = params.get ("imagePixels");
 this.date = params.get ("date");
 var q = params.get ("quality");

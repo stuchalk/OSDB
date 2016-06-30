@@ -7,7 +7,7 @@ Clazz.instantialize (this, arguments);
 Clazz.overrideMethod (c$, "renderBioShape", 
 function (bioShape) {
 if (!this.setupRR (bioShape, false)) return;
-if (this.isNucleic) {
+if (this.isNucleic || this.isPhosphorusOnly) {
 if (this.nucleicRenderer == null) this.nucleicRenderer = J.api.Interface.getInterface ("J.renderbio.NucleicRenderer", this.vwr, "render");
 this.calcScreenControlPoints ();
 this.nucleicRenderer.renderNucleic (this);

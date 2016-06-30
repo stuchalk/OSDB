@@ -1,8 +1,7 @@
 Clazz.declarePackage ("J.io");
-Clazz.load (null, "J.io.JmolBinary", ["java.io.BufferedInputStream", "java.util.Hashtable", "JU.PT", "$.Rdr", "$.SB", "J.api.Interface", "JU.Logger", "JV.FileManager"], function () {
+Clazz.load (null, "J.io.JmolBinary", ["java.io.BufferedInputStream", "java.util.Hashtable", "$.StringTokenizer", "JU.Lst", "$.PT", "$.Rdr", "$.SB", "J.api.Interface", "JU.Escape", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.fm = null;
-this.jzu = null;
 Clazz.instantialize (this, arguments);
 }, J.io, "JmolBinary");
 Clazz.makeConstructor (c$, 
@@ -13,70 +12,52 @@ function (fm) {
 this.fm = fm;
 return this;
 }, "JV.FileManager");
-c$.getEmbeddedScript = Clazz.defineMethod (c$, "getEmbeddedScript", 
-function (script) {
-if (script == null) return script;
-var pt = script.indexOf ("**** Jmol Embedded Script ****");
-if (pt < 0) return script;
-var pt1 = script.lastIndexOf ("/*", pt);
-var pt2 = script.indexOf ((script.charAt (pt1 + 2) == '*' ? "*" : "") + "*/", pt);
-if (pt1 >= 0 && pt2 >= pt) script = script.substring (pt + "**** Jmol Embedded Script ****".length, pt2) + "\n";
-while ((pt1 = script.indexOf (" #Jmol...\u0000")) >= 0) script = script.substring (0, pt1) + script.substring (pt1 + " #Jmol...\u0000".length + 4);
-
-if (JU.Logger.debugging) JU.Logger.debug (script);
-return script;
-}, "~S");
-Clazz.defineMethod (c$, "getJzu", 
- function () {
-return (this.jzu == null ? this.jzu = J.api.Interface.getOption ("io.JmolUtil", this.fm.vwr, "file") : this.jzu);
-});
-Clazz.defineMethod (c$, "getAtomSetCollectionOrBufferedReaderFromZip", 
-function (adapter, is, fileName, zipDirectory, htParams, asBufferedReader) {
-return this.getJzu ().getAtomSetCollectionOrBufferedReaderFromZip (this.fm.vwr, adapter, is, fileName, zipDirectory, htParams, 1, asBufferedReader);
-}, "J.api.JmolAdapter,java.io.InputStream,~S,~A,java.util.Map,~B");
-Clazz.defineMethod (c$, "getImage", 
-function (fullPathNameOrBytes, echoName, forceSync) {
-return this.getJzu ().getImage (this.fm.vwr, fullPathNameOrBytes, echoName, forceSync);
-}, "~O,~S,~B");
-c$.getFileReferences = Clazz.defineMethod (c$, "getFileReferences", 
-function (script, fileList) {
-for (var ipt = 0; ipt < JV.FileManager.scriptFilePrefixes.length; ipt++) {
-var tag = JV.FileManager.scriptFilePrefixes[ipt];
-var i = -1;
-while ((i = script.indexOf (tag, i + 1)) >= 0) {
-var s = JU.PT.getQuotedStringAt (script, i);
-if (s.indexOf ("::") >= 0) s = JU.PT.split (s, "::")[1];
-fileList.addLast (s);
+Clazz.defineMethod (c$, "getSpartanData", 
+function (is, zipDirectory) {
+var data =  new JU.SB ();
+data.append ("Zip File Directory: ").append ("\n").append (JU.Escape.eAS (zipDirectory, true)).append ("\n");
+var fileData =  new java.util.Hashtable ();
+this.fm.vwr.getJzt ().getAllZipData (is,  Clazz.newArray (-1, []), "", "Molecule", "__MACOSX", fileData);
+var prefix = "|";
+var outputData = fileData.get (prefix + "output");
+if (outputData == null) outputData = fileData.get ((prefix = "|" + zipDirectory[1]) + "output");
+data.append (outputData);
+var files = this.getSpartanFileList (prefix, this.getSpartanDirs (outputData));
+for (var i = 2; i < files.length; i++) {
+var name = files[i];
+if (fileData.containsKey (name)) data.append (fileData.get (name));
+ else data.append (name + "\n");
 }
-}
-}, "~S,JU.Lst");
-c$.getManifestScriptPath = Clazz.defineMethod (c$, "getManifestScriptPath", 
-function (manifest) {
-if (manifest.indexOf ("$SCRIPT_PATH$") >= 0) return "";
-var ch = (manifest.indexOf ('\n') >= 0 ? "\n" : "\r");
-if (manifest.indexOf (".spt") >= 0) {
-var s = JU.PT.split (manifest, ch);
-for (var i = s.length; --i >= 0; ) if (s[i].indexOf (".spt") >= 0) return "|" + JU.PT.trim (s[i], "\r\n \t");
-
-}return null;
-}, "~S");
-Clazz.defineMethod (c$, "spartanFileGetRdr", 
-function (name, info) {
+return data;
+}, "java.io.InputStream,~A");
+Clazz.defineMethod (c$, "getSpartanFileList", 
+function (name, isTypeCheckOnly) {
+var pt = name.lastIndexOf (".spardir");
+var info = null;
+if (name.endsWith (".spardir.zip")) {
+info =  Clazz.newArray (-1, ["SpartanSmol", "Directory Entry ", name + "|output"]);
+} else {
+name = name.$replace ('\\', '/');
+if (!name.endsWith (".spardir") && name.indexOf (".spardir/") < 0) return null;
+info = (name.lastIndexOf ("/") > pt ?  Clazz.newArray (-1, ["SpartanSmol", "Directory Entry ", name + "/input", name + "/archive", name + "/parchive", name + "/Molecule:asBinaryString", name + "/proparc"]) :  Clazz.newArray (-1, ["SpartanSmol", "Directory Entry ", name + "/output"]));
+}if (isTypeCheckOnly) return info;
 var name00 = name;
 var header = info[1];
+var outputFileName = info[2];
 var fileData =  new java.util.Hashtable ();
 if (info.length == 3) {
-var name0 = this.spartanGetObjectAsSections (info[2], header, fileData);
-fileData.put ("OUTPUT", name0);
-info = this.spartanFileList (name, fileData.get (name0));
+outputFileName = this.spartanGetObjectAsSections (outputFileName, header, fileData);
+fileData.put ("OUTPUT", outputFileName);
+info = this.spartanFileList (name, fileData.get (outputFileName));
 if (info.length == 3) {
-name0 = this.spartanGetObjectAsSections (info[2], header, fileData);
-fileData.put ("OUTPUT", name0);
-info = this.spartanFileList (info[1], fileData.get (name0));
+outputFileName = this.spartanGetObjectAsSections (info[2], header, fileData);
+fileData.put ("OUTPUT", outputFileName);
+info = this.spartanFileList (info[1], fileData.get (outputFileName));
 }}var sb =  new JU.SB ();
-if (fileData.get ("OUTPUT") != null) sb.append (fileData.get (fileData.get ("OUTPUT")));
 var s;
-for (var i = 2; i < info.length; i++) {
+if (fileData.get ("OUTPUT") != null) {
+sb.append (fileData.get (fileData.get ("OUTPUT")));
+}for (var i = 2; i < info.length; i++) {
 name = info[i];
 name = this.spartanGetObjectAsSections (name, header, fileData);
 JU.Logger.info ("reading " + name);
@@ -84,27 +65,88 @@ s = fileData.get (name);
 sb.append (s);
 }
 s = sb.toString ();
-this.fm.spardirPut (name00.$replace ('\\', '/'), s.getBytes ());
+if (this.fm.spardirCache == null) this.fm.spardirCache =  new java.util.Hashtable ();
+this.fm.spardirCache.put (name00.$replace ('\\', '/'), s.getBytes ());
 return JU.Rdr.getBR (s);
-}, "~S,~A");
+}, "~S,~B");
 Clazz.defineMethod (c$, "spartanFileList", 
- function (name, zipDirectory) {
-return this.getJzu ().spartanFileList (this.fm.vwr.getJzt (), name, zipDirectory);
+ function (name, outputFileData) {
+var dirNums = this.getSpartanDirs (outputFileData);
+if (dirNums.length == 0) {
+if (name.endsWith (".spardir")) return this.getSpartanFileList (name,  Clazz.newArray (-1, ["M0001"]));
+if (name.endsWith (".spardir.zip")) {
+if (outputFileData.indexOf (".zip|output") >= 0) {
+var sname = name.$replace ('\\', '/');
+var pt = name.lastIndexOf (".spardir");
+pt = sname.lastIndexOf ("/");
+sname = name + "|" + JU.PT.rep (name.substring (pt + 1, name.length - 4), "DROP_", "");
+return  Clazz.newArray (-1, ["SpartanSmol", sname, sname + "/output"]);
+}}}return this.getSpartanFileList (name, dirNums);
 }, "~S,~S");
+Clazz.defineMethod (c$, "getSpartanDirs", 
+ function (outputFileData) {
+if (outputFileData == null) return  Clazz.newArray (-1, []);
+var v =  new JU.Lst ();
+var token;
+var lastToken = "";
+if (outputFileData.startsWith ("java.io.FileNotFoundException") || outputFileData.startsWith ("FILE NOT FOUND") || outputFileData.indexOf ("<html") >= 0) return  new Array (0);
+try {
+var tokens =  new java.util.StringTokenizer (outputFileData, " \t\r\n");
+while (tokens.hasMoreTokens ()) {
+if ((token = tokens.nextToken ()).equals (")")) v.addLast (lastToken);
+ else if (token.equals ("Start-") && tokens.nextToken ().equals ("Molecule")) v.addLast (JU.PT.split (tokens.nextToken (), "\"")[1]);
+ else if (token.equals ("Molecules")) {
+var n = JU.PT.parseInt (lastToken);
+for (var i = 1; i <= n; i++) {
+var s = "0000" + i;
+v.addLast ("M" + s.substring (s.length - 4));
+}
+}lastToken = token;
+}
+} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+} else {
+throw e;
+}
+}
+return (v.size () == 0 ?  Clazz.newArray (-1, ["M0001"]) : v.toArray ( new Array (v.size ())));
+}, "~S");
+Clazz.defineMethod (c$, "getSpartanFileList", 
+ function (name, dirNums) {
+var files =  new Array (2 + dirNums.length * 6);
+files[0] = "SpartanSmol";
+files[1] = "Directory Entry ";
+var pt = 2;
+name = name.$replace ('\\', '/');
+if (name.endsWith ("/")) name = name.substring (0, name.length - 1);
+var sep = (name.equals ("|") ? "" : name.endsWith (".zip") ? "|" : "/");
+for (var i = 0; i < dirNums.length; i++) {
+var path = name + sep;
+var s = dirNums[i];
+path += (JU.PT.isDigit (s.charAt (0)) ? "Profile." + s : s) + "/";
+files[pt++] = path + "#JMOL_MODEL " + dirNums[i];
+files[pt++] = path + "input";
+files[pt++] = path + "archive";
+files[pt++] = path + "parchive";
+files[pt++] = path + "Molecule:asBinaryString";
+files[pt++] = path + "proparc";
+}
+return files;
+}, "~S,~A");
 Clazz.defineMethod (c$, "spartanGetObjectAsSections", 
  function (name, header, fileData) {
 if (name == null) return null;
 var subFileList = null;
 var asBinaryString = false;
-var name0 = name.$replace ('\\', '/');
+var path = name.$replace ('\\', '/');
 if (name.indexOf (":asBinaryString") >= 0) {
 asBinaryString = true;
 name = name.substring (0, name.indexOf (":asBinaryString"));
 }var sb = null;
-if (fileData.containsKey (name0)) return name0;
-if (name.indexOf ("#JMOL_MODEL ") >= 0) {
-fileData.put (name0, name0 + "\n");
-return name0;
+if (fileData.containsKey (path)) return path;
+if (path.indexOf ("#JMOL_MODEL ") >= 0) {
+fileData.put (path, path + "\n");
+return path;
 }var fullName = name;
 if (name.indexOf ("|") >= 0) {
 subFileList = JU.PT.split (name, "|");
@@ -113,20 +155,21 @@ name = subFileList[0];
 try {
 var t = this.fm.getBufferedInputStreamOrErrorMessageFromName (name, fullName, false, false, null, false, true);
 if (Clazz.instanceOf (t, String)) {
-fileData.put (name0, t + "\n");
-return name0;
-}bis = t;
+fileData.put (path, t + "\n");
+return path;
+}name = name.$replace ('\\', '/');
+bis = t;
 if (JU.Rdr.isCompoundDocumentS (bis)) {
 var doc = J.api.Interface.getInterface ("JU.CompoundDocument", this.fm.vwr, "file");
 doc.setStream (this.fm.vwr.getJzt (), bis, true);
-doc.getAllDataMapped (name.$replace ('\\', '/'), "Molecule", fileData);
+doc.getAllDataMapped (name, "Molecule", fileData);
 } else if (JU.Rdr.isZipS (bis)) {
-this.fm.vwr.getJzt ().getAllZipData (bis, subFileList, name.$replace ('\\', '/'), "Molecule", fileData);
+this.fm.vwr.getJzt ().getAllZipData (bis, subFileList, name, "Molecule", "__MACOSX", fileData);
 } else if (asBinaryString) {
 var bd = J.api.Interface.getInterface ("JU.BinaryDocument", this.fm.vwr, "file");
 bd.setStream (this.fm.vwr.getJzt (), bis, false);
 sb =  new JU.SB ();
-if (header != null) sb.append ("BEGIN Directory Entry " + name0 + "\n");
+if (header != null) sb.append ("BEGIN Directory Entry " + path + "\n");
 try {
 while (true) sb.append (Integer.toHexString (bd.readByte () & 0xFF)).appendC (' ');
 
@@ -137,23 +180,23 @@ sb.appendC ('\n');
 throw e1;
 }
 }
-if (header != null) sb.append ("\nEND Directory Entry " + name0 + "\n");
-fileData.put (name0, sb.toString ());
+if (header != null) sb.append ("\nEND Directory Entry " + path + "\n");
+fileData.put (path, sb.toString ());
 } else {
 var br = JU.Rdr.getBufferedReader (JU.Rdr.isGzipS (bis) ?  new java.io.BufferedInputStream (this.fm.vwr.getJzt ().newGZIPInputStream (bis)) : bis, null);
 var line;
 sb =  new JU.SB ();
-if (header != null) sb.append ("BEGIN Directory Entry " + name0 + "\n");
+if (header != null) sb.append ("BEGIN Directory Entry " + path + "\n");
 while ((line = br.readLine ()) != null) {
 sb.append (line);
 sb.appendC ('\n');
 }
 br.close ();
-if (header != null) sb.append ("\nEND Directory Entry " + name0 + "\n");
-fileData.put (name0, sb.toString ());
+if (header != null) sb.append ("\nEND Directory Entry " + path + "\n");
+fileData.put (path, sb.toString ());
 }} catch (ioe) {
 if (Clazz.exceptionOf (ioe, Exception)) {
-fileData.put (name0, ioe.toString ());
+fileData.put (path, ioe.toString ());
 } else {
 throw ioe;
 }
@@ -166,13 +209,7 @@ if (Clazz.exceptionOf (e, Exception)) {
 throw e;
 }
 }
-if (!fileData.containsKey (name0)) fileData.put (name0, "FILE NOT FOUND: " + name0 + "\n");
-return name0;
+if (!fileData.containsKey (path)) fileData.put (path, "FILE NOT FOUND: " + path + "\n");
+return path;
 }, "~S,~S,java.util.Map");
-Clazz.defineMethod (c$, "getCachedPngjBytes", 
-function (pathName) {
-return this.getJzu ().getCachedPngjBytes (this, pathName);
-}, "~S");
-Clazz.defineStatics (c$,
-"PMESH_BINARY_MAGIC_NUMBER", "PM\1\0");
 });

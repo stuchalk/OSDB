@@ -1,3 +1,5 @@
+// BH minor efficiencies only
+
 Clazz.load(["java.util.AbstractMap","$.AbstractSet","$.Iterator","$.Map","$.MapEntry"],"java.util.HashMap",["java.lang.IllegalArgumentException","$.IllegalStateException","java.util.AbstractCollection","$.Arrays","$.ConcurrentModificationException","java.util.MapEntry.Type","java.util.NoSuchElementException"],function(){
 c$=Clazz.decorateAsClass(function(){
 this.elementCount=0;
@@ -40,8 +42,46 @@ throw new IllegalArgumentException();
 Clazz.makeConstructor(c$,
 function(map){
 this.construct(map.size()<6?11:map.size()*2);
-this.putAll(map);
+this.putAllAM(map);
 },"java.util.Map");
+
+
+/*
+Clazz.makeConstructor(c$,
+function(capacity,loadFactor){
+this.doConstruct(capacity,loadFactor);
+},"~N,~N");
+
+Clazz.defineMethod(c$, "doConstruct",
+function(capacity,loadFactor) {
+capacity || (capacity = 16);
+loadFactor || (loadFactor = 0.75);
+if (typeof capacity != "number") {
+ var map = capacity;
+ this.loadFactor=loadFactor;
+ this.elementData=this.newElementArray(map.size()<6?11:map.size()*2);
+ this.computeMaxSize();
+ this.putAllAM(map);
+ return;
+}
+
+//Clazz.superConstructor(this,java.util.HashMap,[]);
+if(capacity>=0&&loadFactor>0){
+this.elementData=this.newElementArray(capacity==0?1:capacity);
+this.loadFactor=loadFactor;
+this.computeMaxSize();
+}else{
+throw new IllegalArgumentException();
+}
+},"~N,~N");
+
+//Clazz.makeConstructor(c$,
+//function(map){
+//this.construct(map.size()<6?11:map.size()*2);
+//Clazz.superCall(this,java.util.HashMap,"putAll",[map]);
+//},"java.util.Map");
+
+*/
 Clazz.overrideMethod(c$,"clear",
 function(){
 if(this.elementCount>0){
@@ -51,8 +91,13 @@ this.modCount++;
 }});
 Clazz.defineMethod(c$,"clone",
 function(){
+  return this.cloneHM();
+});
+
+Clazz.defineMethod(c$,"cloneHM",
+function(){
 try{
-var map=Clazz.superCall(this,java.util.HashMap,"clone",[]);
+var map=this.cloneAM();//Clazz.superCall(this,java.util.HashMap,"clone",[]);
 map.elementData=this.newElementArray(this.elementData.length);
 var entry;
 for(var i=0;i<this.elementData.length;i++){
@@ -175,16 +220,15 @@ entry.next=this.elementData[index];
 this.elementData[index]=entry;
 return entry;
 },"~O,~N,~O");
-Clazz.overrideMethod(c$,"putAll",
+Clazz.defineMethod(c$,"putAll",
 function(map){
 if(!map.isEmpty()){
 var capacity=this.elementCount+map.size();
 if(capacity>this.threshold){
 this.rehash(capacity);
 }
-for(var entry,$entry=map.entrySet().iterator();$entry.hasNext()&&((entry=$entry.next())||true);){
-this.put(entry.getKey(),entry.getValue());
-}
+this.putAllAM(map);
+
 }},"java.util.Map");
 Clazz.defineMethod(c$,"rehash",
 function(capacity){

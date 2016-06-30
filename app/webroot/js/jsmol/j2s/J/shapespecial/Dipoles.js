@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shapespecial");
-Clazz.load (["J.shape.Shape", "JU.P3"], "J.shapespecial.Dipoles", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.PT", "$.SB", "$.V3", "JS.T", "J.shapespecial.Dipole", "JU.BSUtil", "$.C", "$.Logger"], function () {
+Clazz.load (["J.shape.Shape", "JU.P3"], "J.shapespecial.Dipoles", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.PT", "$.SB", "$.V3", "JS.T", "J.shapespecial.Dipole", "JU.C", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.dipoleCount = 0;
 this.dipoles = null;
@@ -22,6 +22,9 @@ Clazz.prepareFields (c$, function () {
 this.dipoles =  new Array (4);
 this.startCoord =  new JU.P3 ();
 this.endCoord =  new JU.P3 ();
+});
+Clazz.overrideMethod (c$, "initShape", 
+function () {
 });
 Clazz.overrideMethod (c$, "setProperty", 
 function (propertyName, value, bs) {
@@ -118,7 +121,7 @@ var bsAtoms = value;
 this.endCoord = null;
 this.startCoord = this.ms.getAtomSetCenter (bsAtoms);
 this.tempDipole.set2Value (this.startCoord, JU.P3.new3 (0, 0, 0), this.dipoleValue);
-if (JU.BSUtil.cardinalityOf (bsAtoms) == 1) this.atomIndex1 = bsAtoms.nextSetBit (0);
+if (bsAtoms.cardinality () == 1) this.atomIndex1 = bsAtoms.nextSetBit (0);
 return;
 }if ("atomBitset" === propertyName) {
 var atomset = value;
@@ -132,7 +135,7 @@ propertyName = "endSet";
 }if ("endSet" === propertyName) {
 this.iHaveTwoEnds = true;
 var atomset = value;
-if (this.atomIndex1 >= 0 && JU.BSUtil.cardinalityOf (atomset) == 1) {
+if (this.atomIndex1 >= 0 && atomset.cardinality () == 1) {
 this.atomIndex2 = atomset.nextSetBit (0);
 this.tempDipole.set2AtomValue (this.ms.at[this.atomIndex1], this.ms.at[this.atomIndex2], 1);
 this.currentDipole = this.findDipoleFor (this.tempDipole.thisID, this.tempDipole.dipoleInfo);
@@ -262,7 +265,7 @@ data[1] = id;
 return true;
 }}
 return false;
-}return false;
+}return this.getPropShape (property, data);
 }, "~S,~A");
 Clazz.overrideMethod (c$, "getProperty", 
 function (property, index) {

@@ -33,6 +33,7 @@ this.cx = center.x;
 this.cy = center.y;
 this.cz = center.z;
 this.leaf = null;
+if (this.stack.length < this.bspt.treeDepth) this.set (this.bspt);
 this.stack[0] = this.bspt.eleRoot;
 this.sp = 1;
 this.findLeftLeaf ();

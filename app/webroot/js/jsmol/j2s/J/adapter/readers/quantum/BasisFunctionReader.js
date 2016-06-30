@@ -56,26 +56,13 @@ Clazz.defineMethod (c$, "getDFMap",
 function (fileList, shellType, jmolList, minLength) {
 if (fileList.equals (jmolList)) return true;
 this.getDfCoefMaps ();
-var tokens = JU.PT.getTokens (fileList);
-var isOK = true;
-for (var i = 0; i < this.dfCoefMaps[shellType].length && isOK; i++) {
-var key = tokens[i];
-if (key.length >= minLength) {
-var pt = jmolList.indexOf (key);
-if (pt >= 0) {
-pt /= 6;
-this.dfCoefMaps[shellType][pt] = i - pt;
-continue;
-}}isOK = false;
-}
-if (!isOK) {
-JU.Logger.error ("Disabling orbitals of type " + shellType + " -- Cannot read orbital order for: " + fileList + "\n expecting: " + jmolList);
-this.dfCoefMaps[shellType][0] = -2147483648;
-}return isOK;
+var isOK = J.quantum.QS.createDFMap (this.dfCoefMaps[shellType], fileList, jmolList, minLength);
+if (!isOK) JU.Logger.error ("Disabling orbitals of type " + shellType + " -- Cannot read orbital order for: " + fileList + "\n expecting: " + jmolList);
+return isOK;
 }, "~S,~N,~S,~N");
 Clazz.defineMethod (c$, "getDfCoefMaps", 
 function () {
-return (this.dfCoefMaps == null ? (this.dfCoefMaps = J.adapter.readers.quantum.BasisFunctionReader.getNewDfCoefMap ()) : this.dfCoefMaps);
+return (this.dfCoefMaps == null ? (this.dfCoefMaps = J.quantum.QS.getNewDfCoefMap ()) : this.dfCoefMaps);
 });
 c$.canonicalizeQuantumSubshellTag = Clazz.defineMethod (c$, "canonicalizeQuantumSubshellTag", 
 function (tag) {
@@ -110,10 +97,6 @@ c$.getQuantumShellTag = Clazz.defineMethod (c$, "getQuantumShellTag",
 function (id) {
 return J.quantum.QS.getQuantumShellTag (id);
 }, "~N");
-c$.getNewDfCoefMap = Clazz.defineMethod (c$, "getNewDfCoefMap", 
-function () {
-return J.quantum.QS.getNewDfCoefMap ();
-});
 Clazz.overrideMethod (c$, "discardPreviousAtoms", 
 function () {
 this.asc.discardPreviousAtoms ();
@@ -134,9 +117,4 @@ return (c < d ? -1 : c > d ? 1 : 0);
 }, "~O,~O");
 c$ = Clazz.p0p ();
 };
-Clazz.defineStatics (c$,
-"CANONICAL_DC_LIST", "DXX   DYY   DZZ   DXY   DXZ   DYZ",
-"CANONICAL_FC_LIST", "XXX   YYY   ZZZ   XYY   XXY   XXZ   XZZ   YZZ   YYZ   XYZ",
-"CANONICAL_DS_LIST", "d0    d1+   d1-   d2+   d2-",
-"CANONICAL_FS_LIST", "f0    f1+   f1-   f2+   f2-   f3+   f3-");
 });

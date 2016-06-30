@@ -768,7 +768,7 @@ if ("SOURCEID".equalsIgnoreCase (key)) {
 map.put (key, (this.pd () == null ? "" : this.pd ().getSpectrum ().sourceID));
 return map;
 }if (key != null && key.startsWith ("DATA_")) {
-map.put (key, "" + JSV.common.JSVFileManager.htCorrelationCache.get (key.substring (5)));
+map.put (key, "" + JSV.common.JSVFileManager.cacheGet (key.substring (5)));
 return map;
 }var isAll = false;
 if (key != null && key.toUpperCase ().startsWith ("ALL ") || "all".equalsIgnoreCase (key)) {
@@ -1040,22 +1040,26 @@ if (isAppend || isCheck) pt++;
 if (pt > 0) filename = tokens.get (pt);
 if (script == null) script = this.defaultLoadScript;
 if (filename.equals ("?")) {
-this.openFileFromDialog (isAppend, false, false, script);
+this.openFileFromDialog (isAppend, false, null, script);
 return;
 }if (filename.equals ("http://?")) {
-this.openFileFromDialog (isAppend, true, false, null);
+this.openFileFromDialog (isAppend, true, null, null);
 return;
-}if (filename.equals ("$?")) {
-this.openFileFromDialog (isAppend, true, true, null);
+}if (filename.equals ("$?") || filename.equals ("$H1?")) {
+this.openFileFromDialog (isAppend, true, "H1", null);
 return;
-}var isMOL = filename.equalsIgnoreCase ("MOL");
-if (isMOL) filename = "http://SIMULATION/" + "MOL=" + JU.PT.trimQuotes (tokens.get (++pt));
+}if (filename.equals ("$C13?")) {
+this.openFileFromDialog (isAppend, true, "C13", null);
+return;
+}var isH1 = filename.equalsIgnoreCase ("MOL") || filename.equalsIgnoreCase ("H1");
+var isC13 = filename.equalsIgnoreCase ("C13");
+if (isH1 || isC13) filename = "http://SIMULATION/" + (isH1 ? "H1/" : "C13/") + "MOL=" + JU.PT.trimQuotes (tokens.get (++pt));
 if (!isCheck && !isAppend) {
 if (filename.equals ("\"\"") && this.currentSource != null) filename = this.currentSource.getFilePath ();
 this.close ("all");
 }filename = JU.PT.trimQuotes (filename);
 if (filename.startsWith ("$")) {
-isMOL = true;
+if (!filename.startsWith ("$H1") && !filename.startsWith ("$C13")) filename = "$H1/" + filename.substring (3);
 filename = "http://SIMULATION/" + filename.substring (1);
 }var firstSpec = (pt + 1 < tokens.size () ? Integer.$valueOf (tokens.get (++pt)).intValue () : -1);
 var lastSpec = (pt + 1 < tokens.size () ? Integer.$valueOf (tokens.get (++pt)).intValue () : firstSpec);
@@ -1422,13 +1426,13 @@ function (msg) {
 if (this.selectedPanel != null && msg != null) this.selectedPanel.showMessage (msg, null);
 }, "~S");
 Clazz.defineMethod (c$, "openFileFromDialog", 
-function (isAppend, isURL, isSimulation, script) {
+function (isAppend, isURL, simulationType, script) {
 var url = null;
-if (isSimulation) {
+if (simulationType != null) {
 url = this.fileHelper.getUrlFromDialog ("Enter the name or identifier of a compound", this.recentSimulation);
 if (url == null) return;
 this.recentSimulation = url;
-this.load ((isAppend ? "APPEND " : "") + "\"$" + url + "\"", script);
+this.load ((isAppend ? "APPEND " : "") + "\"$" + simulationType + "/" + url + "\"", script);
 } else if (isURL) {
 url = this.fileHelper.getUrlFromDialog ("Enter the URL of a JCAMP-DX File", this.recentURL == null ? this.recentOpenURL : this.recentURL);
 if (url == null) return;
@@ -1438,7 +1442,7 @@ this.load ((isAppend ? "APPEND " : "") + "\"" + url + "\"", script);
 var userData =  Clazz.newArray (-1, [Boolean.$valueOf (isAppend), script]);
 var file = this.fileHelper.showFileOpenDialog (this.mainPanel, userData);
 if (file != null) this.openFile (file.getFullPath (), !isAppend);
-}}, "~B,~B,~B,~S");
+}}, "~B,~B,~S,~S");
 Clazz.defineMethod (c$, "openFile", 
 function (fileName, closeFirst) {
 if (closeFirst && this.panelNodes != null) {

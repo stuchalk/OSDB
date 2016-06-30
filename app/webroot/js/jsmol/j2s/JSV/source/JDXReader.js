@@ -148,7 +148,7 @@ JU.Logger.info ("Failed to create peak data: " + e);
 throw e;
 }
 }
-}if (this.acdMolFile != null) JSV.common.JSVFileManager.htCorrelationCache.put ("mol", this.acdMolFile);
+}if (this.acdMolFile != null) JSV.common.JSVFileManager.cachePut ("mol", this.acdMolFile);
 }if (!Float.isNaN (this.nmrMaxY)) spectrum.doNormalize (this.nmrMaxY);
  else if (spectrum.getMaxY () >= 10000) spectrum.doNormalize (1000);
 if (this.isSimulation) spectrum.setSimulated (this.filePath);

@@ -1,9 +1,8 @@
 Clazz.declarePackage ("J.shapebio");
 Clazz.load (["J.shapebio.BioShapeCollection"], "J.shapebio.Trace", ["J.atomdata.RadiusData", "J.c.VDW"], function () {
 c$ = Clazz.declareType (J.shapebio, "Trace", J.shapebio.BioShapeCollection);
-Clazz.defineMethod (c$, "initShape", 
+Clazz.overrideMethod (c$, "initShape", 
 function () {
-Clazz.superCall (this, J.shapebio.Trace, "initShape", []);
 this.madOn = 600;
 this.madHelixSheet = 1500;
 this.madTurnRandom = 500;

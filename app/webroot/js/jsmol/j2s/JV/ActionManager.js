@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JV");
-Clazz.load (["javajs.api.EventManager", "J.i18n.GT", "JU.Rectangle", "JV.MouseState"], ["JV.ActionManager", "$.Gesture", "$.MotionPoint"], ["java.lang.Character", "$.Float", "JU.AU", "$.P3", "$.PT", "J.api.Interface", "J.thread.HoverWatcherThread", "JU.BSUtil", "$.Escape", "$.Logger", "$.Point3fi", "JV.binding.Binding", "$.JmolBinding"], function () {
+Clazz.load (["javajs.api.EventManager", "J.i18n.GT", "JU.Rectangle", "JV.MouseState"], ["JV.MotionPoint", "$.ActionManager", "$.Gesture"], ["java.lang.Character", "$.Float", "JU.AU", "$.P3", "$.PT", "J.api.Interface", "J.thread.HoverWatcherThread", "JU.BSUtil", "$.Escape", "$.Logger", "$.Point3fi", "JV.binding.Binding", "$.JmolBinding"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.haveMultiTouchInput = false;
@@ -965,7 +965,7 @@ var a1 = this.measurementQueued.getAtomIndex (1);
 var a2 = this.measurementQueued.getAtomIndex (2);
 if (a1 < 0 || a2 < 0) return;
 try {
-var sequence = this.vwr.getSmilesOpt (null, a1, a2, 65536);
+var sequence = this.vwr.getSmilesOpt (null, a1, a2, 1048576, null);
 this.vwr.setStatusMeasuring ("measureSequence", -2, sequence, 0);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
@@ -1091,38 +1091,8 @@ this.runScript ("set labeltoggle {atomindex=" + atomIndex + "}");
 this.vwr.setStatusAtomPicked (atomIndex, null, null);
 }return;
 case 31:
-if (this.bnd (this.clickAction, [0])) {
-bs = this.vwr.getAtomBitSet ("connected(atomIndex=" + atomIndex + ") and !within(SMARTS,'[r50,R]')");
-var nb = bs.cardinality ();
-switch (nb) {
-case 0:
-case 1:
+if (this.bnd (this.clickAction, [0])) this.vwr.invertRingAt (atomIndex, true);
 return;
-case 2:
-break;
-case 3:
-case 4:
-var lengths =  Clazz.newIntArray (nb, 0);
-var points =  Clazz.newIntArray (nb, 0);
-var ni = 0;
-for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1), ni++) {
-lengths[ni] = this.vwr.getBranchBitSet (i, atomIndex, true).cardinality ();
-points[ni] = i;
-}
-for (var j = 0; j < nb - 2; j++) {
-var max = -2147483648;
-var imax = 0;
-for (var i = 0; i < nb; i++) if (lengths[i] >= max && bs.get (points[i])) {
-imax = points[i];
-max = lengths[i];
-}
-bs.clear (imax);
-}
-}
-this.vwr.undoMoveActionClear (atomIndex, 2, true);
-this.vwr.invertSelected (null, null, atomIndex, bs);
-this.vwr.setStatusAtomPicked (atomIndex, "inverted: " + JU.Escape.eBS (bs), null);
-}return;
 case 7:
 if (this.bnd (this.clickAction, [4])) {
 bs = JU.BSUtil.newAndSetBit (atomIndex);

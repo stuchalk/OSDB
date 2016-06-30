@@ -100,7 +100,7 @@ sm.vwr.stm.saveOrientation (this.jmolName, (this.info).get ("pymolView"));
 return;
 case 5:
 sm.loadShape (this.id);
-sm.setShapePropertyBs (this.id, "textLabels", this.info, this.bsAtoms);
+sm.setShapePropertyBs (this.id, "pymolLabels", this.info, this.bsAtoms);
 return;
 case 1677721602:
 break;

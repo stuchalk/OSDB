@@ -9,7 +9,6 @@ this.isE_wo_entrp = false;
 this.isE_fr_energy = false;
 this.enthalpy = null;
 this.gibbsEnergy = null;
-this.myAttributes = null;
 this.haveUnitCell = false;
 this.atomNames = null;
 this.atomSyms = null;
@@ -23,24 +22,17 @@ this.beta = 0;
 this.gamma = 0;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.xml, "XmlVaspReader", J.adapter.readers.xml.XmlReader);
-Clazz.prepareFields (c$, function () {
-this.myAttributes =  Clazz.newArray (-1, ["name"]);
-});
 Clazz.makeConstructor (c$, 
 function () {
 Clazz.superConstructor (this, J.adapter.readers.xml.XmlVaspReader, []);
 });
-Clazz.overrideMethod (c$, "getDOMAttributes", 
-function () {
-return this.myAttributes;
-});
 Clazz.overrideMethod (c$, "processXml", 
 function (parent, saxReader) {
 parent.doProcessLines = true;
-this.PX (parent, saxReader);
+this.processXml2 (parent, saxReader);
 }, "J.adapter.readers.xml.XmlReader,~O");
 Clazz.overrideMethod (c$, "processStartElement", 
-function (localName) {
+function (localName, nodeName) {
 if (this.debugging) JU.Logger.debug ("xmlvasp: start " + localName);
 if (!this.parent.continuing) return;
 if ("calculation".equals (localName)) {
@@ -52,7 +44,7 @@ var s = this.atts.get ("name");
 if (s.charAt (0) != 'e') return;
 this.isE_wo_entrp = s.equals ("e_wo_entrp");
 this.isE_fr_energy = s.equals ("e_fr_energy");
-this.keepChars = (this.isE_wo_entrp || this.isE_fr_energy);
+this.setKeepChars (this.isE_wo_entrp || this.isE_fr_energy);
 return;
 }if ("structure".equals (localName)) {
 if (!this.parent.doGetModel (++this.parent.modelNumber, null)) {
@@ -70,19 +62,19 @@ this.asc.setCurrentModelInfo ("gibbsEnergy", Double.$valueOf (JU.PT.dVal (this.g
 return;
 }if (!this.parent.doProcessLines) return;
 if ("v".equals (localName)) {
-this.keepChars = (this.data != null);
+this.setKeepChars (this.data != null);
 return;
 }if ("c".equals (localName)) {
-this.keepChars = (this.iAtom < this.ac);
+this.setKeepChars (this.iAtom < this.ac);
 return;
 }if ("varray".equals (localName)) {
 this.name = this.atts.get ("name");
 if (this.name != null && JU.PT.isOneOf (this.name, ";basis;positions;forces;")) this.data =  new JU.SB ();
 return;
 }if ("atoms".equals (localName)) {
-this.keepChars = true;
+this.setKeepChars (true);
 return;
-}}, "~S");
+}}, "~S,~S");
 Clazz.overrideMethod (c$, "processEndElement", 
 function (localName) {
 if (this.debugging) JU.Logger.debug ("xmlvasp: end " + localName);
@@ -90,25 +82,25 @@ while (true) {
 if (!this.parent.doProcessLines) break;
 if (this.isE_wo_entrp) {
 this.isE_wo_entrp = false;
-this.enthalpy = this.chars.trim ();
+this.enthalpy = this.chars.toString ().trim ();
 break;
 }if (this.isE_fr_energy) {
 this.isE_fr_energy = false;
-this.gibbsEnergy = this.chars.trim ();
+this.gibbsEnergy = this.chars.toString ().trim ();
 break;
 }if ("v".equals (localName) && this.data != null) {
-this.data.append (this.chars);
+this.data.append (this.chars.toString ());
 break;
 }if ("c".equals (localName)) {
 if (this.iAtom < this.ac) {
 if (this.atomName == null) {
-this.atomName = this.atomSym = this.chars.trim ();
+this.atomName = this.atomSym = this.chars.toString ().trim ();
 } else {
-this.atomNames[this.iAtom++] = this.atomName + this.chars.trim ();
+this.atomNames[this.iAtom++] = this.atomName + this.chars.toString ().trim ();
 this.atomName = null;
 }}break;
 }if ("atoms".equals (localName)) {
-this.ac = this.parseIntStr (this.chars);
+this.ac = this.parseIntStr (this.chars.toString ());
 this.atomNames =  new Array (this.ac);
 this.atomSyms =  new Array (this.ac);
 this.iAtom = 0;
@@ -162,7 +154,6 @@ throw e;
 break;
 }return;
 }
-this.chars = null;
-this.keepChars = false;
+this.setKeepChars (false);
 }, "~S");
 });

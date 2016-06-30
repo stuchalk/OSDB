@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JSV.common");
-Clazz.load (["java.util.Hashtable"], "JSV.common.JSVFileManager", ["java.io.BufferedInputStream", "$.BufferedReader", "$.InputStreamReader", "$.StringReader", "java.net.URL", "JU.AU", "$.Encoding", "$.PT", "$.SB", "JSV.common.JSVersion", "$.JSViewer", "JSV.exception.JSVException", "JU.Logger"], function () {
+Clazz.load (["java.util.Hashtable"], "JSV.common.JSVFileManager", ["java.io.BufferedInputStream", "$.BufferedReader", "$.InputStreamReader", "$.StringReader", "java.net.URL", "JU.AU", "$.BS", "$.Encoding", "$.JSJSONParser", "$.P3", "$.PT", "$.SB", "JSV.common.JSVersion", "$.JSViewer", "JSV.exception.JSVException", "JU.Logger"], function () {
 c$ = Clazz.declareType (JSV.common, "JSVFileManager");
 Clazz.defineMethod (c$, "isApplet", 
 function () {
@@ -117,31 +117,40 @@ throw e;
 }, "~S,~S");
 c$.getAbbrSimulationFileName = Clazz.defineMethod (c$, "getAbbrSimulationFileName", 
 function (name) {
-var filename = JSV.common.JSVFileManager.getAbbreviatedSimulationName (name, true);
-if (name.indexOf ("MOL=") >= 0) {
-var data = JSV.common.JSVFileManager.htCorrelationCache.get (name);
-if (data != null) JSV.common.JSVFileManager.htCorrelationCache.put (filename, data);
-}return filename;
+var type = JSV.common.JSVFileManager.getSimulationType (name);
+var filename = JSV.common.JSVFileManager.getAbbreviatedSimulationName (name, type, true);
+return filename;
 }, "~S");
 c$.getAbbreviatedSimulationName = Clazz.defineMethod (c$, "getAbbreviatedSimulationName", 
-function (name, addProtocol) {
-return (name.indexOf ("MOL=") >= 0 ? (addProtocol ? "http://SIMULATION/" : "") + "MOL=" + JSV.common.JSVFileManager.getSimulationHash (name) : name);
-}, "~S,~B");
+function (name, type, addProtocol) {
+return (name.indexOf ("MOL=") >= 0 ? (addProtocol ? "http://SIMULATION/" : "") + "MOL=" + JSV.common.JSVFileManager.getSimulationHash (name, type) : name);
+}, "~S,~S,~B");
 c$.getSimulationHash = Clazz.defineMethod (c$, "getSimulationHash", 
- function (name) {
-return "" + Math.abs (name.substring (name.indexOf ("V2000") + 1).hashCode ());
-}, "~S");
+ function (name, type) {
+var code = type + Math.abs (name.substring (name.indexOf ("V2000") + 1).hashCode ());
+if (JU.Logger.debugging) System.out.println ("JSVFileManager hash for " + name + " = " + code);
+return code;
+}, "~S,~S");
 c$.getSimulationFileData = Clazz.defineMethod (c$, "getSimulationFileData", 
-function (name) {
-return JSV.common.JSVFileManager.htCorrelationCache.get (name.startsWith ("MOL=") ? name.substring (4) : JSV.common.JSVFileManager.getAbbreviatedSimulationName (name, false));
+function (name, type) {
+return JSV.common.JSVFileManager.cacheGet (name.startsWith ("MOL=") ? name.substring (4) : JSV.common.JSVFileManager.getAbbreviatedSimulationName (name, type, false));
+}, "~S,~S");
+c$.cachePut = Clazz.defineMethod (c$, "cachePut", 
+function (name, data) {
+if (JU.Logger.debugging) JU.Logger.debug ("JSVFileManager cachePut " + data + " for " + name);
+if (data != null) JSV.common.JSVFileManager.htCorrelationCache.put (name, data);
+}, "~S,~S");
+c$.cacheGet = Clazz.defineMethod (c$, "cacheGet", 
+function (key) {
+var data = JSV.common.JSVFileManager.htCorrelationCache.get (key);
+if (JU.Logger.debugging) JU.Logger.info ("JSVFileManager cacheGet " + data + " for " + key);
+return data;
 }, "~S");
 c$.getSimulationReader = Clazz.defineMethod (c$, "getSimulationReader", 
  function (name) {
-var data = JSV.common.JSVFileManager.htCorrelationCache.get (name);
-if (data == null) {
-data = JSV.common.JSVFileManager.getNMRSimulationJCampDX (name.substring ("http://SIMULATION/".length));
-if (data != null) JSV.common.JSVFileManager.htCorrelationCache.put (name, data);
-}return JSV.common.JSVFileManager.getBufferedReaderForData (data);
+var data = JSV.common.JSVFileManager.cacheGet (name);
+if (data == null) JSV.common.JSVFileManager.cachePut (name, data = JSV.common.JSVFileManager.getNMRSimulationJCampDX (name.substring ("http://SIMULATION/".length)));
+return JSV.common.JSVFileManager.getBufferedReaderForData (data);
 }, "~S");
 c$.isAB = Clazz.defineMethod (c$, "isAB", 
 function (x) {
@@ -302,45 +311,133 @@ return $in;
 }, "~S,~B,~A");
 c$.getNMRSimulationJCampDX = Clazz.defineMethod (c$, "getNMRSimulationJCampDX", 
  function (name) {
-var key = "" + JSV.common.JSVFileManager.getSimulationHash (name);
-var jcamp = JSV.common.JSVFileManager.htCorrelationCache.get (key);
-if (jcamp != null) return jcamp;
+var pt = 0;
+var molFile = null;
+var type = JSV.common.JSVFileManager.getSimulationType (name);
+if (name.startsWith (type)) name = name.substring (type.length + 1);
 var isInline = name.startsWith ("MOL=");
-var molFile;
+if (isInline) {
+name = name.substring (4);
+pt = name.indexOf ("/n__Jmol");
+if (pt > 0) name = name.substring (0, pt) + JU.PT.rep (name.substring (pt), "/n", "\n");
+molFile = name = JU.PT.rep (name, "\\n", "\n");
+}var key = "" + JSV.common.JSVFileManager.getSimulationHash (name, type);
+if (JU.Logger.debugging) JU.Logger.info ("JSVFileManager type=" + type + " key=" + key + " name=" + name);
+var jcamp = JSV.common.JSVFileManager.cacheGet (key);
+if (jcamp != null) return jcamp;
 var src = (isInline ? null : JU.PT.rep (JSV.common.JSVFileManager.nciResolver, "%FILE", JU.PT.escapeUrl (name)));
-if ((molFile = (isInline ? JU.PT.rep (name.substring (4), "\\n", "\n") : JSV.common.JSVFileManager.getFileAsString (src))) == null) JU.Logger.info ("no data returned");
-var json = JSV.common.JSVFileManager.getFileAsString (JSV.common.JSVFileManager.nmrdbServer + molFile);
-JSV.common.JSVFileManager.htCorrelationCache.put ("json", json);
-JU.Logger.debug (json);
-if (json.indexOf ("\"error\":") >= 0) return null;
-json = JU.PT.rep (json, "\\r\\n", "\n");
-json = JU.PT.rep (json, "\\t", "\t");
-json = JU.PT.rep (json, "\\n", "\n");
-var jsonMolFile = JSV.common.JSVFileManager.getQuotedJSONAttribute (json, "molfile", null);
-JSV.common.JSVFileManager.htCorrelationCache.put ("mol", jsonMolFile);
+if (!isInline && (molFile = JSV.common.JSVFileManager.getFileAsString (src)) == null || molFile.indexOf ("<html") >= 0) {
+JU.Logger.error ("no MOL data returned by NCI");
+return null;
+}var is13C = type.equals ("C13");
+var url = (is13C ? JSV.common.JSVFileManager.nmrdbServerC13 : JSV.common.JSVFileManager.nmrdbServerH1);
+var json = JSV.common.JSVFileManager.getFileAsString (url + molFile);
+var map = ( new JU.JSJSONParser ()).parseMap (json, true);
+JSV.common.JSVFileManager.cachePut ("json", json);
+if (is13C) map = map.get ("result");
+var jsonMolFile = map.get ("molfile");
+if (jsonMolFile == null) {
+System.out.println ("JSVFileManager: no MOL file returned from EPFL");
+jsonMolFile = molFile;
+} else {
+System.out.println ("JSVFileManager: MOL file hash=" + jsonMolFile.hashCode ());
+}var atomMap = JSV.common.JSVFileManager.getAtomMap (jsonMolFile, molFile);
+JSV.common.JSVFileManager.cachePut ("mol", molFile);
 {
-if (!isInline) Jmol.Cache.put("http://SIMULATION/" + name + "#molfile", jsonMolFile.getBytes());
-}var xml = JSV.common.JSVFileManager.getQuotedJSONAttribute (json, "xml", null);
-xml = JU.PT.rep (xml, "<Signals>", "<Signals src=" + JU.PT.esc (JU.PT.rep (JSV.common.JSVFileManager.nmrdbServer, "?POST?molfile=", "")) + ">");
-xml = JU.PT.rep (xml, "</", "\n</");
+if (!isInline) Jmol.Cache.put("http://SIMULATION/" + type +
+"/" + name + "#molfile", molFile.getBytes());
+}var xml = "<Signals src=" + JU.PT.esc (JU.PT.rep (is13C ? JSV.common.JSVFileManager.nmrdbServerC13 : JSV.common.JSVFileManager.nmrdbServerH1, "?POST?molfile=", "")) + ">\n";
+if (is13C) {
+var spec = map.get ("spectrum13C");
+jcamp = (spec.get ("jcamp")).get ("value");
+var lst = spec.get ("predCSNuc");
+var sb =  new JU.SB ();
+for (var i = lst.size (); --i >= 0; ) {
+map = lst.get (i);
+sb.append ("<Signal ");
+JSV.common.JSVFileManager.setAttr (sb, "type", "nucleus", map);
+if (atomMap == null) JSV.common.JSVFileManager.setAttr (sb, "atoms", "assignment", map);
+ else sb.append ("atoms=\"").appendI (atomMap[JU.PT.parseInt (map.get ("assignment"))]).append ("\" ");
+JSV.common.JSVFileManager.setAttr (sb, "multiplicity", "multiplicity", map);
+map = map.get ("integralData");
+JSV.common.JSVFileManager.setAttr (sb, "xMin", "from", map);
+JSV.common.JSVFileManager.setAttr (sb, "xMax", "to", map);
+JSV.common.JSVFileManager.setAttr (sb, "integral", "value", map);
+sb.append ("></Signal>\n");
+}
+sb.append ("</Signals>");
+xml += sb.toString ();
+} else {
+xml = JU.PT.rep (map.get ("xml"), "<Signals>", xml);
+if (atomMap != null) {
+var sb =  new JU.SB ();
+var signals = JU.PT.split (xml, " atoms=\"");
+sb.append (signals[0]);
+for (var i = 1; i < signals.length; i++) {
+var s = signals[i];
+var a = JU.PT.parseInt (s);
+sb.append (" atoms=\"").appendI (atomMap[a]).append (s.substring (s.indexOf ("\"")));
+}
+xml = sb.toString ();
+}xml = JU.PT.rep (xml, "</", "\n</");
 xml = JU.PT.rep (xml, "><", ">\n<");
 xml = JU.PT.rep (xml, "\\\"", "\"");
-JSV.common.JSVFileManager.htCorrelationCache.put ("xml", xml);
-jcamp = JSV.common.JSVFileManager.getQuotedJSONAttribute (json, "jcamp", null);
-jcamp = "##TITLE=" + (isInline ? "JMOL SIMULATION" : name) + "\n" + jcamp.substring (jcamp.indexOf ("\n##") + 1);
-var pt = molFile.indexOf ("\n");
+jcamp = map.get ("jcamp");
+}if (JU.Logger.debugging) JU.Logger.info (xml);
+JSV.common.JSVFileManager.cachePut ("xml", xml);
+jcamp = "##TITLE=" + (isInline ? "JMOL SIMULATION/" + type : name) + "\n" + jcamp.substring (jcamp.indexOf ("\n##") + 1);
+pt = molFile.indexOf ("\n");
 pt = molFile.indexOf ("\n", pt + 1);
 if (pt > 0 && pt == molFile.indexOf ("\n \n")) molFile = molFile.substring (0, pt + 1) + "Created " + JSV.common.JSVFileManager.viewer.apiPlatform.getDateFormat ("8824") + " by JSpecView " + JSV.common.JSVersion.VERSION + molFile.substring (pt + 1);
 pt = 0;
 pt = jcamp.indexOf ("##.");
-var id = JSV.common.JSVFileManager.getAbbreviatedSimulationName (name, false);
+var id = JSV.common.JSVFileManager.getAbbreviatedSimulationName (name, type, false);
 var pt1 = id.indexOf ("id='");
 if (isInline && pt1 > 0) id = id.substring (pt1 + 4, (id + "'").indexOf ("'", pt1 + 4));
 jcamp = jcamp.substring (0, pt) + "##$MODELS=\n<Models>\n" + "<ModelData id=" + JU.PT.esc (id) + " type=\"MOL\" src=" + JU.PT.esc (src) + ">\n" + molFile + "</ModelData>\n</Models>\n" + "##$SIGNALS=\n" + xml + "\n" + jcamp.substring (pt);
-JSV.common.JSVFileManager.htCorrelationCache.put ("jcamp", jcamp);
-JSV.common.JSVFileManager.htCorrelationCache.put (key, jcamp);
+JSV.common.JSVFileManager.cachePut ("jcamp", jcamp);
+JSV.common.JSVFileManager.cachePut (key, jcamp);
 return jcamp;
 }, "~S");
+c$.getAtomMap = Clazz.defineMethod (c$, "getAtomMap", 
+ function (jsonMolFile, jmolMolFile) {
+var acJson = JSV.common.JSVFileManager.getCoord (jsonMolFile);
+var acJmol = JSV.common.JSVFileManager.getCoord (jmolMolFile);
+var n = acJson.length;
+if (n != acJmol.length) return null;
+var map =  Clazz.newIntArray (n, 0);
+var bs =  new JU.BS ();
+bs.setBits (0, n);
+var haveMap = false;
+for (var i = 0; i < n; i++) {
+var a = acJson[i];
+for (var j = bs.nextSetBit (0); j >= 0; j = bs.nextSetBit (j + 1)) {
+if (a.distanceSquared (acJmol[j]) < 0.1) {
+bs.clear (j);
+map[i] = j;
+if (i != j) haveMap = true;
+break;
+}}
+}
+return (haveMap ? map : null);
+}, "~S,~S");
+c$.getCoord = Clazz.defineMethod (c$, "getCoord", 
+ function (mol) {
+var lines = JU.PT.split (mol, "\n");
+var data =  Clazz.newFloatArray (3, 0);
+var n = Integer.parseInt (lines[3].substring (0, 3).trim ());
+var pts =  new Array (n);
+for (var i = 0; i < n; i++) {
+var line = lines[4 + i];
+JU.PT.parseFloatArrayInfested (JU.PT.getTokens (line.substring (0, 31)), data);
+pts[i] = JU.P3.new3 (data[0], data[1], data[2]);
+}
+return pts;
+}, "~S");
+c$.setAttr = Clazz.defineMethod (c$, "setAttr", 
+ function (sb, mykey, lucsKey, map) {
+sb.append (mykey + "=\"").appendO (map.get (lucsKey)).append ("\" ");
+}, "JU.SB,~S,~S,java.util.Map");
 c$.getResource = Clazz.defineMethod (c$, "getResource", 
  function (object, fileName, error) {
 var url = null;
@@ -409,30 +506,27 @@ throw e;
 }
 }return JSV.common.JSVFileManager.viewer.apiPlatform.newFile (fileName).getName ();
 }, "~S");
-c$.getQuotedJSONAttribute = Clazz.defineMethod (c$, "getQuotedJSONAttribute", 
-function (json, key1, key2) {
-if (key2 == null) key2 = key1;
-key1 = "\"" + key1 + "\":";
-key2 = "\"" + key2 + "\":";
-var pt1 = json.indexOf (key1);
-var pt2 = json.indexOf (key2, pt1);
-return (pt1 < 0 || pt2 < 0 ? null : JU.PT.getQuotedStringAt (json, pt2 + key2.length));
-}, "~S,~S,~S");
 c$.setDocumentBase = Clazz.defineMethod (c$, "setDocumentBase", 
 function (v, documentBase) {
 JSV.common.JSVFileManager.viewer = v;
 JSV.common.JSVFileManager.appletDocumentBase = documentBase;
 }, "JSV.common.JSViewer,java.net.URL");
+c$.getSimulationType = Clazz.defineMethod (c$, "getSimulationType", 
+function (filePath) {
+return (filePath.indexOf ("C13/") >= 0 ? "C13" : "H1");
+}, "~S");
 Clazz.defineStatics (c$,
 "SIMULATION_PROTOCOL", "http://SIMULATION/",
 "appletDocumentBase", null,
 "viewer", null,
 "jsDocumentBase", "");
-c$.htCorrelationCache = c$.prototype.htCorrelationCache =  new java.util.Hashtable ();
 c$.urlPrefixes = c$.prototype.urlPrefixes =  Clazz.newArray (-1, ["http:", "https:", "ftp:", "http://SIMULATION/", "file:"]);
 Clazz.defineStatics (c$,
-"URL_LOCAL", 4,
-"nciResolver", "http://cactus.nci.nih.gov/chemical/structure/%FILE/file?format=sdf&get3d=True",
-"nmrdbServer", "http://www.nmrdb.org/tools/jmol/predict.php?POST?molfile=",
+"URL_LOCAL", 4);
+c$.htCorrelationCache = c$.prototype.htCorrelationCache =  new java.util.Hashtable ();
+Clazz.defineStatics (c$,
+"nciResolver", "https://cactus.nci.nih.gov/chemical/structure/%FILE/file?format=sdf&get3d=True",
+"nmrdbServerH1", "http://www.nmrdb.org/tools/jmol/predict.php?POST?molfile=",
+"nmrdbServerC13", "http://www.nmrdb.org/service/jsmol13c?POST?molfile=",
 "stringCount", 0);
 });

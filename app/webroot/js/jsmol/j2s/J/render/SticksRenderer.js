@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.render");
-Clazz.load (["J.render.FontLineShapeRenderer", "JU.BS", "$.P3", "$.V3"], "J.render.SticksRenderer", ["java.lang.Float", "JU.A4", "$.M3", "J.c.PAL", "JM.Bond", "JU.C", "$.Edge"], function () {
+Clazz.load (["J.render.FontLineShapeRenderer", "JU.BS", "$.P3", "$.V3"], "J.render.SticksRenderer", ["java.lang.Float", "JU.A4", "$.M3", "J.c.PAL", "JU.C", "$.Edge"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.showMultipleBonds = false;
 this.multipleBondSpacing = 0;
@@ -111,12 +111,13 @@ if (this.bondsBackbone) {
 if (this.ssbondsBackbone && (order & 256) != 0) {
 this.a = this.a.group.getLeadAtomOr (this.a);
 this.b = this.b.group.getLeadAtomOr (this.b);
-} else if (this.hbondsBackbone && JM.Bond.isOrderH (order)) {
+} else if (this.hbondsBackbone && JU.Edge.isOrderH (order)) {
 this.a = this.a.group.getLeadAtomOr (this.a);
 this.b = this.b.group.getLeadAtomOr (this.b);
 }}if (!this.isPass2 && (!this.a.isVisible (9) || !this.b.isVisible (9) || !this.g3d.isInDisplayRange (this.a.sX, this.a.sY) || !this.g3d.isInDisplayRange (this.b.sX, this.b.sY))) return false;
 if (this.slabbing) {
-if (this.vwr.gdata.isClippedZ (this.a.sZ) && this.vwr.gdata.isClippedZ (this.b.sZ) || this.slabByAtom && (this.vwr.gdata.isClippedZ (this.a.sZ) || this.vwr.gdata.isClippedZ (this.b.sZ))) return false;
+var ba = this.vwr.gdata.isClippedZ (this.a.sZ);
+if (ba && this.vwr.gdata.isClippedZ (this.b.sZ) || this.slabByAtom && (ba || this.vwr.gdata.isClippedZ (this.b.sZ))) return false;
 }this.zA = this.a.sZ;
 this.zB = this.b.sZ;
 if (this.zA == 1 || this.zB == 1) return false;
@@ -165,7 +166,7 @@ default:
 if ((this.bondOrder & 224) != 0) {
 this.bondOrder = JU.Edge.getPartialBondOrder (order);
 mask = JU.Edge.getPartialBondDotted (order);
-} else if (JM.Bond.isOrderH (this.bondOrder)) {
+} else if (JU.Edge.isOrderH (this.bondOrder)) {
 this.bondOrder = 1;
 if (!this.hbondsSolid) mask = -1;
 } else if (this.bondOrder == 32768) {
@@ -206,11 +207,12 @@ return needTranslucent;
 });
 Clazz.defineMethod (c$, "drawBond", 
  function (dottedMask) {
-if (this.isCartesian && this.bondOrder == 1) {
+var isDashed = (dottedMask & 1) != 0;
+if (this.isCartesian && this.bondOrder == 1 && !isDashed) {
 this.g3d.drawBond (this.a, this.b, this.colixA, this.colixB, this.endcaps, this.mad, -1);
 return;
 }var isEndOn = (this.dx == 0 && this.dy == 0);
-if (isEndOn && this.asLineOnly) return;
+if (isEndOn && this.asLineOnly && !this.isCartesian) return;
 var doFixedSpacing = (this.bondOrder > 1 && this.multipleBondSpacing > 0);
 var isPiBonded = doFixedSpacing && (this.vwr.getHybridizationAndAxes (this.a.i, this.z, this.x, "pz") != null || this.vwr.getHybridizationAndAxes (this.b.i, this.z, this.x, "pz") != null) && !Float.isNaN (this.x.x);
 if (isEndOn && !doFixedSpacing) {
@@ -222,8 +224,7 @@ this.fillCylinder (this.colixA, this.colixB, this.endcaps, this.width, this.xA, 
 y += step;
 } while (--this.bondOrder > 0);
 return;
-}var isDashed = (dottedMask & 1) != 0;
-if (this.bondOrder == 1) {
+}if (this.bondOrder == 1) {
 if (isDashed) this.drawDashed (this.xA, this.yA, this.zA, this.xB, this.yB, this.zB, this.dashDots);
  else this.fillCylinder (this.colixA, this.colixB, this.endcaps, this.width, this.xA, this.yA, this.zA, this.xB, this.yB, this.zB);
 return;
@@ -260,16 +261,16 @@ return;
 }this.p1.sub2 (this.a, this.x);
 this.p2.sub2 (this.b, this.x);
 while (true) {
-if (this.isCartesian && !isDashed) {
+if (this.isCartesian) {
 this.g3d.drawBond (this.p1, this.p2, this.colixA, this.colixB, this.endcaps, this.mad, -2);
 } else {
 this.tm.transformPtScr (this.p1, this.s1);
 this.tm.transformPtScr (this.p2, this.s2);
 if (isDashed) this.drawDashed (this.s1.x, this.s1.y, this.s1.z, this.s2.x, this.s2.y, this.s2.z, this.dashDots);
  else this.fillCylinder (this.colixA, this.colixB, this.endcaps, this.width, this.s1.x, this.s1.y, this.s1.z, this.s2.x, this.s2.y, this.s2.z);
-dottedMask >>= 1;
+}dottedMask >>= 1;
 isDashed = (dottedMask & 1) != 0;
-}if (--this.bondOrder <= 0) break;
+if (--this.bondOrder <= 0) break;
 this.p1.add (this.y);
 this.p2.add (this.y);
 this.stepAxisCoordinates ();

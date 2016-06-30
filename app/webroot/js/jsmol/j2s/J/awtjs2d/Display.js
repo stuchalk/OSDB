@@ -19,14 +19,6 @@ c$.renderScreenImage = Clazz.defineMethod (c$, "renderScreenImage",
 function (vwr, g, size) {
 {
 }}, "javajs.api.PlatformViewer,~O,~O");
-c$.setTransparentCursor = Clazz.defineMethod (c$, "setTransparentCursor", 
-function (canvas) {
-{
-}}, "~O");
-c$.setCursor = Clazz.defineMethod (c$, "setCursor", 
-function (c, canvas) {
-{
-}}, "~N,~O");
 c$.prompt = Clazz.defineMethod (c$, "prompt", 
 function (label, data, list, asButtons) {
 {

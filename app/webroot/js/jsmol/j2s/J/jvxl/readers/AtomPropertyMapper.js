@@ -40,7 +40,7 @@ this.doSmoothProperty = true;
 if (this.params.mep_calcType >= 0) this.calcType = this.params.mep_calcType;
 this.mepCalc = J.api.Interface.getOption ("quantum." + this.mepType + "Calculation", this.sg.atomDataServer, "file");
 }if (!this.doSmoothProperty && this.maxDistance == 2147483647) this.maxDistance = 5;
-this.getAtoms (this.params.bsSelected, this.doAddHydrogens, true, false, false, true, false, NaN);
+this.getAtoms (this.params.bsSelected, this.doAddHydrogens, true, false, false, true, false, NaN, null);
 if (this.meshDataServer != null) this.meshDataServer.fillMeshData (this.meshData, 1, null);
 if (!this.doSmoothProperty && this.meshData.vertexSource != null) {
 this.hasColorData = true;
@@ -92,7 +92,7 @@ while (this.iter.hasNext ()) {
 var ia = this.iter.next ();
 var myAtom = this.myIndex[ia];
 var isNearby = (myAtom >= this.firstNearbyAtom);
-var ptA = this.atomXyz[myAtom];
+var ptA = this.atomXyzTruncated[myAtom];
 var p = this.atomProp[myAtom];
 if (Float.isNaN (p)) continue;
 var d2 = pt.distanceSquared (ptA);

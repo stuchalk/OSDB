@@ -25,8 +25,11 @@ case 0:
 if (this.stopped || !this.vwr.testAsync && this.eval.isStopped ()) {
 mode = -2;
 break;
-}{
-return Jmol._loadFileAsynchronously(this, this.vwr.html5Applet, this.fileName, null);
+}var jmol = null;
+{
+jmol = Jmol;
+}if (jmol != null) jmol._loadFileAsynchronously (this, this.vwr.html5Applet, this.fileName, null);
+{
 }return;
 case 1:
 var data = this.vwr.fm.getFileAsBytes (this.fileName, null);

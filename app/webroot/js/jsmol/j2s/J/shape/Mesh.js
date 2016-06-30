@@ -33,12 +33,14 @@ this.modelIndex = -1;
 this.visibilityFlags = 0;
 this.insideOut = false;
 this.checkByteCount = 0;
+this.normalsInverted = false;
 this.showContourLines = false;
 this.showPoints = false;
 this.drawTriangles = false;
 this.fillTriangles = true;
 this.showTriangles = false;
 this.frontOnly = false;
+this.isShell = false;
 this.isTwoSided = true;
 this.havePlanarContours = false;
 this.bsTemp = null;
@@ -46,7 +48,8 @@ this.colorDensity = false;
 this.cappingObject = null;
 this.slabbingObject = null;
 this.volumeRenderPointSize = 0.15;
-this.connections = null;
+this.connectedAtoms = null;
+this.isModelConnected = false;
 this.recalcAltVertices = false;
 this.symopColixes = null;
 Clazz.instantialize (this, arguments);
@@ -82,13 +85,15 @@ this.symopColixes = null;
 this.cappingObject = null;
 this.colix = 23;
 this.colorDensity = false;
-this.connections = null;
+this.connectedAtoms = null;
 this.diameter = 0;
 this.drawTriangles = false;
 this.fillTriangles = true;
 this.frontOnly = false;
+this.isShell = false;
 this.havePlanarContours = false;
 this.haveXyPoints = false;
+this.isModelConnected = false;
 this.isTriangleSet = false;
 this.isTwoSided = false;
 this.lattice = null;
@@ -119,6 +124,7 @@ var normals = this.getNormals (vertices, plane);
 this.setNormixes (normals);
 this.lighting = 1073741958;
 if (this.insideOut) this.invertNormixes ();
+if (this.isShell && !this.isTwoSided) this.invertNormixes ();
 this.setLighting (lighting);
 }, "~N,~A,JU.P4");
 Clazz.defineMethod (c$, "setNormixes", 
@@ -166,6 +172,7 @@ if (lighting == 1073741964) for (var i = this.normixCount; --i >= 0; ) this.norm
 Clazz.defineMethod (c$, "invertNormixes", 
  function () {
 JU.Normix.setInverseNormixes ();
+this.normalsInverted = !this.normalsInverted;
 for (var i = this.normixCount; --i >= 0; ) this.normixes[i] = JU.Normix.getInverseNormix (this.normixes[i]);
 
 });
@@ -237,6 +244,7 @@ s.append (this.frontOnly ? " frontOnly" : " notFrontOnly");
 if (this.showContourLines) s.append (" contourlines");
 if (this.showTriangles) s.append (" triangles");
 s.append (" ").append (JS.T.nameOf (this.lighting));
+if (this.isShell && !this.isTwoSided) s.append (" backshell");
 return s.toString ();
 });
 Clazz.defineMethod (c$, "getOffsetVertices", 
@@ -257,8 +265,8 @@ this.mat4.getRotationScale (m3);
 m3.rotate (normal);
 }}for (var i = 0; i < this.vc; i++) {
 if (this.vvs != null && Float.isNaN (val = this.vvs[i])) continue;
-if (this.mat4 != null) this.mat4.rotTrans (this.altVertices[i]);
 var pt = this.altVertices[i];
+if (this.mat4 != null) this.mat4.rotTrans (pt);
 if (normal != null && val != 0) pt.scaleAdd2 (val, normal, pt);
 }
 this.initialize (this.lighting, this.altVertices, null);
@@ -309,8 +317,14 @@ case 1073742058:
 case 1073741960:
 this.frontOnly = (tokProp == 1073741960 ? bProp : !bProp);
 return;
-case 1073741958:
+case 1073742057:
 case 1073741862:
+if (!this.isTwoSided && this.isShell != (tokProp == 1073741862 ? bProp : !bProp)) {
+this.isShell = !this.isShell;
+this.invertNormixes ();
+}return;
+case 1073741958:
+case 1073741861:
 case 1073741964:
 this.setLighting (tokProp);
 return;
@@ -344,10 +358,15 @@ info.put ("vertexCount", Integer.$valueOf (this.vc));
 info.put ("polygonCount", Integer.$valueOf (this.pc));
 info.put ("haveQuads", Boolean.$valueOf (this.haveQuads));
 info.put ("haveValues", Boolean.$valueOf (this.vvs != null));
-if (this.vc > 0 && isAll) info.put ("vertices", JU.AU.arrayCopyPt (this.vs, this.vc));
-if (this.vvs != null && isAll) info.put ("vertexValues", JU.AU.arrayCopyF (this.vvs, this.vc));
-if (this.pc > 0 && isAll) info.put ("polygons", JU.AU.arrayCopyII (this.pis, this.pc));
-return info;
+if (isAll) {
+if (this.vc > 0) {
+info.put ("vertices", JU.AU.arrayCopyPt (this.vs, this.vc));
+if (this.bsSlabDisplay != null) info.put ("bsVertices", this.getVisibleVBS ());
+}if (this.vvs != null) info.put ("vertexValues", JU.AU.arrayCopyF (this.vvs, this.vc));
+if (this.pc > 0) {
+info.put ("polygons", JU.AU.arrayCopyII (this.pis, this.pc));
+if (this.bsSlabDisplay != null) info.put ("bsPolygons", this.bsSlabDisplay);
+}}return info;
 }, "~B");
 Clazz.defineMethod (c$, "getBoundingBox", 
 function () {

@@ -16,19 +16,24 @@
 ////// special stuff just for this particular page
 
 var s = unescape(document.location.search);
+var script = 'set errorCallback "myCallback";'
+	+'set measurementUnits angstroms;set zoomlarge false;'
+	+'set echo top left;echo loading XXXX...;refresh;'
+	+'load ":XXXX";set echo top center;echo XXXX;'
 var xxxx = s.split("_USE=")[0]
 if (xxxx.length < 2) {
-	xxxx = "ethanol"
-	script = 'set errorCallback "myCallback";'
-	+'set zoomlarge false;set echo top left;echo loading XXXX...;refresh;'
-	+'load ":XXXX";set echo top center;echo XXXX;'
-	+''
-	script = script.replace(/XXXX/g, xxxx)
+  xxxx = "ethanol"
 } else {
-	script = xxxx.substring(1)
+  xxxx = xxxx.substring(1);
+  if (xxxx.indexOf("load ") >= 0) {
+    script = xxxx
+    xxxx = ""
+  }
 }
+if (xxxx)
+  script = script.replace(/XXXX/g, xxxx)
 
-// ---------------------------------------------------------------------------------
+// --------------------------------------------------------------------------
 
 ////// every page will need one variable and one Info object for each applet object
 

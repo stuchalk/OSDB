@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JU");
-Clazz.load (["JU.Elements"], "JU.JmolMolecule", ["java.lang.Character", "java.util.Hashtable", "JU.AU", "$.BS", "$.PT", "JU.BNode"], function () {
+Clazz.load (["JU.Elements"], "JU.JmolMolecule", ["java.lang.Character", "java.util.Hashtable", "JU.AU", "$.BS", "$.PT"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.nodes = null;
 this.moleculeIndex = 0;
@@ -61,13 +61,13 @@ if (iMolecule == molecules.length) molecules = JU.JmolMolecule.allocateArray (mo
 molecules[iMolecule] = JU.JmolMolecule.initialize (atoms, iMolecule, iAtom, bsBranch, modelIndex, indexInModel);
 return molecules;
 }, "~A,~N,~A,~N,JU.BS,~N,~N,JU.BS");
-c$.getMolecularFormula = Clazz.defineMethod (c$, "getMolecularFormula", 
-function (atoms, bsSelected, includeMissingHydrogens, wts, isEmpirical) {
+c$.getMolecularFormulaAtoms = Clazz.defineMethod (c$, "getMolecularFormulaAtoms", 
+function (atoms, bsSelected, wts, isEmpirical) {
 var m =  new JU.JmolMolecule ();
 m.nodes = atoms;
 m.atomList = bsSelected;
-return m.getMolecularFormula (includeMissingHydrogens, wts, isEmpirical);
-}, "~A,JU.BS,~B,~A,~B");
+return m.getMolecularFormula (false, wts, isEmpirical);
+}, "~A,JU.BS,~A,~B");
 Clazz.defineMethod (c$, "getMolecularFormula", 
 function (includeMissingHydrogens, wts, isEmpirical) {
 if (this.mf != null) return this.mf;
@@ -78,14 +78,16 @@ this.atomList.setBits (0, this.nodes.length);
 this.altElementCounts =  Clazz.newIntArray (JU.Elements.altElementMax, 0);
 this.ac = this.atomList.cardinality ();
 for (var p = 0, i = this.atomList.nextSetBit (0); i >= 0; i = this.atomList.nextSetBit (i + 1), p++) {
-var n = this.nodes[i].getAtomicAndIsotopeNumber ();
+var node = this.nodes[i];
+if (node == null) continue;
+var n = node.getAtomicAndIsotopeNumber ();
 var f = (wts == null ? 1 : Clazz.floatToInt (8 * wts[p]));
 if (n < JU.Elements.elementNumberMax) {
 if (this.elementCounts[n] == 0) this.nElements++;
 this.elementCounts[n] += f;
 this.elementNumberMax = Math.max (this.elementNumberMax, n);
 if (includeMissingHydrogens) {
-var nH = this.nodes[i].getImplicitHydrogenCount ();
+var nH = node.getImplicitHydrogenCount ();
 if (nH > 0) {
 if (this.elementCounts[1] == 0) this.nElements++;
 this.elementCounts[1] += nH * f;
@@ -153,7 +155,7 @@ c$.getCovalentlyConnectedBitSet = Clazz.defineMethod (c$, "getCovalentlyConnecte
  function (atoms, atom, bsToTest, allowCyclic, allowBioResidue, biobranches, bsResult) {
 var atomIndex = atom.getIndex ();
 if (!bsToTest.get (atomIndex)) return allowCyclic;
-if (!allowBioResidue && Clazz.instanceOf (atom, JU.BNode) && (atom).getBioStructureTypeName ().length > 0) return allowCyclic;
+if (!allowBioResidue && atom.getBioStructureTypeName ().length > 0) return allowCyclic;
 bsToTest.clear (atomIndex);
 if (biobranches != null && !bsResult.get (atomIndex)) {
 for (var i = biobranches.size (); --i >= 0; ) {

@@ -123,7 +123,8 @@ nGrid = gridMax;
 if (!this.isQuiet) JU.Logger.info ("Warning -- high number of grid points: " + nGrid);
 }} else if (resolution == 3.4028235E38) {
 nGrid = gridMax;
-}}ptsPerAngstrom = (nGrid - 1) / range;
+}}if (nGrid == 1) nGrid = 2;
+ptsPerAngstrom = (nGrid - 1) / range;
 if (ptsPerAngstrom < minPointsPerAngstrom) {
 ptsPerAngstrom = minPointsPerAngstrom;
 nGrid = Clazz.doubleToInt (Math.floor (ptsPerAngstrom * range + 1));

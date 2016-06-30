@@ -19,7 +19,6 @@ this.surfaceNum = 1;
 this.currentVertexOrigin = 1;
 this.currentNormalOrigin = 1;
 this.currentTextureOrigin = 1;
-this.pixelSize = 0;
 this.ptTemp = null;
 Clazz.instantialize (this, arguments);
 }, J["export"], "_ObjExporter", J["export"].__CartesianExporter);
@@ -208,8 +207,7 @@ var retVal = this.initOutput (vwr, privateKey, gdata, params);
 if (!retVal) {
 this.debugPrint ("End initializeOutput (error in super):");
 return false;
-}this.pixelSize = 0.5 / this.scalePixelsPerAngstrom;
-var dot = this.fileName.lastIndexOf (".");
+}var dot = this.fileName.lastIndexOf (".");
 if (dot < 0) {
 this.debugPrint ("End initializeOutput (Error creating .mtl file):");
 return false;

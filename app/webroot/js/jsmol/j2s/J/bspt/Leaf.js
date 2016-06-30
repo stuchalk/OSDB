@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.bspt");
-Clazz.load (["J.bspt.Element"], "J.bspt.Leaf", ["J.bspt.Node", "JU.Escape"], function () {
+Clazz.load (["J.bspt.Element"], "J.bspt.Leaf", ["J.bspt.Node"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.tuples = null;
 Clazz.instantialize (this, arguments);
@@ -39,18 +39,5 @@ this.tuples[this.count++] = tuple;
 return this;
 }var node =  new J.bspt.Node (this.bspt, level, this);
 return node.addTuple (level, tuple);
-}, "~N,JU.P3");
-Clazz.overrideMethod (c$, "dump", 
-function (level, sb) {
-for (var i = 0; i < this.count; ++i) {
-var t = this.tuples[i];
-for (var j = 0; j < level; ++j) sb.append (".");
-
-sb.append (JU.Escape.eP (t)).append ("Leaf ").appendI (i).append (": ").append ((t).getInfo ());
-}
-}, "~N,JU.SB");
-Clazz.overrideMethod (c$, "toString", 
-function () {
-return "leaf:" + this.count + "\n";
-});
+}, "~N,JU.T3");
 });

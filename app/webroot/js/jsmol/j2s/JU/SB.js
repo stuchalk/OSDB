@@ -79,8 +79,7 @@ this.s += data.toString();
 Clazz.defineMethod (c$, "appendCB", 
 function (cb, off, len) {
 {
-for (var i = len,j=off; --i >= 0;)
-this.s += cb[j++];
+this.s += cb.slice(off,off+len).join("");
 }}, "~A,~N,~N");
 Clazz.overrideMethod (c$, "toString", 
 function () {

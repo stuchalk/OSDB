@@ -56,3 +56,7 @@ this.isStandard = (this.entryType == 5 || this.lenStream >= this.cd.header.minBy
 this.isEmpty = (this.entryType == 0 || this.lenStream <= 0);
 return true;
 });
+Clazz.overrideMethod (c$, "toString", 
+function () {
+return this.entryName + " " + this.lenStream;
+});

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.quantum");
-Clazz.load (["J.api.QuantumPlaneCalculationInterface", "J.quantum.QuantumCalculation", "JU.AU"], "J.quantum.NciCalculation", ["java.lang.Double", "JU.BS", "$.Eigen", "JU.BSUtil", "$.Escape", "$.Logger"], function () {
+Clazz.load (["J.quantum.QuantumPlaneCalculation", "JU.AU"], "J.quantum.NciCalculation", ["java.lang.Double", "JU.BS", "$.Eigen", "JU.BSUtil", "$.Escape", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.havePoints = false;
 this.isReducedDensity = false;
@@ -39,7 +39,7 @@ this.p0 = null;
 this.p1 = null;
 this.p2 = null;
 Clazz.instantialize (this, arguments);
-}, J.quantum, "NciCalculation", J.quantum.QuantumCalculation, J.api.QuantumPlaneCalculationInterface);
+}, J.quantum, "NciCalculation", J.quantum.QuantumPlaneCalculation);
 Clazz.prepareFields (c$, function () {
 this.eigenValues =  Clazz.newFloatArray (3, 0);
 this.yzPlanesRho = JU.AU.newFloat2 (2);
@@ -52,8 +52,8 @@ Clazz.makeConstructor (c$,
 function () {
 Clazz.superConstructor (this, J.quantum.NciCalculation, []);
 });
-Clazz.overrideMethod (c$, "setupCalculation", 
-function (volumeData, bsSelected, bsExcluded, bsMolecules, calculationType, atomCoordAngstroms, firstAtomOffset, shells, gaussians, dfCoefMaps, slaters, moCoefficients, linearCombination, isSquaredLinear, coefs, partialCharges, isDensityOnly, points, parameters, testFlags) {
+Clazz.defineMethod (c$, "setupCalculation", 
+function (volumeData, bsSelected, bsExcluded, bsMolecules, atomCoordAngstroms, firstAtomOffset, isReducedDensity, points, parameters, testFlags) {
 this.useAbsolute = (testFlags == 2);
 this.bsExcluded = bsExcluded;
 var bsLigand =  new JU.BS ();
@@ -62,7 +62,7 @@ if (bsExcluded != null) {
 bsLigand.andNot (bsExcluded);
 }this.isPromolecular = (firstAtomOffset >= 0);
 this.havePoints = (points != null);
-this.isReducedDensity = isDensityOnly;
+this.isReducedDensity = isReducedDensity;
 if (parameters != null) JU.Logger.info ("NCI calculation parameters = " + JU.Escape.eAF (parameters));
 this.type = Clazz.doubleToInt (J.quantum.NciCalculation.getParameter (parameters, 1, 0, "type"));
 if (this.type != 0 && bsMolecules == null) this.type = 0;
@@ -102,7 +102,7 @@ this.initialize (this.countsXYZ[0], this.countsXYZ[1], this.countsXYZ[2], points
 if (this.havePoints) {
 this.xMin = this.yMin = this.zMin = 0;
 this.xMax = this.yMax = this.zMax = points.length;
-}this.setupCoordinates (volumeData.getOriginFloat (), volumeData.getVolumetricVectorLengths (), bsSelected, atomCoordAngstroms, points, true);
+}this.setupCoordinates (volumeData.getOriginFloat (), volumeData.getVolumetricVectorLengths (), bsSelected, atomCoordAngstroms, null, points, true);
 if (this.qmAtoms != null) {
 var qmMap =  Clazz.newIntArray (bsSelected.length (), 0);
 for (var i = this.qmAtoms.length; --i >= 0; ) {
@@ -130,10 +130,10 @@ if (this.nMolecules == 1) {
 this.noValuesAtAll = (this.type != 0 && this.type != 1);
 this.type = 0;
 }if (!this.isPromolecular) this.getBsOK ();
-}if (!this.isReducedDensity || !this.isPromolecular) this.initializeEigen ();
+}if (!isReducedDensity || !this.isPromolecular) this.initializeEigen ();
 this.doDebug = (JU.Logger.debugging);
 return true;
-}, "J.api.VolumeDataInterface,JU.BS,JU.BS,~A,~S,~A,~N,JU.Lst,~A,~A,~O,~A,~A,~B,~A,~A,~B,~A,~A,~N");
+}, "J.jvxl.data.VolumeData,JU.BS,JU.BS,~A,~A,~N,~B,~A,~A,~N");
 c$.getParameter = Clazz.defineMethod (c$, "getParameter", 
  function (parameters, i, def, name) {
 var param = (parameters == null || parameters.length < i + 1 ? 0 : parameters[i]);

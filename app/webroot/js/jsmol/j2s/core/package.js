@@ -25,11 +25,9 @@ if (!window["java.registered"])
 // note - we don't need to list ALL the classes -- only the ones that are entry points.
 // several more classe are in each of these files -- see build_03_tojs.xml
 
-	ClazzLoader.jarClasspath (base + "coretext.z.js",	[    
-	"JM.Object2d",
-	"$.Text",
-	"J.shape.Object2dShape",
-	"$.TextShape",
+	ClazzLoader.jarClasspath (base + "coretext.z.js",	[ 
+	"JM.Text",
+	"J.shape.TextShape",
 	"$.Labels",
 	"$.Measures",
 	"$.Echo",
@@ -112,7 +110,6 @@ if (!window["java.registered"])
 	]);
 
 	ClazzLoader.jarClasspath (base + "coremin.z.js",	[
-		"J.api.MinimizerInterface", // -- required by J.minimize.Minimizer
 		"JM.Minimizer",
 		"$.MinObject", // -- required by $.MinAngle
 		"$.MinAngle",
@@ -150,7 +147,6 @@ if (!window["java.registered"])
 
 	ClazzLoader.jarClasspath (base + "coresurface.z.js",	[
 		"JS.IsoExt",
-		"J.api.VolumeDataInterface",
 		"J.jvxl.api.VertexDataServer",
 		"$.MeshDataServer",
 		"J.jvxl.calc.MarchingCubes",

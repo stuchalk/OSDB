@@ -15,7 +15,8 @@ this.tmp =  Clazz.newIntArray (3, 0);
 }, "J.g3d.Graphics3D");
 Clazz.defineMethod (c$, "set", 
 function (zSlab, zDepth, zShadePower) {
-this.bgRGB =  Clazz.newIntArray (-1, [this.g.bgcolor & 0xFF, (this.g.bgcolor >> 8) & 0xFF, (this.g.bgcolor >> 16) & 0xFF]);
+this.bgcolor = this.g.bgcolor;
+this.bgRGB =  Clazz.newIntArray (-1, [this.bgcolor & 0xFF, (this.bgcolor >> 8) & 0xFF, (this.g.bgcolor >> 16) & 0xFF]);
 this.zSlab = zSlab < 0 ? 0 : zSlab;
 this.zDepth = zDepth < 0 ? 0 : zDepth;
 this.zShadePower = zShadePower;

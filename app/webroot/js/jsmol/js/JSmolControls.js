@@ -1,5 +1,5 @@
 // JSmolControls.js
-//
+// BH 11/13/2015 7:12:40 PM addded indeterminate checkbox masters
 // BH 5/29/2014 8:14:06 AM added default command for command input box
 // BH 5/15/2014 -- removed script check prior to execution
 // BH 12/3/2013 12:39:48 PM added up/down arrow key-driven command history for commandInput (changed keypress to keydown)
@@ -179,21 +179,29 @@
 	}
 
 	c._cbNotifyMaster = function(m){
-		//called when a group item is checked
-		var allOn = true;
-		var allOff = true;
-		for (var chkBox in m.chkGroup){
-			if(m.chkGroup[chkBox].checked)
-				allOff = false;
-			else
-				allOn = false;
+  	//called when a group item is checked
+    var allOn = true;
+    var allOff = true;
+    var mixed = false;
+    var cb;
+    for (var id in m.chkGroup){ //siblings of m
+      cb = m.chkGroup[id]; 
+		  if (cb.checked)
+        allOff = false;
+      else
+        allOn = false;
+      if (cb.indeterminate)
+        mixed = true;
 		}
-		if (allOn)m.chkMaster.checked = true;
-		if (allOff)m.chkMaster.checked = false;
-		if ((allOn || allOff) && c._checkboxItems[m.chkMaster.id])
-			c._cbNotifyMaster(c._checkboxItems[m.chkMaster.id])
+	  cb = m.chkMaster;
+		if (allOn) { cb.checked = true; }
+		else if (allOff) { cb.checked = false; }
+		else { mixed = true; }
+		cb.indeterminate = mixed;
+    (m = c._checkboxItems[cb.id]) && (cb = m.chkMaster) 
+      && c._cbNotifyMaster(c._checkboxMasters[cb.id])
 	}
-
+  
 	c._cbNotifyGroup = function(m, isOn){
 		//called when a master item is checked
 		for (var chkBox in m.chkGroup){
@@ -225,7 +233,7 @@
 		for (var i = i0; i < chkboxes.length; i++){
 			var id = chkboxes[i];
 			if(typeof(id)=="number")id = "jmolCheckbox" + id;
-			checkboxItem = document.getElementById(id);
+			var checkboxItem = document.getElementById(id);
 			if (!checkboxItem)alert("jmolSetCheckboxGroup: group checkbox not found: " + id);
 			m.chkGroup[id] = checkboxItem;
 			c._checkboxItems[id] = m;

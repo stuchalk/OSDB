@@ -7,7 +7,7 @@ this.fileName = null;
 this.fileDotModel = null;
 this.modelIndex = 0;
 this.atomData = null;
-this.atomXyz = null;
+this.atomXyzTruncated = null;
 this.atomRadius = null;
 this.atomProp = null;
 this.atomNo = null;
@@ -101,7 +101,7 @@ this.xyzMin = JU.P3.newP (this.params.origin);
 this.xyzMax = JU.P3.newP (this.params.origin);
 this.xyzMax.add3 ((this.params.points.x - 1) * this.params.steps.x, (this.params.points.y - 1) * this.params.steps.y, (this.params.points.z - 1) * this.params.steps.z);
 } else if (this.params.boundingBox == null) {
-this.getAtoms (this.params.bsSelected, false, true, false, false, false, false, this.params.mep_marginAngstroms);
+this.getAtoms (this.params.bsSelected, false, true, false, false, false, false, this.params.mep_marginAngstroms, this.params.modelInvRotation);
 if (this.xyzMin == null) {
 this.xyzMin = JU.P3.new3 (-10, -10, -10);
 this.xyzMax = JU.P3.new3 (10, 10, 10);
@@ -111,7 +111,7 @@ this.xyzMax = JU.P3.newP (this.params.boundingBox[1]);
 }this.setRanges (this.params.plane_ptsPerAngstrom, this.params.plane_gridMax, 0);
 });
 Clazz.defineMethod (c$, "getAtoms", 
-function (bsSelected, doAddHydrogens, getRadii, getMolecules, getAllModels, addNearbyAtoms, getAtomMinMax, marginAtoms) {
+function (bsSelected, doAddHydrogens, getRadii, getMolecules, getAllModels, addNearbyAtoms, getAtomMinMax, marginAtoms, modelInvRotation) {
 if (addNearbyAtoms) getRadii = true;
 if (getRadii) {
 if (this.params.atomRadiusData == null) this.params.atomRadiusData =  new J.atomdata.RadiusData (null, 1, J.atomdata.RadiusData.EnumType.FACTOR, J.c.VDW.AUTO);
@@ -128,7 +128,7 @@ this.modelIndex = this.atomData.firstModelIndex;
 var needRadius = false;
 for (var i = 0; i < this.ac; i++) {
 if ((bsSelected == null || bsSelected.get (i)) && (!this.bsMyIgnored.get (i))) {
-if (this.havePlane && Math.abs (this.volumeData.distancePointToPlane (this.atomData.atomXyz[i])) > 2 * (this.atomData.atomRadius[i] = this.getWorkingRadius (i, marginAtoms))) continue;
+if (this.havePlane && Math.abs (this.volumeData.distancePointToPlane (this.atomData.xyz[i])) > 2 * (this.atomData.atomRadius[i] = this.getWorkingRadius (i, marginAtoms))) continue;
 this.bsMySelected.set (i);
 needRadius = !this.havePlane;
 }if (getRadii && (addNearbyAtoms || needRadius)) this.atomData.atomRadius[i] = this.getWorkingRadius (i, marginAtoms);
@@ -154,21 +154,21 @@ nH = hAtoms.length;
 JU.Logger.info (nH + " attached hydrogens added");
 }var n = nH + this.myAtomCount;
 if (getRadii) this.atomRadius =  Clazz.newFloatArray (n, 0);
-this.atomXyz =  new Array (n);
+this.atomXyzTruncated =  new Array (n);
 if (this.params.theProperty != null) this.atomProp =  Clazz.newFloatArray (n, 0);
 this.atomNo =  Clazz.newIntArray (n, 0);
 this.atomIndex =  Clazz.newIntArray (n, 0);
 this.myIndex =  Clazz.newIntArray (this.ac, 0);
 for (var i = 0; i < nH; i++) {
 if (getRadii) this.atomRadius[i] = rH;
-this.atomXyz[i] = hAtoms[i];
+this.atomXyzTruncated[i] = hAtoms[i];
 this.atomNo[i] = -1;
 if (this.atomProp != null) this.addAtomProp (i, NaN);
 }
 this.myAtomCount = nH;
 for (var i = atomSet.nextSetBit (0); i >= 0; i = atomSet.nextSetBit (i + 1)) {
 if (this.atomProp != null) this.addAtomProp (this.myAtomCount, (props != null && i < props.length ? props[i] : NaN));
-this.atomXyz[this.myAtomCount] = this.atomData.atomXyz[i];
+this.atomXyzTruncated[this.myAtomCount] = this.atomData.xyz[i];
 this.atomNo[this.myAtomCount] = this.atomData.atomicNumber[i];
 this.atomIndex[this.myAtomCount] = i;
 this.myIndex[i] = this.myAtomCount;
@@ -176,11 +176,12 @@ if (getRadii) this.atomRadius[this.myAtomCount] = this.atomData.atomRadius[i];
 this.myAtomCount++;
 }
 }this.firstNearbyAtom = this.myAtomCount;
-JU.Logger.info (this.myAtomCount + " atoms will be used in the surface calculation");
+if (!this.isQuiet) JU.Logger.info (this.myAtomCount + " atoms will be used in the surface calculation");
+if (modelInvRotation != null) this.atomData.transformXYZ (modelInvRotation, bsSelected);
 if (this.myAtomCount == 0) {
 this.setBBox (JU.P3.new3 (10, 10, 10), 0);
 this.setBBox (JU.P3.new3 (-10, -10, -10), 0);
-}for (var i = 0; i < this.myAtomCount; i++) this.setBBox (this.atomXyz[i], getRadii ? this.atomRadius[i] + 0.5 : 0);
+}for (var i = 0; i < this.myAtomCount; i++) this.setBBox (this.atomXyzTruncated[i], getRadii ? this.atomRadius[i] + 0.5 : 0);
 
 if (!Float.isNaN (this.params.scale)) {
 var v = JU.V3.newVsub (this.xyzMax, this.xyzMin);
@@ -195,9 +196,9 @@ this.bsNearby =  new JU.BS ();
 for (var i = 0; i < this.ac; i++) {
 if (atomSet.get (i) || this.bsMyIgnored.get (i)) continue;
 var rA = this.atomData.atomRadius[i];
-if (this.params.thePlane != null && Math.abs (this.volumeData.distancePointToPlane (this.atomData.atomXyz[i])) > 2 * rA) continue;
+if (this.params.thePlane != null && Math.abs (this.volumeData.distancePointToPlane (this.atomData.xyz[i])) > 2 * rA) continue;
 if (this.params.theProperty != null) rA += this.maxDistance;
-pt = this.atomData.atomXyz[i];
+pt = this.atomData.xyz[i];
 if (pt.x + rA > this.xyzMin.x && pt.x - rA < this.xyzMax.x && pt.y + rA > this.xyzMin.y && pt.y - rA < this.xyzMax.y && pt.z + rA > this.xyzMin.z && pt.z - rA < this.xyzMax.z) {
 this.bsNearby.set (i);
 this.nearbyAtomCount++;
@@ -206,19 +207,19 @@ var nAtoms = this.myAtomCount;
 if (this.nearbyAtomCount != 0) {
 nAtoms += this.nearbyAtomCount;
 this.atomRadius = JU.AU.arrayCopyF (this.atomRadius, nAtoms);
-this.atomXyz = JU.AU.arrayCopyObject (this.atomXyz, nAtoms);
+this.atomXyzTruncated = JU.AU.arrayCopyObject (this.atomXyzTruncated, nAtoms);
 if (this.atomIndex != null) this.atomIndex = JU.AU.arrayCopyI (this.atomIndex, nAtoms);
 if (props != null) this.atomProp = JU.AU.arrayCopyF (this.atomProp, nAtoms);
 for (var i = this.bsNearby.nextSetBit (0); i >= 0; i = this.bsNearby.nextSetBit (i + 1)) {
 if (props != null) this.addAtomProp (this.myAtomCount, props[i]);
 this.myIndex[i] = this.myAtomCount;
 this.atomIndex[this.myAtomCount] = i;
-this.atomXyz[this.myAtomCount] = this.atomData.atomXyz[i];
+this.atomXyzTruncated[this.myAtomCount] = this.atomData.xyz[i];
 this.atomRadius[this.myAtomCount++] = this.atomData.atomRadius[i];
 }
 }if (getRadii) this.setRadii ();
 this.haveOneProperty = (!Float.isNaN (this.theProperty));
-}, "JU.BS,~B,~B,~B,~B,~B,~B,~N");
+}, "JU.BS,~B,~B,~B,~B,~B,~B,~N,JU.M4");
 Clazz.defineMethod (c$, "setRadii", 
 function () {
 if (this.rs != null) return;
@@ -327,7 +328,7 @@ for (var i = 0; i < this.nPointsX; i++) bsAtomMinMax[i] =  new JU.BS ();
 
 for (var iAtom = this.myAtomCount; --iAtom >= 0; ) {
 if (bs != null && !bs.get (iAtom)) continue;
-this.setGridLimitsForAtom (this.atomXyz[iAtom], this.atomRadius[iAtom], this.pt0, this.pt1);
+this.setGridLimitsForAtom (this.atomXyzTruncated[iAtom], this.atomRadius[iAtom], this.pt0, this.pt1);
 for (var i = this.pt0.x; i < this.pt1.x; i++) bsAtomMinMax[i].set (iAtom);
 
 }
@@ -342,7 +343,7 @@ for (var iAtom = this.thisAtomSet.nextSetBit (0); iAtom >= 0; iAtom = this.thisA
 if (!this.havePlane && this.validSpheres != null && !this.validSpheres.get (iAtom)) continue;
 var isSurface = (this.noFaceSpheres != null && this.noFaceSpheres.get (iAtom));
 var isNearby = (iAtom >= this.firstNearbyAtom);
-var ptA = this.atomXyz[iAtom];
+var ptA = this.atomXyzTruncated[iAtom];
 var rA = this.atomRadius[iAtom];
 if (isWithin && ptA.distance (this.point) > distance + rA + 0.5) continue;
 var rA0 = rA + r0;

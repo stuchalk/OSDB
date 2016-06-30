@@ -17,6 +17,6 @@ this.myType = "boundBox";
 Clazz.overrideMethod (c$, "setModelVisibilityFlags", 
 function (bs) {
 var bboxModels;
-this.isVisible = ((this.mad = this.vwr.getObjectMad (4)) != 0 && ((bboxModels = this.vwr.ms.bboxModels) == null || bs.intersects (bboxModels)));
+this.isVisible = (this.vwr.getShowBbcage () && ((bboxModels = this.vwr.ms.bboxModels) == null || bs.intersects (bboxModels)));
 }, "JU.BS");
 });

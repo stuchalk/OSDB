@@ -5,19 +5,6 @@ Clazz.overrideMethod (c$, "setProperty",
 function (propertyName, value, bs) {
 this.setPropFLS (propertyName, value);
 }, "~S,~O,JU.BS");
-Clazz.defineMethod (c$, "getShapeState", 
-function () {
-if (!this.ms.haveUnitCells) return "";
-var st = Clazz.superCall (this, J.shape.Uccage, "getShapeState", []);
-var s = st;
-var iAtom = this.vwr.am.cai;
-if (iAtom >= 0) s += "  unitcell ({" + iAtom + "});\n";
-var uc = this.vwr.getCurrentUnitCell ();
-if (uc != null) {
-s += uc.getUnitCellState ();
-s += st;
-}return s;
-});
 Clazz.defineMethod (c$, "initShape", 
 function () {
 Clazz.superCall (this, J.shape.Uccage, "initShape", []);

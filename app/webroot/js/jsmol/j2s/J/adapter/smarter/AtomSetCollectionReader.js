@@ -16,6 +16,8 @@ this.isConcatenated = false;
 this.addedData = null;
 this.addedDataKey = null;
 this.fixJavaFloat = true;
+this.thisBiomolecule = null;
+this.lstNCS = null;
 this.line = null;
 this.prevline = null;
 this.next = null;
@@ -34,6 +36,7 @@ this.applySymmetryToBonds = false;
 this.doCheckUnitCell = false;
 this.getHeader = false;
 this.isSequential = false;
+this.isMolecular = false;
 this.templateAtomCount = 0;
 this.modelNumber = 0;
 this.vibrationNumber = 0;
@@ -100,6 +103,8 @@ this.doSetOrientation = false;
 this.doCentralize = false;
 this.addVibrations = false;
 this.useAltNames = false;
+this.ignoreStructure = false;
+this.isDSSP1 = false;
 this.allowPDBFilter = false;
 this.doReadMolecularOrbitals = false;
 this.reverseModels = false;
@@ -129,7 +134,7 @@ function (fullPath, htParams, reader) {
 if (fullPath == null) return;
 this.debugging = JU.Logger.debugging;
 this.htParams = htParams;
-this.filePath = fullPath.$replace ('\\', '/');
+this.filePath = "" + htParams.get ("fullPathName");
 var i = this.filePath.lastIndexOf ('/');
 this.fileName = this.filePath.substring (i + 1);
 if (Clazz.instanceOf (reader, java.io.BufferedReader)) this.reader = reader;
@@ -351,7 +356,7 @@ this.firstLastStep = val;
 this.firstLastStep = this.htParams.get ("firstLastStep");
 } else if (this.htParams.containsKey ("bsModels")) {
 this.bsModels = this.htParams.get ("bsModels");
-}this.useFileModelNumbers = this.htParams.containsKey ("useFileModelNumbers");
+}this.useFileModelNumbers = this.htParams.containsKey ("useFileModelNumbers") || this.checkFilterKey ("USEFILEMODELNUMBERS");
 if (this.htParams.containsKey ("templateAtomCount")) this.templateAtomCount = (this.htParams.get ("templateAtomCount")).intValue ();
 if (this.bsModels != null || this.firstLastStep != null) this.desiredModelNumber = -2147483648;
 if (this.bsModels == null && this.firstLastStep != null) {
@@ -445,6 +450,7 @@ this.asc.setCollectionName ("<collection of " + (this.asc.iSet + 1) + " models>"
 } else {
 this.asc.setCollectionName (name);
 }this.asc.setModelInfoForSet ("name", name, Math.max (0, this.asc.iSet));
+this.asc.setAtomSetName (name);
 }, "~S");
 Clazz.defineMethod (c$, "cloneLastAtomSet", 
 function (ac, pts) {
@@ -459,7 +465,7 @@ this.unitCellParams = this.previousUnitCell;
 }, "~N,~A");
 Clazz.defineMethod (c$, "setSpaceGroupName", 
 function (name) {
-if (this.ignoreFileSpaceGroupName) return;
+if (this.ignoreFileSpaceGroupName || name == null) return;
 var s = name.trim ();
 if (s.equals (this.sgName)) return;
 if (!s.equals ("P1")) JU.Logger.info ("Setting space group name to " + s);
@@ -552,6 +558,16 @@ if (this.unitCellOffsetFractional != this.fileCoordinatesAreFractional) {
 if (this.unitCellOffsetFractional) this.symmetry.toCartesian (this.fileOffset, false);
  else this.symmetry.toFractional (this.fileOffset, false);
 }});
+Clazz.defineMethod (c$, "fractionalizeCoordinates", 
+function (toFrac) {
+this.getSymmetry ();
+var a = this.asc.atoms;
+if (toFrac) for (var i = this.asc.ac; --i >= 0; ) this.symmetry.toFractional (a[i], false);
+
+ else for (var i = this.asc.ac; --i >= 0; ) this.symmetry.toCartesian (a[i], false);
+
+this.setFractionalCoordinates (toFrac);
+}, "~B");
 Clazz.defineMethod (c$, "getNewSymmetry", 
 function () {
 return this.symmetry = this.getInterface ("JS.Symmetry");
@@ -577,6 +593,8 @@ this.filter = filter0;
 this.doSetOrientation = !this.checkFilterKey ("NOORIENT");
 this.doCentralize = (!this.checkFilterKey ("NOCENTER") && this.checkFilterKey ("CENTER"));
 this.addVibrations = !this.checkFilterKey ("NOVIB");
+this.ignoreStructure = this.checkFilterKey ("DSSP");
+this.isDSSP1 = this.checkFilterKey ("DSSP1");
 this.doReadMolecularOrbitals = !this.checkFilterKey ("NOMO");
 this.useAltNames = this.checkFilterKey ("ALTNAME");
 this.reverseModels = this.checkFilterKey ("REVERSEMODELS");
@@ -592,7 +610,7 @@ this.nameRequired = JU.PT.getQuotedAttribute (this.filter, "NAME");
 if (this.nameRequired != null) {
 if (this.nameRequired.startsWith ("'")) this.nameRequired = JU.PT.split (this.nameRequired, "'")[1];
  else if (this.nameRequired.startsWith ("\"")) this.nameRequired = JU.PT.split (this.nameRequired, "\"")[1];
-filter0 = this.filter = JU.PT.rep (this.filter, this.nameRequired, "");
+this.filter = JU.PT.rep (this.filter, this.nameRequired, "");
 filter0 = this.filter = JU.PT.rep (this.filter, "NAME=", "");
 }this.filterAtomName = this.checkFilterKey ("*.") || this.checkFilterKey ("!.");
 this.filterElement = this.checkFilterKey ("_");
@@ -920,7 +938,7 @@ this.prevline = this.line;
 this.line = this.reader.readLine ();
 if (this.out != null && this.line != null) this.out.append (this.line).append ("\n");
 this.ptLine++;
-if (this.debugging) JU.Logger.debug (this.line);
+if (this.debugging && this.line != null) JU.Logger.debug (this.line);
 return this.line;
 });
 c$.getStrings = Clazz.defineMethod (c$, "getStrings", 

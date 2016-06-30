@@ -32,16 +32,16 @@ Clazz.overrideMethod (c$, "render",
 function () {
 this.imageFontScaling = this.vwr.imageFontScaling;
 this.font3d = this.vwr.gdata.getFont3DScaled ((this.shape).font3d, this.imageFontScaling);
-var mad = this.vwr.getObjectMad (5);
-if (mad == 0 || this.vwr.isJmolDataFrame () || this.tm.isNavigating () && this.vwr.getBoolean (603979890)) return false;
+var mad10 = this.vwr.getObjectMad10 (5);
+if (mad10 == 0 || this.vwr.isJmolDataFrame () || this.tm.isNavigating () && this.vwr.getBoolean (603979890)) return false;
 this.colix = this.vwr.getObjectColix (5);
 var needTranslucent = JU.C.renderPass2 (this.colix);
 if (!this.isExport && needTranslucent != this.vwr.gdata.isPass2) return needTranslucent;
-this.render1 (mad);
+this.render1 (mad10);
 return false;
 });
 Clazz.defineMethod (c$, "render1", 
- function (mad) {
+ function (mad10) {
 this.g3d.setC (this.colix);
 this.unitcell = this.vwr.getCurrentUnitCell ();
 if (this.unitcell == null) return;
@@ -64,8 +64,10 @@ if (fset.z < 0) {
 this.cell0.scale (-1 / fset.z);
 this.cell1.scale (-1 / fset.z);
 }var scale = Math.abs (fset.z);
-var axisPoints = this.vwr.getAxisPoints ();
-var drawAllLines = (this.vwr.getObjectMad (1) == 0 || this.vwr.getFloat (570425346) < 2 || axisPoints == null);
+var axes = this.vwr.shm.getShape (34);
+if (axes != null && this.vwr.areAxesTainted ()) axes.reinitShape ();
+var axisPoints = (axes == null || this.vwr.getObjectMad10 (1) == 0 || axes.axisXY.z != 0 || axes.fixedOrigin != null || axes.fixedOriginUC.lengthSquared () > 0 ? null : axes.axisPoints);
+var drawAllLines = (this.vwr.getObjectMad10 (1) == 0 || this.vwr.getFloat (570425346) < 2 || axisPoints == null);
 var aPoints = axisPoints;
 if (fset.z == 0) {
 this.offsetT.setT (this.cell0);
@@ -81,7 +83,7 @@ var v = JU.P3.new3 (pts[i].x * (this.cell1.x - this.cell0.x), pts[i].y * (this.c
 this.unitcell.toCartesian (v, true);
 this.verticesT[i].add2 (v, this.offsetT);
 }
-this.renderCage (mad, this.verticesT, aPoints, firstLine, allow0, allow1, 1);
+this.renderCage (mad10, this.verticesT, aPoints, firstLine, allow0, allow1, 1);
 } else for (var x = Clazz.floatToInt (this.cell0.x); x < this.cell1.x; x++) {
 for (var y = Clazz.floatToInt (this.cell0.y); y < this.cell1.y; y++) {
 for (var z = Clazz.floatToInt (this.cell0.z); z < this.cell1.z; z++) {
@@ -99,7 +101,7 @@ firstLine = (drawAllLines ? 0 : 3);
 allow1 = 0xFF;
 for (var i = 8; --i >= 0; ) this.verticesT[i].add2 (vertices[i], this.offsetT);
 
-this.renderCage (mad, this.verticesT, aPoints, firstLine, allow0, allow1, scale);
+this.renderCage (mad10, this.verticesT, aPoints, firstLine, allow0, allow1, scale);
 }
 }
 }
@@ -107,7 +109,7 @@ this.renderInfo ();
 }, "~N");
 Clazz.defineMethod (c$, "renderInfo", 
  function () {
-if (this.isExport || !this.vwr.getBoolean (603979828) || this.unitcell.isPeriodic () || this.vwr.isPreviewOnly || !this.vwr.gdata.setC (this.vwr.cm.colixBackgroundContrast) || this.vwr.gdata.getTextPosition () != 0) return;
+if (this.isExport || !this.vwr.getBoolean (603979828) || this.unitcell.isSimple () || this.vwr.isPreviewOnly || !this.vwr.gdata.setC (this.vwr.cm.colixBackgroundContrast) || this.vwr.gdata.getTextPosition () != 0) return;
 this.vwr.gdata.setFontFid (this.vwr.gdata.getFontFidFS ("Monospaced", 14 * this.imageFontScaling));
 this.xpos = Clazz.doubleToInt (Math.floor (5 * this.imageFontScaling));
 this.ypos = this.lineheight = Clazz.doubleToInt (Math.floor (15 * this.imageFontScaling));
@@ -115,8 +117,12 @@ var sgName = (this.isPolymer ? "polymer" : this.isSlab ? "slab" : this.unitcell.
 if (sgName != null) {
 if (sgName.startsWith ("cell=!")) sgName = "cell=inverse[" + sgName.substring (6) + "]";
 sgName = JU.PT.rep (sgName, ";0,0,0", "");
-if (!sgName.equals ("-- [--]")) this.drawInfo (sgName, 0, null);
-}var info = this.unitcell.getMoreInfo ();
+if (sgName.indexOf ("#") < 0) {
+var intTab = this.unitcell.getIntTableNumber ();
+if (intTab != null) sgName += " #" + intTab;
+}if (!sgName.equals ("-- [--]")) {
+this.drawInfo (sgName, 0, null);
+}}var info = this.unitcell.getMoreInfo ();
 if (info != null) for (var i = 0; i < info.size (); i++) this.drawInfo (info.get (i), 0, null);
 
 if (!this.vwr.getBoolean (603979937)) return;

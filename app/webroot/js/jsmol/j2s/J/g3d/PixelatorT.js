@@ -9,11 +9,11 @@ function (offset, z, p) {
 var zT = this.g.zbufT[offset];
 if (z < zT) {
 var argb = this.g.pbufT[offset];
-if (!this.g.translucentCoverOnly && argb != 0 && zT - z > this.g.zMargin) J.g3d.Graphics3D.mergeBufferPixel (this.g.pbuf, offset, argb, this.g.bgcolor);
+if (!this.g.translucentCoverOnly && argb != 0 && zT - z > this.g.zMargin) this.pb[offset] = J.g3d.Graphics3D.mergeBufferPixel (this.pb[offset], argb, this.g.bgcolor);
 this.g.zbufT[offset] = z;
 this.g.pbufT[offset] = p & this.g.translucencyMask;
 } else if (z == zT) {
 } else if (!this.g.translucentCoverOnly && z - zT > this.g.zMargin) {
-J.g3d.Graphics3D.mergeBufferPixel (this.g.pbuf, offset, p & this.g.translucencyMask, this.g.bgcolor);
+this.pb[offset] = J.g3d.Graphics3D.mergeBufferPixel (this.pb[offset], p & this.g.translucencyMask, this.g.bgcolor);
 }}, "~N,~N,~N");
 });

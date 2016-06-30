@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JV");
-Clazz.load (null, "JV.OutputManager", ["java.lang.Boolean", "java.util.Date", "$.Hashtable", "$.Map", "JU.AU", "$.Lst", "$.OC", "$.PT", "$.SB", "J.api.Interface", "J.i18n.GT", "J.io.JmolBinary", "JU.Logger", "JV.FileManager", "$.JC", "$.Viewer"], function () {
+Clazz.load (null, "JV.OutputManager", ["java.lang.Boolean", "java.util.Date", "$.Hashtable", "$.Map", "JU.AU", "$.Lst", "$.OC", "$.PT", "$.SB", "J.api.Interface", "J.i18n.GT", "JU.Logger", "JV.FileManager", "$.JC", "$.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.privateKey = 0;
@@ -350,7 +350,7 @@ var out = this.getOutputChannel (fileName, fullPath);
 if (out == null) return "";
 fileName = fullPath[0];
 var pathName = (type.equals ("FILE") ? this.vwr.fm.getFullPathName (false) : null);
-var getCurrentFile = (pathName != null && (pathName.equals ("string") || pathName.indexOf ("[]") >= 0 || pathName.equals ("JSNode")));
+var getCurrentFile = (pathName != null && (pathName.equals ("string") || pathName.equals ("String[]") || pathName.equals ("JSNode")));
 var asBytes = (pathName != null && !getCurrentFile);
 if (asBytes) {
 pathName = this.vwr.getModelSetPathName ();
@@ -568,8 +568,8 @@ var crcMap =  new java.util.Hashtable ();
 var haveSceneScript = (scripts != null && scripts.length == 3 && scripts[1].startsWith ("###scene.spt###"));
 var sceneScriptOnly = (haveSceneScript && scripts[2].equals ("min"));
 if (!sceneScriptOnly) {
-J.io.JmolBinary.getFileReferences (script, fileNames);
-if (haveSceneScript) J.io.JmolBinary.getFileReferences (scripts[1], fileNames);
+JV.FileManager.getFileReferences (script, fileNames);
+if (haveSceneScript) JV.FileManager.getFileReferences (scripts[1], fileNames);
 }var haveScripts = (!haveSceneScript && scripts != null && scripts.length > 0);
 if (haveScripts) {
 script = this.wrapPathForAllFiles ("script " + JU.PT.esc (scripts[0]), "");

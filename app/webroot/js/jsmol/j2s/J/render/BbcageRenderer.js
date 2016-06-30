@@ -10,7 +10,7 @@ function () {
 var bbox = this.shape;
 if (bbox.isVisible && (this.isExport || this.g3d.checkTranslucent (false)) && !this.vwr.isJmolDataFrame ()) {
 this.colix = this.vwr.getObjectColix (4);
-this.renderCage (bbox.mad, this.ms.getBBoxVertices (), null, 0, 0xFF, 0xFF, 1);
+this.renderCage (this.vwr.getObjectMad10 (4), this.ms.getBBoxVertices (), null, 0, 0xFF, 0xFF, 1);
 }return false;
 });
 });

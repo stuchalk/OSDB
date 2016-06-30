@@ -8,7 +8,6 @@ this.tickAs = null;
 this.tickBs = null;
 this.font3d = null;
 this.pt0i = null;
-this.pt1i = null;
 this.pt2i = null;
 this.s1 = null;
 this.s2 = null;
@@ -33,7 +32,6 @@ Clazz.instantialize (this, arguments);
 }, J.render, "FontLineShapeRenderer", J.render.ShapeRenderer);
 Clazz.prepareFields (c$, function () {
 this.pt0i =  new JU.P3i ();
-this.pt1i =  new JU.P3i ();
 this.pt2i =  new JU.P3i ();
 this.s1 =  new JU.P3i ();
 this.s2 =  new JU.P3i ();
@@ -47,19 +45,19 @@ this.pt0 =  new JU.P3 ();
 this.pt1 =  new JU.P3 ();
 });
 Clazz.defineMethod (c$, "getDiameter", 
-function (z, madOrPixels) {
+function (z, mad10OrPixels) {
 var diameter;
-var isMad = (madOrPixels > 20);
+var isMad10 = (mad10OrPixels > 20);
 switch (this.exportType) {
 case 1:
-diameter = (isMad ? madOrPixels : Clazz.doubleToInt (Math.floor (this.vwr.tm.unscaleToScreen (z, madOrPixels * 2) * 1000)));
+diameter = (isMad10 ? mad10OrPixels : Clazz.doubleToInt (Math.floor (this.vwr.tm.unscaleToScreen (z, mad10OrPixels * 2 / 10) * 1000)));
 break;
 default:
-if (isMad) {
-diameter = Clazz.floatToInt (this.vwr.tm.scaleToScreen (z, madOrPixels));
+if (isMad10) {
+diameter = Clazz.floatToInt (this.vwr.tm.scaleToScreen (z, Clazz.doubleToInt (mad10OrPixels / 10)));
 } else {
-if (this.g3d.isAntialiased ()) madOrPixels += madOrPixels;
-diameter = madOrPixels;
+if (this.g3d.isAntialiased ()) mad10OrPixels += mad10OrPixels;
+diameter = mad10OrPixels;
 }}
 return diameter;
 }, "~N,~N");
@@ -162,7 +160,7 @@ if (this.dotsOrDashes) {
 if (this.dashDots != null) this.drawDashed (x1, y1, z1, x2, y2, z2, this.dashDots);
 } else {
 if (diameter < 0) {
-this.g3d.drawDashedLineBits (4, 2, this.pt0, this.pt1);
+this.g3d.drawDashedLineBits (8, 4, this.pt0, this.pt1);
 return 1;
 }this.g3d.fillCylinderBits (2, diameter, this.pt0, this.pt1);
 }return Clazz.doubleToInt ((diameter + 1) / 2);

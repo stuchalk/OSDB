@@ -15,6 +15,7 @@ this.emptyListPt = 0;
 this.thisSection = null;
 this.inMovie = false;
 this.inNames = false;
+this.thisName = null;
 this.lastMark = 0;
 this.retrieveCount = 0;
 Clazz.instantialize (this, arguments);
@@ -29,6 +30,7 @@ Clazz.makeConstructor (c$,
 function (doc, vwr) {
 this.binaryDoc = doc;
 this.vwr = vwr;
+this.stack.ensureCapacity (1000);
 }, "javajs.api.GenericBinaryDocument,JV.Viewer");
 Clazz.defineMethod (c$, "log", 
  function (s) {
@@ -61,6 +63,7 @@ case 101:
 l = this.getObjects (this.getMark ());
 if (this.inNames && this.markCount == 2) {
 var pt = this.binaryDoc.getPosition ();
+System.out.println (" " + this.thisName + " " + this.filePt + " " + (pt - this.filePt));
 var l2 =  new JU.Lst ();
 l2.addLast (Integer.$valueOf (this.filePt));
 l2.addLast (Integer.$valueOf (pt - this.filePt));
@@ -111,6 +114,7 @@ a =  Clazz.newByteArray (i, 0);
 this.binaryDoc.readByteArray (a, 0, i);
 s =  String.instantialize (a, "UTF-8");
 if (this.inNames && this.markCount == 3 && this.lastMark == this.stack.size ()) {
+this.thisName = s;
 this.filePt = this.emptyListPt;
 }this.push (s);
 break;
@@ -225,9 +229,10 @@ Clazz.defineMethod (c$, "getObjects",
  function (mark) {
 var n = this.stack.size () - mark;
 var args =  new JU.Lst ();
-for (var j = 0; j < n; j++) args.addLast (null);
+args.ensureCapacity (n);
+for (var i = mark; i < this.stack.size (); ++i) args.addLast (this.stack.get (i));
 
-for (var j = n, i = this.stack.size (); --i >= mark; ) args.set (--j, this.stack.remove (i));
+for (var i = this.stack.size (); --i >= mark; ) this.stack.remove (i);
 
 return args;
 }, "~N");
@@ -249,9 +254,10 @@ this.markCount++;
 switch (this.markCount) {
 case 2:
 this.thisSection = this.stack.get (i - 2);
+if (Clazz.instanceOf (this.thisSection, String)) {
 this.inMovie = "movie".equals (this.thisSection);
 this.inNames = "names".equals (this.thisSection);
-break;
+}break;
 default:
 break;
 }

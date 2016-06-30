@@ -32,28 +32,25 @@ this.xmlReader.endDocument ();
 Clazz.overrideMethod (c$, "startElement", 
 function (namespaceURI, localName, nodeName, attributes) {
 this.xmlReader.atts.clear ();
-for (var i = attributes.getLength (); --i >= 0; ) this.xmlReader.atts.put (attributes.getLocalName (i), attributes.getValue (i));
+for (var i = attributes.getLength (); --i >= 0; ) this.xmlReader.atts.put (attributes.getLocalName (i).toLowerCase (), attributes.getValue (i));
 
 if (JU.Logger.debugging) {
 this.debugContext += " " + localName;
-JU.Logger.debug (this.debugContext);
-}this.xmlReader.processStartElement (localName);
+JU.Logger.debug ("start " + this.debugContext);
+}this.xmlReader.processStartElement (localName.toLowerCase (), nodeName.toLowerCase ());
 }, "~S,~S,~S,org.xml.sax.Attributes");
 Clazz.overrideMethod (c$, "endElement", 
 function (uri, localName, qName) {
 if (JU.Logger.debugging) {
-JU.Logger.debug ("");
-this.debugContext = this.debugContext.substring (0, this.debugContext.lastIndexOf (" "));
-}this.xmlReader.processEndElement (localName);
+if (JU.Logger.debugging) {
+JU.Logger.debug ("end " + this.debugContext);
+}this.debugContext = this.debugContext.substring (0, this.debugContext.lastIndexOf (" "));
+}this.xmlReader.processEndElement (localName.toLowerCase ());
 }, "~S,~S,~S");
 Clazz.overrideMethod (c$, "characters", 
 function (ch, start, length) {
-if (this.xmlReader.keepChars) {
-if (this.xmlReader.chars == null) {
-this.xmlReader.chars =  String.instantialize (ch, start, length);
-} else {
-this.xmlReader.chars +=  String.instantialize (ch, start, length);
-}}}, "~A,~N,~N");
+if (this.xmlReader.keepChars) this.xmlReader.chars.appendCB (ch, start, length);
+}, "~A,~N,~N");
 Clazz.defineMethod (c$, "resolveEntity", 
 function (name, publicId, baseURI, systemId) {
 if (JU.Logger.debugging) {

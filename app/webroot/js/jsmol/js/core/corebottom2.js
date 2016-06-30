@@ -1,4 +1,5 @@
 })(Clazz
+,Clazz.getClassName
 ,Clazz.newLongArray
 ,Clazz.doubleToByte
 ,Clazz.doubleToInt
@@ -42,6 +43,7 @@
 ,Clazz.getInheritedLevel
 ,Clazz.getParamsType
 ,Clazz.isAF
+,Clazz.isAB
 ,Clazz.isAI
 ,Clazz.isAS
 ,Clazz.isASS

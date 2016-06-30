@@ -9,6 +9,7 @@ this.vc = 0;
 this.vs = null;
 this.vvs = null;
 this.vertexSource = null;
+this.surfaceAtoms = null;
 this.pc = 0;
 this.pis = null;
 this.colorsExplicit = false;

@@ -148,6 +148,7 @@ if (ret != null) ret.append (str).append ("\n");
 this.getTokenPeeked ();
 n++;
 }
+if (n == 0) n = this.columnCount;
 var m = 0;
 while ((str = this.getNextDataToken ()) != null) {
 if (ret == null) continue;
@@ -251,10 +252,8 @@ key = this.getTokenPeeked ();
 data = this.getNextToken ();
 }var iField = JU.CifDataParser.htFields.get (this.fixKey (key));
 i = (iField == null ? -1 : iField.intValue ());
-if ((col2key[pt] = i) != -1) {
-key2col[i] = pt;
-this.columnData[i] = data;
-}if ((s = this.peekToken ()) == null || !s.startsWith (str0)) break;
+if ((col2key[pt] = i) != -1) this.columnData[key2col[i] = pt] = data;
+if ((s = this.peekToken ()) == null || !s.startsWith (str0)) break;
 key = null;
 }
 this.haveData = (this.columnCount > 0);

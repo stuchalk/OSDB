@@ -17,7 +17,7 @@ function (vwr, privateKey, g3d, params) {
 this.wasPerspective = vwr.tm.perspectiveDepth;
 if (Clazz.superCall (this, J["export"].__RayTracerExporter, "initOutput", [vwr, privateKey, g3d, params])) {
 vwr.tm.perspectiveDepth = false;
-if (this.wasPerspective) vwr.shm.finalizeAtoms (null, null);
+if (this.wasPerspective) vwr.shm.finalizeAtoms (null, false);
 return true;
 }return false;
 }, "JV.Viewer,~N,JU.GData,java.util.Map");

@@ -19,7 +19,6 @@ this.offset = 0;
 this.textAlign = 0;
 this.pointer = 0;
 this.zSlab = -2147483648;
-this.zCutoff = 0;
 this.zBox = 0;
 this.boxXY = null;
 this.scalePixelsPerMicron = 0;
@@ -39,7 +38,6 @@ var labelStrings = labels.strings;
 var fids = labels.fids;
 var offsets = labels.offsets;
 if (labelStrings == null) return false;
-this.setZcutoff ();
 var atoms = this.ms.at;
 var backgroundColixContrast = this.vwr.cm.colixBackgroundContrast;
 var backgroundColor = this.vwr.getBackgroundArgb ();
@@ -65,7 +63,6 @@ this.textAlign = JV.JC.getAlignment (this.offset);
 this.isAbsolute = JV.JC.isOffsetAbsolute (this.offset);
 this.pointer = JV.JC.getPointer (this.offset);
 this.zSlab = this.atom.sZ - Clazz.doubleToInt (this.atom.sD / 2) - 3;
-if (this.zSlab > this.zCutoff) continue;
 if (this.zSlab < 1) this.zSlab = 1;
 this.zBox = this.zSlab;
 if (labelsGroup) {
@@ -90,10 +87,6 @@ this.boxXY[1] /= 2;
 }this.boxXY[4] = this.zBox;
 }
 return false;
-});
-Clazz.defineMethod (c$, "setZcutoff", 
-function () {
-this.zCutoff = (this.tm.zShadeEnabled ? this.tm.zSlabValue : 2147483647);
 });
 Clazz.defineMethod (c$, "renderLabelOrMeasure", 
 function (text, label) {

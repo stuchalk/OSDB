@@ -44,9 +44,7 @@ Clazz.instantialize (this, arguments);
 }, JSV.source, "JDXDataObject", JSV.source.JDXHeader);
 Clazz.defineMethod (c$, "setFilePath", 
 function (filePath) {
-if (filePath == null) return;
-this.filePath = filePath.trim ();
-this.filePathForwardSlash = this.filePath.$replace ('\\', '/');
+if (filePath != null) this.filePathForwardSlash = (this.filePath = filePath.trim ()).$replace ('\\', '/');
 }, "~S");
 Clazz.defineMethod (c$, "getFilePath", 
 function () {

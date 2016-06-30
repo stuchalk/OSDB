@@ -264,10 +264,16 @@ Clazz.Console.clear();
 }, "~S");
 Clazz.defineMethod (c$, "outputMsg", 
  function (message) {
-if (message == null) {
+var n = (message == null ? -1 : message.length);
+switch (n) {
+case -1:
 this.output.setText ("");
 return;
-}if (message.charAt (message.length - 1) != '\n') message += "\n";
+default:
+if (message.charAt (n - 1) == '\n') break;
+case 0:
+message += "\n";
+}
 this.output.append (message);
 }, "~S");
 Clazz.defineMethod (c$, "clearContent", 
