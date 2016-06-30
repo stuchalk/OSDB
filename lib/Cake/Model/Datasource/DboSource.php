@@ -538,16 +538,11 @@ class DboSource extends DataSource {
 
 		if (count($args) === 1) {
 			return $this->fetchAll($args[0]);
-		} elseif (count($args) > 1 && (strpos($args[0], 'findBy') === 0 || strpos($args[0], 'findAllBy') === 0)) {
+		} elseif (count($args) > 1 && preg_match('/^find(\w*)By(.+)/', $args[0], $matches)) {
 			$params = $args[1];
 
-			if (substr($args[0], 0, 6) === 'findBy') {
-				$all = false;
-				$field = Inflector::underscore(substr($args[0], 6));
-			} else {
-				$all = true;
-				$field = Inflector::underscore(substr($args[0], 9));
-			}
+			$findType = lcfirst($matches[1]);
+			$field = Inflector::underscore($matches[2]);
 
 			$or = (strpos($field, '_or_') !== false);
 			if ($or) {
@@ -580,7 +575,7 @@ class DboSource extends DataSource {
 				$conditions = array('OR' => $conditions);
 			}
 
-			if ($all) {
+			if ($findType !== 'first' && $findType !== '') {
 				if (isset($params[3 + $off])) {
 					$limit = $params[3 + $off];
 				}
@@ -592,7 +587,7 @@ class DboSource extends DataSource {
 				if (isset($params[5 + $off])) {
 					$recursive = $params[5 + $off];
 				}
-				return $args[2]->find('all', compact('conditions', 'fields', 'order', 'limit', 'page', 'recursive'));
+				return $args[2]->find($findType, compact('conditions', 'fields', 'order', 'limit', 'page', 'recursive'));
 			}
 			if (isset($params[3 + $off])) {
 				$recursive = $params[3 + $off];
@@ -1495,34 +1490,38 @@ class DboSource extends DataSource {
 		$primaryKey = $Model->primaryKey;
 		$foreignKey = $Model->hasMany[$association]['foreignKey'];
 
+		// Make one pass through children and collect by parent key
+		// Make second pass through parents and associate children
+		$mergedByFK = array();
+		foreach ($assocResultSet as $data) {
+			$fk = $data[$association][$foreignKey];
+			if (! array_key_exists($fk, $mergedByFK)) {
+				$mergedByFK[$fk] = array();
+			}
+			if (count($data) > 1) {
+				$data = array_merge($data[$association], $data);
+				unset($data[$association]);
+				foreach ($data as $key => $name) {
+					if (is_numeric($key)) {
+						$data[$association][] = $name;
+						unset($data[$key]);
+					}
+				}
+				$mergedByFK[$fk][] = $data;
+			} else {
+				$mergedByFK[$fk][] = $data[$association];
+			}
+		}
+
 		foreach ($resultSet as &$result) {
 			if (!isset($result[$modelAlias])) {
 				continue;
 			}
-
-			$resultPrimaryKey = $result[$modelAlias][$primaryKey];
-
 			$merged = array();
-			foreach ($assocResultSet as $data) {
-				if ($resultPrimaryKey !== $data[$association][$foreignKey]) {
-					continue;
-				}
-
-				if (count($data) > 1) {
-					$data = array_merge($data[$association], $data);
-					unset($data[$association]);
-					foreach ($data as $key => $name) {
-						if (is_numeric($key)) {
-							$data[$association][] = $name;
-							unset($data[$key]);
-						}
-					}
-					$merged[] = $data;
-				} else {
-					$merged[] = $data[$association];
-				}
+			$pk = $result[$modelAlias][$primaryKey];
+			if (isset($mergedByFK[$pk])) {
+				$merged = $mergedByFK[$pk];
 			}
-
 			$result = Hash::mergeDiff($result, array($association => $merged));
 		}
 	}
@@ -2732,8 +2731,7 @@ class DboSource extends DataSource {
 				} elseif (is_array($value) && !empty($value) && !$valueInsert) {
 					$keys = array_keys($value);
 					if ($keys === array_values($keys)) {
-						$count = count($value);
-						if ($count === 1 && !preg_match('/\s+(?:NOT|\!=)$/', $key)) {
+						if (count($value) === 1 && !preg_match('/\s+(?:NOT|IN|\!=)$/', $key)) {
 							$data = $this->_quoteFields($key) . ' = (';
 							if ($quoteValues) {
 								if ($Model !== null) {

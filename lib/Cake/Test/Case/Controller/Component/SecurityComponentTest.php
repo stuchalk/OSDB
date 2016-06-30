@@ -498,10 +498,10 @@ class SecurityComponentTest extends CakeTestCase {
 		$fields = 'an-invalid-token';
 		$unlocked = '';
 
-		$this->Controller->request->data = [
+		$this->Controller->request->data = array(
 			'Model' => array('username' => 'nate', 'password' => 'foo', 'valid' => '0'),
 			'_Token' => compact('fields', 'unlocked')
-		];
+		);
 		$this->assertFalse($this->Controller->failed, 'Should not be failed yet');
 		$this->Controller->Security->startup($this->Controller);
 		$this->assertTrue($this->Controller->failed, 'Should fail because of validatePost.');
@@ -1164,7 +1164,6 @@ class SecurityComponentTest extends CakeTestCase {
  * the params.
  *
  * @return void
- * @see https://cakephp.lighthouseapp.com/projects/42648/tickets/68
  */
 	public function testSettingTokenForRequestAction() {
 		$this->Controller->Security->startup($this->Controller);
@@ -1181,7 +1180,6 @@ class SecurityComponentTest extends CakeTestCase {
  * test that blackhole doesn't delete the _Token session key so repeat data submissions
  * stay blackholed.
  *
- * @link https://cakephp.lighthouseapp.com/projects/42648/tickets/214
  * @return void
  */
 	public function testBlackHoleNotDeletingSessionInformation() {

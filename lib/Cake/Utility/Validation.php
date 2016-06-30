@@ -182,7 +182,7 @@ class Validation {
 				'enroute'	=> '/^2(?:014|149)\\d{11}$/',
 				'jcb'		=> '/^(3\\d{4}|2100|1800)\\d{11}$/',
 				'maestro'	=> '/^(?:5020|6\\d{3})\\d{12}$/',
-				'mc'		=> '/^5[1-5]\\d{14}$/',
+				'mc'		=> '/^(5[1-5]\\d{14})|(2(?:22[1-9]|2[3-9][0-9]|[3-6][0-9]{2}|7[0-1][0-9]|720)\\d{12})$/',
 				'solo'		=> '/^(6334[5-9][0-9]|6767[0-9]{2})\\d{10}(\\d{2,3})?$/',
 				'switch'	=>
 				'/^(?:49(03(0[2-9]|3[5-9])|11(0[1-2]|7[4-9]|8[1-2])|36[0-9]{2})\\d{10}(\\d{2,3})?)|(?:564182\\d{10}(\\d{2,3})?)|(6(3(33[0-4][0-9])|759[0-9]{2})\\d{10}(\\d{2,3})?)$/',
@@ -672,7 +672,7 @@ class Validation {
 					// Exchange and 555-XXXX numbers
 					$regex .= '(?!(555(?:\s*(?:[.\-\s]\s*))(01([0-9][0-9])|1212)))';
 					$regex .= '(?!(555(01([0-9][0-9])|1212)))';
-					$regex .= '([2-9]1[02-9]|[2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)';
+					$regex .= '([2-9]1[02-9]|[2-9][02-9]1|[2-9][0-9]{2})\s*(?:[.-]\s*)';
 
 					// Local number and extension
 					$regex .= '?([0-9]{4})';
@@ -971,15 +971,82 @@ class Validation {
  * Checking for upload errors
  *
  * @param string|array $check Value to check.
+ * @param bool $allowNoFile Set to true to allow UPLOAD_ERR_NO_FILE as a pass.
  * @return bool
  * @see http://www.php.net/manual/en/features.file-upload.errors.php
  */
-	public static function uploadError($check) {
+	public static function uploadError($check, $allowNoFile = false) {
 		if (is_array($check) && isset($check['error'])) {
 			$check = $check['error'];
 		}
+		if ($allowNoFile) {
+			return in_array((int)$check, array(UPLOAD_ERR_OK, UPLOAD_ERR_NO_FILE), true);
+		}
 
 		return (int)$check === UPLOAD_ERR_OK;
+	}
+
+/**
+ * Validate an uploaded file.
+ *
+ * Helps join `uploadError`, `fileSize` and `mimeType` into
+ * one higher level validation method.
+ *
+ * ### Options
+ *
+ * - `types` - A list of valid mime types. If empty all types
+ *   will be accepted. The `type` will not be looked at, instead
+ *   the file type will be checked with ext/finfo.
+ * - `minSize` - The minimum file size. Defaults to not checking.
+ * - `maxSize` - The maximum file size. Defaults to not checking.
+ * - `optional` - Whether or not this file is optional. Defaults to false.
+ *   If true a missing file will pass the validator regardless of other constraints.
+ *
+ * @param array $file The uploaded file data from PHP.
+ * @param array $options An array of options for the validation.
+ * @return bool
+ */
+	public static function uploadedFile($file, $options = array()) {
+		$options += array(
+			'minSize' => null,
+			'maxSize' => null,
+			'types' => null,
+			'optional' => false,
+		);
+		if (!is_array($file)) {
+			return false;
+		}
+		$keys = array('error', 'name', 'size', 'tmp_name', 'type');
+		ksort($file);
+		if (array_keys($file) != $keys) {
+			return false;
+		}
+		if (!static::uploadError($file, $options['optional'])) {
+			return false;
+		}
+		if ($options['optional'] && (int)$file['error'] === UPLOAD_ERR_NO_FILE) {
+			return true;
+		}
+		if (isset($options['minSize']) && !static::fileSize($file, '>=', $options['minSize'])) {
+			return false;
+		}
+		if (isset($options['maxSize']) && !static::fileSize($file, '<=', $options['maxSize'])) {
+			return false;
+		}
+		if (isset($options['types']) && !static::mimeType($file, $options['types'])) {
+			return false;
+		}
+		return static::_isUploadedFile($file['tmp_name']);
+	}
+
+/**
+ * Helper method that can be stubbed in testing.
+ *
+ * @param string $path The path to check.
+ * @return bool Whether or not the file is an uploaded file.
+ */
+	protected static function _isUploadedFile($path) {
+		return is_uploaded_file($path);
 	}
 
 /**

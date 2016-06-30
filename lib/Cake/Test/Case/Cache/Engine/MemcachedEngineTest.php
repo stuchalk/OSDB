@@ -64,6 +64,12 @@ class MemcachedEngineTest extends CakeTestCase {
 		parent::setUp();
 		$this->skipIf(!class_exists('Memcached'), 'Memcached is not installed or configured properly.');
 
+		// @codingStandardsIgnoreStart
+		$socket = @fsockopen('127.0.0.1', 11211, $errno, $errstr, 1);
+		// @codingStandardsIgnoreEnd
+		$this->skipIf(!$socket, 'Memcached is not running.');
+		fclose($socket);
+
 		Cache::config('memcached', array(
 			'engine' => 'Memcached',
 			'prefix' => 'cake_',
@@ -340,6 +346,7 @@ class MemcachedEngineTest extends CakeTestCase {
  * @return void
  */
 	public function testSaslAuthException() {
+		$this->skipIf(version_compare(PHP_VERSION, '7.0.0', '>='));
 		$Memcached = new TestMemcachedEngine();
 		$settings = array(
 			'engine' => 'Memcached',
@@ -796,5 +803,25 @@ class MemcachedEngineTest extends CakeTestCase {
 		$this->assertTrue(Cache::write('test_groups', 'value2', 'memcached_groups'));
 		$this->assertTrue(Cache::clearGroup('group_b', 'memcached_groups'));
 		$this->assertFalse(Cache::read('test_groups', 'memcached_groups'));
+	}
+
+/**
+ * Test add method.
+ *
+ * @return void
+ */
+	public function testAdd() {
+		Cache::set(array('duration' => 1), null, 'memcached');
+		Cache::delete('test_add_key', 'default');
+
+		$result = Cache::add('test_add_key', 'test data', 'default');
+		$this->assertTrue($result);
+
+		$expected = 'test data';
+		$result = Cache::read('test_add_key', 'default');
+		$this->assertEquals($expected, $result);
+
+		$result = Cache::add('test_add_key', 'test data 2', 'default');
+		$this->assertFalse($result);
 	}
 }
