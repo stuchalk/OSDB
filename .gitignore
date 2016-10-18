@@ -1,5 +1,4 @@
 CakePHP 2
-
 /app/tmp/*
 /app/Config/core.php
 /app/Config/database.php
@@ -7,8 +6,14 @@ CakePHP 2
 /app/Controller/WebbookController.php
 /app/Model/Isdbset.php
 /app/Controller/IsdbsetsController.php
-
 /lib/Cake/Console/Templates/skel/tmp/
+/app/webroot/download/jdx/*
+/app/webroot/download/xml/*
+/app/webroot/files/ms
+/app/webroot/files/uv
+/app/webroot/files/ir.sitx
+/app/Plugin/Animl/
+
 /build
 /dist
 /tags
@@ -32,6 +37,3 @@ CakePHP 2
 Icon?
 ehthumbs.db
 Thumbs.db
-
-# Cake files #
-/app/Plugin/Animl/
