@@ -1,0 +1,834 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "OSDB API",
+        "description": "Access to organic compound spectral data"
+    },
+    "host": "osdb.info",
+    "basePath": "",
+    "schemes": [
+        "http"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/collections/view/{identifier}/{format}": {
+            "get": {
+                "summary": "View a collection in the OSDB.",
+                "description": "View a collection and its spectra in the OSDB.",
+                "produces": [
+                    "text/html",
+                    "text/xml",
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "identifier",
+                        "in": "path",
+                        "description": "Find a collection using its OSBDID or Collection Name.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "format",
+                        "in": "path",
+                        "description": "Format of the response.",
+                        "required": true,
+                        "type": "string",
+                        "enum": [
+                            "",
+                            "html",
+                            "xml",
+                            "json"
+                        ]
+                    }
+                ],
+                "tags": [
+                    "collection"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data about a collection returned as HTML, XML, or JSON.",
+                        "schema": {
+                            "$ref": "#/definitions/Collection"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/compounds/index/{format}": {
+            "get": {
+                "summary": "A list of compounds in the OSDB.",
+                "description": "All the compunds with spectra currently in the OSDB.",
+                "produces": [
+                    "text/html",
+                    "text/xml",
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "format",
+                        "in": "path",
+                        "description": "Format of the response.",
+                        "required": true,
+                        "type": "string",
+                        "enum": [
+                            "",
+                            "html",
+                            "xml",
+                            "json"
+                        ]
+                    }
+                ],
+                "tags": [
+                    "compound"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "JSON array of compound names and OSDB links.",
+                        "schema": {
+                            "$ref": "#/definitions/Compounds"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/compounds/view/{identifier}/{format}": {
+            "get": {
+                "summary": "View a compound in the OSDB.",
+                "description": "View a compound and its metadata and spectra in the OSDB.",
+                "produces": [
+                    "text/html",
+                    "text/xml",
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "identifier",
+                        "in": "path",
+                        "description": "Use one of the following identfiers to get information about a compound - OSBDID, Name, CASRN, InChI string, InChI key, SMILES.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "format",
+                        "in": "path",
+                        "description": "Format of the response.",
+                        "required": true,
+                        "type": "string",
+                        "enum": [
+                            "",
+                            "html",
+                            "xml",
+                            "json"
+                        ]
+                    }
+                ],
+                "tags": [
+                    "compound"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data about an OSDB compound returned as HTML, XML, or JSON.",
+                        "schema": {
+                            "$ref": "#/definitions/Compound"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/spectra/plot/{identifier}/{tech}/{width}/{height}/{embed}": {
+            "get": {
+                "summary": "Plot a spectrum in the OSDB.",
+                "description": "Plot only a spectrum (no metadata).  Useful for embedding in other websites.",
+                "produces": [
+                    "text/html"
+                ],
+                "parameters": [
+                    {
+                        "name": "identifier",
+                        "in": "path",
+                        "description": "Use one of the following identfiers to get information about a compound - OSBDID, Splash, compound name, CASRN, InChI, InChI Key, SMILES, or PubChemId/Wikidata id (if available).",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "tech",
+                        "in": "path",
+                        "description": "The code for the analtyical technique.",
+                        "required": true,
+                        "type": "string",
+                        "enum": [
+                            "13CNMR",
+                            "1HNMR",
+                            "MS",
+                            "IR"
+                        ]
+                    },
+                    {
+                        "name": "width",
+                        "in": "path",
+                        "description": "The width of the plot in pixels.",
+                        "required": true,
+                        "type": "number",
+                        "default": 700
+                    },
+                    {
+                        "name": "height",
+                        "in": "path",
+                        "description": "The height of the plot in pixels.",
+                        "required": true,
+                        "type": "number",
+                        "default": 400
+                    },
+                    {
+                        "name": "embed",
+                        "in": "path",
+                        "description": "Wether the plot is to be embedded in another webapge or not.",
+                        "required": true,
+                        "type": "string",
+                        "enum": [
+                            "true",
+                            "false"
+                        ]
+                    }
+                ],
+                "tags": [
+                    "spectrum"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data about an OSDB spectrum returned as HTML, JCAMP, XML, or JSON-LD.",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/spectra/view/{identifier}/{format}": {
+            "get": {
+                "summary": "View a spectrum in the OSDB.",
+                "description": "View a spectrum and its metadata.",
+                "produces": [
+                    "text/html",
+                    "text/xml",
+                    "chemical/x-jcamp-dx",
+                    "application/ld+json"
+                ],
+                "parameters": [
+                    {
+                        "name": "identifier",
+                        "in": "path",
+                        "description": "Use one of the following identfiers to get information about a compound - OSBDID, Splash, or compound name + \"|\" + technique id (e.g. 1-aminopropane@MS).",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "format",
+                        "in": "path",
+                        "description": "Format of the response.",
+                        "required": true,
+                        "type": "string",
+                        "enum": [
+                            "",
+                            "html",
+                            "jcamp",
+                            "xml",
+                            "jsonld"
+                        ]
+                    }
+                ],
+                "tags": [
+                    "spectrum",
+                    "jcamp"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data about an OSDB spectrum returned as HTML, JCAMP, XML, or JSON-LD.",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/spectra/splashes/{include}": {
+            "get": {
+                "summary": "Spectral splash list",
+                "description": "Gets a list of all the `Spectra` splash identifiers in the database. Currently on available for MS spectra.  See http://splash.fiehnlab.ucdavis.edu/.\n",
+                "parameters": [
+                    {
+                        "name": "include",
+                        "in": "path",
+                        "description": "Include OSDB links or not.",
+                        "required": true,
+                        "type": "string",
+                        "enum": [
+                            "",
+                            "links"
+                        ]
+                    }
+                ],
+                "tags": [
+                    "splash"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "JSON array of splashes.",
+                        "schema": {
+                            "$ref": "#/definitions/Splashes"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/systems/index/{format}": {
+            "get": {
+                "summary": "A list of chemical systems in the OSDB.",
+                "description": "All the chemical systems with spectra currently in the OSDB.",
+                "produces": [
+                    "text/html",
+                    "text/xml",
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "format",
+                        "in": "path",
+                        "description": "Format of the response.",
+                        "required": true,
+                        "type": "string",
+                        "enum": [
+                            "",
+                            "html",
+                            "xml",
+                            "json"
+                        ]
+                    }
+                ],
+                "tags": [
+                    "chemical system"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "JSON array of chemical system names and OSDB links.",
+                        "schema": {
+                            "$ref": "#/definitions/Systems"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/systems/view/{osdbid}/{format}": {
+            "get": {
+                "summary": "View a system in the OSDB.",
+                "description": "View a system, its compounds, and spectra.",
+                "produces": [
+                    "text/html",
+                    "text/xml",
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "osdbid",
+                        "in": "path",
+                        "description": "An OSDBID identifier.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "format",
+                        "in": "path",
+                        "description": "Format of the response.",
+                        "required": true,
+                        "type": "string",
+                        "enum": [
+                            "",
+                            "html",
+                            "xml",
+                            "json"
+                        ]
+                    }
+                ],
+                "tags": [
+                    "chemical system"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "JSON array of chemical system names and OSDB links.",
+                        "schema": {
+                            "$ref": "#/definitions/System"
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Collection": {
+            "type": "object",
+            "properties": {
+                "site": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The URL of the website."
+                },
+                "accessed": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "The date/time the response was requested."
+                },
+                "url": {
+                    "type": "string",
+                    "format": "url",
+                    "description": "The URL of an OSDB collection resource."
+                },
+                "count": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "The number of collections found."
+                },
+                "collection": {
+                    "type": "object",
+                    "description": "Metadata, compounds, and spectral information from a collection.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique id of a collection in the OSDB."
+                            },
+                            "uid": {
+                                "type": "string",
+                                "description": "A universal id of a collection in the OSDB."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The  name of the collection."
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "A brief description of the collection."
+                            },
+                            "source": {
+                                "type": "string",
+                                "description": "The person that provided the collection."
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "The URL of the original source of the collection."
+                            },
+                            "updated": {
+                                "type": "string",
+                                "description": "The date the collection was last updated."
+                            },
+                            "compounds": {
+                                "type": "array",
+                                "description": "The compounds in this collection.",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The PubChem Identifier (CID) for the compound."
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "description": "The URL of an OSDB compound resource."
+                                        },
+                                        "spectra": {
+                                            "type": "object",
+                                            "description": "Spectra of this compound available in the OSDB.",
+                                            "properties": {
+                                                "technique": {
+                                                    "type": "string",
+                                                    "description": "The instrumental technique used to obtain the spectrum."
+                                                },
+                                                "url": {
+                                                    "type": "string",
+                                                    "description": "The URL of an OSDB spectrum resource."
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "Compounds": {
+            "type": "object",
+            "properties": {
+                "site": {
+                    "type": "string",
+                    "description": "The URL of the website."
+                },
+                "accessed": {
+                    "type": "string",
+                    "description": "The date/time the response was requested."
+                },
+                "url": {
+                    "type": "string",
+                    "description": "The URL of the compound' page."
+                },
+                "count": {
+                    "type": "integer",
+                    "description": "The number of compounds found."
+                },
+                "compounds": {
+                    "type": "array",
+                    "description": "An array of links splash strings.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "A chemical name, either common or IUPAC."
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "The URL of an OSDB compound resource."
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "Compound": {
+            "type": "object",
+            "properties": {
+                "site": {
+                    "type": "string",
+                    "description": "The URL of the website."
+                },
+                "accessed": {
+                    "type": "string",
+                    "description": "The date/time the response was requested."
+                },
+                "url": {
+                    "type": "string",
+                    "description": "The URL of the compound."
+                },
+                "count": {
+                    "type": "integer",
+                    "description": "The number of compounds found."
+                },
+                "compound": {
+                    "type": "array",
+                    "description": "Metadata, system, and spectral information about a compound.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "The unique id of the system in the OSDB."
+                            },
+                            "uid": {
+                                "type": "string",
+                                "description": "A universal id of the system in the OSDB."
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The long name of the chemical system."
+                            },
+                            "formula": {
+                                "type": "string",
+                                "description": "The molecular formula of the compound."
+                            },
+                            "molweight": {
+                                "type": "string",
+                                "description": "The molecular weight of the compound."
+                            },
+                            "identifiers": {
+                                "type": "object",
+                                "properties": {
+                                    "pubchemid": {
+                                        "type": "string",
+                                        "description": "The PubChem Identifier (CID) for the compound (if available)."
+                                    },
+                                    "smiles": {
+                                        "type": "string",
+                                        "description": "The SMILES identifier for the compound."
+                                    },
+                                    "inchi": {
+                                        "type": "string",
+                                        "description": "The InChI string identifier for the compound."
+                                    },
+                                    "inchikey": {
+                                        "type": "string",
+                                        "description": "The InChI key identifier for the compound."
+                                    },
+                                    "iupacname": {
+                                        "type": "string",
+                                        "description": "The IUPAC systematic name for the compound."
+                                    },
+                                    "wikidata": {
+                                        "type": "string",
+                                        "description": "The Wikidata identifier for the compound (if available)."
+                                    }
+                                }
+                            },
+                            "systems": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "description": "Systems containing this compound available in the OSDB.",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The name of the chemical system (pure compound or solution)."
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "description": "The URL of an OSDB system resource."
+                                        }
+                                    }
+                                }
+                            },
+                            "spectra": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "description": "Spectra of this compound available in the OSDB.",
+                                    "properties": {
+                                        "technique": {
+                                            "type": "string",
+                                            "description": "The instrumental technique used to obtain the spectrum."
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "description": "The URL of an OSDB spectrum resource."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "Systems": {
+            "type": "object",
+            "properties": {
+                "site": {
+                    "type": "string",
+                    "description": "The URL of the website."
+                },
+                "accessed": {
+                    "type": "string",
+                    "description": "The date/time the response was requested."
+                },
+                "url": {
+                    "type": "string",
+                    "description": "The URL of the systems page."
+                },
+                "count": {
+                    "type": "integer",
+                    "description": "The number of systems found."
+                },
+                "compounds": {
+                    "type": "array",
+                    "description": "An array of links splash strings.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The chemical system name."
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "The URL of an OSDB chemical system resource."
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "System": {
+            "type": "object",
+            "properties": {
+                "site": {
+                    "type": "string",
+                    "description": "The URL of the website."
+                },
+                "accessed": {
+                    "type": "string",
+                    "description": "The date/time the response was requested."
+                },
+                "url": {
+                    "type": "string",
+                    "description": "The URL of the system."
+                },
+                "count": {
+                    "type": "integer",
+                    "description": "The number of systems found."
+                },
+                "system": {
+                    "type": "object",
+                    "description": "Details of the system.",
+                    "properties": {
+                        "id": {
+                            "type": "string",
+                            "description": "The unique id of the system in the OSDB."
+                        },
+                        "uid": {
+                            "type": "string",
+                            "description": "A universal id of a system in the OSDB."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The long name of the chemical system."
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "A description of the chemical system."
+                        },
+                        "type": {
+                            "type": "string",
+                            "description": "What is the system like as a state of matter."
+                        },
+                        "updated": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "When this system was last updated."
+                        },
+                        "compounds": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "The long name of the compound."
+                                    },
+                                    "url": {
+                                        "type": "string",
+                                        "description": "The URL of an OSDB compound resource."
+                                    }
+                                }
+                            }
+                        },
+                        "spectra": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "description": "The title of the spectrum."
+                                    },
+                                    "url": {
+                                        "type": "string",
+                                        "description": "The URL of an OSDB spectral resource."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "Splashes": {
+            "type": "object",
+            "properties": {
+                "site": {
+                    "type": "string",
+                    "format": "url",
+                    "description": "The URL of the website."
+                },
+                "accessed": {
+                    "type": "string",
+                    "format": "datetime",
+                    "description": "The date/time the response was requested."
+                },
+                "count": {
+                    "type": "number",
+                    "format": "integer",
+                    "description": "The number of splashes found."
+                },
+                "splashes": {
+                    "type": "array",
+                    "description": "An array of objects containing OSDB urls and splash string.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "format": "url",
+                                "description": "The URL of an OSDB spectral resource."
+                            },
+                            "splash": {
+                                "type": "string",
+                                "format": "spectral hash",
+                                "description": "A spectral identifier."
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "Error": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "description": "A string indicating the error."
+                }
+            }
+        }
+    }
+}
