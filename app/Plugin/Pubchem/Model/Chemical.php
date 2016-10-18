@@ -28,11 +28,11 @@ class Chemical extends AppModel
         $json=$HttpSocket->get($url);
         $syns=json_decode($json['body'],true);
         if(isset($syns['Fault'])) {
-            if($debug) { echo "An error occured: ".$syns['Fault'];exit; }
+            if($debug) { echo "An error occured: ".$syns['Fault']['Message']."<br />"; }
             return false;
         } else {
             $cid=$syns['InformationList']['Information'][0]['CID'];
-            if($debug) { echo $cid;exit; }
+            if($debug) { echo $cid."<br />"; }
             return $cid;
         }
     }
@@ -51,12 +51,11 @@ class Chemical extends AppModel
         if($debug) { echo $url."<br />"; }
         $json=$HttpSocket->get($url);
         $syns=json_decode($json['body'],true);
-        if($debug) { echo "<pre>".print_r($syns)."</pre>"; }
+        if($debug) { debug($syns); }
         if(isset($syns['Fault'])):	return false;
         else:						return $syns['InformationList']['Information'][0]['Synonym'];
         endif;
     }
-
 
     /**
      * Get a property of a chemical
@@ -78,6 +77,35 @@ class Chemical extends AppModel
         if(isset($meta['Fault'])):	return false;
         else:						return $meta['PropertyTable']['Properties'][0];
         endif;
+    }
+
+    /**
+     * Find all cids from a formula
+     * @param $form
+     * @param bool $debug
+     * @return mixed
+     */
+    public function formula($form,$debug=false)
+    {
+        // Get listkey token
+        if($debug) { echo "<b>function (by formula)</b><br />"; }
+        $HttpSocket = new HttpSocket();
+        $url=$this->path.'formula/'.rawurlencode($form).'/JSON';
+        if($debug) { echo $url."<br />"; }
+        $json=$HttpSocket->get($url);
+        $resp=json_decode($json['body'],true);
+        // Get list of compounds
+        $url2=$this->path.'listkey/'.rawurlencode($resp['Waiting']['ListKey']).'/cids/JSON';
+        if($debug) { echo $url2."<br />"; }
+        $resp2=['Waiting'=>[]];
+        while(isset($resp2['Waiting'])) {
+            if($debug) { debug($resp2); }
+            $json=$HttpSocket->get($url2);
+            $resp2=json_decode($json['body'],true);
+        }
+        $cids=$resp2['IdentifierList']['CID'];
+        if($debug) { debug($cids); }
+        return $cids;
     }
 
     /**

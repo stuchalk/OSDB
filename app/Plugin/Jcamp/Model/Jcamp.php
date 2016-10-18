@@ -19,7 +19,8 @@ class Jcamp extends JcampAppModel
 	public $asdftype="";
 	public $params=[];
 	public $bruker=[];
-	public $ldrs=[];
+    public $nist=[];
+    public $ldrs=[];
 	public $errors=[];
 	private $asdftypes=['FIX','PAC','SQZ','DIF','DIFDUP'];
 
@@ -81,7 +82,8 @@ class Jcamp extends JcampAppModel
 		$data=$this->ldrs;
 		$data['PARAMS']=$this->params;
 		$data['BRUKER']=$this->bruker;
-		$data['COMMENTS']=$this->comments;
+        $data['NIST']=$this->nist;
+        $data['COMMENTS']=$this->comments;
 		$data['ERRORS']=$this->errors;
 		return $data;
 	}
@@ -128,7 +130,7 @@ class Jcamp extends JcampAppModel
 	public function uncomment()
 	{
 		$output=[];
-		$comments=['freeform'=>'','in_data'=>''];
+		$comments=['freeform'=>'','in_data'=>'','reference'=>''];
 		foreach($this->file as $line)
 		{
 			if(substr($line,0,2)=="$$") {
@@ -148,14 +150,37 @@ class Jcamp extends JcampAppModel
 			} elseif(stristr($line,"##$")&&(stristr($line,"NIST"))) {
 				// Get the data format
 				$comment=str_replace("##$","",$line);
-				$comments['in_data'].=trim($comment);
-			} else {
+				if($comments['in_data']=="") {
+                    $comments['in_data'].=trim($comment);
+                } else {
+                    $comments['in_data'].=", ".trim($comment);
+                }
+            } elseif(stristr($line,'##$REF')) {
+                // Get the reference
+                $ref=str_replace('##$REF',"",trim($line));
+                list($field,$value)=explode("=",$ref);
+                if($field=='AUTHOR') { $field="AUTHORS"; }
+                if($field=='DATE') { $field="YEAR"; }
+                if($field=='PAGE') {
+                    $field="STARTPAGE";
+                    if(stristr($value,"-")) {
+                        list($value,$e)=explode("-",$value);
+                        $diff=strlen($e)!=strlen($value);
+                        if($diff>0) {
+                            $e=substr($value,1,$diff).$e;
+                        }
+                        $comments['reference']['endpage']=$e;
+                    }
+                }
+                $comments['reference'][strtolower($field)]=$value;
+            } else {
 				$output[]=$line;
 			}
 		}
 		$this->file=$output;
         if($comments['freeform']=="") { unset($comments['freeform']); }
         if($comments['in_data']=="") { unset($comments['in_data']); }
+        if($comments['reference']=="") { unset($comments['reference']); }
         $this->comments=$comments;
 		return $comments;
 	}
@@ -166,7 +191,7 @@ class Jcamp extends JcampAppModel
 	public function ldrs()
 	{
 		$prev="";$page=0;
-		$ldrs=$params=$bruker=$errors=[];
+		$ldrs=$params=$bruker=$nist=$errors=[];
 		foreach($this->file as $key=>$line) {
 			// Types of lines in the file
 			// "##LDR="      - typical LDR line with ##KEY=VALUE format
@@ -189,7 +214,14 @@ class Jcamp extends JcampAppModel
 					$ldrs['URL']=$url;
 					// Set the prev LDR for the next iteration
 					$prev='URL';
-				} else {
+                } elseif(stristr($line,"NIST")) {
+                    // Processing for NIST parameters here -> $this->nist
+                    list($ldr,$value)=explode("=",$line);
+                    $ldr=str_replace("NIST","",$ldr);
+                    $nist[$ldr]=trim($value);
+                    // Set the prev LDR for the next iteration
+                    $prev=$ldr;
+                } else {
 					// Processing for Bruker parameters here -> $this->bruker
 					list($ldr,$value)=explode("=",$line);
 					$ldr=strtoupper(substr($ldr,2));
@@ -265,10 +297,12 @@ class Jcamp extends JcampAppModel
         // Convert TIME and DATE to DATETIME
         // Detect data format (may contain time)
         $y=$m=$d=$h=$n=$s=0;
-        if(isset($ldrs['TIME'])) {
+        if(isset($ldrs['TIME'])&&$ldrs['TIME']!="") {
             list($h,$n,$s)=explode(":",$ldrs['TIME']);
+        } else {
+            $errors['L01']="No time given";
         }
-        if(isset($ldrs['DATE'])) {
+        if(isset($ldrs['DATE'])&&$ldrs['DATE']!="") {
             $ldrs['DATE']=preg_replace("/ +/"," ",$ldrs['DATE']);
             if(preg_match("/^([0-9]{1,2}) ([a-zA-Z]{3}) ([0-9]{4}) ([0-9]{2}):([0-9]{2}):([0-9]{2})(\.[0-9]{2})?$/",$ldrs['DATE'],$p)) {
                 $d=$p[1];$m=$p[2];$y=$p[3];$h=$p[4];$n=$p[5];$s=$p[6];
@@ -283,15 +317,22 @@ class Jcamp extends JcampAppModel
             } else {
                 list($y,$m,$d)=explode("/",$ldrs['DATE']);
             }
+        } else {
+            $errors['L02']="No date given";
         }
-        if(is_string($m)) { $m = date('m',strtotime($m)); }
-        $ldrs['DATETIME']=date(DATE_ATOM,mktime($h,$n,$s,$m,$d,$y));
-        unset($ldrs['DATE']);unset($ldrs['TIME']);
-		// Save info
+        if(isset($ldrs['DATE'])&&$ldrs['DATE']!=""&&isset($ldrs['TIME'])&&$ldrs['TIME']!="") {
+            if(is_string($m)) { $m = date('m',strtotime($m)); }
+            $ldrs['DATETIME']=date(DATE_ATOM,mktime($h,$n,$s,$m,$d,$y));
+            unset($ldrs['DATE']);unset($ldrs['TIME']);
+        } else {
+            $ldrs['DATETIME']=date(DATE_ATOM); // Default
+        }
+        // Save info
 		$this->ldrs=$ldrs;
 		if(!empty($params))	{ $this->params=$params; }
 		if(!empty($bruker))	{ $this->bruker=$bruker; }
-		if(!empty($errors))	{ $this->errors['LDRS']=$errors; }
+        if(!empty($bruker))	{ $this->nist=$nist; }
+        if(!empty($errors))	{ $this->errors['LDRS']=$errors; }
 		return $ldrs;
 	}
 
@@ -380,13 +421,13 @@ class Jcamp extends JcampAppModel
 			//$ldrs['DATATYPE']=Configure::read('jcamp.datatypes.uvvis'); // This should work put config needs to be fixed
 			$ldrs['DATATYPE']=$dtypes['uvvis'];
 			// Other LDRs that must be present UV/Vis spectra are XUNITS,YUNITS,FIRSTX,LASTX,XFACTOR,YFACTOR,XYDATA,NPOINTS,FIRSTY
-			if(!isset($ldrs['XUNITS'])||!isset($ldrs['YUNITS'])||!isset($ldrs['FIRSTX'])||!isset($ldrs['LASTX'])||!isset($ldrs['XFACTOR'])||!isset($ldrs['YFACTOR'])||(!isset($ldrs['XYDATA'])&&!isset($ldrs['PEAKTABLE']))||!isset($ldrs['NPOINTS'])||!isset($ldrs['FIRSTY']))
+			if(!isset($ldrs['XUNITS'])||!isset($ldrs['YUNITS'])||!isset($ldrs['FIRSTX'])||!isset($ldrs['LASTX'])||!isset($ldrs['XFACTOR'])||!isset($ldrs['YFACTOR'])||(!isset($ldrs['XYDATA'])&&!isset($ldrs['XYPOINTS'])&&!isset($ldrs['PEAKTABLE']))||!isset($ldrs['NPOINTS'])||!isset($ldrs['FIRSTY']))
 			{
 				$errors['E02']="Incomplete UV/VIS JCAMP-DX file";
-				if(!isset($ldrs['XUNITS'])) 	{ $errors['E15']="LDR(##XUNITS) not found (default set to nm)"; 				$ldrs['XUNITS']="nm"; }
-				if(!isset($ldrs['YUNITS'])) 	{ $errors['E16']="LDR(##YUNITS) not found (default set to Absorbance)"; 		$ldrs['YUNITS']="Absorbance"; }
-				if(!isset($ldrs['XFACTOR'])) 	{ $errors['E17']="LDR(##XFACTOR) not found (default set to 1)"; 				$ldrs['XFACTOR']="1"; }
-				if(!isset($ldrs['YFACTOR'])) 	{ $errors['E18']="LDR(##YFACTOR) not found (default set to 1)"; 				$ldrs['YFACTOR']="1"; }
+				if(!isset($ldrs['XUNITS'])) 	{ $errors['E15']="LDR(##XUNITS) not found (default set to nm)"; 			$ldrs['XUNITS']="nm"; }
+				if(!isset($ldrs['YUNITS'])) 	{ $errors['E16']="LDR(##YUNITS) not found (default set to Absorbance)"; 	$ldrs['YUNITS']="Absorbance"; }
+				if(!isset($ldrs['XFACTOR'])) 	{ $errors['E17']="LDR(##XFACTOR) not found (default set to 1)"; 			$ldrs['XFACTOR']="1"; }
+				if(!isset($ldrs['YFACTOR'])) 	{ $errors['E18']="LDR(##YFACTOR) not found (default set to 1)"; 			$ldrs['YFACTOR']="1"; }
 				if(!isset($ldrs['FIRSTX'])) 	{ $errors['E19']="LDR(##FIRSTX) not found (see independent series set)"; }
 				if(!isset($ldrs['LASTX'])) 		{ $errors['E20']="LDR(##LASTX) not found (see independent series set)"; }
 				if(!isset($ldrs['FIRSTY'])) 	{ $errors['E21']="LDR(##FIRSTY) not found (see dependent series set)"; }
@@ -405,9 +446,9 @@ class Jcamp extends JcampAppModel
 			{
 				$errors['E02']="Incomplete FIA/SIA JCAMP-DX file";
 				if(!isset($ldrs['XUNITS'])) 	{ $errors['E15']="LDR(##XUNITS) not found (default set to sec)"; 			$ldrs['XUNITS']="sec"; }
-				if(!isset($ldrs['YUNITS'])) 	{ $errors['E16']="LDR(##YUNITS) not found (default set to Absorbance)"; 		$ldrs['YUNITS']="Absorbance"; }
-				if(!isset($ldrs['XFACTOR'])) 	{ $errors['E17']="LDR(##XFACTOR) not found (default set to 1)"; 				$ldrs['XFACTOR']="1"; }
-				if(!isset($ldrs['YFACTOR'])) 	{ $errors['E18']="LDR(##YFACTOR) not found (default set to 1)"; 				$ldrs['YFACTOR']="1"; }
+				if(!isset($ldrs['YUNITS'])) 	{ $errors['E16']="LDR(##YUNITS) not found (default set to Absorbance)"; 	$ldrs['YUNITS']="Absorbance"; }
+				if(!isset($ldrs['XFACTOR'])) 	{ $errors['E17']="LDR(##XFACTOR) not found (default set to 1)"; 			$ldrs['XFACTOR']="1"; }
+				if(!isset($ldrs['YFACTOR'])) 	{ $errors['E18']="LDR(##YFACTOR) not found (default set to 1)"; 			$ldrs['YFACTOR']="1"; }
 				if(!isset($ldrs['FIRSTX'])) 	{ $errors['E19']="LDR(##FIRSTX) not found (see independent series set)"; }
 				if(!isset($ldrs['LASTX'])) 		{ $errors['E20']="LDR(##LASTX) not found (see independent series set)"; }
 				if(!isset($ldrs['FIRSTY'])) 	{ $errors['E21']="LDR(##FIRSTY) not found (see dependent series set)"; }
@@ -787,7 +828,7 @@ class Jcamp extends JcampAppModel
 				//debug($ldrs);
 				$set++;
             }
-        } elseif(isset($ldrs['PEAKTABLE'])) {
+        } elseif(isset($ldrs['PEAKTABLE'])|isset($ldrs['XYPOINTS'])) {
             foreach($ldrs['DATA'] as $dataset) {
                 // Concatenate the list of peak data
                 $points="";
