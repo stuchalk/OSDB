@@ -473,9 +473,16 @@ class Model extends Object implements CakeEventListener {
 
 /**
  * List of behaviors to load when the model object is initialized. Settings can be
- * passed to behaviors by using the behavior name as index. Eg:
+ * passed to behaviors by using the behavior name as index.
  *
- * public $actsAs = array('Translate', 'MyBehavior' => array('setting1' => 'value1'))
+ * For example:
+ *
+ * ```
+ * public $actsAs = array(
+ *     'Translate',
+ *     'MyBehavior' => array('setting1' => 'value1')
+ * );
+ * ```
  *
  * @var array
  * @link http://book.cakephp.org/2.0/en/models/behaviors.html#using-behaviors
@@ -1035,13 +1042,13 @@ class Model extends Object implements CakeEventListener {
 						unset($association[$assoc]);
 						$assoc = $value;
 						$value = array();
+						$association[$assoc] = $value;
+					}
 
-						if (strpos($assoc, '.') !== false) {
-							list($plugin, $assoc) = pluginSplit($assoc, true);
-							$association[$assoc] = array('className' => $plugin . $assoc);
-						} else {
-							$association[$assoc] = $value;
-						}
+					if (!isset($value['className']) && strpos($assoc, '.') !== false) {
+						unset($association[$assoc]);
+						list($plugin, $assoc) = pluginSplit($assoc, true);
+						$association[$assoc] = array('className' => $plugin . $assoc) + $value;
 					}
 
 					$this->_generateAssociation($type, $assoc);

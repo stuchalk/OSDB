@@ -539,6 +539,7 @@ class FormHelperTest extends CakeTestCase {
 		$this->Form->request['action'] = 'add';
 		$this->Form->request->webroot = '';
 		$this->Form->request->base = '';
+		Router::setRequestInfo($this->Form->request);
 
 		ClassRegistry::addObject('Contact', new Contact());
 		ClassRegistry::addObject('ContactNonStandardPk', new ContactNonStandardPk());
@@ -1617,6 +1618,29 @@ class FormHelperTest extends CakeTestCase {
 		$this->Form->create('Contact');
 		$this->Form->hidden('Contact.id', array('value' => 1));
 		$this->assertEquals(1, $this->Form->fields['Contact.id'], 'Hidden input should be secured.');
+	}
+
+/**
+ * test unlockField removing from fields array. multiple field version.
+ *
+ * @return void
+ */
+	public function testUnlockMultipleFieldRemovingFromFields() {
+		$this->Form->request['_Token'] = array(
+			'key' => 'testKey',
+			'unlockedFields' => array()
+		);
+		$this->Form->create('Order');
+		$this->Form->hidden('Order.id', array('value' => 1));
+		$this->Form->checkbox('Ticked.id.');
+		$this->Form->checkbox('Ticked.id.');
+
+		$this->assertEquals(1, $this->Form->fields['Order.id'], 'Hidden input should be secured.');
+		$this->assertTrue(in_array('Ticked.id', $this->Form->fields), 'Field should be secured.');
+
+		$this->Form->unlockField('Order.id');
+		$this->Form->unlockField('Ticked.id');
+		$this->assertEquals(array(), $this->Form->fields);
 	}
 
 /**
@@ -8168,12 +8192,14 @@ class FormHelperTest extends CakeTestCase {
  */
 	public function testPostLinkSecurityHashInline() {
 		$hash = Security::hash(
-			'/posts/delete/1' .
+			'/basedir/posts/delete/1' .
 			serialize(array()) .
 			'' .
 			Configure::read('Security.salt')
 		);
 		$hash .= '%3A';
+		$this->Form->request->base = '/basedir';
+		$this->Form->request->webroot = '/basedir/';
 		$this->Form->request->params['_Token']['key'] = 'test';
 
 		$this->Form->create('Post', array('url' => array('action' => 'add')));
@@ -8183,7 +8209,11 @@ class FormHelperTest extends CakeTestCase {
 
 		$this->assertEquals(array('Post.title'), $this->Form->fields);
 		$this->assertContains($hash, $result, 'Should contain the correct hash.');
-		$this->assertAttributeEquals('/posts/add', '_lastAction', $this->Form, 'lastAction was should be restored.');
+		$this->assertAttributeEquals(
+			'/basedir/posts/add',
+			'_lastAction',
+			$this->Form,
+			'lastAction was should be restored.');
 	}
 
 /**
@@ -8425,6 +8455,17 @@ class FormHelperTest extends CakeTestCase {
 			'/div'
 		);
 		$this->assertTags($result, $expected);
+
+		$result = $this->Form->submit('Test', array('confirm' => 'Confirm?'));
+		$expected = array(
+			'div' => array('class' => 'submit'),
+			'input' => array(
+				'type' => 'submit', 'value' => 'Test',
+				'onclick' => 'preg:/if \(confirm\(&quot;Confirm\?&quot;\)\) \{ return true; \} event\.returnValue = false; return false;/'
+			),
+			'/div'
+		);
+		$this->assertTags($result, $expected);
 	}
 
 /**
@@ -8501,6 +8542,17 @@ class FormHelperTest extends CakeTestCase {
 			'--before--',
 			'input' => array('type' => 'submit', 'value' => 'Not.an.image'),
 			'--after--',
+			'/div'
+		);
+		$this->assertTags($result, $expected);
+
+		$result = $this->Form->submit('cake.power.gif', array('confirm' => 'Confirm?'));
+		$expected = array(
+			'div' => array('class' => 'submit'),
+			'input' => array(
+				'type' => 'image', 'src' => 'img/cake.power.gif',
+				'onclick' => 'preg:/if \(confirm\(&quot;Confirm\?&quot;\)\) \{ return true; \} event\.returnValue = false; return false;/'
+			),
 			'/div'
 		);
 		$this->assertTags($result, $expected);
