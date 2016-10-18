@@ -5,6 +5,8 @@ CakePHP 2
 /app/Config/database.php
 /vendors/*
 /app/Controller/WebbookController.php
+/app/Model/Isdbset.php
+/app/Controller/IsdbsetsController.php
 
 /lib/Cake/Console/Templates/skel/tmp/
 /build
@@ -17,7 +19,7 @@ CakePHP 2
 # IDE and editor specific files #
 #################################
 /nbproject
-.idea
+.idea/*
 
 # OS generated files #
 ######################
@@ -26,6 +28,10 @@ CakePHP 2
 ._*
 .Spotlight-V100
 .Trashes
+.dropbox
 Icon?
 ehthumbs.db
 Thumbs.db
+
+# Cake files #
+/app/Plugin/Animl/
