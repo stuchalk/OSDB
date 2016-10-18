@@ -28,6 +28,10 @@
 /**
  * ...and connect the rest of 'Pages' controller's URLs.
  */
+
+    Router::connectNamed(false);
+
+    Router::connect('/pages/api', ['controller' => 'api']);
 	Router::connect('/pages/*', ['controller' => 'pages', 'action' => 'display']);
     Router::connect('/spectra', ['controller' => 'reports','action' => 'index']);
 	Router::connect('/compounds', ['controller' => 'substances','action' => 'index']);

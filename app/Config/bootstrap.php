@@ -64,9 +64,11 @@ Inflector::rules('plural', ['irregular' => ['identifier'=>'identifiers',
 											'dataseries'=>'dataseries',
 											'methodology'=>'methodology',
 											'jcamp'=>'jcamp',
+                                            'webbook'=>'webbook',
 											'metadata'=>'metadata',
                                             'search'=>'search',
-											'jmol'=>'jmol']]);
+											'jmol'=>'jmol',
+                                            'api'=>'api']]);
 
 /**
  * Plugins need to be loaded manually, you can either load them one by one or all of them in a single call
@@ -78,7 +80,6 @@ Inflector::rules('plural', ['irregular' => ['identifier'=>'identifiers',
  *
  */
 CakePlugin::load('Pubchem');
-CakePlugin::load('Animl');
 CakePlugin::load('Jcamp');
 
 /**
