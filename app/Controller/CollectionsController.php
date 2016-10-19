@@ -80,13 +80,9 @@ class CollectionsController extends AppController
      */
     public function view($id,$format="")
     {
-        // Defualts for variables
-        $error = "";$json=[];
-
         // Search for collection by name if id is not a number
+        $error = "";
         if(!is_numeric($id)) {
-            // Get the report id is one exists for this chemical and technique
-            $error = "";
             // Get the collection id if there is one
             $data = $this->Collection->find('first', ['conditions' => ['name' => $id], 'recursive' => -1]);
             if (empty($data)) {
@@ -95,14 +91,12 @@ class CollectionsController extends AppController
                 $id = $data['Collection']['id'];
             }
         }
+        
+        // Show error if you cant find the collection
         if($error!="") {
-            if($format=="") {
-                exit($error);
-            } elseif($format=="XML") {
-                $this->Export->xml('osdb','collection',['error'=>$error]);
-            } elseif($format=="JSON") {
-                $this->Export->json('osdb','collection',['error'=>$error]);
-            }
+            header("Content-Type: application/json");
+            echo '{ "error": "'.$error.'" }';
+            exit;
         }
 
         // Get the collection metadata and the substances/spectra in the collection
@@ -111,34 +105,37 @@ class CollectionsController extends AppController
         $subs=$this->Report->bySubstance('col',$id);
 
         // Format data for output
-        if($format=="") {
+        $json=[];
+        if($format==""||strtolower($format)=="html") {
             $this->set('data',$data);
             $this->set('subs',$subs);
-        } else {
-            $json=[];
-            $json['collection']=$data['Collection'];
-            unset($json['collection']['user_id']);unset($json['collection']['first']);
+        } elseif(strtolower($format)=="xml"||strtolower($format)=="json") {
+            $col=$data['Collection'];
+            unset($col['user_id']);unset($col['first']);unset($col['id']);
+            $json=['id'=>$id,'uid'=>"osdb:collection:".$id] + $col;
+            $json['compounds']=[];
             foreach($subs as $name=>$meta) {
-                debug($meta);exit;
                 $comp=[];
                 $comp['name']=$name;
-                $comp['inchi']=$meta['inchi'];
-                $comp['inchikey']=$meta['inchikey'];
+                $comp['url']=$osdbpath.'/compounds/view/'.$meta['id'];
                 $comp['spectra']=[];
                 foreach($meta['spectra'] as $tid=>$tech) {
                     $comp['spectra'][]=['technique'=>$tech,'url'=>$osdbpath.'/spectra/view/'.$tid];
                 }
-                $comp['url']=$osdbpath.'/substance/view/'.$meta['id'];
-                $json['substances'][]=$comp;
+                $json['compounds'][]=$comp;
             }
-            $json['accessed']=date(DATE_ATOM);
-            $json['url']=$osdbpath.'/collections/view/'.$id;
+            $json=["site"=>$osdbpath,"accessed"=>date(DATE_ATOM),"url"=>$osdbpath.'/collections/view/'.$id,"count"=>1,'collection'=>$json];
+            if(strtolower($format)=="xml") {
+                $this->Export->xml("osdb_collection_".$data['Collection']['name'],"collection",$json);
+            } elseif(strtolower($format)=='json') {
+                $this->Export->json("osdb_collection_".$data['Collection']['name'],"collection",$json);
+            }
+        } else {
+            header("Content-Type: application/json");
+            echo '{ "error": "Invalid request (\''.$format.'\' is not an acceptable value)" }';
+            exit;
         }
-        if($format=="XML") {
-            $this->Export->xml("osdb_collection_".$data['Collection']['name'],"collection",$json);
-        } elseif($format=='JSON') {
-            $this->Export->json("osdb_collection_".$data['Collection']['name'],"collection",$json);
-        }
+
     }
 
     /**
