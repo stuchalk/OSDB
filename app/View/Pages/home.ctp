@@ -1,9 +1,16 @@
-<div class="well text-justify">
-    <h3>The Open Spectral Database <span class="label label-danger">Beta</span></h3> is exactly what the title suggests - a place where scientists can share spectral data
-        and export it in a number of formats in order to do open science.  Each spectrum gets a persistent identifier and
-        contributors can get recognition for their contributions.  The site is also an open source project that you can extend, enhance and share.<br />
-        <i class="pull-right">Open science, open data, open code, open concept - it's all about the data!</i>
-        <br />&nbsp;
+<div class="well text-justify col-sm-11" style="padding: 0 19px;">
+    <h3>The Open Spectral Database <span class="label label-danger">Beta</span></h3>
+    is exactly what the title suggests - a place where scientists can share spectral data
+    and export it in a number of formats in order to do open science.  Each spectrum gets a persistent identifier and
+    contributors can get recognition for their contributions.  The site is also an open source project that you can extend, enhance and share.<br />
+    <i class="pull-right">Open science, open data, open code, open concept - it's all about the data!</i>
+    <br />&nbsp;
+</div>
+<div class="col-sm-1 text-center" style="padding: 0 5px;">
+    Altmetric Score
+    <script type="text/javascript" src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script>
+    <div class="altmetric-embed" data-badge-type="donut" data-altmetric-id="12615818"></div>
+    <a href="http://dx.doi.org/10.1186/s13321-016-0170-2" target="_blank" class="btn btn-info btn-sm" style="margin-top: 5px;">J. Cheminf.<br />Paper <span class="glyphicon glyphicon-link"></span></a>
 </div>
 
 <div>
