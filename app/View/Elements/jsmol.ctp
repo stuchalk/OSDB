@@ -46,7 +46,7 @@ $j2spath=Configure::read('jmol.j2spath');
         debug: false,
         color: "<?php echo $color; ?>",
         addSelectionOptions: false,
-        serverURL: "http://sds.coas.unf.edu/osdb/js/jsmol/php/jsmol.php",
+        serverURL: "<?php echo Configure::read('url'); ?>/js/jsmol/php/jsmol.php",
         use: "HTML5",
         coverImage: "",
         coverScript: "",

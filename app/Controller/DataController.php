@@ -54,13 +54,4 @@ class DataController extends AppController
         echo json_encode($data);exit;
     }
 
-    /**
-     * Test function
-     */
-    public function getjson()
-    {
-        $json=file_get_contents("scidata_spectrum.json");
-        $a=json_decode($json,true);
-        debug($a);exit;
-    }
 }

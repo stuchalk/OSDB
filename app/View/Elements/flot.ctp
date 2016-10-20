@@ -33,6 +33,13 @@
         $lines="false";$bars="true";$points="false";
         $xlabel="Mass-to-Charge Ratio (m/z)";
         $ylabel="Relative Abundance";
+    } elseif($config['tech']=='uv') {
+        $xlabel="Wavelength (nm)";
+        if(!isset($config['ylabel'])) {
+            $ylabel="Absorbance";
+        } else {
+            $ylabel=$config['ylabel'];
+        }
     } elseif($config['tech']=='ir') {
         $scale=floor($config['points']/$pixels);
         if($scale==0) { $scale=1; }

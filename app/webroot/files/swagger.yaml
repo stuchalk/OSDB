@@ -1,0 +1,33 @@
+# OSDB swagger: "2.0"
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: OSDB API
+  description: Access compound spectral data
+host: osdb.info
+schemes:
+ - https
+produces:
+ - application/json
+paths:
+  /spectra/splashes/:
+    get:
+      description: |
+        Gets a list of all the `Spectra` in the database. Currently on available for MS spectra.  See http://splash.fiehnlab.ucdavis.edu/.
+      tags:
+       - splash
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: array
+            items:
+              title: Splash
+              type: object
+              properties:
+                name:
+                  type: string
+                single:
+                  type: boolean
+  

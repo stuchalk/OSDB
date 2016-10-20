@@ -26,11 +26,9 @@ class ReportsController extends AppController
      */
     public function index($offset=0,$limit=6,$search="%")
     {
-        //debug($this->request);exit;
         if(isset($this->request->data['Report']['search'])) {
             $search=$this->request->data['Report']['search'];
         }
-        //debug($search);exit;
         $data=$this->Report->bySubstance('sub',$search);
         // Limit the amount of data return base on offset and limit (needs to be redone using paginator)
         $slice=array_slice($data,$offset,$limit);
@@ -63,15 +61,17 @@ class ReportsController extends AppController
      */
     public function view($id,$format="")
     {
+        // Accept uid
+        $id=str_replace("osdb:spectrum:","",$id);
+        // Find spectrum via splash or compound_name|techcode
         $error = "";
         if(stristr($id,'splash')) {
             // Access a spectrum using its splash code
             $report=$this->Report->find('first',['conditions'=>['splash'=>$id]]);
             $id=$report['Report']['id'];
-        }
-        if(stristr($id,"@")) {
-            // Get the report id is one exists for this chemical and technique
-            list($id,$tech)=explode("@",$id);
+        } elseif(stristr($id,"|")) {
+            // Get the report id if one exists for this chemical and technique
+            list($id,$tech)=explode("|",$id);
             $sid = $tid = $error = "";
             // Get the sid if there is one
             $data = $this->Substance->find('first', ['conditions' => ['name like ' => '%'.$id.'%'], 'recursive' => -1]);
@@ -103,148 +103,166 @@ class ReportsController extends AppController
                 }
             }
         }
-        //echo $sid." : ".$tid." : ".$id;exit;
+
+        // Show error if we can't find the spectrum via splash or compound_name@techcode
         if($error!="") {
-            if($format==""||$format=="JCAMP") {
-                exit($error);
-            } elseif($format=="XML") {
+            if(strtolower($format)=="xml") {
                 $this->Export->xml('osdb','spectra',['error'=>$error]);
-            } elseif($format=="JSON"||$format=="JSONLD") {
+            } elseif(strtolower($format)=="json"||strtolower($format)=="jsonld") {
                 $this->Export->json('osdb','spectra',['error'=>$error]);
+            } else {
+                header("Content-Type: application/json");
+                echo '{ "error": "An unknown error occurred" }';
+                exit;
             }
         }
 
         // Check the download formats
         $osdbpath=Configure::read('url');
-        if($format=="JCAMP") {
-            header("Location: ".$osdbpath."/download/jdx/".str_pad($id,9,0,STR_PAD_LEFT).".jdx");exit;
-        } elseif($format=="XML") {
-            header("Location: ".$osdbpath."/download/xml/".str_pad($id,9,0,STR_PAD_LEFT).".xml");exit;
-        } elseif($format=="JSONLD") {
-            header("Location: ".$osdbpath."/spectra/scidata/".str_pad($id,9,0,STR_PAD_LEFT));exit;
-        }
-
-        // Process
-        $data=$this->Report->scidata($id);
-        if(empty($data)) {
-            $this->redirect('/pages/error');
-        }
-        $rpt=$data['Report'];
-        $set=$data['Dataset'];
-        $file=$set['File'];
-        $met=$set['Methodology'];
-        $mea=$met['Measurement'];
-        $sam=$set['Sample'];
-        $ser=$set['Dataseries'];
-
-        // Send on only the data needed for the view not the flot plot which is done separately via an element
-        // Measurement data...
-        $minfo=[];
-        $minfo[]="Instrument Type: ".$mea['instrumentType'];
-        $meta=['instrument','vendor'];
-        foreach($meta as $m) {
-            if(!empty(str_replace("?","",$mea[$m]))) { $minfo[]=ucfirst($m).': '.$mea[$m]; }
-        }
-
-        if(!empty($mea['Setting'])) {
-            $sets=$mea['Setting'];
-            //debug($sets);exit;
-            foreach($sets as $set) {
-                if(isset($set['Property']['name'])) {
-                    (empty($set['text'])) ? $value = $set['number'] : $value = $set['text']; // So that zeroes are not lost
-                    $name = $set['Property']['name'];
-                    (!empty($set['Unit'])) ? $unit = " " . $set['Unit']['symbol'] : $unit = "";
-                    $minfo[] = $name . ": " . $value . $unit;
-                }
+        if($format==""||strtolower($format)=="html") {
+            // Process
+            $data=$this->Report->scidata($id);
+            //debug($data);exit;
+            if(empty($data)) {
+                throw new NotFoundException('Their is no spectrum with OSDB ID '.$id);
             }
-        }
-
-        // Sample data...
-        $sinfo=[];
-        if(isset($sam['title'])&&!empty($sam['title'])) {
-            $sinfo[]=$sam['title'];
-            if(!empty($sam['Annotation'])) {
-                $sinfo['comments']=[];
-                foreach($sam['Annotation'] as $a) {
-                    $sinfo['comments'][]=$a['comment'];
-                }
+            $rpt=$data['Report'];
+            $set=$data['Dataset'];
+            $file=$set['File'];
+            $met=$set['Methodology'];
+            $mea=$met['Measurement'];
+            $sam=$set['Sample'];
+            $con=$set['Context'];
+            $ref=$set['Reference'];
+            $sub=$con['System'][0]['Substance'][0];
+            $ser=$set['Dataseries'];
+            // Send on only the data needed for the view not the flot plot which is done separately via an element
+            // Measurement data...
+            $minfo=[];
+            $minfo[]="Instrument Type: ".$mea['instrumentType'];
+            $meta=['instrument','vendor'];
+            foreach($meta as $m) {
+                if(!empty(str_replace("?","",$mea[$m]))) { $minfo[]=ucfirst($m).': '.$mea[$m]; }
             }
-        }
 
-        $freq = 1; // Default...
-        if(!empty($mea['Setting'])) {
-            $sets = $mea['Setting'];
-            foreach ($sets as $set) {
-                if(isset($set['Property']['name'])) {
-                    (empty($set['text'])) ? $value = $set['number'] : $value = $set['text']; // So that zeroes are not lost
-                    if ($set['Property']['name'] == "Observe Frequency") {
-                        $freq = $value;
+            if(!empty($mea['Setting'])) {
+                $sets=$mea['Setting'];
+                //debug($sets);exit;
+                foreach($sets as $set) {
+                    if(isset($set['Property']['name'])) {
+                        (empty($set['text'])) ? $value = $set['number'] : $value = $set['text']; // So that zeroes are not lost
+                        $name = $set['Property']['name'];
+                        (!empty($set['Unit'])) ? $unit = " " . $set['Unit']['symbol'] : $unit = "";
+                        $minfo[] = $name . ": " . $value . $unit;
                     }
                 }
             }
-        }
 
-        // File, Spectral Data, and Conversion data
-        if(count($ser)==1) {
-            $finfo=[];$dinfo=[];$cinfo=[];$scale = 1;
-            $spec = $ser[0];
-            if (isset($spec['Annotation'])) {
-                foreach ($spec['Annotation'] as $ann) {
-                    if ($ann['class'] == 'origin') {
-                        foreach ($ann['Metadata'] as $m) {
-                            if ($m['field'] == "fileComments") {
-                                $cinfo['comments'] = $m['value'];
-                            } elseif ($m['field'] == "conversionErrors") {
-                                $cinfo['errors'] = $m['value'];
-                            } elseif ($m['field'] == "date") {
-                                $finfo[] = ucfirst($m['field']) . ": " . date("M j, Y", strtotime($m['value']));
-                            } else {
-                                $finfo[] = ucfirst($m['field']) . ": " . $m['value'];
-                            }
+            // Sample data...
+            $sinfo=[];
+            if(isset($sam['title'])&&!empty($sam['title'])) {
+                $sinfo[]=$sam['title'];
+                if(!empty($sam['Annotation'])) {
+                    $sinfo['comments']=[];
+                    foreach($sam['Annotation'] as $a) {
+                        $sinfo['comments'][]=$a['comment'];
+                    }
+                }
+            }
+
+            $freq = 1; // Default...
+            if(!empty($mea['Setting'])) {
+                $sets = $mea['Setting'];
+                foreach ($sets as $set) {
+                    if(isset($set['Property']['name'])) {
+                        (empty($set['text'])) ? $value = $set['number'] : $value = $set['text']; // So that zeroes are not lost
+                        if ($set['Property']['name'] == "Observe Frequency") {
+                            $freq = $value;
                         }
                     }
                 }
             }
 
-            if (!empty($spec['Descriptor'])) {
-                if ($spec['level'] == 'processed' && $spec['processedType'] == "frequency") {
-                    $scale = $freq;
-                } elseif ($spec['level'] == 'processed' && $spec['processedType'] == "chemical shift") {
-                    $scale = 1;
-                }
-                foreach ($spec['Descriptor'] as $d) {
-                    $value = 0;
-                    (empty($d['text'])) ? $value = (float)$d['number'] : $value = $d['text']; // So that zeroes are not lost
-                    if (stristr($d['title'], "maximum x")) {
-                        $value = number_format(round($value / $scale), 0);
-                    } elseif (stristr($d['title'], "minimum x")) {
-                        $value = number_format(round($value / $scale), 0);
-                    } elseif (stristr($d['title'], "increment")) {
-                        $value = number_format($value / $scale, 5);
-                    } elseif (stristr($d['title'], "first x")) {
-                        $value = number_format($value / $scale, 0);
-                    } elseif (stristr($d['title'], "last x")) {
-                        $value = number_format($value / $scale, 0);
-                    } elseif (stristr($d['title'], "first y")) {
-                        $value = number_format($value, 0);
-                    } elseif (stristr($d['title'], "maximum y")) {
-                        $value = number_format($value, 0);
-                    } elseif (stristr($d['title'], "minimum y")) {
-                        $value = number_format($value, 0);
+            // File, Spectral Data, and Conversion data
+            if(count($ser)==1) {
+                $finfo=[];$dinfo=[];$cinfo=[];$scale = 1;
+                $spec = $ser[0];
+                if (isset($spec['Annotation'])) {
+                    foreach ($spec['Annotation'] as $ann) {
+                        if ($ann['class'] == 'origin') {
+                            foreach ($ann['Metadata'] as $m) {
+                                if(!empty($m['value'])) {
+                                    if ($m['field'] == "fileComments") {
+                                        $cinfo['comments'] = $m['value'];
+                                    } elseif ($m['field'] == "conversionErrors") {
+                                        $cinfo['errors'] = $m['value'];
+                                    } elseif ($m['field'] == "sourceReference") {
+                                        $finfo[] = ucfirst($m['field']) . ": " . $m['value'];
+                                    } elseif ($m['field'] == "date") {
+                                        $finfo[] = ucfirst($m['field']) . ": " . date("M j, Y", strtotime($m['value']));
+                                    } else {
+                                        $finfo[] = ucfirst($m['field']) . ": " . $m['value'];
+                                    }
+                                }
+                            }
+                        }
                     }
-                    $dinfo[]=ucfirst($d['title']) . ": " . $value;
+                }
+
+                if (!empty($spec['Descriptor'])) {
+                    if ($spec['level'] == 'processed' && $spec['processedType'] == "frequency") {
+                        $scale = $freq;
+                    } elseif ($spec['level'] == 'processed' && $spec['processedType'] == "chemical shift") {
+                        $scale = 1;
+                    }
+                    foreach ($spec['Descriptor'] as $d) {
+                        $value = 0;
+                        (empty($d['text'])) ? $value = (float)$d['number'] : $value = $d['text']; // So that zeroes are not lost
+                        if (stristr($d['title'], "maximum x")) {
+                            $value = number_format(round($value / $scale), 0);
+                        } elseif (stristr($d['title'], "minimum x")) {
+                            $value = number_format(round($value / $scale), 0);
+                        } elseif (stristr($d['title'], "increment")) {
+                            $value = number_format($value / $scale, 5);
+                        } elseif (stristr($d['title'], "first x")) {
+                            $value = number_format($value / $scale, 0);
+                        } elseif (stristr($d['title'], "last x")) {
+                            $value = number_format($value / $scale, 0);
+                        } elseif (stristr($d['title'], "first y")) {
+                            $value = number_format($value, 0);
+                        } elseif (stristr($d['title'], "maximum y")) {
+                            $value = number_format($value, 0);
+                        } elseif (stristr($d['title'], "minimum y")) {
+                            $value = number_format($value, 0);
+                        }
+                        $dinfo[]=ucfirst($d['title']) . ": " . $value;
+                    }
                 }
             }
+            $this->set('desc',$rpt['description']);
+            $this->set('jdxurl',$rpt['url']);
+            $this->set('sub',$sub);
+            $this->set('minfo',$minfo);
+            $this->set('sinfo',$sinfo);
+            $this->set('finfo',$finfo);
+            $this->set('dinfo',$dinfo);
+            $this->set('cinfo',$cinfo);
+            $this->set('rinfo',$ref);
+            $this->set('fileid',$file['id']);
+            $this->set('splash',$rpt['splash']);
+            $this->set('id',$id);
+        } elseif(strtolower($format)=="jcamp") {
+            header("Location: ".$osdbpath."/download/jdx/".str_pad($id,9,0,STR_PAD_LEFT).".jdx");exit;
+        } elseif(strtolower($format)=="xml") {
+            header("Location: ".$osdbpath."/download/xml/".str_pad($id,9,0,STR_PAD_LEFT).".xml");exit;
+        } elseif(strtolower($format)=="json"||strtolower($format)=="jsonld") {
+            header("Location: ".$osdbpath."/spectra/scidata/".str_pad($id,9,0,STR_PAD_LEFT));exit;
+        } else {
+            header("Content-Type: application/json");
+            echo '{ "error": "Invalid request (\''.$format.'\' is not an acceptable value)" }';
+            exit;
         }
-        $this->set('desc',$rpt['description']);
-        $this->set('minfo',$minfo);
-        $this->set('sinfo',$sinfo);
-        $this->set('finfo',$finfo);
-        $this->set('dinfo',$dinfo);
-        $this->set('cinfo',$cinfo);
-        $this->set('fileid',$file['id']);
-        $this->set('splash',$rpt['splash']);
-        $this->set('id',$id);
+
     }
 
     /**
@@ -258,7 +276,16 @@ class ReportsController extends AppController
     public function plot($id,$tech="",$w=720,$h=540,$embed=false)
     {
         $error = "";
-        if(!is_numeric($id)) {
+        if(stristr($id,'splash')) {
+            // Access a spectrum using its splash code
+            $report=$this->Report->find('first',['conditions'=>['splash'=>$id]]);
+            if(!empty($report)) {
+                $id=$report['Report']['id'];
+            } else {
+                $error='Invalid OSDB Splash code ('.$id.')';
+            }
+
+        } elseif(!is_numeric($id)) {
             // Get the report id is one exists for this chemical and technique
             $sid = $tid = "";
             // Get the sid if there is one
@@ -291,9 +318,12 @@ class ReportsController extends AppController
                 }
             }
         }
-        //echo $sid." : ".$tid." : ".$id;exit;
+
+        // Show error if we can't find the spectrum via splash or compound identifier and technique code
         if($error!="") {
-            exit($error);
+            header("Content-Type: application/json");
+            echo '{ "error": "'.$error.'" }';
+            exit;
         }
 
         $data=$this->Report->scidata($id);
@@ -316,6 +346,8 @@ class ReportsController extends AppController
             $flot['tech']='nmr';
         } elseif($mea['technique']=="Infrared Spectroscopy") {
             $flot['tech']='ir';
+        } elseif($mea['technique']=="UVVis Spectrophotometry") {
+            $flot['tech']='uv';
         }
 
         if(!empty($mea['Setting'])) {
@@ -341,6 +373,9 @@ class ReportsController extends AppController
                 } elseif ($spec['level'] == 'processed' && $spec['processedType'] == "absorbance") {
                     $flot['scale'] = 1;
                     $flot['ylabel'] = "Absorbance";
+                } elseif ($spec['level'] == 'processed' && $spec['processedType'] == "log epsilon") {
+                    $flot['scale'] = 1;
+                    $flot['ylabel'] = "Log (&epsilon;)";
                 }
                 foreach ($spec['Descriptor'] as $d) {
                     $value = 0;
@@ -393,7 +428,7 @@ class ReportsController extends AppController
      */
     public function recent()
     {
-        $data=$this->Report->find('list',['order'=>['updated'=>'desc'],'limit'=>6]);
+        $data=$this->Report->find('list',['order'=>['added'=>'desc'],'limit'=>10]);
         $this->set('data',$data);
         if($this->request->params['requested']) { return $data; }
     }
@@ -411,17 +446,18 @@ class ReportsController extends AppController
                         'Substance'=>[
                             'Identifier'=>['conditions'=>['type'=>['inchikey','inchi']],'order'=>'type']]]],
                 'Methodology'=>['Measurement']]];
-        $r=$this->Report->find('first',['order'=>['Report.updated'=>'desc'],'limit'=>1,'contain'=>$c]);
-        //debug($r);exit;
+        $r=$this->Report->find('first',['order'=>['Report.added'=>'desc'],'limit'=>1,'contain'=>$c]);
         // For jmol: name, inchikey
         $data=[];
-        $data['jmol']['name']=$r['Dataset']['Context']['System'][0]['Substance'][0]['name'];
-        $data['jmol']['inchi']=$r['Dataset']['Context']['System'][0]['Substance'][0]['Identifier'][0]['value'];
-        $data['jmol']['inchikey']=$r['Dataset']['Context']['System'][0]['Substance'][0]['Identifier'][1]['value'];
+        $a=$r['Dataset']['Context']['System'][0]['Substance'][0]; // First compound is always the analyte
+        $data['jmol']['id']=$a['id'];
+        $data['jmol']['name']=$a['name'];
+        $data['jmol']['inchi']=$a['Identifier'][0]['value'];
+        $data['jmol']['inchikey']=$a['Identifier'][1]['value'];
         // For flot
         $data['flot']['id']=$r['Report']['id'];
         $this->set('data',$data);
-        if($this->request->params['requested']) { return $data; }
+        if(isset($this->request->params['requested'])) { return $data; }
     }
 
     /**
@@ -432,15 +468,15 @@ class ReportsController extends AppController
     public function scidata($id,$down="")
     {
         $data=$this->Report->scidata($id);
+        //debug($data);exit;
         $id=str_pad($id,9,"0",STR_PAD_LEFT);
         $rpt=$data['Report'];
+        $cols=$data['Collection'];
         $set=$data['Dataset'];
-        //$file=$set['File'];
-        //$usr=$data['User'];
         $met=$set['Methodology'];
         $con=$set['Context'];
-        //$sam=$set['Sample'];
         $ser=$set['Dataseries'];
+        $ref=$set['Reference'];
         $filemeta=$ser[0]['Annotation'][0]['Metadata'];
         $date="";
         foreach($filemeta as $meta) {
@@ -465,10 +501,13 @@ class ReportsController extends AppController
 
         // Main metadata
         $json['@id']="";
-        $json['uid']="osdb:spectra:".$id;
+        $json['uid']="osdb:spectrum:".$id;
         $json['title']=$rpt['title'];
-        $json['author']=['@id'=>'author','@type'=>'dc:creator','name'=>$rpt['author']];
+        if($rpt['author']!="") {
+            $json['author']=['@id'=>'author','@type'=>'dc:creator','name'=>$rpt['author']];
+        }
         $json['description']=$rpt['description'];
+        if($rpt['author']=="") { $rpt['author']="No publisher given in JCAMP file"; }
         $json['publisher']=$rpt['author'];
         $json['version']=1;
         $json['startdate']=$date;
@@ -512,12 +551,17 @@ class ReportsController extends AppController
                 $meaj['settings']=[];
                 $settings=$mea['Setting'];
                 for($x=0;$x<count($settings);$x++) {
+                    //debug($mea['Setting']);exit;
                     $s=$mea['Setting'][$x];
                     $setgj=[];
                     $setgj['@id']="setting/".($x+1);
                     $setgj['@type']="sci:setting";
-                    $setgj['quantity']=strtolower($s['Property']['Quantity']['name']);
-                    $setgj['property']=$s['Property']['name'];
+                    if(isset($s['Property']['Quantity']['name'])) {
+                        $setgj['quantity']=strtolower($s['Property']['Quantity']['name']);
+                    }
+                    if(isset($s['Property']['name'])) {
+                        $setgj['property'] = $s['Property']['name'];
+                    }
                     $v=[];
                     $v['@id']="setting/".($x+1)."/value";
                     $v['@type']="sci:value";
@@ -552,8 +596,6 @@ class ReportsController extends AppController
             }
         }
         $conj['facets']=[];
-
-        //debug($con['System']);
 
         // System
         if(isset($con['System'])) {
@@ -785,18 +827,33 @@ class ReportsController extends AppController
         }
         $json['scidata']['dataset']=$resj;
 
-        //debug($json);exit;
-
         // Source
-        $json['reference']=['@id'=>'reference','@type'=>'dc:source'];
-        $json['reference']['citation']='The Open Spectral Database - http://osdb.info';
-        $json['reference']['url']=$base;
+        $ri=0;
+        $json['reference'][$ri]=['@id'=>'reference/1','@type'=>'dc:source'];
+        $json['reference'][$ri]['citation']=$rpt['title'].' - The Open Spectral Database, http://osdb.info';
+        $json['reference'][$ri]['url']=$base;
+        if(!empty($ref)) {
+            $ri++;
+            $json['reference'][$ri]=['@id'=>'reference/2','@type'=>'dc:source'];
+            $json['reference'][$ri]['citation']=$ref['citation'];
+            if(!is_null($ref['doi'])) {
+                $json['reference'][$ri]['url']="http://dx.doi.org/".$ref['doi'];
+            } elseif(!is_null($ref['url'])) {
+                $json['reference'][$ri]['url']=$ref['url'];
+            }
+        }
+        if(!empty($cols)) {
+            foreach ($cols as $col) {
+                $ri++;
+                $json['reference'][$ri]=['@id'=>'reference/2','@type'=>'dc:source'];
+                $json['reference'][$ri]['citation']="Part of the ".$col['name']." Collection - ".$col['url'];
+                $json['reference'][$ri]['url']=$col['url'];
+            }
+        }
 
         // Rights
         $json['rights']=['@id'=>'rights','@type'=>'dc:rights'];
-        $json['rights']['holder']='Chalk Group, Department of Chemistry, University of North Florida';
         $json['rights']['license']='http://creativecommons.org/publicdomain/zero/1.0/';
-        //debug($json);exit;
 
         // OK turn it back into JSON-LD
         header("Content-Type: application/ld+json");
@@ -832,14 +889,33 @@ class ReportsController extends AppController
 
     /**
      * JSON array of all splashes
+     * @param string $inc
      */
-    public function splashes()
+    public function splashes($inc=null)
     {
-        $spls=$this->Report->find('list',['fields'=>['id','splash'],'conditions'=>['not'=>['splash'=>'null']]]);
-        sort($spls);
-        $json=json_encode($spls);
-        header("Content-Type: application/ld+json");
-        echo '{ "site": "http://osdb.info","timestamp": "'.date(DATE_ATOM).'","count": '.count($spls).',"splashes": '.$json.' }';
+        $spls=$this->Report->find('list',['fields'=>['id','splash'],'conditions'=>['not'=>['splash'=>'null']],'order'=>'id']);
+        $osdbpath=Configure::read('url');
+        if($inc=='links') {
+            $out=[];
+            foreach($spls as $id=>$spl) {
+                $out[]=['url'=>$osdbpath."/spectra/view/".$id,'splash'=>$spl];
+            }
+            //debug($spls);exit;
+            $json=json_encode($out);
+            header("Content-Type: application/json");
+            header('Content-Disposition: inline; filename="splashes_and_links.json"');
+            echo '{ "site": "'.$osdbpath.'","accessed": "'.date(DATE_ATOM).'","url": "'.$osdbpath.'/splashes/links","count": '.count($spls).',"splashes": '.$json.' }';
+        } elseif(is_null($inc)) {
+            sort($spls);
+            $json=json_encode($spls);
+            header("Content-Type: application/json");
+            header('Content-Disposition: inline; filename="splashes.json"');
+            echo '{ "site": "'.$osdbpath.'","accessed": "'.date(DATE_ATOM).'","url": "'.$osdbpath.'/splashes","count": '.count($spls).',"splashes": '.$json.' }';
+        } else {
+            header("Content-Type: application/json");
+            header('Content-Disposition: inline; filename="error.json"');
+            echo '{ "error": "Invalid request (\''.$inc.'\' is not acceptable value)" }';
+        }
         exit;
     }
 }
