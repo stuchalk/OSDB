@@ -1,15 +1,23 @@
-<?php
-// Variables from controller: $data, $subs
-$t=$data['Technique'];
-?>
-    <h2><?php echo $t['title']; ?></h2>
-    <p>Technique code: <?php echo $t['matchstr']; ?> </p>
+<?php $t=$data['Technique']; // Variables from controller: $data, $subs ?>
 
-    <h3>Substances</h3>
-<?php
-$index=0;
-foreach($subs as $name=>$r) {
-    echo $this->element('molspectra',['index'=>$index,'name'=>$name,'grid'=>4] + $r);
-    $index++;
-}
-?>
+    <h2><?php echo $t['title']; ?></h2>
+    <p><i>Technique code: <?php echo $t['matchstr']; ?></i></p>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Substances (<?php echo count($subs); ?>)</h3>
+                </div>
+                <div class="panel-body">
+                    <?php
+                    $index=0;
+                    foreach($subs as $name=>$r) {
+                        echo $this->element('molspectra',['index'=>$index,'name'=>$name,'cols'=>3] + $r);
+                        $index++;
+                    }
+                    ?>
+                </div>
+            </div>
+        </div>
+    </div>

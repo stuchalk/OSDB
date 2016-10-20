@@ -33,7 +33,6 @@ $ref=$Dataseries['Dataset']['Reference'];
     <li><?php echo "Method: ".$Dataseries['Dataset']['Propertytype']['method'];?></li>
 </ul>
 <ul>
-    <li><?php echo "File Number: ".$Dataseries['Dataset']['Report']['file_code']; ?></li>
     <li><?php echo "Components: ".$Dataseries['Dataset']['System']['name']; ?></li>
 </ul><br>
     <h3>Data</h3>

@@ -15,15 +15,15 @@ class ExportComponent extends Component
      * @param string $name
      * @param string $table
      * @param array $data
+     * @param integer $count
      */
-    public function xml($name="",$table="",$data=[])
+    public function xml($name="",$table="",$data=[],$count=1)
     {
         if(empty($data) || $table=="") { return; }
         if(empty($name)) { $name=$table; }
         $e='item';
         $output="<?xml version='1.0' encoding='UTF-8' ?>\n";
         $output.="<".$table.">\n";
-        //debug($data);exit;
         foreach($data as $k1=>$v1)
         {
             if(is_numeric($k1)):    $output.="<".$e." id='".$k1."'>";
@@ -157,8 +157,10 @@ class ExportComponent extends Component
      * @param string $name
      * @param string $table
      * @param array $data
+     * @param integer $count
      */
-    public function json($name="",$table="",$data=[]) {
+    public function json($name="",$table="",$data=[],$count=1)
+    {
         if(empty($data)) { return; }
         if(empty($name)) { $name=$table; }
         $output=json_encode($data);
@@ -175,8 +177,9 @@ class ExportComponent extends Component
      * @param string $table
      * @param array $data
      * @param array $context
+     * @param integer $count
      */
-    public function jsonld($name="",$table="",$data=[],$context=[])
+    public function jsonld($name="",$table="",$data=[],$context=[],$count=0)
     {
         if(empty($data) || empty($context)) { return; }
         if(empty($name)) { $name=$table; }
@@ -186,6 +189,5 @@ class ExportComponent extends Component
         header('Content-type: application/ld+json');
         header('Content-Disposition: inline; filename="'.strtolower($name).'.jsonld"');
         echo $output;exit;
-
     }
 }

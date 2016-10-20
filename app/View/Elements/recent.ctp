@@ -2,7 +2,7 @@
     <div class="panel-heading">
         <h3 class="panel-title">Recent Submissions</h3>
     </div>
-    <div class="list-group">
+    <div class="list-group" style="max-height: 255px;overflow-y:scroll;">
             <?php
             $data=$this->requestAction('/reports/recent');
             $index=0;

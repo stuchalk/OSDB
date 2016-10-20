@@ -1,5 +1,5 @@
 <?php
-$substance=$data['Substance'];
+$sub=$data['Substance'];
 $identifiers=$data['Identifier'];
 $systems=$data['System'];
 $idnicetext=['inchi'=>'InChI String','inchikey'=>'InChI Key','casrn'=>'CASRN','pubchemId'=>'PubChem CID','smiles'=>'SMILES','wikidata'=>'Wikidata'];
@@ -15,11 +15,11 @@ foreach($identifiers as $identifier) {
 }
 ?>
 <div class="row">
-<div class="col-sm-8">
-    <h2><?php echo $substance['name']; ?></h2>
+    <div class="col-sm-8">
+    <h2><?php echo $sub['name']; ?></h2>
     <ul>
-        <li><?php echo "Formula: ".$substance['formula'];?></li>
-        <li><?php echo "Molecular Weight: ".$substance['molweight']." g/mol";?></li>
+        <li><?php echo "Formula: ".$sub['formula'];?></li>
+        <li><?php echo "Molecular Weight: ".$sub['molweight']." g/mol";?></li>
         <?php
         //pr($identifiers);
         $wiki='no';
@@ -38,7 +38,7 @@ foreach($identifiers as $identifier) {
             }
         }
         if($wiki=='no' and $_SERVER['REMOTE_ADDR']='139.62.52.13') {
-            echo "<li>".$this->Html->link('Add Wikidata ID','/identifiers/wikidata/'.$substance['name'])."</li>";
+            echo "<li>".$this->Html->link('Add Wikidata ID','/identifiers/wikidata/'.$sub['name'])."</li>";
         }
         ?>
     </ul>
@@ -68,14 +68,14 @@ foreach($identifiers as $identifier) {
     <div class="col-sm-4 col-lg-4" style="padding-top: 40px;">
         <div class="col-sm-12 col-lg-12" style="margin-bottom: 20px;">
             <?php
-            $chem=['name'=>$substance['name'],'inchi'=>$inchi,'inchikey'=>$inchikey,'casrn'=>$casrn];
-            echo $this->element('molspectra',['index'=>0,'grid'=>12]+$chem); // Sets it full width with col-md-4 grid
+            $chem=['id'=>$sub['id'],'name'=>$sub['name'],'inchi'=>$inchi,'inchikey'=>$inchikey,'casrn'=>$casrn];
+            echo $this->element('molspectra',['index'=>0,'grid'=>12,'named'=>false]+$chem); // Sets it full width with col-md-4 grid
             ?>
         </div>
         <div class="text-center" style="margin-top: 20px;">
             <?php
-            echo $this->Html->image('xml.png',['width'=>'120px','url'=>'/substances/view/'.$substance['id'].'/XML','alt'=>'Output as XML','style'=>'padding-right: 20px;']);
-            echo $this->Html->image('json.png',['width'=>'120px','url'=>'/substances/view/'.$substance['id'].'/JSON','alt'=>'Output as JSON']);
+            echo $this->Html->image('xml.png',['width'=>'120px','url'=>'/substances/view/'.$sub['id'].'/XML','alt'=>'Output as XML','style'=>'padding-right: 20px;']);
+            echo $this->Html->image('json.png',['width'=>'120px','url'=>'/substances/view/'.$sub['id'].'/JSON','alt'=>'Output as JSON']);
             ?>
         </div>
     </div>

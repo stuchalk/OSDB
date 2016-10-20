@@ -28,7 +28,7 @@
     });
 </script>
 
-<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation" style="z-index: 10000;">
     <div class="container-fluid" id="navfluid">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
@@ -51,7 +51,8 @@
                     </ul>
                 </li>
                 <li><?php echo $this->Html->link('Add Spectra','/files/upload'); ?></li>
-                <li><?php echo $this->Html->link('API','/pages/api'); ?></li>
+                <li><?php echo $this->Html->link('API','/api'); ?></li>
+                <li><?php echo $this->Html->link('Ideas','/pages/projects'); ?></li>
                 <li><?php echo $this->Html->link('About/Contact','/pages/about'); ?></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
@@ -80,8 +81,8 @@
                 </li>
             </ul>
             <?php
-            echo $this->Form->create('Report',['url'=>'/spectra','class'=>'navbar-form navbar-right']);
-            echo $this->Form->input('search',['type'=>'text','class'=>'form-control','div'=>false,'label'=>false,'placeholder'=>'Search compounds...']);
+            echo $this->Form->create('Substance',['url'=>['controller'=>'substances','action'=>'search'],'class'=>'navbar-form navbar-right']);
+            echo $this->Form->input('term',['type'=>'text','class'=>'form-control','div'=>false,'label'=>false,'placeholder'=>'Search compounds...']);
             echo $this->Form->end();
             ?>
             <?php

@@ -1,6 +1,5 @@
-<h2><?php echo 'Data From: '.'"'.$Data['Dataseries']['Dataset']['File']['Publication']['title'].'"'; ?></h2>
+<h2><?php echo 'Data From: '.'"'.$Data['Dataseries']['Dataset']['File']['name'].'"'; ?></h2>
 <ul>
-    <li><?php echo "Publication: ".$this->Html->link($Data['Dataseries']['Dataset']['File']['Publication']['title'],"/publications/view/".$Data['Dataseries']['Dataset']['File']['Publication']['id']); ?></li>
     <li><?php echo "Property Type: ".$Data['Dataseries']['Dataset']['Propertytype']['code']; ?>  </li>
     <li><?php echo "States: ".$Data['Dataseries']['Dataset']['Propertytype']['states']."<br>".'<span style="width:25px;">Phases:</span>'.$Data['Dataseries']['Dataset']['Propertytype']['phases']."<br>"; ?></li>
     <li><?php echo "Number of Components: ".$Data['Dataseries']['Dataset']['Propertytype']['num_components']; ?></li>
@@ -19,7 +18,6 @@
     <li><?php echo "Method: ".$Data['Dataseries']['Dataset']['Propertytype']['method'];?></li>
 </ul>
 <ul>
-    <li><?php echo "File Number: ".$this->Html->link((isset($dump['Report']['file_code'])?$dump['Report']['file_code']:"N/A"),"/files/view/".$Data['Dataseries']['Dataset']['File']['id']);?></li>
     <li><?php echo "Data Series: ".$this->Html->link($Data['Dataseries']['id'],"/dataseries/view/".$Data['Dataseries']['id']); ?></li>
     <li><?php echo "Data Set: ".$this->Html->link($Data['Dataseries']['Dataset']['id'],"/datasets/view/".$Data['Dataseries']['Dataset']['id']); ?></li>
 </ul><br>

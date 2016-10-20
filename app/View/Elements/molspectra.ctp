@@ -21,13 +21,15 @@ if(!isset($cols))       { $cols=12; }
 // Chemicals
 if(isset($inchikey))
 {
-    echo "<div id='chemical".$index."' class='chemical col-md-".$cols."'>";
+    echo "<div id='chemical".$index."' class='chemical col-sm-6 col-md-".$cols."'>";
     // Show spectral links
     echo "<div class='panel panel-primary'>";
     if(!empty($spectra)) {
-        echo "<div class='text-center' style='margin-top: 5px;margin-bottom: 10px;'>";
-        foreach($spectra as $id=>$title) {
-            echo $this->Html->link($title,'/spectra/view/'.$id,['class'=>'linkbutton'])."&nbsp;";
+        echo "<div class='btn-group btn-group-justified' role='group' style='margin-bottom: 0;'>";
+        foreach($spectra as $sid=>$title) {
+            echo "<div class='btn-group' role='group' style='font-size: 12px;'>";
+            echo $this->Html->link($title,'/spectra/view/'.$sid,['class'=>'btn btn-default','role'=>'button','style'=>'padding: 5px;']);
+            echo "</div>";
         }
         echo "</div>";
     }
@@ -36,10 +38,9 @@ if(isset($inchikey))
         'inchikey'=>$inchikey,'inchi'=>$inchi,'name'=>$name]);
     // Show chemical name
     if($named) {
-        if(isset($system)&&$system==true) {
-            $name=$this->Html->link($name,'/substances/view/'.$uid);
-        }
-        echo "<div style='text-align: center;margin-top: 5px;'>".$name."</div>";
+        echo "<div style='text-align: center;margin-top: 5px;'>";
+        echo $this->Html->link($name,'/compounds/view/'.$id);
+        echo "</div>";
     }
     // Show links on other sites
     if($links) {

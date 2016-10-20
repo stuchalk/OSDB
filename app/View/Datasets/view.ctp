@@ -5,7 +5,6 @@ $(function() {
 </script>
 <h2><?php echo '"'.$dump['Report']['title'].'"'.' Data Set';?></h2>
 <ul>
-    <li><?php echo "Publication: ".$this->Html->link($dump['File']['Publication']['title'],"/publications/view/".$dump['File']['Publication']['id']); ?></li>
     <li><?php echo "Property Type: ".$dump['Propertytype']['code']; ?>  </li>
     <li><?php echo "States: ".$dump['Propertytype']['states']."<br>".'<span style="width:25px;">Phases:</span>'.$dump['Propertytype']['phases']."<br>"; ?></li>
     <li><?php echo "Number of Components: ".$dump['Propertytype']['num_components']; ?></li>
@@ -34,7 +33,6 @@ $(function() {
         ?>
     </li>
     <li><?php echo "Method: ".$dump['Propertytype']['method'];?></li>
-    <li><?php echo "File Number: ".$this->Html->link((isset($dump['Report']['file_code'])?$dump['Report']['file_code']:"N/A"),"/files/view/".$dump['File']['id']);?></li>
     <li>Components:
         <?php
         foreach($dump['System']['Substance'] as $i=>$substance){

@@ -17,7 +17,7 @@ class IdentifiersController extends AppController
     public function beforeFilter()
     {
         parent::beforeFilter();
-        $this->Auth->allow('index','view','test','checksplashes');
+        $this->Auth->allow('index','view','test','checksplashes','addpng');
     }
 
     /**
@@ -52,6 +52,39 @@ class IdentifiersController extends AppController
     }
 
     /**
+     * Add a png image of molecule
+     * @param $id
+     * @param $down
+     * @return array
+     */
+    public function addpng($id,$down="no")
+    {
+        $key=$this->Identifier->find("list",['conditions'=>['substance_id'=>$id,'type'=>'inchikey'],'fields'=>['substance_id','value']]);
+        $smi=$this->Identifier->find("list",['conditions'=>['substance_id'=>$id,'type'=>'smiles'],'fields'=>['substance_id','value']]);
+        //debug($key);debug($smi);
+        $path=WWW_ROOT.'img'.DS.'mol'.DS.$key[$id].'.png';
+        //debug($path);
+        //exit;
+        if(!file_exists($path)) {
+            //echo "In if statement<br />";
+            exec('/opt/local/bin/obabel -:"'.$smi[$id].'" -O '.$path,$response,$status);
+            //debug($response);debug($status);
+            if(!file_exists($path)) {
+                return false;
+            }
+        }
+        if($down=="yes") {
+            // Download added so that http://osdb.info can get png file without loading openbabel in server
+            header("Content-Type: image/png");
+            header('Content-Disposition: attachment; filename="'.$key[$id].'.png"');
+            readfile($path);exit;
+        } else {
+            return true;
+        }
+        exit;
+    }
+
+    /**
      * Add Wikidata code to substance
      * @param $name
      */
@@ -62,8 +95,20 @@ class IdentifiersController extends AppController
             $sid=$sub['Identifier']['substance_id'];
             $resp=$this->Identifier->find('first',['fields'=>['id','value'],'conditions'=>['substance_id'=>$sid,'type'=>'inchikey']]);
             $key=$resp['Identifier']['value'];
-            debug($sub);debug($key);
             $data=$this->Identifier->getWikidataId($sub['Identifier']['substance_id'],'inchikey',$key);
+            if(!$data) {
+                $resp=$this->Identifier->find('first',['fields'=>['id','value'],'conditions'=>['substance_id'=>$sid,'type'=>'smiles']]);
+                if(isset($resp['Identifier']['value'])) {
+                    $key=$resp['Identifier']['value'];
+                    $data=$this->Identifier->getWikidataId($sub['Identifier']['substance_id'],'smiles',$key);
+                }
+            }if(!$data) {
+                $resp=$this->Identifier->find('first',['fields'=>['id','value'],'conditions'=>['substance_id'=>$sid,'type'=>'pubchemid']]);
+                if(isset($resp['Identifier']['value'])) {
+                    $key=$resp['Identifier']['value'];
+                    $data=$this->Identifier->getWikidataId($sub['Identifier']['substance_id'],'pubchemid',$key);
+                }
+            }
             $this->redirect('/substances/view/'.$sid);
         } else {
             exit;
@@ -80,6 +125,9 @@ class IdentifiersController extends AppController
         $this->redirect('/reports/view/'.$id);
     }
 
+    /**
+     * Check database splashes against current specification and update if needed
+     */
     public function checksplashes()
     {
         // Get current SPLASH
@@ -115,6 +163,10 @@ class IdentifiersController extends AppController
         debug($data);exit;
     }
 
+    /**
+     * Add the chebi identifier for a compound
+     * @param $cid
+     */
     public function addchebi($cid) {
         $this->Identifier->getChebi($cid);
         $this->redirect('/substances/view/'.$cid);

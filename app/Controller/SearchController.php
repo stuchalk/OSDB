@@ -11,8 +11,7 @@ class SearchController extends AppController
     public $uses=['Annotation','Condition','Context',
                     'Data','Dataseries','Dataset','Descriptors',
                     'Identifier','Measurement','Metadata','Methodology',
-                    'Publication','Quantity','Reference',
-                    'Report','Substance','System','Unit'];
+                    'Quantity','Reference','Report','Substance','System','Unit'];
 
     /**
      * function beforeFilter

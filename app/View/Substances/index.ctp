@@ -24,10 +24,10 @@ if(!isset($term)) {
         <div class="panel-body">
             <div class="row">
                 <div class="col-md-6">
-                    <?php echo $this->Html->image('xml.png',['url'=>'/substances/index/XML','alt'=>'Output as XML','class'=>'img-responsive']); ?>
+                    <?php echo $this->Html->image('xml.png',['url'=>'/compounds/index/XML','alt'=>'Output as XML','class'=>'img-responsive']); ?>
                 </div>
                 <div class="col-md-6">
-                    <?php echo $this->Html->image('json.png',['url'=>'/substances/index/JSON','alt'=>'Output as JSON','class'=>'img-responsive']); ?>
+                    <?php echo $this->Html->image('json.png',['url'=>'/compounds/index/JSON','alt'=>'Output as JSON','class'=>'img-responsive']); ?>
                 </div>
             </div>
         </div>

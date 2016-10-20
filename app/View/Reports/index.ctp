@@ -34,7 +34,7 @@
 <?php
 $index=0;
 foreach($data as $name=>$r) {
-    echo $this->element('molspectra',['index'=>$index,'name'=>$name,'grid'=>4] + $r);
+    echo $this->element('molspectra',['index'=>$index,'name'=>$name,'cols'=>4] + $r);
     $index++;
 }
 ?>
