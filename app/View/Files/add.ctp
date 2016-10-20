@@ -60,7 +60,7 @@ if($this->Session->read('Auth.User')) {
 } else {
     $uid="00002";
 }
-echo $this->Form->create('File',['action'=>'add','type'=>'file','role'=>'form','class'=>'form-horizontal','inputDefaults'=>['label'=>false,'div'=>false]]);
+echo $this->Form->create('File',['url'=>['controller'=>'files','action'=>'add'],'id'=>'FilesAdd','type'=>'file','role'=>'form','class'=>'form-horizontal','inputDefaults'=>['label'=>false,'div'=>false]]);
 echo $this->Form->input('user_id', ['type' =>'hidden','value'=>$uid]);
 echo $this->Form->input('substance_id', ['type' =>'hidden','value'=>'']);
 ?>
