@@ -30,34 +30,37 @@ class SubstancesController extends AppController
         } else {
             $data=$this->Substance->find('list',['fields'=>['id','name'],'order'=>['first','name']]);
         }
-        if($format=="") {
+        if($format==""||$format=="HTML"||$format=="html") {
             $this->set('count',$count);
             $this->set('data',$data);
-        } else {
+        } elseif($format=="XML"||$format=="xml"||$format=="JSON"||$format=="json") {
             $osdbpath=Configure::read('url');
-            $out['substance']=[];$title="osdb_substance_list";
+            $out['compounds']=[];$title="osdb_compound_list";
             if($count>$cutoff) {
                 foreach($data as $chunk) {
                     foreach($chunk as $id=>$name) {
                         $c['name']=$name;
-                        $c['url']=$osdbpath.'/substances/view/'.$id;
-                        $out['substance'][]=$c;
+                        $c['url']=$osdbpath.'/compounds/view/'.$id;
+                        $out['compounds'][]=$c;
                     }
                 }
             } else {
                 foreach($data as $id=>$name) {
                     $c['name']=$name;
-                    $c['url']=$osdbpath.'/substances/view/'.$id;
-                    $out['substance'][]=$c;
+                    $c['url']=$osdbpath.'/compounds/view/'.$id;
+                    $out['compounds'][]=$c;
                 }
             }
-            $out['accessed']=date(DATE_ATOM);
-            $out['url']=$osdbpath.'/substances';
-            if($format=="XML") {
-                $this->Export->xml($title,"substances",$out);
-            } elseif($format=='JSON') {
-                $this->Export->json($title,"substances",$out);
+            $out=["site"=>$osdbpath,"accessed"=>date(DATE_ATOM),"url"=>$osdbpath.'/compounds',"count"=>$count]+$out;
+            if($format=="XML"||$format=="xml") {
+                $this->Export->xml($title,"substances",$out,$count);
+            } elseif($format=='JSON'||$format=="json") {
+                $this->Export->json($title,"substances",$out,$count);
             }
+        } else {
+            header("Content-Type: application/json");
+            echo '{ "error": "Invalid request (\''.$format.'\' is not an acceptable value)" }';
+            exit;
         }
     }
 
@@ -92,7 +95,7 @@ class SubstancesController extends AppController
         $error = "";
         if(!is_numeric($id)) {
             // Get the report id is one exists for this chemical and technique
-            $sid = $error = "";
+            $sid = "";
             // Get the sid if there is one
             $data = $this->Substance->find('first', ['conditions' => ['name' => $id], 'recursive' => -1]);
             if (empty($data)) {
@@ -106,23 +109,28 @@ class SubstancesController extends AppController
                 $id = $data['Substance']['id'];
             }
         }
+        
         if($error!="") {
             if($format=="") {
                 exit($error);
-            } elseif($format=="XML") {
-                $this->Export->xml('osdb','spectra',['error'=>$error]);
-            } elseif($format=="JSON") {
-                $this->Export->json('osdb','spectra',['error'=>$error]);
+            } elseif($format=="XML"||$format=="xml") {
+                $this->Export->xml('osdb','spectra',['error'=>$error],1);
+            } elseif($format=="JSON"||$format=="json") {
+                $this->Export->json('osdb','spectra',['error'=>$error],1);
             }
         }
 
         $c=['Identifier'=>['fields'=>['id','type','value']],
             'System'=>['Context'=>['Dataset'=>['Report']]]];
         $data=$this->Substance->find('first',['conditions'=>['Substance.id'=>$id],'contain'=>$c,'recursive'=>-1]);
+
         $osdbpath=Configure::read('url');
-        if($format=="XML"||$format=="JSON") {
-            $json['uid']="osdb:substance:".$id;
-            unset($data['Substance']['first']);unset($data['Substance']['updated']);
+        if($format==""||$format=="HTML"||$format=="html") {
+            $this->set('data',$data);
+        } elseif($format=="XML"||$format=="xml"||$format=="JSON"||$format=="json") {
+            $json['id']=$id;
+            $json['uid']="osdb:compound:".$id;
+            unset($data['Substance']['first']);unset($data['Substance']['updated']);unset($data['Substance']['id']);
             $json+=$data['Substance'];
             $ids=[];
             foreach($data['Identifier'] as $i) {
@@ -141,16 +149,18 @@ class SubstancesController extends AppController
             }
             $json['systems']=$syss;
             $json['spectra']=$specs;
-            $json['accessed']=date(DATE_ATOM);
-            $json['url']=$osdbpath.'/substances/view/'.$id;
-            $json['website']=$osdbpath;
-            if($format=="XML") {
-                $this->Export->xml("osdb_substance_".$data['Substance']['name'],"substance",$json);
-            } elseif($format=='JSON') {
-                $this->Export->json("osdb_substance_".$data['Substance']['name'],"substance",$json);
+            $json=["site"=>$osdbpath,"accessed"=>date(DATE_ATOM),"url"=>$osdbpath.'/compounds/view/'.$id,"count"=>1,'compound'=>$json];
+
+            if($format=="XML"||$format=="xml") {
+                $this->Export->xml("osdb_compound_".$data['Substance']['name'],"compound",$json);
+            } elseif($format=='JSON'||$format=="json") {
+                $this->Export->json("osdb_compound_".$data['Substance']['name'],"compound",$json);
             }
+        } else {
+            header("Content-Type: application/json");
+            echo '{ "error": "Invalid request (\''.$format.'\' is not an acceptable value)" }';
+            exit;
         }
-        $this->set('data',$data);
     }
 
     /**
@@ -163,10 +173,10 @@ class SubstancesController extends AppController
             $this->Substance->create();
             if ($this->Substance->save($this->request->data))
             {
-                $this->Session->setFlash('Substance udated.');
+                $this->Flash->set('Substance udated.');
                 $this->redirect(['action' => 'index']);
             } else {
-                $this->Session->setFlash('Substance could not be updated.');
+                $this->Flash->set('Substance could not be updated.');
             }
         } else {
             $data=$this->Substance->find('first',['conditions'=>['Substance.id'=>$id],'recursive'=>3]);
@@ -231,7 +241,7 @@ class SubstancesController extends AppController
     }
 
     /**
-     * Get meta for chemicals
+     * Get meta for compounds
      */
     public function meta()
     {

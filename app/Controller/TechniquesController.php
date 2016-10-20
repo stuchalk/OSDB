@@ -32,8 +32,13 @@ class TechniquesController extends AppController
             // Get the report id is one exists for this chemical and technique
             $error = "";
             // Get the collection id if there is one
-            $data = $this->Technique->find('first', ['conditions' => ['name' => $id], 'recursive' => -1]);
-            if (empty($data)) {
+            $techs = $this->Technique->find('list', ['fields' => ['matchstr'], 'recursive' => -1]);
+            if(in_array($id,$techs)) {
+                $data = $this->Technique->find('first', ['conditions' => ['matchstr' => $id], 'recursive' => -1]);
+            } else {
+                $data = $this->Technique->find('first', ['conditions' => ['title like ' => '%'.$id.'%'], 'recursive' => -1]);
+            }
+            if(empty($data)) {
                 $error='Technique not found (' . $id . ')';
             } else {
                 $id = $data['Technique']['id'];
