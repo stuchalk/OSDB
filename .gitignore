@@ -13,7 +13,9 @@ CakePHP 2
 /app/webroot/files/uv
 /app/webroot/files/ir.sitx
 /app/Plugin/Animl/
-
+/app/webroot/img/mol
+/app/model/Isdbset.php
+/app/model/Isdbsample.php
 /build
 /dist
 /tags
