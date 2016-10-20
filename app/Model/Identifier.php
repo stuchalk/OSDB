@@ -36,11 +36,11 @@ class Identifier extends AppModel
      */
     public function getWikidataId($sid, $type, $value)
     {
-        // Uses Wikidata SPARQL REST call to get wikidata code via InChIKey (P235), CAS (P231), or CID (P662) search
+        // Uses Wikidata SPARQL REST call to get wikidata code via InChIKey (P235), SMILES (P233), or CID (P662) search
         if ($type=='inchikey') {
             $sparql="PREFIX wdt: <http://www.wikidata.org/prop/direct/> select ?c where { ?c wdt:P235 \"".$value."\"}";
-        } elseif ($type=='casrn') {
-            $sparql="PREFIX wdt: <http://www.wikidata.org/prop/direct/> select ?c where { ?c wdt:P231 \"".$value."\"}";
+        } elseif ($type=='smiles') {
+            $sparql="PREFIX wdt: <http://www.wikidata.org/prop/direct/> select ?c where { ?c wdt:P233 \"".$value."\"}";
         } elseif ($type=='pubchemid') {
             $sparql="PREFIX wdt: <http://www.wikidata.org/prop/direct/> select ?c where { ?c wdt:P662 \"".$value."\"}";
         }
