@@ -10,8 +10,7 @@ App::uses('ClassRegistry', 'Utility');
  */
 class Dataseries extends AppModel
 {
-    public $hasMany = ['Condition'=>['foreignKey'=>'dataseries_id','dependent' => true],
-                        'Datapoint'=>['foreignKey'=>'dataseries_id','dependent' => true],
+    public $hasMany = ['Datapoint'=>['foreignKey'=>'dataseries_id','dependent' => true],
                         'Annotation'=>['foreignKey'=>'dataseries_id','dependent'=> true],
                         'Descriptor'=>['foreignKey'=>'dataseries_id','dependent'=> true]];
 

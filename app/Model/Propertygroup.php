@@ -13,8 +13,6 @@ class Propertygroup extends AppModel
 {
     public $hasMany = ['Propertytype'];
 
-    public $hasAndBelongsToMany = ['Publication'];
-
     /**
      * General function to add a new propertygroup
      * @param array $data

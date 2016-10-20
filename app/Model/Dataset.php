@@ -18,7 +18,6 @@ class Dataset extends AppModel
                     'Sample'=>['foreignKey'=>'dataset_id','dependent'=>true]];
 
     public $hasMany = ['Dataseries'=>['foreignKey'=>'dataset_id','dependent'=>true],
-                        'Datapoint'=>['foreignKey'=>'dataset_id','dependent'=>true],
                         'Annotation'=>['foreignKey'=>'dataset_id','dependent'=>true]];
 
     public $belongsTo = ['Propertytype','Reference','File','Report'];

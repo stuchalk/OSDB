@@ -9,12 +9,19 @@ App::uses('ClassRegistry', 'Utility');
  */
 class Report extends AppModel
 {
-    public $hasOne = ['Dataset'=> ['foreignKey'=>'report_id','dependent' => true],
-                        'File'=> ['foreignKey'=>'report_id','dependent' => true]];
+    public $hasOne = [
+        'Dataset'=> ['foreignKey'=>'report_id','dependent' => true],
+        'File'=> ['foreignKey'=>'report_id','dependent' => true]
+    ];
 
-    public $belongsTo = ['Publication','User'];
+    public $belongsTo = ['User'];
 
-    public $hasMany = ['Annotation'=> ['foreignKey'=>'report_id','dependent' => true]];
+    public $hasMany = [
+        'Annotation'=> ['foreignKey'=>'report_id','dependent' => true],
+        //'CollectionsReport'=> ['foreignKey'=>'report_id','dependent' => true]
+    ];
+
+    public $hasAndBelongsToMany = ['Collection'];
 
     /**
      * General function to add a new report
@@ -74,6 +81,7 @@ class Report extends AppModel
             $sub=$rep['Dataset']['Context']['System'][0]['Substance'][0];
             $name=$sub['name'];
             $results[$name]['id']=$sub['id'];
+            //debug($sub);
             if(count($sub['Identifier'])>1) {
                 foreach($sub['Identifier'] as $ident) {
                     if($ident['type']=="inchikey") {
@@ -85,8 +93,8 @@ class Report extends AppModel
             } else {
                 $results[$name]['inchikey']=$sub['Identifier'][0]['value'];
             }
-            preg_match("/\(([a-zA-Z0-9 ]*)\)/",$rep['Report']['title'],$matches);
-            $results[$name]['spectra'][$rep['Report']['id']]=$matches[1];
+            preg_match_all("/\(([a-zA-Z0-9\/ ]*)\)/",$rep['Report']['title'],$matches,PREG_SET_ORDER);
+            $results[$name]['spectra'][$rep['Report']['id']]=$matches[(count($matches)-1)][1];
         }
         //debug($results);exit;
 
@@ -104,10 +112,11 @@ class Report extends AppModel
     {
         // Note: there is an issue with the retrival of substances under system if id is not requested as a field
         // This is a bug in CakePHP as it works without id if its at the top level...
-        $contain=['Publication'=>['fields'=>['title']],
+        $contain=[
+            'Collection',
             'User'=>['fields'=>['fullname']],
             'Dataset'=>['fields'=>['setType','property','kind'],
-                'File',
+                'File','Reference',
                 'Sample'=>['fields'=>['title','description'],
                     'Annotation'=>['Metadata'=>['fields'=>['field','value','format']]]],
                 'Methodology'=>['fields'=>['evaluation','aspects'],
@@ -149,6 +158,10 @@ class Report extends AppModel
             $unit="Second";
         } elseif($unit=="Hz") {
             $unit="Hertz";
+        } elseif($unit=="%") {
+            $unit="Percent";
+        } elseif($unit=="m/z") {
+            $unit="MassToChargeRatio";
         }
         return "qudt:".$unit;
     }
