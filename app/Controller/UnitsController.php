@@ -31,7 +31,6 @@ class UnitsController extends AppController
         } else {
             $data=$this->Unit->find('list',['fields'=>['id','name'],'conditions'=>['quantity_id'=>$qid],'order'=>['name']]);
         }
-        //echo "<pre>";print_r($data);echo "</pre>";exit;
         if($format=="json") { echo json_encode($data); exit; }
         $this->set('data',$data);
     }
@@ -45,15 +44,6 @@ class UnitsController extends AppController
         $r="/^([0-9]{1,2}) ([a-zA-Z]{3}) ([0-9]{4}) ([0-9]{2}):([0-9]{2}):([0-9]{2})/";
         preg_match($r,$s,$m);
         debug($m);exit;
-    }
-
-    /**
-     * JSON test function
-     */
-    public function jsona()
-    {
-        $data=file_get_contents(WWW_ROOT.'/scidata_spectrum.txt');
-        echo "<pre>";json_decode("[".$data."]");echo "</pre>";exit;
     }
 
 }
