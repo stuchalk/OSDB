@@ -8,5 +8,12 @@ App::uses('ClassRegistry', 'Utility');
 class Isdbset extends AppModel
 {
     public $useDbConfig = 'isdb';
-    public $useTable = ['dataset'];
+    public $useTable = 'datasets';
+
+    public $belongsTo=[
+        'Isdbsample'=>[
+            'className' => 'Isdbsample',
+            'foreignKey' => 'sample_id'
+        ]
+    ];
 }
