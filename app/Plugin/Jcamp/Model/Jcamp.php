@@ -131,9 +131,20 @@ class Jcamp extends JcampAppModel
 	{
 		$output=[];
 		$comments=['freeform'=>'','in_data'=>'','reference'=>''];
-		foreach($this->file as $line)
-		{
-			if(substr($line,0,2)=="$$") {
+		$file=$this->file;
+		// Remove LDR based comments first
+		foreach($file as $i=>$line) {
+            if($line=="##COMMENTS=") {
+                // Freeform comments on one or more lines
+                unset($file[$i]);$i++;
+                while(substr($file[$i],0,2)!="##") {
+                    $comments['freeform'].=$file[$i].";";
+                    next($file);unset($file[$i]);$i++;
+                }
+            }
+        }
+		foreach($file as $line) {
+            if(substr($line,0,2)=="$$") {
 				// If the $$ is at the start of a line save the comment and dont leave it in the file
 				$comments['freeform'].=trim(substr(trim($line),2)).";";
 			} elseif(stristr($line,"$$") && substr($line,0,2)=="##") {
@@ -177,7 +188,7 @@ class Jcamp extends JcampAppModel
 				$output[]=$line;
 			}
 		}
-		$this->file=$output;
+        $this->file=$output;
         if($comments['freeform']=="") { unset($comments['freeform']); }
         if($comments['in_data']=="") { unset($comments['in_data']); }
         if($comments['reference']=="") { unset($comments['reference']); }
@@ -192,7 +203,21 @@ class Jcamp extends JcampAppModel
 	{
 		$prev="";$page=0;
 		$ldrs=$params=$bruker=$nist=$errors=[];
-		foreach($this->file as $key=>$line) {
+        $file=$this->file;
+        // Remove data processing lines first...
+        foreach($file as $key=>$line) {
+		    // Deal with any data processing lines first
+            if($line=="##DATAPROCESSING=") {
+                $ldrs['DATAPROCESSING']="";
+                unset($file[$key]);$key++;
+                while(substr($file[$key],0,2)!="##") {
+                    $ldrs['DATAPROCESSING'].=$file[$key].";";
+                    next($file);unset($file[$key]);$key++;
+                }
+            }
+        }
+		// ..then process the rest
+        foreach($file as $key=>$line) {
 			// Types of lines in the file
 			// "##LDR="      - typical LDR line with ##KEY=VALUE format
 			// "##$ASDFFORM" - Ascii Squeezed Difference Format type
@@ -237,7 +262,7 @@ class Jcamp extends JcampAppModel
 				$params[substr($ldr,1)]=trim($value);
 				// Set the prev LDR for the next iteration
 				$prev=$ldr;
-			} elseif(substr($line,0,2)=="##") {
+            } elseif(substr($line,0,2)=="##") {
 				// Find the LDRs
 				list($ldr,$value)=explode("=",$line);
                 $value=trim($value); // Remove extra spaces
@@ -324,11 +349,14 @@ class Jcamp extends JcampAppModel
             if(is_string($m)) { $m = date('m',strtotime($m)); }
             $ldrs['DATETIME']=date(DATE_ATOM,mktime($h,$n,$s,$m,$d,$y));
             unset($ldrs['DATE']);unset($ldrs['TIME']);
+        } elseif(isset($ldrs['LONGDATE'])) {
+            list($y,$m,$d)=explode("/",$ldrs['LONGDATE']);
+            $ldrs['DATETIME']=$y."-".$m."-".$d; // Default
         } else {
             $ldrs['DATETIME']=date(DATE_ATOM); // Default
         }
         // Save info
-		$this->ldrs=$ldrs;
+        $this->ldrs=$ldrs;
 		if(!empty($params))	{ $this->params=$params; }
 		if(!empty($bruker))	{ $this->bruker=$bruker; }
         if(!empty($bruker))	{ $this->nist=$nist; }
@@ -802,7 +830,7 @@ class Jcamp extends JcampAppModel
                     if($x==0) {
                         // Check that the first data point matches up
                         $y=sprintf($yformat,($all_ys[0]*$ldrs['YFACTOR']));
-                        if($y!=$ldrs['FIRSTY'])	{
+                        if((float) $y!= (float) $ldrs['FIRSTY'])	{
                             $errors['E25']="(Set ".$set.") FIRSTY (".$ldrs['FIRSTY'].") does not match first Y point (".$y.")";
                         }
                     }

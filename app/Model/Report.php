@@ -120,7 +120,7 @@ class Report extends AppModel
                 'Sample'=>['fields'=>['title','description'],
                     'Annotation'=>['Metadata'=>['fields'=>['field','value','format']]]],
                 'Methodology'=>['fields'=>['evaluation','aspects'],
-                    'Measurement'=>['fields'=>['techniqueType','technique','instrumentType','instrument','vendor'],
+                    'Measurement'=>['fields'=>['techniqueType','technique','instrumentType','instrument','vendor','processing'],
                         'Setting'=>['fields'=>['number','text','unit_id'],
                             'Property'=>['fields'=>['name'],
                                 'Quantity'=>['fields'=>['name']]],
