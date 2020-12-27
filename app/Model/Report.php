@@ -27,6 +27,7 @@ class Report extends AppModel
      * General function to add a new report
      * @param array $data
      * @return integer
+	 * @throws
      */
     public function add($data)
     {
@@ -153,17 +154,34 @@ class Report extends AppModel
      */
     public function qudt($unit) {
         if($unit=="MHz") {
-            $unit="MegaHertz";
+            $unit="MegaHZ";
         } elseif($unit=="s") {
-            $unit="Second";
+            $unit="SEC";
         } elseif($unit=="Hz") {
-            $unit="Hertz";
+            $unit="HZ";
         } elseif($unit=="%") {
-            $unit="Percent";
+            $unit="PRECENT";
         } elseif($unit=="m/z") {
-            $unit="MassToChargeRatio";
+            $unit="Da-PER-E";
+        } elseif($unit=="nm") {
+            $unit="NanoM";
         }
         return "qudt:".$unit;
     }
-
+	
+	/**
+	 * Find spectrum by splash
+	 * @param $splash
+	 * @param null $return
+	 * @return mixed
+	 */
+    public function search($splash,$return=null)
+	{
+		$rep=$this->find('first',['conditions'=>['splash'=>$splash],'recursive'=>-1]);
+		if(empty($rep)) {
+			return false;
+		} else {
+			return $rep['Report']['id'];
+		}
+	}
 }

@@ -15,7 +15,7 @@ class ReportsController extends AppController
     public function beforeFilter()
     {
         parent::beforeFilter();
-        $this->Auth->allow('view','scidata','recent','latest','plot','index','test','splash','splashes');
+        $this->Auth->allow('view','scidata','recent','latest','plot','index','test','splash','splashes','search');
     }
 
     /**
@@ -190,8 +190,9 @@ class ReportsController extends AppController
             }
 
             // File, Spectral Data, and Conversion data
+            $finfo=[];$dinfo=[];$cinfo=[];
             if(count($ser)==1) {
-                $finfo=[];$dinfo=[];$cinfo=[];$scale = 1;
+                $scale = 1;
                 $spec = $ser[0];
                 if (isset($spec['Annotation'])) {
                     foreach ($spec['Annotation'] as $ann) {
@@ -222,24 +223,23 @@ class ReportsController extends AppController
                         $scale = 1;
                     }
                     foreach ($spec['Descriptor'] as $d) {
-                        $value = 0;
                         (empty($d['text'])) ? $value = (float)$d['number'] : $value = $d['text']; // So that zeroes are not lost
                         if (stristr($d['title'], "maximum x")) {
-                            $value = number_format(round($value / $scale), 0);
+                            $value = number_format(round($value / $scale));
                         } elseif (stristr($d['title'], "minimum x")) {
-                            $value = number_format(round($value / $scale), 0);
+                            $value = number_format(round($value / $scale));
                         } elseif (stristr($d['title'], "increment")) {
                             $value = number_format($value / $scale, 5);
                         } elseif (stristr($d['title'], "first x")) {
-                            $value = number_format($value / $scale, 0);
+                            $value = number_format($value / $scale);
                         } elseif (stristr($d['title'], "last x")) {
-                            $value = number_format($value / $scale, 0);
+                            $value = number_format($value / $scale);
                         } elseif (stristr($d['title'], "first y")) {
-                            $value = number_format($value, 0);
+                            $value = number_format($value);
                         } elseif (stristr($d['title'], "maximum y")) {
-                            $value = number_format($value, 0);
+                            $value = number_format($value);
                         } elseif (stristr($d['title'], "minimum y")) {
-                            $value = number_format($value, 0);
+                            $value = number_format($value);
                         }
                         $dinfo[]=ucfirst($d['title']) . ": " . $value;
                     }
@@ -333,15 +333,9 @@ class ReportsController extends AppController
         }
 
         $data=$this->Report->scidata($id);
-        $rpt=$data['Report'];
         $set=$data['Dataset'];
-        $file=$set['File'];
-        $usr=$data['User'];
         $met=$set['Methodology'];
         $mea=$met['Measurement'];
-        $con=$set['Context'];
-        $sys=$con['System'];
-        $sam=$set['Sample'];
         $ser=$set['Dataseries'];
 
         // Plot (flot) data...
@@ -367,7 +361,7 @@ class ReportsController extends AppController
         }
 
         if(count($ser)==1) {
-            $finfo=[];$dinfo=[];$cinfo=[];$spec = $ser[0];$flot['scale'] = 1;
+            $spec = $ser[0];$flot['scale'] = 1;
             if (!empty($spec['Descriptor'])) {
                 if ($spec['level'] == 'processed' && $spec['processedType'] == "frequency") {
                     $flot['scale'] = $flot['freq'];
@@ -384,7 +378,6 @@ class ReportsController extends AppController
                     $flot['ylabel'] = "Log (&epsilon;)";
                 }
                 foreach ($spec['Descriptor'] as $d) {
-                    $value = 0;
                     (empty($d['text'])) ? $value = (float)$d['number'] : $value = $d['text']; // So that zeroes are not lost
                     if (stristr($d['title'], "points")) {
                         $flot['points'] = $value;
@@ -441,6 +434,7 @@ class ReportsController extends AppController
 
     /**
      * Get the latest uploaded spectrum (report)
+     * @return mixed
      */
     public function latest()
     {
@@ -493,53 +487,59 @@ class ReportsController extends AppController
                 $date=$rpt['updated'];
             }
         }
-        $base="http://osdb.info/spectra/scidata/".$id."/";
+        $base="https://osdb.stuchalk.domains.unf.edu/spectra/".$id."/";
 
         // Build the PHP array that will then be converted to JSON
-        $json['@context']=['https://stuchalk.github.io/scidata/contexts/scidata.jsonld',
-                            ['sci'=>'http://stuchalk.github.io/scidata/ontology/scidata.owl#',
-                                'meas'=>'http://stuchalk.github.io/scidata/ontology/scidata_measurement.owl#',
-                                'sub'=>'http://stuchalk.github.io/scidata/ontology/substance/substance.owl#',
-                                'cao'=>'http://champ-project.org/images/ontology/cao.owl#',
-                                'qudt'=>'http://www.qudt.org/qudt/owl/1.0.0/unit.owl#',
-                                'dc'=>'http://purl.org/dc/terms/',
-                                'ss'=>'http://www.semanticweb.org/ontologies/cheminf.owl#',
-                                'xsd'=>'http://www.w3.org/2001/XMLSchema#'],
-                            ['@base'=>$base]];
-
-        // Main metadata
-        $json['@id']="";
-        $json['uid']="osdb:spectrum:".$id;
-        $json['title']=$rpt['title'];
-        if($rpt['author']!="") {
-            $json['author']=['@id'=>'author','@type'=>'dc:creator','name'=>$rpt['author']];
-        }
-        $json['description']=$rpt['description'];
-        if($rpt['author']=="") { $rpt['author']="No publisher given in JCAMP file"; }
-        $json['publisher']=$rpt['author'];
+        // metadata
+        $json['@context']=[
+            'https://stuchalk.github.io/scidata/contexts/scidata.jsonld',
+            ['sdo'=>'http://stuchalk.github.io/scidata/ontology/scidata.owl#',
+                'sub'=>'http://stuchalk.github.io/scidata/ontology/substance.owl#',
+                'w3i'=>'https://w3id.org/skgo/modsci#',
+                'qudt'=>'http://qudt.org/vocab/unit/',
+                'obo'=>'http://purl.obolibrary.org/obo/',
+                'dc'=>'http://purl.org/dc/terms/',
+                'ss'=>'http://www.semanticweb.org/ontologies/cheminf.owl#',
+                'xsd'=>'http://www.w3.org/2001/XMLSchema#'],
+            ['@base'=>$base]];
+        $json['@id']=$base;
+        $json['generatedAt']=date(DATE_ATOM);
         $json['version']=1;
-        $json['startdate']=$date;
-        $json['permalink']="http://osdb.info/spectra/view/".$id;
-        $json['toc']=[];
+
+
+        // Main graph
+        $graph['@id']=$base;
+        $graph['@type']="sdo:scidataFramework";
+        $graph['uid']="osdb:spectrum:".$id;
+        $graph['title']=$rpt['title'];
+        if($rpt['author']!="") {
+            $graph['author']=['@id'=>'author','@type'=>'dc:creator','name'=>$rpt['author']];
+        }
+        $graph['description']=$rpt['description'];
+        if($rpt['author']=="") { $rpt['author']="No publisher given in JCAMP file"; }
+        $graph['publisher']=$rpt['author'];
+        $graph['starttime']=$date;
+        $graph['permalink']="https://osdb.stuchalk.domains.unf.edu/spectra/scidata/".$id;
+        $graph['toc']=[];
 
         // Dataset
         $setj['@id']="scidata/";
-        $setj['@type']="sci:scientificData";
+        $setj['@type']="sdo:scientificData";
         $opts=['type'=>'setType','property'=>'property','kind'=>'kind'];
         foreach($opts as $field=>$opt) {
             if(isset($set[$opt])&&$set[$opt]!="") {
                 $setj[$field]=$set[$opt];
             }
         }
-        $json['toc'][]="cao:spectrum";
-        $json['scidata']=$setj;
+        $graph['toc'][]="obo:CHMO_0000800";
+        $graph['scidata']=$setj;
 
         // Methodology sections
         if(is_array($met)&&!empty($met)) {
-            $json['toc'][]="sci:methodology";
+            $graph['toc'][]="sdo:methodology";
         }
         $metj['@id']='methodology/';
-        $metj['@type']='sci:methodology';
+        $metj['@type']='sdo:methodology';
         if(isset($met['evaluation'])&&$met['evaluation']!="") { $metj['evaluation']=$met['evaluation']; }
         $metj['aspects']=[];
 
@@ -548,8 +548,8 @@ class ReportsController extends AppController
             $mea=$met['Measurement'];
             $meaj=[];
             $meaj['@id']='measurement/1/';
-            $meaj['@type']='meas:measurement';
-            $json['toc'][]='meas:measurement';
+            $meaj['@type']='sdo:measurement';
+            $graph['toc'][]='sdo:measurement';
             $opts=['techniqueType','technique','instrumentType','instrument','vendor','processing'];
             foreach($opts as $opt) {
                 if(isset($mea[$opt])&&$mea[$opt]!="") {
@@ -559,13 +559,13 @@ class ReportsController extends AppController
             if(isset($mea['Setting'])&&!empty($mea['Setting'])) {
                 $meaj['settings']=[];
                 $settings=$mea['Setting'];
-                $json['toc'][]='cao:setting';
+                $graph['toc'][]='sdo:setting';
                 for($x=0;$x<count($settings);$x++) {
                     //debug($mea['Setting']);exit;
                     $s=$mea['Setting'][$x];
                     $setgj=[];
                     $setgj['@id']="setting/".($x+1);
-                    $setgj['@type']="sci:setting";
+                    $setgj['@type']="sdo:setting";
                     if(isset($s['Property']['Quantity']['name'])) {
                         $setgj['quantity']=strtolower($s['Property']['Quantity']['name']);
                     }
@@ -574,7 +574,7 @@ class ReportsController extends AppController
                     }
                     $v=[];
                     $v['@id']="setting/".($x+1)."/value/";
-                    $v['@type']="sci:value";
+                    $v['@type']="sdo:value";
                     if(!is_null($s['number'])) {
                         $v['number']=$s['number'];
                         if(isset($s['Unit']['symbol'])&&!empty($s['Unit']['symbol'])) {
@@ -591,36 +591,41 @@ class ReportsController extends AppController
         }
 
         // Add methodology section to main array
-        $json['scidata']['methodology']=$metj;
+        $graph['scidata']['methodology']=$metj;
 
         // System sections
         if(is_array($con)&&!empty($con)) {
-            $json['toc'][]="sci:system";
+            $graph['toc'][]="sdo:system";
         }
         $conj['@id']='system/';
-        $conj['@type']='sci:system';
+        $conj['@type']='sdo:system';
         $opts=['discipline','subdiscipline'];
         foreach($opts as $opt) {
             if(isset($con[$opt])&&$con[$opt]!="") {
-                $conj[$opt]=strtolower($con[$opt]);
+                if(strtolower($con[$opt])=='chemistry') {
+                    $conj[$opt]='w3i:Chemistry';
+                } elseif(strtolower($con[$opt])=='analytical chemistry') {
+                    $conj[$opt]='w3i:AnalyticalChemistry';
+                }
             }
         }
         $conj['facets']=[];
 
         // System
+        $type = null;
         if(isset($con['System'])) {
             for($i=0;$i<count($con['System']);$i++) {
                 if (count($con['System'][$i]['Substance']) == 1) {
                     $type = "chemical";
-                    $json['toc'][] = "sci:chemical";
+                    $graph['toc'][] = "sdo:chemical";
                 } else {
                     $type = "substance";
-                    $json['toc'][] = "sci:substance";
+                    $graph['toc'][] = "sdo:substance";
                 }
                 $sid = $type . "/" . ($i + 1).'/';
                 $sys = $con['System'][$i];
                 $sysj['@id'] = $sid;
-                $sysj['@type'] = "sci:" . $type;
+                $sysj['@type'] = "sdo:" . $type;
                 $opts = ['name', 'description', 'type'];
                 foreach ($opts as $opt) {
                     if (isset($sys[$opt]) && $sys[$opt] != "") {
@@ -630,27 +635,27 @@ class ReportsController extends AppController
                 if (isset($sys['Substance'])) {
                     for ($j = 0; $j < count($sys['Substance']); $j++) {
                         // Components
-                        $subj['@id'] = $sid . "/component/" . ($j + 1).'/';
-                        $subj['@type'] = "sci:chemical";
+                        $subj['@id'] = $sid . "constituent/" . ($j + 1).'/';
+                        $subj['@type'] = "sdo:chemical";
                         $subj['source'] = "compound/" . ($j + 1).'/';
                         if(count($sys['Substance'])>1) {
                             if ($j == 0) {
-                                $subj['role'][] = 'sub:solute';
+                                $subj['role'] = 'sub:solute';
                             } else {
-                                $subj['role'][] = 'sub:solvent';
+                                $subj['role'] = 'sub:solvent';
                             }
                         } else {
                             if ($j == 0) {
-                                $subj['role'][] = 'cao:analyte';
+                                $subj['role'] = 'obo:CHMO_0002467';
                             }
                         }
 
-                        $sysj['components'][] = $subj;
+                        $sysj['constituents'][] = $subj;
                         // Chemicals
                         $sub = $sys['Substance'][$j];
                         $chmj['@id'] = "compound/" . ($j + 1).'/';
-                        $chmj['@type'] = "sci:compound";
-                        $json['toc'][] = "sci:compound";
+                        $chmj['@type'] = "sdo:compound";
+                        $graph['toc'][] = "sdo:compound";
                         $opts = ['name', 'formula', 'molweight'];
                         foreach ($opts as $opt) {
                             if (isset($sub[$opt]) && $sub[$opt] != "") {
@@ -675,24 +680,24 @@ class ReportsController extends AppController
         }
 
         // Add context section to main array
-        $json['scidata']['system']=$conj;
+        $graph['scidata']['system']=$conj;
 
         // Dataset section
-        $json['toc'][]="sci:dataset";
+        $graph['toc'][]="sdo:dataset";
         $resj['@id']='dataset/';
-        $resj['@type']='sci:dataset';
+        $resj['@type']='sdo:dataset';
         $resj['source']='measurement/1/';
         $resj['scope']=$type.'/1/';
         $resj['datagroup']=[];
         if(!empty($ser)) {
-            if(count($ser)>1) { $json['toc'][]="sci:datagroup"; }
-            $json['toc'][]="sci:dataseries";
+            if(count($ser)>1) { $graph['toc'][]="sdo:datagroup"; }
+            $graph['toc'][]="sdo:dataseries";
             for($k=0;$k<count($ser);$k++) {
                 $dat=$ser[$k];
 
                 $datj=[];
                 $datj['@id']="datagroup/".($k+1).'/';
-                $datj['@type']="sci:datagroup";
+                $datj['@type']="sdo:datagroup";
                 $opts=['type','format','level'];
                 foreach($opts as $opt) {
                     if(isset($dat[$opt])&&$dat[$opt]!="") {
@@ -711,7 +716,7 @@ class ReportsController extends AppController
                             foreach($ann['Metadata'] as $meta) {
                                 if($meta['format']=="text") {
                                     if($meta['value']=="") { break; } // Empty
-                                    $annj[]=[$meta['field']=>$meta['value']];
+                                    $annj[$meta['field']]=$meta['value'];
                                 } else {
                                     if($meta['value']=="[]") { break; } // JSON array
                                     $annj[]=[$meta['field']=>json_decode($meta['value'],true)];
@@ -720,7 +725,7 @@ class ReportsController extends AppController
                         } else {
                             break; // Get out of annotation if no metadata in class
                         }
-                        //$datj[$ann['class']]=$annj;
+                        //$datj[$ann['class']]=$annj;  needs to be implemented semantically - will take time
                     }
                 }
 
@@ -730,12 +735,12 @@ class ReportsController extends AppController
                         $desj=[];
                         $des=$dat['Descriptor'][$l];
                         $desj['@id']="attribute/".($l+1).'/';
-                        $desj['@type']="sci:attribute";
+                        $desj['@type']="sdo:attribute";
                         $desj['quantity']=strtolower($des['Property']['Quantity']['name']);
                         $desj['property']=$des['title'];
                         $v=[];
                         $v['@id']="attribute/".($l+1)."/value/";
-                        $v['@type']="sci:value";
+                        $v['@type']="sdo:value";
                         if(!is_null($des['number'])) {
                             $v['number']=$des['number'];
                             if(isset($des['Unit']['symbol'])&&!empty($des['Unit']['symbol'])) {
@@ -751,15 +756,15 @@ class ReportsController extends AppController
 
                 // Datapoints
                 if(isset($dat['Datapoint'])) {
-                    $json['toc'][]="sci:datapoint";
-                    $json['toc'][]="sci:datum";
-                    $json['toc'][]="sci:property";
+                    $graph['toc'][]="sdo:datapoint";
+                    $graph['toc'][]="sdo:datum";
+                    $graph['toc'][]="sdo:property";
                     for($m=0;$m<count($dat['Datapoint']);$m++) {
                         // Independent axis
                         $cond=$dat['Datapoint'][$m]['Condition'][0];
                         $condj=[];
                         $condj['@id']="dataseries/1/";
-                        $condj['@type']="sci:x-axis";
+                        $condj['@type']="sdo:x-axis";
                         $condj['label']=ucfirst($cond['title']);
                         if(isset($cond['Unit']['symbol'])&&$cond['Unit']['symbol']!="") {
                             $condj['label'].=" (".$cond['Unit']['symbol'].")";
@@ -768,7 +773,7 @@ class ReportsController extends AppController
                         // Parameter
                         $paramj=[];
                         $paramj['@id']="dataseries/1/parameter/";
-                        $paramj['@type']="sci:parameter";
+                        $paramj['@type']="sdo:parameter";
                         $paramj['quantity']=strtolower($cond['Property']['Quantity']['name']);
                         $paramj['property']=$cond['title'];
                         // Value
@@ -780,14 +785,14 @@ class ReportsController extends AppController
                             }
                             if($cond['datatype']=="datum") {
                                 $v['@id']="dataseries/1/parameter/value/";
-                                $v['@type']="sci:value";
+                                $v['@type']="sdo:value";
                                 $v['datatype']="decimal";
                                 $v['number']=$cond['number'];
                                 if($unit!="") { $v['unitref']=$unit; }
                                 $paramj['value']=$v;
                             } else {
                                 $v['@id']="dataseries/1/parameter/valuearray/";
-                                $v['@type']="sci:valuearray";
+                                $v['@type']="sdo:valuearray";
                                 $v['datatype']="decimal";
                                 $v['numberarray']=json_decode($cond['number'],true);
                                 if($unit!="") { $v['unitref']=$unit; }
@@ -801,7 +806,7 @@ class ReportsController extends AppController
                         $data=$dat['Datapoint'][$m]['Data'][0];
                         $dataj=[];
                         $dataj['@id']="dataseries/2/";
-                        $dataj['@type']="sci:y-axis";
+                        $dataj['@type']="sdo:y-axis";
                         $dataj['label']=ucfirst($data['title']);
                         if(isset($data['Unit']['symbol'])&&$data['Unit']['symbol']!="") {
                             $dataj['label'].=" (".$data['Unit']['symbol'].")";
@@ -810,7 +815,7 @@ class ReportsController extends AppController
                         // Parameter
                         $paramj=[];
                         $paramj['@id']="dataseries/2/parameter/";
-                        $paramj['@type']="sci:parameter";
+                        $paramj['@type']="sdo:parameter";
                         $paramj['quantity']=strtolower($data['Property']['Quantity']['name']);
                         $paramj['property']=$data['title'];
                         // Value
@@ -822,14 +827,14 @@ class ReportsController extends AppController
                             }
                             if($cond['datatype']=="datum") {
                                 $v['@id']="dataseries/2/parameter/value/";
-                                $v['@type']="sci:value";
+                                $v['@type']="sdo:value";
                                 $v['datatype']="decimal";
                                 $v['number']=$data['number'];
                                 if($unit!="") { $v['unitref']=$unit; }
                                 $paramj['value']=$v;
                             } else {
                                 $v['@id']="dataseries/2/parameter/valuearray/";
-                                $v['@type']="sci:valuearray";
+                                $v['@type']="sdo:valuearray";
                                 $v['datatype']="decimal";
                                 $v['numberarray']=json_decode($data['number'],true);
                                 if($unit!="") { $v['unitref']=$unit; }
@@ -844,35 +849,38 @@ class ReportsController extends AppController
                 $resj['datagroup']=$datj;
             }
         }
-        $json['scidata']['dataset']=$resj;
+        $graph['scidata']['dataset']=$resj;
 
         // Source
         $ri=0;
-        $json['sources'][$ri]=['@id'=>'source/1/','@type'=>'dc:source'];
-        $json['sources'][$ri]['citation']=$rpt['title'].' - The Open Spectral Database, http://osdb.info';
-        $json['sources'][$ri]['url']=$base;
+        $graph['sources'][$ri]=['@id'=>'source/1/','@type'=>'dc:source'];
+        $graph['sources'][$ri]['citation']=$rpt['title'].' - The Open Spectral Database, http://osdb.info';
+        $graph['sources'][$ri]['url']=$base;
         if(!empty($ref)) {
             $ri++;
-            $json['sources'][$ri]=['@id'=>'source/2/','@type'=>'dc:source'];
-            $json['sources'][$ri]['citation']=$ref['citation'];
+            $graph['sources'][$ri]=['@id'=>'source/2/','@type'=>'dc:source'];
+            $graph['sources'][$ri]['citation']=$ref['citation'];
             if(!is_null($ref['doi'])) {
-                $json['sources'][$ri]['url']="http://dx.doi.org/".$ref['doi'];
+                $graph['sources'][$ri]['url']="http://dx.doi.org/".$ref['doi'];
             } elseif(!is_null($ref['url'])) {
-                $json['sources'][$ri]['url']=$ref['url'];
+                $graph['sources'][$ri]['url']=$ref['url'];
             }
         }
         if(!empty($cols)) {
             foreach ($cols as $col) {
                 $ri++;
-                $json['sources'][$ri]=['@id'=>'source/'.($ri+1).'/','@type'=>'dc:source'];
-                $json['sources'][$ri]['citation']="Part of the ".$col['name']." Collection - ".$col['url'];
-                $json['sources'][$ri]['url']=$col['url'];
+                $graph['sources'][$ri]=['@id'=>'source/'.($ri+1).'/','@type'=>'dc:source'];
+                $graph['sources'][$ri]['citation']="Part of the ".$col['name']." Collection - ".$col['url'];
+                $graph['sources'][$ri]['url']=$col['url'];
             }
         }
 
         // Rights
-        $json['rights']=['@id'=>'rights/','@type'=>'dc:rights'];
-        $json['rights']['license']='http://creativecommons.org/publicdomain/zero/1.0/';
+        $graph['rights']=['@id'=>'rights/','@type'=>'dc:rights'];
+        $graph['rights']['license']='http://creativecommons.org/publicdomain/zero/1.0/';
+
+        // add to graph
+        $json['@graph']=$graph;
 
         // OK turn it back into JSON-LD
         header("Content-Type: application/ld+json");
@@ -912,7 +920,21 @@ class ReportsController extends AppController
      */
     public function splashes($inc=null)
     {
-        $spls=$this->Report->find('list',['fields'=>['id','splash'],'conditions'=>['not'=>['splash'=>'null']],'order'=>'id']);
+		$c=[
+			'Dataset'=>['fields'=>['setType','property','kind'],
+				'Context'=>['fields'=>['discipline','subdiscipline'],
+					'System'=>['fields'=>['id','name','description','type'],
+						'Substance'=>['fields'=>['name','formula','molweight'],
+							'Identifier'=>['fields'=>['type','value'],'conditions'=>['type'=>['inchikey']]]]]],
+				]];
+        $spls=$this->Report->find('all',['fields'=>['id','splash'],'conditions'=>['not'=>['splash'=>'null']],'order'=>'Report.id','contain'=>$c,'recursive'=>-1]);
+        $temp=$spls;$spls=[];$inchis=[];
+        foreach($temp as $spl) {
+        	$inchi=$spl['Dataset']['Context']['System'][0]['Substance'][0]['Identifier'][0]['value'];
+        	$spls[$spl['Report']['id']]=$spl['Report']['splash'];
+			$inchis[$spl['Report']['id']]=$inchi;
+		}
+        //debug($spls);debug($inchis);exit;
         $osdbpath=Configure::read('url');
         if($inc=='links') {
             $out=[];
@@ -924,7 +946,16 @@ class ReportsController extends AppController
             header("Content-Type: application/json");
             header('Content-Disposition: inline; filename="splashes_and_links.json"');
             echo '{ "site": "'.$osdbpath.'","accessed": "'.date(DATE_ATOM).'","url": "'.$osdbpath.'/splashes/links","count": '.count($spls).',"splashes": '.$json.' }';
-        } elseif(is_null($inc)) {
+        } elseif($inc=="inchis") {
+			$out=[];
+			foreach($spls as $id=>$spl) {
+				$out[]=['inchi'=>$inchis[$id],'splash'=>$spl];
+			}
+			$json=json_encode($out);
+			header("Content-Type: application/json");
+			header('Content-Disposition: inline; filename="splashes.json"');
+			echo '{ "site": "'.$osdbpath.'","accessed": "'.date(DATE_ATOM).'","url": "'.$osdbpath.'/splashes","count": '.count($spls).',"splashes": '.$json.' }';
+		} elseif(is_null($inc)) {
             sort($spls);
             $json=json_encode($spls);
             header("Content-Type: application/json");
@@ -937,4 +968,18 @@ class ReportsController extends AppController
         }
         exit;
     }
+    
+	/**
+	 * Search by splash
+	 * @param $splash
+	 */
+	public function search($splash)
+	{
+		if($repid=$this->Report->search($splash)) {
+			$this->redirect('/spectra/view/'.$repid);
+		} else {
+			$this->redirect('/spectra/index/');
+		}
+	}
+	
 }
