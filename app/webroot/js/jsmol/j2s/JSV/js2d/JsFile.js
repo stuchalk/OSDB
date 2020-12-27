@@ -1,10 +1,10 @@
 Clazz.declarePackage ("JSV.js2d");
-Clazz.load (["javajs.api.GenericFileInterface"], "JSV.js2d.JsFile", ["JU.PT", "JSV.common.JSVFileManager"], function () {
+Clazz.load (["J.api.GenericFileInterface"], "JSV.js2d.JsFile", ["JU.PT", "JSV.common.JSVFileManager"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.name = null;
 this.fullName = null;
 Clazz.instantialize (this, arguments);
-}, JSV.js2d, "JsFile", null, javajs.api.GenericFileInterface);
+}, JSV.js2d, "JsFile", null, J.api.GenericFileInterface);
 c$.newFile = Clazz.defineMethod (c$, "newFile", 
 function (name) {
 return  new JSV.js2d.JsFile (name);

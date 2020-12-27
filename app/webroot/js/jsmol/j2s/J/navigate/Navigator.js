@@ -43,13 +43,57 @@ this.setEval (eval);
 this.navigationList = list;
 this.iList = 0;
 this.isStep = false;
+this.stopped = false;
+if (this.isJS) this.useTimeout = true;
 this.run ();
 }, "J.api.JmolScriptEvaluator,JU.Lst");
+Clazz.overrideMethod (c$, "run1", 
+function (mode) {
+var ptTemp =  new JU.P3 ();
+while (this.isJS || this.vwr.isScriptExecuting ()) switch (mode) {
+case -1:
+if (this.isStep) {
+this.targetTime = this.startTime;
+this.iStep = 0;
+mode = (this.totalSteps <= 0 && this.isNavTo ? 1 : 0);
+break;
+}mode = 2;
+break;
+case 2:
+this.nextList (this.navigationList.get (this.iList), ptTemp);
+return;
+case 0:
+if (this.stopped || this.iStep >= this.totalSteps) {
+mode = -2;
+break;
+}this.doNavStep (this.iStep++);
+this.vwr.requestRepaintAndWait ("navigatorThread");
+var sleepTime = (this.targetTime - System.currentTimeMillis ());
+if (!this.runSleep (sleepTime, 0)) return;
+mode = 0;
+break;
+case 1:
+if (!this.runSleep (Clazz.floatToInt (this.floatSecondsTotal * 1000) - 30, -2)) return;
+mode = -2;
+break;
+case -2:
+if (this.isNavTo) {
+if (!Float.isNaN (this.xTrans) || !Float.isNaN (this.yTrans)) this.navTranslatePercentOrTo (-1, this.xTrans, this.yTrans);
+if (!Float.isNaN (this.depthPercent)) this.setNavigationDepthPercent (this.depthPercent);
+}this.vwr.setInMotion (false);
+this.vwr.moveUpdate (this.floatSecondsTotal);
+if (!this.stopped && ++this.iList < this.navigationList.size ()) {
+mode = 2;
+break;
+}this.resumeEval ();
+return;
+}
+
+}, "~N");
 Clazz.defineMethod (c$, "nextList", 
- function (i, ptTemp) {
-var o = this.navigationList.get (i);
-var seconds = (o[1]).floatValue ();
+ function (o, ptTemp) {
 var tok = (o[0]).intValue ();
+var seconds = (o[1]).floatValue ();
 switch (tok) {
 case 134217751:
 var pt = o[2];
@@ -98,19 +142,16 @@ var percent = (o[2]).floatValue ();
 this.navigateTo (seconds, null, NaN, null, percent, NaN, NaN);
 break;
 }
-}, "~N,JU.P3");
-Clazz.defineMethod (c$, "setNavPercent", 
- function (pt1) {
-this.tm.transformPt3f (this.tm.navigationCenter, this.tm.navigationOffset);
-var x = pt1.x;
-var y = pt1.y;
-if (!Float.isNaN (x)) x = this.tm.width * x / 100 + (Float.isNaN (y) ? this.tm.navigationOffset.x : (this.tm.width / 2));
-if (!Float.isNaN (y)) y = this.tm.height * y / 100 + (Float.isNaN (x) ? this.tm.navigationOffset.y : this.tm.getNavPtHeight ());
-pt1.x = x;
-pt1.y = y;
-}, "JU.P3");
-Clazz.overrideMethod (c$, "navigateTo", 
-function (seconds, axis, degrees, center, depthPercent, xTrans, yTrans) {
+}, "~A,JU.P3");
+Clazz.defineMethod (c$, "navigate", 
+ function (seconds, pathGuide, path, theta, indexStart, indexEnd) {
+this.floatSecondsTotal = seconds;
+this.setupNav (seconds, pathGuide, path, indexStart, indexEnd);
+this.isStep = true;
+this.run ();
+}, "~N,~A,~A,~A,~N,~N");
+Clazz.defineMethod (c$, "navigateTo", 
+ function (seconds, axis, degrees, center, depthPercent, xTrans, yTrans) {
 this.floatSecondsTotal = seconds;
 this.axis = axis;
 this.degrees = degrees;
@@ -122,56 +163,16 @@ this.setupNavTo ();
 this.isStep = true;
 this.run ();
 }, "~N,JU.V3,~N,JU.P3,~N,~N,~N");
-Clazz.overrideMethod (c$, "navigate", 
-function (seconds, pathGuide, path, theta, indexStart, indexEnd) {
-this.floatSecondsTotal = seconds;
-this.setupNav (seconds, pathGuide, path, indexStart, indexEnd);
-this.isStep = true;
-this.run ();
-}, "~N,~A,~A,~A,~N,~N");
-Clazz.overrideMethod (c$, "run1", 
-function (mode) {
-var ptTemp =  new JU.P3 ();
-while (this.isJS || this.vwr.isScriptExecuting ()) switch (mode) {
-case -1:
-if (this.isStep) {
-this.targetTime = this.startTime;
-this.iStep = 0;
-mode = (this.totalSteps <= 0 && this.isNavTo ? 1 : 0);
-break;
-}mode = 2;
-break;
-case 2:
-this.nextList (this.iList, ptTemp);
-return;
-case 0:
-if (this.stopped || this.iStep >= this.totalSteps) {
-mode = -2;
-break;
-}this.doNavStep (this.iStep++);
-this.vwr.requestRepaintAndWait ("navigatorThread");
-var sleepTime = (this.targetTime - System.currentTimeMillis ());
-if (!this.runSleep (sleepTime, 0)) return;
-mode = 0;
-break;
-case 1:
-if (!this.runSleep (Clazz.floatToInt (this.floatSecondsTotal * 1000) - 30, -2)) return;
-mode = -2;
-break;
-case -2:
-if (this.isNavTo) {
-if (!Float.isNaN (this.xTrans) || !Float.isNaN (this.yTrans)) this.navTranslatePercentOrTo (-1, this.xTrans, this.yTrans);
-if (!Float.isNaN (this.depthPercent)) this.setNavigationDepthPercent (this.depthPercent);
-}this.vwr.setInMotion (false);
-this.vwr.moveUpdate (this.floatSecondsTotal);
-if (!this.stopped && ++this.iList < this.navigationList.size ()) {
-mode = 2;
-break;
-}this.resumeEval ();
-return;
-}
-
-}, "~N");
+Clazz.defineMethod (c$, "setNavPercent", 
+ function (pt1) {
+this.tm.transformPt3f (this.tm.navigationCenter, this.tm.navigationOffset);
+var x = pt1.x;
+var y = pt1.y;
+if (!Float.isNaN (x)) x = this.tm.width * x / 100 + (Float.isNaN (y) ? this.tm.navigationOffset.x : (this.tm.width / 2));
+if (!Float.isNaN (y)) y = this.tm.height * y / 100 + (Float.isNaN (x) ? this.tm.navigationOffset.y : this.tm.getNavPtHeight ());
+pt1.x = x;
+pt1.y = y;
+}, "JU.P3");
 Clazz.defineMethod (c$, "doNavStep", 
  function (iStep) {
 if (!this.isNavTo) {

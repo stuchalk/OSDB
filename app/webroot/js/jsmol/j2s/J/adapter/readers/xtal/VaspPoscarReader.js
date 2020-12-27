@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.readers.xtal");
-Clazz.load (["J.adapter.smarter.AtomSetCollectionReader"], "J.adapter.readers.xtal.VaspPoscarReader", ["java.lang.Float", "JU.Lst", "$.M3", "$.PT", "$.SB", "J.api.JmolAdapter", "JU.Parser"], function () {
+Clazz.load (["J.adapter.smarter.AtomSetCollectionReader"], "J.adapter.readers.xtal.VaspPoscarReader", ["java.lang.Float", "JU.Lst", "$.M3", "$.PT", "$.SB", "J.api.JmolAdapter", "JU.Logger", "$.Parser"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.atomLabels = null;
 this.haveAtomLabels = true;
@@ -16,13 +16,18 @@ Clazz.instantialize (this, arguments);
 }, J.adapter.readers.xtal, "VaspPoscarReader", J.adapter.smarter.AtomSetCollectionReader);
 Clazz.overrideMethod (c$, "initializeReader", 
 function () {
+this.isPrimitive = true;
 this.readStructure (null);
 this.continuing = false;
 });
 Clazz.defineMethod (c$, "readStructure", 
 function (titleMsg) {
 this.title = this.rd ().trim ();
-this.readUnitCellVectors ();
+var pt = this.title.indexOf ("--params");
+if ((pt = this.title.indexOf ("& ", pt + 1)) >= 0) {
+this.latticeType = this.title.substring (pt + 2, pt + 3);
+JU.Logger.info ("AFLOW lattice:" + this.latticeType + " title=" + this.title);
+}this.readUnitCellVectors ();
 this.readMolecularFormula ();
 this.readCoordinates ();
 this.asc.setAtomSetName (this.title + (titleMsg == null ? "" : "[" + titleMsg + "]"));
@@ -47,9 +52,9 @@ var m = JU.M3.newA9 (unitCellData);
 this.scaleFac /= m.determinant3 ();
 }if (this.scaleFac != 1) for (var i = 0; i < unitCellData.length; i++) unitCellData[i] *= this.scaleFac;
 
-this.addPrimitiveLatticeVector (0, unitCellData, 0);
-this.addPrimitiveLatticeVector (1, unitCellData, 3);
-this.addPrimitiveLatticeVector (2, unitCellData, 6);
+this.addExplicitLatticeVector (0, unitCellData, 0);
+this.addExplicitLatticeVector (1, unitCellData, 3);
+this.addExplicitLatticeVector (2, unitCellData, 6);
 });
 Clazz.defineMethod (c$, "readMolecularFormula", 
 function () {

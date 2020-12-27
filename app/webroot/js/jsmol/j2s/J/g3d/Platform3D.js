@@ -22,7 +22,7 @@ Clazz.instantialize (this, arguments);
 Clazz.makeConstructor (c$, 
 function (apiPlatform) {
 this.apiPlatform = apiPlatform;
-}, "javajs.api.GenericPlatform");
+}, "J.api.GenericPlatform");
 Clazz.defineMethod (c$, "getGraphicsForMetrics", 
 function () {
 return this.apiPlatform.getGraphics (this.allocateOffscreenImage (1, 1));

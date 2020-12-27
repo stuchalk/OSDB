@@ -3,11 +3,24 @@
 <head>
 <title>JSmol-InChI test</title>
 <meta charset="utf-8">
-<script>
-InChI = {
-  memoryInitializerPrefixURL: 'inchi/',
-  onRuntimeInitialized: function () {InChI.fromMolfile = InChI.cwrap('get_inchi', 'string', ['string']);}
-};
+<script src="JSmol.min.js"></script>
+<script> 
+
+Info = {
+	width: 500,
+	height: 500,
+	debug: false,
+	j2sPath: "j2s",
+	color: "0xC0C0C0",
+  disableJ2SLoadMonitor: true,
+  disableInitialConsole: true,
+	addSelectionOptions: true,
+  LoadStructCallback: "getInChI",
+	serverURL: "https://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
+	use: "HTML5",
+	readyFunction: null,
+	script: "initialize inchi"
+}
 
 function getInChI(app,url) {
   setTimeout(function() {dotest(app,url)})
@@ -22,37 +35,15 @@ function dotest(app,url) {
   var nci = Jmol.evaluateVar(jmolApplet0,"show('chemical stdinchi')").trim()
   $("#inchi2div").html(nci + "&nbsp;&nbsp;&nbsp;&nbsp;(from NCI/CADD)")
   var  mol = Jmol.evaluateVar(jmolApplet0,"(_modelType=='mol' ? show('file'):write('MOL'))")
-  var calc = InChI.fromMolfile(mol).trim()
+  var calc = Jmol.evaluateVar(jmolApplet0,"{visible}.find('inchi')")
   $("#inchi1div").html(calc + "&nbsp;&nbsp;&nbsp;&nbsp;(calculated in JavaScript)")
   $("#log").html(nci==calc ? "no difference" : "check differences?")  
   $("#mol").html(mol)  
 }
-</script>
-<script async src="inchi/inchi.js"></script>
 
-<script type="text/javascript" src="JSmol.min.js"></script>
-<script type="text/javascript"> 
 
 $(document).ready(function() {
-
-Info = {
-	width: 500,
-	height: 500,
-	debug: false,
-	j2sPath: "j2s",
-	color: "0xC0C0C0",
-  disableJ2SLoadMonitor: true,
-  disableInitialConsole: true,
-	addSelectionOptions: true,
-  LoadStructCallback: "getInChI",
-	serverURL: "http://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
-	use: "HTML5",
-	readyFunction: null,
-	script: "load $caffeine"
-}
-
-$("#mydiv").html(Jmol.getAppletHtml("jmolApplet0",Info))
-
+ $("#mydiv").html(Jmol.getAppletHtml("jmolApplet0", Info))
 });
 
 

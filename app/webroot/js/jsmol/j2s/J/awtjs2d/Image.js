@@ -35,18 +35,18 @@ context.fillRect(0, 0, width, height);
 context.fillStyle = "#FFFFFF";
 context.font = font3d.font;
 context.fillText(text, 0, ascent);
-return this.grabPixels(context, width, height);
-}}, "~S,javajs.awt.Font,~O,~N,~N,~N");
+}return J.awtjs2d.Image.grabPixels (context, width, height);
+}, "~S,JU.Font,~O,~N,~N,~N");
 c$.allocateRgbImage = Clazz.defineMethod (c$, "allocateRgbImage", 
 function (windowWidth, windowHeight, pBuffer, windowSize, backgroundTransparent, canvas) {
 {
 if (canvas == null)
 canvas = {width:windowWidth,height:windowHeight};
 canvas.buf32 = pBuffer;
-return canvas;
-}}, "~N,~N,~A,~N,~B,~O");
+}return canvas;
+}, "~N,~N,~A,~N,~B,~O");
 c$.getImageDialog = Clazz.defineMethod (c$, "getImageDialog", 
 function (vwr, title, imageMap) {
-return J.awtjs2d.Platform.Jmol ()._consoleGetImageDialog (vwr, title, imageMap);
+return J.awtjs2d.Platform.Jmol ().consoleGetImageDialog (vwr, title, imageMap);
 }, "JV.Viewer,~S,java.util.Map");
 });

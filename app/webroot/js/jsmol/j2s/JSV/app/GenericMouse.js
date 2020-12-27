@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JSV.app");
-Clazz.load (["javajs.api.GenericMouseInterface", "javajs.awt.event.Event"], "JSV.app.GenericMouse", ["JU.Logger"], function () {
+Clazz.load (["J.api.GenericMouseInterface"], "JSV.app.GenericMouse", ["JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.pd = null;
 this.jsvp = null;
@@ -9,7 +9,7 @@ this.modifiersWhenPressed10 = 0;
 this.isMouseDown = false;
 this.disposed = false;
 Clazz.instantialize (this, arguments);
-}, JSV.app, "GenericMouse", null, javajs.api.GenericMouseInterface);
+}, JSV.app, "GenericMouse", null, J.api.GenericMouseInterface);
 Clazz.makeConstructor (c$, 
 function (jsvp) {
 this.jsvp = jsvp;
@@ -23,9 +23,9 @@ function (id, x, y, modifiers, time) {
 if (this.pd == null) {
 if (!this.disposed && id == 501 && (modifiers & 4) != 0) this.jsvp.showMenu (x, y);
 return true;
-}if (id != -1) modifiers = JSV.app.GenericMouse.applyLeftMouse (modifiers);
+}if (id != 507) modifiers = JSV.app.GenericMouse.applyLeftMouse (modifiers);
 switch (id) {
-case -1:
+case 507:
 this.wheeled (time, x, modifiers | 32);
 break;
 case 501:

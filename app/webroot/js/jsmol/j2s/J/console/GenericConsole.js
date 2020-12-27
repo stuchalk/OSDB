@@ -26,7 +26,7 @@ function (vwr) {
 this.vwr = vwr;
 if (J.console.GenericConsole.labels == null) {
 var l =  new java.util.Hashtable ();
-l.put ("title", J.i18n.GT._ ("Jmol Script Console") + " " + JV.Viewer.getJmolVersion ());
+l.put ("title", J.i18n.GT.$ ("Jmol Script Console") + " " + JV.Viewer.getJmolVersion ());
 this.setupLabels (l);
 J.console.GenericConsole.labels = l;
 }}, "JV.Viewer");
@@ -42,28 +42,28 @@ return null;
 });
 Clazz.defineMethod (c$, "setupLabels", 
 function (labels) {
-labels.put ("saveas", J.i18n.GT._ ("&Save As..."));
-labels.put ("file", J.i18n.GT._ ("&File"));
-labels.put ("close", J.i18n.GT._ ("&Close"));
+labels.put ("saveas", J.i18n.GT.$ ("&Save As..."));
+labels.put ("file", J.i18n.GT.$ ("&File"));
+labels.put ("close", J.i18n.GT.$ ("&Close"));
 this.setupLabels0 (labels);
 }, "java.util.Map");
 Clazz.defineMethod (c$, "setupLabels0", 
 function (labels) {
-labels.put ("help", J.i18n.GT._ ("&Help"));
-labels.put ("search", J.i18n.GT._ ("&Search..."));
-labels.put ("commands", J.i18n.GT._ ("&Commands"));
-labels.put ("functions", J.i18n.GT._ ("Math &Functions"));
-labels.put ("parameters", J.i18n.GT._ ("Set &Parameters"));
-labels.put ("more", J.i18n.GT._ ("&More"));
-labels.put ("Editor", J.i18n.GT._ ("Editor"));
-labels.put ("State", J.i18n.GT._ ("State"));
-labels.put ("Run", J.i18n.GT._ ("Run"));
-labels.put ("Clear Output", J.i18n.GT._ ("Clear Output"));
-labels.put ("Clear Input", J.i18n.GT._ ("Clear Input"));
-labels.put ("History", J.i18n.GT._ ("History"));
-labels.put ("Load", J.i18n.GT._ ("Load"));
-labels.put ("label1", J.i18n.GT._ ("press CTRL-ENTER for new line or paste model data and press Load"));
-labels.put ("default", J.i18n.GT._ ("Messages will appear here. Enter commands in the box below. Click the console Help menu item for on-line help, which will appear in a new browser window."));
+labels.put ("help", J.i18n.GT.$ ("&Help"));
+labels.put ("search", J.i18n.GT.$ ("&Search..."));
+labels.put ("commands", J.i18n.GT.$ ("&Commands"));
+labels.put ("functions", J.i18n.GT.$ ("Math &Functions"));
+labels.put ("parameters", J.i18n.GT.$ ("Set &Parameters"));
+labels.put ("more", J.i18n.GT.$ ("&More"));
+labels.put ("Editor", J.i18n.GT.$ ("Editor"));
+labels.put ("State", J.i18n.GT.$ ("State"));
+labels.put ("Run", J.i18n.GT.$ ("Run"));
+labels.put ("Clear Output", J.i18n.GT.$ ("Clear Output"));
+labels.put ("Clear Input", J.i18n.GT.$ ("Clear Input"));
+labels.put ("History", J.i18n.GT.$ ("History"));
+labels.put ("Load", J.i18n.GT.$ ("Load"));
+labels.put ("label1", J.i18n.GT.$ ("press CTRL-ENTER for new line or paste model data and press Load"));
+labels.put ("default", J.i18n.GT.$ ("Messages will appear here. Enter commands in the box below. Click the console Help menu item for on-line help, which will appear in a new browser window."));
 }, "java.util.Map");
 Clazz.defineMethod (c$, "setLabels", 
 function () {
@@ -196,8 +196,10 @@ c$.map = Clazz.defineMethod (c$, "map",
 function (button, key, label, menuMap) {
 var mnemonic = J.console.GenericConsole.getMnemonic (label);
 if (mnemonic != ' ') (button).setMnemonic (mnemonic);
-if (menuMap != null) menuMap.put (key, button);
-}, "~O,~S,~S,java.util.Map");
+if (menuMap != null) {
+if (key.indexOf ("NMR.") >= 0) System.out.println ("genericconsole mapping " + key + " to " + label);
+menuMap.put (key, button);
+}}, "~O,~S,~S,java.util.Map");
 Clazz.overrideMethod (c$, "notifyEnabled", 
 function (type) {
 switch (type) {

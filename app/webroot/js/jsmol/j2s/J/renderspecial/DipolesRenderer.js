@@ -111,19 +111,19 @@ this.crossWidthPixels = this.headWidthPixels;
 this.colix = this.colixA;
 if (this.colix == this.colixB) {
 if (!this.g3d.setC (this.colix)) return true;
-this.g3d.fillCylinderBits (1, this.diameter, this.screens3f[0], this.screens3f[4]);
+this.g3d.fillCylinderBits (2, this.diameter, this.screens3f[0], this.screens3f[4]);
 if (!this.noCross) this.g3d.fillCylinderBits (2, this.crossWidthPixels, this.cross0, this.cross1);
 this.g3d.fillConeScreen3f (2, this.headWidthPixels, this.screens3f[4], this.screens3f[5], false);
 return false;
 }var needTranslucent = false;
 if (this.g3d.setC (this.colix)) {
-this.g3d.fillCylinderBits (1, this.diameter, this.screens3f[0], this.screens3f[3]);
+this.g3d.fillCylinderBits (2, this.diameter, this.screens3f[0], this.screens3f[3]);
 if (!this.noCross) this.g3d.fillCylinderBits (2, this.crossWidthPixels, this.cross0, this.cross1);
 } else {
 needTranslucent = true;
 }this.colix = this.colixB;
 if (this.g3d.setC (this.colix)) {
-this.g3d.fillCylinderBits (4, this.diameter, this.screens3f[3], this.screens3f[4]);
+this.g3d.fillCylinderBits (2, this.diameter, this.screens3f[3], this.screens3f[4]);
 this.g3d.fillConeScreen3f (2, this.headWidthPixels, this.screens3f[4], this.screens3f[5], false);
 } else {
 needTranslucent = true;

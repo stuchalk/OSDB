@@ -23,7 +23,7 @@ this.binarydoc = this.newBinaryDocument ();
 var o2 = sg.getReaderData ();
 var fileName = o2[0];
 var data = o2[1];
-if (data == null) this.binarydoc.setStream ((sg.atomDataServer).getJzt (), sg.atomDataServer.getBufferedInputStream (fileName), true);
+if (data == null) this.binarydoc.setStream (sg.atomDataServer.getBufferedInputStream (fileName), true);
  else this.binarydoc.setStreamData ( new java.io.DataInputStream (JU.Rdr.getBIS (data.getBytes ())), true);
 if (this.params.thePlane == null) this.params.insideOut = !this.params.insideOut;
 this.nSurfaces = 1;
@@ -34,15 +34,15 @@ var header =  Clazz.newShortArray (19, 0);
 for (var i = 0; i < 19; i++) header[i] = this.binarydoc.readShort ();
 
 if (header[18] != 100) {
-this.binarydoc.setStream ((this.sg.atomDataServer).getJzt (), null, false);
+this.binarydoc.setStream (null, false);
 for (var i = 0; i < 19; i++) header[i] = this.binarydoc.swapBytesS (header[i]);
 
-}this.nxyzStart[0] = header[0];
-this.nxyzStart[1] = header[1];
-this.nxyzStart[2] = header[2];
-this.nx = header[3];
-this.ny = header[4];
-this.nz = header[5];
+}this.xyzStart[0] = header[0];
+this.xyzStart[1] = header[1];
+this.xyzStart[2] = header[2];
+this.n0 = header[3];
+this.n1 = header[4];
+this.n2 = header[5];
 this.na = header[6];
 this.nb = header[7];
 this.nc = header[8];
@@ -79,10 +79,10 @@ this.gamma /= scalingFactor;
 this.binarydoc.seek (0x200);
 this.getVectorsAndOrigin ();
 this.setCutoffAutomatic ();
-this.xyCount = this.nx * this.ny;
+this.xyCount = this.n0 * this.n1;
 this.brickLayerVoxelCount = this.xyCount * 8;
-this.nBrickX = Clazz.doubleToInt ((this.nx + 7) / 8);
-this.nBrickY = Clazz.doubleToInt ((this.ny + 7) / 8);
+this.nBrickX = Clazz.doubleToInt ((this.n0 + 7) / 8);
+this.nBrickY = Clazz.doubleToInt ((this.n1 + 7) / 8);
 this.brickRowByteCount = this.nBrickX * 512;
 this.brickLayerByteCount = this.brickRowByteCount * this.nBrickY;
 this.brickLayer =  Clazz.newByteArray (this.brickLayerByteCount, 0);
@@ -98,8 +98,8 @@ this.nBytes = this.binarydoc.getPosition ();
 });
 Clazz.defineMethod (c$, "getBrickValue", 
  function (pt) {
-var x = pt % this.nx;
-var y = (Clazz.doubleToInt (pt / this.nx)) % this.ny;
+var x = pt % this.n0;
+var y = (Clazz.doubleToInt (pt / this.n0)) % this.n1;
 var z = Clazz.doubleToInt (pt / this.xyCount);
 var brickX = x % 8;
 var brickY = y % 8;

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.quantum");
-Clazz.load (null, "J.quantum.QS", ["java.lang.Character", "$.Float", "JU.PT", "$.SB"], function () {
+Clazz.load (null, "J.quantum.QS", ["java.lang.Character", "JU.PT", "$.SB"], function () {
 c$ = Clazz.declareType (J.quantum, "QS");
 Clazz.makeConstructor (c$, 
 function () {
@@ -48,18 +48,6 @@ sb.appendF (lc[i]).append (" ").appendI (Clazz.floatToInt (lc[i + 1]));
 sb.appendC (']');
 return sb.toString ();
 }, "~A");
-Clazz.defineMethod (c$, "setNboLabels", 
-function (tokens, nLabels, orbitals, nOrbitals0, moType) {
-for (var i = 0; i < tokens.length; i += nLabels + 2) if (moType.indexOf (tokens[i]) >= 0) {
-for (var j = 0; j < nLabels; j++) {
-var mo = orbitals.get (j + nOrbitals0);
-var type = tokens[i + j + 2];
-mo.put ("type", moType + " " + type);
-mo.put ("occupancy", Float.$valueOf (type.indexOf ("*") >= 0 || type.indexOf ("(ry)") >= 0 ? 0 : 2));
-}
-return;
-}
-}, "~A,~N,JU.Lst,~N,~S");
 c$.createDFMap = Clazz.defineMethod (c$, "createDFMap", 
 function (map, fileList, jmolList, minLength) {
 var tokens = JU.PT.getTokens (fileList);

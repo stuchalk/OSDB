@@ -70,7 +70,7 @@ Clazz.defineMethod (c$, "setGlobals",
  function () {
 this.invalidateMesh = false;
 this.needTranslucent = false;
-this.g3d.addRenderer (553648147);
+this.g3d.addRenderer (553648145);
 var TF = (!this.isExport && !this.vwr.checkMotionRendering (1112152066));
 if (TF != this.wireframeOnly) this.invalidateMesh = true;
 this.wireframeOnly = TF;
@@ -154,7 +154,7 @@ this.bsVisible.set (i);
 haveVisible = true;
 }
 if (!haveVisible) return false;
-this.ribbonBorder = this.vwr.getBoolean (603979899);
+this.ribbonBorder = this.vwr.getBoolean (603979901);
 this.isNucleic = Clazz.instanceOf (bioShape.bioPolymer, JM.NucleicPolymer);
 this.isPhosphorusOnly = !this.isNucleic && Clazz.instanceOf (bioShape.bioPolymer, JM.PhosphorusPolymer);
 this.isCarbohydrate = Clazz.instanceOf (bioShape.bioPolymer, JM.CarbohydratePolymer);
@@ -246,8 +246,8 @@ if (!thisTypeOnly || this.structureTypes[i] === this.structureTypes[this.iNext])
 }this.diameterBeg = Clazz.floatToInt (this.vwr.tm.scaleToScreen (Clazz.floatToInt (this.controlPointScreens[i].z), this.madBeg));
 this.diameterMid = Clazz.floatToInt (this.vwr.tm.scaleToScreen (this.monomers[i].getLeadAtom ().sZ, this.madMid));
 this.diameterEnd = Clazz.floatToInt (this.vwr.tm.scaleToScreen (Clazz.floatToInt (this.controlPointScreens[this.iNext].z), this.madEnd));
-var doCap0 = (i == this.iPrev || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iPrev]);
-var doCap1 = (this.iNext == this.iNext2 || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iNext]);
+var doCap0 = (i == this.iPrev || !this.bsVisible.get (this.iPrev) || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iPrev]);
+var doCap1 = (this.iNext == this.iNext2 || !this.bsVisible.get (this.iNext) || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iNext]);
 return (this.aspectRatio > 0 && this.meshRenderer != null && this.meshRenderer.check (doCap0, doCap1));
 }, "~N,~B");
 Clazz.defineMethod (c$, "renderHermiteCylinder", 
@@ -308,4 +308,20 @@ this.g3d.setC (this.colix);
 if (this.ribbonBorder && this.aspectRatio == 0) {
 this.g3d.fillCylinderBits (3, 3, this.screenArrowTop, this.screenArrowBot);
 }}, "~N");
+Clazz.defineMethod (c$, "drawSegmentAB", 
+function (atomA, atomB, colixA, colixB, max) {
+var xA = atomA.sX;
+var yA = atomA.sY;
+var zA = atomA.sZ;
+var xB = atomB.sX;
+var yB = atomB.sY;
+var zB = atomB.sZ;
+var mad = this.mad;
+if (max == 1000) mad = mad >> 1;
+if (mad < 0) {
+this.g3d.drawLine (colixA, colixB, xA, yA, zA, xB, yB, zB);
+} else {
+var width = Clazz.floatToInt (this.isExport ? mad : this.vwr.tm.scaleToScreen (Clazz.doubleToInt ((zA + zB) / 2), mad));
+this.g3d.fillCylinderXYZ (colixA, colixB, 3, width, xA, yA, zA, xB, yB, zB);
+}}, "JM.Atom,JM.Atom,~N,~N,~N");
 });

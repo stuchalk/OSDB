@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JU");
-Clazz.load (["JU.T3"], "JU.MeshCapper", ["java.util.Arrays", "$.Hashtable", "JU.AU", "$.Lst", "$.M4", "$.P3", "$.Quat", "$.V3", "JU.Logger"], function () {
+Clazz.load (["JU.T3"], "JU.MeshCapper", ["java.util.Arrays", "$.Hashtable", "JU.AU", "$.Lst", "$.M3", "$.P3", "$.Quat", "$.V3", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.slicer = null;
 this.dumping = false;
@@ -10,6 +10,11 @@ this.nTriangles = 0;
 this.nRegions = 0;
 this.lstTriangles = null;
 this.nPoints = 0;
+this.m3 = null;
+this.m3inv = null;
+if (!Clazz.isClassDefined ("JU.MeshCapper.MeshCapperSorter")) {
+JU.MeshCapper.$MeshCapper$MeshCapperSorter$ ();
+}
 if (!Clazz.isClassDefined ("JU.MeshCapper.CapVertex")) {
 JU.MeshCapper.$MeshCapper$CapVertex$ ();
 }
@@ -29,12 +34,42 @@ function () {
 this.capMap =  new java.util.Hashtable ();
 this.vertices =  new JU.Lst ();
 });
+Clazz.defineMethod (c$, "triangulateFaces", 
+function (faces, vertices, faceTriangles) {
+this.lstTriangles =  new JU.Lst ();
+var points =  new Array (10);
+for (var f = 0, n = faces.length; f < n; f++) {
+var face = faces[f];
+var npts = face.length;
+if (points.length < npts) points =  new Array (npts);
+var n0 = this.lstTriangles.size ();
+for (var i = npts; --i >= 0; ) points[i] = vertices[face[i]];
+
+this.triangulatePolygon (points, npts);
+var n1 = this.lstTriangles.size ();
+var ft =  Clazz.newIntArray (n1 - n0, 0);
+if (faceTriangles != null) faceTriangles[f] = ft;
+for (var i = n0; i < n1; i++) {
+var t = this.lstTriangles.get (i);
+ft[i - n0] = i;
+for (var j = 3; --j >= 0; ) t[j] = face[t[j]];
+
+t[3] = -t[3];
+}
+}
+var triangles = JU.AU.newInt2 (this.lstTriangles.size ());
+this.lstTriangles.toArray (triangles);
+return triangles;
+}, "~A,~A,~A");
 Clazz.defineMethod (c$, "triangulatePolygon", 
-function (points) {
+function (points, nPoints) {
 this.clear ();
-this.nPoints = points.length;
+var haveList = (nPoints >= 0);
+if (!haveList || this.lstTriangles == null) this.lstTriangles =  new JU.Lst ();
+nPoints = this.nPoints = (haveList ? nPoints : points.length);
 var v0 = null;
-for (var i = 0; i < this.nPoints; i++) {
+for (var i = 0; i < nPoints; i++) {
+if (points[i] == null) return null;
 var v = Clazz.innerTypeInstance (JU.MeshCapper.CapVertex, this, null, points[i], i);
 this.vertices.addLast (v);
 if (v0 != null) {
@@ -42,13 +77,13 @@ v0.link (v);
 }v0 = v;
 }
 v0.link (this.vertices.get (0));
-this.lstTriangles =  new JU.Lst ();
 this.createCap (null);
+if (haveList) return null;
 var a = JU.AU.newInt2 (this.lstTriangles.size ());
 for (var i = this.lstTriangles.size (); --i >= 0; ) a[i] = this.lstTriangles.get (i);
 
 return a;
-}, "~A");
+}, "~A,~N");
 Clazz.defineMethod (c$, "addEdge", 
 function (ipt1, ipt2, thisSet) {
 var v1 = this.addPoint (thisSet, ipt1);
@@ -87,37 +122,30 @@ Clazz.defineMethod (c$, "isEdge",
  function (i, j) {
 return (j == (i + 1) % this.nPoints);
 }, "~N,~N");
-Clazz.defineMethod (c$, "test", 
- function (vs) {
-return vs;
-}, "~A");
 Clazz.defineMethod (c$, "createCap", 
 function (norm) {
 this.capMap = null;
+this.lstRegions =  new JU.Lst ();
 var vs =  new Array (this.vertices.size ());
 if (vs.length < 3) return;
-var vab = JU.V3.newVsub (this.vertices.get (0), this.vertices.get (1));
+if (JU.Logger.debugging) JU.Logger.info ("MeshCapper using " + vs.length + " vertices");
+this.vertices.toArray (vs);
+this.vertices = null;
+var vab = JU.V3.newVsub (vs[0], vs[1]);
 var vac;
 if (norm == null) {
-vac = JU.V3.newVsub (this.vertices.get (0), this.vertices.get (this.vertices.size () - 1));
+vac = JU.V3.newVsub (vs[0], vs[vs.length - 1]);
 } else {
 vac = JU.V3.newV (norm);
 vac.cross (vac, vab);
 }var q = JU.Quat.getQuaternionFrameV (vab, vac, null, false);
-var m3 = q.getMatrix ();
-var m4 = JU.M4.newMV (m3, this.vertices.get (0));
-var m4inv = JU.M4.newM4 (m4).invert ();
-this.vertices.toArray (vs);
-this.vertices = null;
-for (var i = vs.length; --i >= 0; ) m4inv.rotTrans2 (vs[i], vs[i]);
+this.m3 = q.getMatrix ();
+this.m3inv = JU.M3.newM3 (this.m3);
+this.m3inv.invert ();
+for (var i = vs.length; --i >= 0; ) this.m3inv.rotate (vs[i]);
 
-vs = this.test (vs);
-JU.Logger.info ("MeshCapper using " + vs.length + " vertices");
-var v0 = vs[0].sort (vs);
-if (v0 == null) {
-JU.Logger.error ("two identical points -- aborting");
-return;
-}this.lstRegions =  new JU.Lst ();
+this.fixEndsAndSortVertices (vs);
+var v0 = vs[0];
 var v = v0;
 try {
 do {
@@ -132,15 +160,55 @@ throw e;
 }
 }
 if (this.slicer != null) this.clear ();
-JU.Logger.info ("MeshCapper created " + this.nTriangles + " triangles " + this.nRegions + " regions");
+if (JU.Logger.debugging) JU.Logger.info ("MeshCapper created " + this.nTriangles + " triangles " + this.nRegions + " regions");
 }, "JU.V3");
+Clazz.defineMethod (c$, "fixEndsAndSortVertices", 
+ function (vs) {
+var v0s =  new JU.Lst ();
+var v1s =  new JU.Lst ();
+var n = vs.length;
+for (var i = n; --i >= 0; ) {
+if (vs[i].next == null) {
+v0s.addLast (vs[i]);
+} else if (vs[i].prev == null) {
+v1s.addLast (vs[i]);
+}}
+for (var i = v0s.size (); --i >= 0; ) {
+var v0 = v0s.get (i);
+var v1 = this.findNearestVertex (v1s, v0);
+if (v1 == null) {
+System.out.println ("MESHCAPPER OHOH");
+} else {
+v0.link (v1);
+if (v0.distanceSquared (v1) < 1e-6) v1.link (null);
+}}
+java.util.Arrays.sort (vs, Clazz.innerTypeInstance (JU.MeshCapper.MeshCapperSorter, this, null));
+for (var i = n; --i >= 0; ) vs[i].yxNext = vs[(i + 1) % n];
+
+vs[n - 1].yxNext = vs[0];
+}, "~A");
+Clazz.defineMethod (c$, "findNearestVertex", 
+ function (v1s, v0) {
+var min = 3.4028235E38;
+var vmin = null;
+var imin = -1;
+for (var i = v1s.size (); --i >= 0; ) {
+var v1 = v1s.get (i);
+var d = v1.distanceSquared (v0);
+if (d < min) {
+min = d;
+vmin = v1;
+imin = i;
+}}
+if (imin >= 0) v1s.removeItemAt (imin);
+return vmin;
+}, "JU.Lst,JU.MeshCapper.CapVertex");
 Clazz.defineMethod (c$, "process", 
  function (v) {
-var q = v.qnext;
-v.qnext = null;
+var q = v.yxNext;
+v.yxNext = null;
 if (this.dumping) JU.Logger.info (v.toString ());
 if (v.prev === v.next) return q;
-if (v.next == null) System.out.println ("OHO");
 var isDescending = (v.prev.region != null);
 var isAscending = (v.next.region != null);
 if (this.dumping) JU.Logger.info ("#" + (isAscending ? v.next.id : "    ") + "    " + (isDescending ? v.prev.id : "") + "\n#" + (isAscending ? "   \\" : "    ") + (isDescending ? "    /\n" : "\n") + "#    " + v.id);
@@ -150,7 +218,7 @@ if (last == null) {
 this.newRegion (v);
 return q;
 }var p = this.processSplit (v, last);
-p.qnext = q;
+p.yxNext = q;
 q = p;
 isAscending = true;
 }if (isDescending) {
@@ -184,7 +252,7 @@ var v1;
 if (last === vEdge) {
 v1 = last;
 v2 = (isDescending ? v1.prev : v1.next);
-while (v2 !== v && v2.qnext == null && isDescending == (v.x > v.interpolateX (v2, v1))) {
+while (v2 !== v && v2.yxNext == null && isDescending == (v.x > v.interpolateX (v2, v1))) {
 if (isDescending) {
 this.addTriangle (v2, v1, v, "same desc " + v.ipt);
 v1 = v2;
@@ -204,7 +272,7 @@ this.addTriangle (v2, v1, v, "opp desc " + v.id);
 } else {
 v2 = v1.next;
 this.addTriangle (v, v1, v2, "opp asc " + v.id);
-}} while (v2 !== last && v2 !== v && v2.qnext == null);
+}} while (v2 !== last && v2 !== v && v2.yxNext == null);
 if (last.region == null) {
 this.lstRegions.removeObj (v.region);
 v.region = last.region = (isDescending ? last.prev : last.next).region;
@@ -290,20 +358,30 @@ var p1 = this.getInputPoint (v1);
 var p2 = this.getInputPoint (v2);
 JU.Logger.info ("draw " + color + index + "/* " + v0.id + " " + v1.id + " " + v2.id + " */" + p0 + p1 + p2 + " color " + color);
 }, "~N,JU.MeshCapper.CapVertex,JU.MeshCapper.CapVertex,JU.MeshCapper.CapVertex,~S");
+c$.$MeshCapper$MeshCapperSorter$ = function () {
+Clazz.pu$h(self.c$);
+c$ = Clazz.decorateAsClass (function () {
+Clazz.prepareCallback (this, arguments);
+Clazz.instantialize (this, arguments);
+}, JU.MeshCapper, "MeshCapperSorter", null, java.util.Comparator);
+Clazz.overrideMethod (c$, "compare", 
+function (a, b) {
+return (a.y < b.y ? 1 : a.y > b.y || a.x < b.x ? -1 : a.x > b.x ? 1 : 0);
+}, "JU.MeshCapper.CapVertex,JU.MeshCapper.CapVertex");
+c$ = Clazz.p0p ();
+};
 c$.$MeshCapper$CapVertex$ = function () {
 Clazz.pu$h(self.c$);
 c$ = Clazz.decorateAsClass (function () {
 Clazz.prepareCallback (this, arguments);
 this.ipt = 0;
 this.id = "";
-this.qnext = null;
+this.yxNext = null;
 this.prev = null;
 this.next = null;
 this.region = null;
-this.ok = 1;
-this.disabled = false;
 Clazz.instantialize (this, arguments);
-}, JU.MeshCapper, "CapVertex", JU.T3, [Cloneable, java.util.Comparator]);
+}, JU.MeshCapper, "CapVertex", JU.T3, Cloneable);
 Clazz.makeConstructor (c$, 
 function (a, b) {
 Clazz.superConstructor (this, JU.MeshCapper.CapVertex, []);
@@ -323,52 +401,6 @@ throw e;
 }
 }
 });
-Clazz.defineMethod (c$, "sort", 
-function (a) {
-var b = null;
-var c = null;
-var d = a.length;
-for (var e = d; --e >= 0; ) {
-if (a[e].next == null) {
-if (b == null) {
-c = a[e];
-} else {
-a[e].link (b);
-b = null;
-}} else if (a[e].prev == null) {
-if (c == null) {
-b = a[e];
-} else {
-c.link (a[e]);
-c = null;
-}}}
-this.ok = 0;
-while (this.ok == 0) {
-this.ok = 1;
-java.util.Arrays.sort (a, this);
-System.out.println (this.ok);
-}
-for (var f = d; --f >= 0; ) {
-if (a[f].x == 3.4028235E38) d = f;
-a[f].qnext = a[(f + 1) % d];
-}
-a[d - 1].qnext = a[0];
-return a[0];
-}, "~A");
-Clazz.overrideMethod (c$, "compare", 
-function (a, b) {
-return (a.y < b.y ? 1 : a.y > b.y || a.x < b.x ? -1 : a.x > b.x ? 1 : this.disable (a, b));
-}, "JU.MeshCapper.CapVertex,JU.MeshCapper.CapVertex");
-Clazz.defineMethod (c$, "disable", 
- function (a, b) {
-if (b.x == 3.4028235E38) return 0;
-var c = (a.x == 3.4028235E38 ? a : b);
-c.x = 3.4028235E38;
-c.y = -3.4028235E38;
-c.link (null);
-this.ok = 0;
-return (a.x > b.x ? 1 : -1);
-}, "JU.MeshCapper.CapVertex,JU.MeshCapper.CapVertex");
 Clazz.defineMethod (c$, "interpolateX", 
 function (a, b) {
 var c = b.y - a.y;
@@ -387,7 +419,7 @@ a.prev = this;
 }}, "JU.MeshCapper.CapVertex");
 Clazz.defineMethod (c$, "clear", 
 function () {
-this.qnext = this.next = this.prev = null;
+this.yxNext = this.next = this.prev = null;
 this.region = null;
 });
 Clazz.defineMethod (c$, "dumpRegion", 
@@ -403,7 +435,9 @@ return a + "\n";
 });
 Clazz.overrideMethod (c$, "toString", 
 function () {
-return "draw p" + this.id + " {" + this.x + " " + this.y + " " + this.z + "} # " + (this.prev == null ? "null" : this.prev.id) + (this.next == null ? " null" : " " + this.next.id) + (this.region == null ? "" : this.dumpRegion ());
+var a = (this.b$["JU.MeshCapper"].m3 == null ? this :  new JU.P3 ());
+if (this.b$["JU.MeshCapper"].m3 != null) this.b$["JU.MeshCapper"].m3.rotate2 (this, a);
+return "draw p" + this.id + " {" + a.x + " " + a.y + " " + a.z + "} # " + (this.prev == null ? "null" : this.prev.id) + (this.next == null ? " null" : " " + this.next.id) + (this.region == null ? "" : this.dumpRegion ());
 });
 c$ = Clazz.p0p ();
 };

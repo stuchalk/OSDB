@@ -205,15 +205,15 @@ this.c1.add2 (c, this.depth1);
 this.c2.sub2 (c, this.depth1);
 this.d1.add2 (d, this.depth1);
 this.d2.sub2 (d, this.depth1);
-this.g3d.fillQuadrilateral (this.a1, this.b1, this.d1, this.c1);
-this.g3d.fillQuadrilateral (this.a2, this.b2, this.d2, this.c2);
-this.g3d.fillQuadrilateral (this.a1, this.b1, this.b2, this.a2);
-this.g3d.fillQuadrilateral (this.c1, this.d1, this.d2, this.c2);
+this.g3d.fillQuadrilateral (this.a1, this.b1, this.d1, this.c1, false);
+this.g3d.fillQuadrilateral (this.a2, this.b2, this.d2, this.c2, false);
+this.g3d.fillQuadrilateral (this.a1, this.b1, this.b2, this.a2, false);
+this.g3d.fillQuadrilateral (this.c1, this.d1, this.d2, this.c2, false);
 closeEnd = true;
 } else {
 if (fillType == 0) {
-if (isRev) this.g3d.fillQuadrilateral (c, d, b, a);
- else this.g3d.fillQuadrilateral (a, b, d, c);
+if (isRev) this.g3d.fillQuadrilateral (c, d, b, a, false);
+ else this.g3d.fillQuadrilateral (a, b, d, c, false);
 } else {
 if (isRev) {
 if (fillType != J.g3d.HermiteRenderer.isFront (a, b, d)) this.g3d.fillTriangle3f (a, b, d, false);
@@ -259,7 +259,7 @@ this.a1.z += 1;
 this.c1.z += 1;
 this.c2.z += 1;
 this.a2.z += 1;
-this.g3d.fillQuadrilateral (this.a1, this.c1, this.c2, this.a2);
+this.g3d.fillQuadrilateral (this.a1, this.c1, this.c2, this.a2, false);
 }}, "~B,~B,~N,JU.P3,JU.P3,JU.P3,JU.P3,JU.P3,JU.P3,JU.P3,JU.P3,~N,~N");
 c$.isFront = Clazz.defineMethod (c$, "isFront", 
  function (a, b, c) {

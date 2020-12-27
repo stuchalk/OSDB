@@ -81,16 +81,16 @@ case 4:
 isOK = true;
 break;
 case 5:
-isOK = (tokens[0].equals ("DOrbitals") && this.getDFMap (data, 3, J.adapter.readers.quantum.WebMOReader.DS_LIST, 99));
+isOK = (tokens[0].equals ("DOrbitals") && this.getDFMap ("DS", data, 3, J.adapter.readers.quantum.WebMOReader.DS_LIST, 99));
 break;
 case 6:
-isOK = (tokens[0].equals ("DOrbitals") && this.getDFMap (data, 4, J.adapter.readers.quantum.WebMOReader.DC_LIST, 2));
+isOK = (tokens[0].equals ("DOrbitals") && this.getDFMap ("DC", data, 4, J.adapter.readers.quantum.WebMOReader.DC_LIST, 2));
 break;
 case 7:
-isOK = (tokens[0].equals ("FOrbitals") && this.getDFMap (data, 5, J.adapter.readers.quantum.WebMOReader.FS_LIST, 99));
+isOK = (tokens[0].equals ("FOrbitals") && this.getDFMap ("FS", data, 5, J.adapter.readers.quantum.WebMOReader.FS_LIST, 99));
 break;
 case 10:
-isOK = (tokens[0].equals ("FOrbitals") && this.getDFMap (data, 6, J.adapter.readers.quantum.WebMOReader.FC_LIST, 3));
+isOK = (tokens[0].equals ("FOrbitals") && this.getDFMap ("FC", data, 6, J.adapter.readers.quantum.WebMOReader.FC_LIST, 3));
 break;
 }
 if (!isOK) {
@@ -106,19 +106,19 @@ Clazz.defineMethod (c$, "readGaussianBasis",
 function () {
 var sdata =  new JU.Lst ();
 var gdata =  new JU.Lst ();
-var atomIndex = 0;
+var atomNo = 1;
 var gaussianPtr = 0;
 while (this.getLine ()) {
 var tokens = this.getTokens ();
 if (tokens.length == 0) continue;
 if (tokens.length != 1) throw  new Exception ("Error reading GTOs: missing atom index");
 var slater =  Clazz.newIntArray (4, 0);
-atomIndex = this.parseIntStr (tokens[0]) - 1;
+atomNo = this.parseIntStr (tokens[0]);
 tokens = JU.PT.getTokens (this.rd ());
 var nGaussians = this.parseIntStr (tokens[1]);
-slater[0] = atomIndex;
+slater[0] = atomNo;
 slater[1] = J.adapter.readers.quantum.BasisFunctionReader.getQuantumShellTagID (tokens[0]);
-slater[2] = gaussianPtr;
+slater[2] = gaussianPtr + 1;
 slater[3] = nGaussians;
 for (var i = 0; i < nGaussians; i++) {
 var strData = JU.PT.getTokens (this.rd ());
@@ -148,7 +148,7 @@ function () {
 while (this.getLine ()) {
 var tokens = this.getTokens ();
 if (tokens.length < 7) continue;
-this.addSlater (this.parseIntStr (tokens[0]) - 1, this.parseIntStr (tokens[1]), this.parseIntStr (tokens[2]), this.parseIntStr (tokens[3]), this.parseIntStr (tokens[4]), this.parseFloatStr (tokens[5]), this.parseFloatStr (tokens[6]));
+this.addSlater (this.parseIntStr (tokens[0]), this.parseIntStr (tokens[1]), this.parseIntStr (tokens[2]), this.parseIntStr (tokens[3]), this.parseIntStr (tokens[4]), this.parseFloatStr (tokens[5]), this.parseFloatStr (tokens[6]));
 }
 this.setSlaters (false, false);
 });

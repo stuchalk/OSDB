@@ -120,18 +120,15 @@ c$.getXRange = Clazz.defineMethod (c$, "getXRange",
 var index = 0;
 var ptCount = 0;
 for (index = iStart; index <= iEnd; index++) {
-var x = xyCoords[index].getXVal ();
-if (x >= initX) {
+if (xyCoords[index].getXVal () >= initX) {
 startIndices[i] = index;
+ptCount = 1;
 break;
 }}
-for (; index <= iEnd; index++) {
-var x = xyCoords[index].getXVal ();
+while (++index <= iEnd && xyCoords[index].getXVal () <= finalX) {
 ptCount++;
-if (x >= finalX) {
-break;
-}}
-endIndices[i] = index - 1;
+}
+endIndices[i] = startIndices[i] + ptCount - 1;
 return ptCount;
 }, "~N,~A,~N,~N,~N,~N,~A,~A");
 Clazz.defineMethod (c$, "setScaleParams", 

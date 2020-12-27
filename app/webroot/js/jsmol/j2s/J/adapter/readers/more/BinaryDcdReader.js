@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.readers.more");
-Clazz.load (["J.adapter.smarter.AtomSetCollectionReader"], "J.adapter.readers.more.BinaryDcdReader", ["JU.BS", "$.P3", "$.SB", "JU.Escape", "$.Logger"], function () {
+Clazz.load (["J.adapter.smarter.AtomSetCollectionReader"], "J.adapter.readers.more.BinaryDcdReader", ["java.lang.Boolean", "JU.BS", "$.P3", "$.SB", "JU.Escape", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.nModels = 0;
 this.nAtoms = 0;
@@ -8,39 +8,43 @@ this.bsFree = null;
 this.xAll = null;
 this.yAll = null;
 this.zAll = null;
+this.crystGroup = 0;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.more, "BinaryDcdReader", J.adapter.smarter.AtomSetCollectionReader);
 Clazz.overrideMethod (c$, "setup", 
 function (fullPath, htParams, reader) {
 this.isBinary = true;
+this.requiresBSFilter = true;
 this.setupASCR (fullPath, htParams, reader);
 }, "~S,java.util.Map,~O");
 Clazz.overrideMethod (c$, "initializeReader", 
 function () {
 this.initializeTrajectoryFile ();
+this.asc.setInfo ("ignoreUnitCell", Boolean.TRUE);
 });
 Clazz.overrideMethod (c$, "processBinaryDocument", 
 function () {
 var bytes =  Clazz.newByteArray (40, 0);
-this.binaryDoc.setStream (this.vwr.getJzt (), null, this.binaryDoc.readInt () == 0x54);
+this.binaryDoc.setStream (null, this.binaryDoc.readInt () == 0x54);
 this.binaryDoc.readInt ();
 this.nModels = this.binaryDoc.readInt ();
-this.binaryDoc.readInt ();
-this.binaryDoc.readInt ();
-this.binaryDoc.readInt ();
+var nPriv = this.binaryDoc.readInt ();
+var nSaveC = this.binaryDoc.readInt ();
+var nStep = this.binaryDoc.readInt ();
 this.binaryDoc.readInt ();
 this.binaryDoc.readInt ();
 this.binaryDoc.readInt ();
 var ndegf = this.binaryDoc.readInt ();
 this.nFree = Clazz.doubleToInt (ndegf / 3);
 var nFixed = this.binaryDoc.readInt ();
-this.binaryDoc.readInt ();
-this.binaryDoc.readByteArray (bytes, 0, 36);
+var delta4 = this.binaryDoc.readInt ();
+this.crystGroup = this.binaryDoc.readInt ();
+this.binaryDoc.readByteArray (bytes, 0, 32);
 this.binaryDoc.readInt ();
 this.binaryDoc.readInt ();
 this.binaryDoc.readInt ();
 var sb =  new JU.SB ();
-for (var i = 0, n = this.binaryDoc.readInt (); i < n; i++) sb.append (this.binaryDoc.readString (80).trim ()).appendC ('\n');
+for (var i = 0, n = this.binaryDoc.readInt (); i < n; i++) sb.append (this.trimString (this.binaryDoc.readString (80))).appendC ('\n');
 
 this.binaryDoc.readInt ();
 JU.Logger.info ("BinaryDcdReadaer:\n" + sb);
@@ -58,13 +62,28 @@ JU.Logger.info ("free: " + this.bsFree.cardinality () + " " + JU.Escape.eBS (thi
 }this.readCoordinates ();
 JU.Logger.info ("Total number of trajectory steps=" + this.trajectorySteps.size ());
 });
+Clazz.defineMethod (c$, "trimString", 
+ function (s) {
+var pt = s.indexOf ('\0');
+if (pt >= 0) s = s.substring (0, pt);
+return s.trim ();
+}, "~S");
 Clazz.defineMethod (c$, "readFloatArray", 
  function () {
 var n = Clazz.doubleToInt (this.binaryDoc.readInt () / 4);
 var data =  Clazz.newFloatArray (n, 0);
 for (var i = 0; i < n; i++) data[i] = this.binaryDoc.readFloat ();
 
-n = Clazz.doubleToInt (this.binaryDoc.readInt () / 4);
+this.binaryDoc.readInt ();
+return data;
+});
+Clazz.defineMethod (c$, "readDoubleArray", 
+ function () {
+var n = Clazz.doubleToInt (this.binaryDoc.readInt () / 8);
+var data =  Clazz.newDoubleArray (n, 0);
+for (var i = 0; i < n; i++) data[i] = this.binaryDoc.readDouble ();
+
+this.binaryDoc.readInt ();
 return data;
 });
 Clazz.defineMethod (c$, "readCoordinates", 
@@ -76,6 +95,7 @@ if (!this.getTrajectoryStep (trajectoryStep)) return;
 this.trajectorySteps.addLast (trajectoryStep);
 if (this.isLastModel (this.modelNumber)) return;
 } else {
+if (this.crystGroup > 0) this.readDoubleArray ();
 this.readFloatArray ();
 this.readFloatArray ();
 this.readFloatArray ();
@@ -86,6 +106,7 @@ Clazz.defineMethod (c$, "getTrajectoryStep",
 try {
 var ac = trajectoryStep.length;
 var n = -1;
+if (this.crystGroup > 0) this.calcUnitCell (this.readDoubleArray ());
 var x = this.readFloatArray ();
 var y = this.readFloatArray ();
 var z = this.readFloatArray ();
@@ -113,5 +134,19 @@ return false;
 throw e;
 }
 }
+}, "~A");
+Clazz.defineMethod (c$, "calcUnitCell", 
+ function (abc) {
+var a = abc[0];
+var angle1 = abc[1];
+var b = abc[2];
+var angle2 = abc[3];
+var angle3 = abc[4];
+var c = abc[5];
+var alpha = (1.5707963267948966 - Math.asin (angle3)) * 180 / 3.141592653589793;
+var beta = (1.5707963267948966 - Math.asin (angle2)) * 180 / 3.141592653589793;
+var gamma = (1.5707963267948966 - Math.asin (angle1)) * 180 / 3.141592653589793;
+System.out.println ("unitcell:[" + a + " " + b + " " + c + " " + alpha + " " + beta + " " + gamma + "]");
+return  Clazz.newFloatArray (-1, [a, b, c, alpha, beta, gamma]);
 }, "~A");
 });

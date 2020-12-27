@@ -10,9 +10,9 @@ function () {
 Clazz.superConstructor (this, J.jvxl.readers.DelPhiBinaryReader, []);
 });
 Clazz.overrideMethod (c$, "init2", 
-function (sg, brNull) {
+function (sg, br) {
 var fileName = (sg.getReaderData ())[0];
-this.init2VFR (sg, this.br);
+this.init2VFR (sg, br);
 this.binarydoc = this.newBinaryDocument ();
 this.setStream (fileName, false);
 this.nSurfaces = 1;

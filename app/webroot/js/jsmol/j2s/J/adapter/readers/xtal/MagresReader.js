@@ -106,9 +106,9 @@ var tokens = this.getTokens ();
 this.cellParams =  Clazz.newFloatArray (9, 0);
 for (var i = 0; i < 9; i++) this.cellParams[i] = this.parseFloatStr (tokens[i + 1]);
 
-this.addPrimitiveLatticeVector (0, this.cellParams, 0);
-this.addPrimitiveLatticeVector (1, this.cellParams, 3);
-this.addPrimitiveLatticeVector (2, this.cellParams, 6);
+this.addExplicitLatticeVector (0, this.cellParams, 0);
+this.addExplicitLatticeVector (1, this.cellParams, 3);
+this.addExplicitLatticeVector (2, this.cellParams, 6);
 this.setSpaceGroupName ("P1");
 return true;
 });

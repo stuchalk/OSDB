@@ -5,6 +5,11 @@ this.ptFloat = 0;
 this.lenLine = 0;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.more, "MdCrdReader", J.adapter.smarter.AtomSetCollectionReader);
+Clazz.overrideMethod (c$, "setup", 
+function (fullPath, htParams, readerOrDocument) {
+this.requiresBSFilter = true;
+this.setupASCR (fullPath, htParams, readerOrDocument);
+}, "~S,java.util.Map,~O");
 Clazz.overrideMethod (c$, "initializeReader", 
 function () {
 this.initializeTrajectoryFile ();

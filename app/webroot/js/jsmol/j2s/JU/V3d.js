@@ -12,6 +12,14 @@ this.x /= d;
 this.y /= d;
 this.z /= d;
 });
+Clazz.defineMethod (c$, "angle", 
+function (v1) {
+var xx = this.y * v1.z - this.z * v1.y;
+var yy = this.z * v1.x - this.x * v1.z;
+var zz = this.x * v1.y - this.y * v1.x;
+var cross = Math.sqrt (xx * xx + yy * yy + zz * zz);
+return Math.abs (Math.atan2 (cross, this.dot (v1)));
+}, "JU.V3d");
 Clazz.defineMethod (c$, "dot", 
 function (v) {
 return this.x * v.x + this.y * v.y + this.z * v.z;

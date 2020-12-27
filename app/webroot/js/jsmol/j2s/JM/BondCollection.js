@@ -23,20 +23,11 @@ for (var i = 5; --i > 0; ) this.freeBonds[i] =  new Array (200);
 
 this.setupAC ();
 });
-Clazz.overrideMethod (c$, "releaseModelSet", 
-function () {
-this.releaseModelSetBC ();
-});
 Clazz.defineMethod (c$, "releaseModelSetBC", 
 function () {
 this.bo = null;
 this.freeBonds = null;
 this.releaseModelSetAC ();
-});
-Clazz.defineMethod (c$, "resetMolecules", 
-function () {
-this.molecules = null;
-this.moleculeCount = 0;
 });
 Clazz.defineMethod (c$, "getBondIteratorForType", 
 function (bondType, bsAtoms) {
@@ -105,7 +96,7 @@ return this.bo[bond.index = index] = bond;
 Clazz.defineMethod (c$, "bondMutually", 
 function (atom, atomOther, order, mad, energy) {
 var bond;
-if (JM.Bond.isOrderH (order)) {
+if (JU.Edge.isOrderH (order)) {
 bond =  new JM.HBond (atom, atomOther, order, mad, 0, energy);
 } else {
 bond =  new JM.Bond (atom, atomOther, order, mad, 0);
@@ -155,7 +146,7 @@ this.bondCount = 0;
 });
 Clazz.defineMethod (c$, "getDefaultMadFromOrder", 
 function (order) {
-return (JM.Bond.isOrderH (order) ? 1 : order == 32768 ? Clazz.doubleToInt (Math.floor (this.vwr.getFloat (570425406) * 2000)) : this.defaultCovalentMad);
+return (JU.Edge.isOrderH (order) ? 1 : order == 32768 ? Clazz.doubleToInt (Math.floor (this.vwr.getFloat (570425406) * 2000)) : this.defaultCovalentMad);
 }, "~N");
 Clazz.defineMethod (c$, "deleteConnections", 
 function (minD, maxD, order, bsA, bsB, isBonds, matchNull) {
@@ -167,7 +158,7 @@ maxD = this.fixD (maxD, maxDIsFraction);
 var bsDelete =  new JU.BS ();
 var nDeleted = 0;
 var newOrder = order |= 131072;
-if (!matchNull && JM.Bond.isOrderH (order)) order = 30720;
+if (!matchNull && JU.Edge.isOrderH (order)) order = 30720;
 var bsBonds;
 if (isBonds) {
 bsBonds = bsA;
@@ -209,7 +200,7 @@ Clazz.defineMethod (c$, "dBb",
 function (bsBond, isFullModel) {
 var iDst = bsBond.nextSetBit (0);
 if (iDst < 0) return;
-this.resetMolecules ();
+(this).resetMolecules ();
 var modelIndexLast = -1;
 var n = bsBond.cardinality ();
 for (var iSrc = iDst; iSrc < this.bondCount; ++iSrc) {

@@ -21,7 +21,7 @@ Jmol.Console = {
 	}	
 }
 
-Jmol._consoleGetImageDialog = function(vwr, title, imageMap) {
+Jmol.consoleGetImageDialog = function(vwr, title, imageMap) {
   // JmolObjectInterface
   return new Jmol.Console.Image(vwr, title, imageMap);
 }

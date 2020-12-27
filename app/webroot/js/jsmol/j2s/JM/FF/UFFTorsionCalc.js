@@ -92,7 +92,7 @@ this.energy = V * (1.0 - cosNPhi0 * Math.cos (this.theta * n));
 if (this.calcs.gradients) {
 this.dE = V * n * cosNPhi0 * Math.sin (n * this.theta);
 this.calcs.addForces (this, 4);
-}if (this.calcs.logging) this.calcs.appendLogData (this.calcs.getDebugLine (3, this));
+}if (this.calcs.logging) this.calcs.appendLogData (this.calcs.getDebugLine (2, this));
 return this.energy;
 }, "~A");
 });

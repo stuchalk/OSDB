@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JSV.appletjs");
-Clazz.load (["javajs.api.JSInterface", "JSV.api.AppletFrame", "$.JSVAppletInterface"], "JSV.appletjs.JSVApplet", ["java.lang.Boolean", "java.net.URL", "java.util.Hashtable", "JU.PT", "JSV.app.JSVApp", "JSV.common.JSVersion", "JSV.js2d.JsMainPanel", "$.JsPanel", "JU.Logger"], function () {
+Clazz.load (["javajs.api.JSInterface", "JSV.api.AppletFrame", "$.JSVAppletInterface"], "JSV.appletjs.JSVApplet", ["java.lang.Boolean", "java.net.URL", "java.util.Hashtable", "JU.PT", "JSV.app.JSVApp", "JSV.js2d.JsMainPanel", "$.JsPanel", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.app = null;
 this.viewer = null;
@@ -80,7 +80,7 @@ return this.isStandalone ? System.getProperty (key, def) : (this.getParameter (k
 }, "~S,~S");
 Clazz.overrideMethod (c$, "getAppletInfo", 
 function () {
-return "JSpecView Applet " + JSV.common.JSVersion.VERSION;
+return JSV.app.JSVApp.getAppletInfo ();
 });
 Clazz.overrideMethod (c$, "getSolnColour", 
 function () {
@@ -117,6 +117,10 @@ this.app.toggleGrid ();
 Clazz.overrideMethod (c$, "toggleCoordinate", 
 function () {
 this.app.toggleCoordinate ();
+});
+Clazz.overrideMethod (c$, "togglePointsOnly", 
+function () {
+this.app.togglePointsOnly ();
 });
 Clazz.overrideMethod (c$, "toggleIntegration", 
 function () {
@@ -279,4 +283,10 @@ Clazz.overrideMethod (c$, "setScreenDimension",
 function (width, height) {
 this.app.vwr.setScreenDimension (width, height);
 }, "~N,~N");
+Clazz.overrideMethod (c$, "checkScript", 
+function (script) {
+var s = this.app.checkScript (script);
+if (s != null) System.out.println (s);
+return s;
+}, "~S");
 });

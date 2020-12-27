@@ -120,7 +120,13 @@ try{
 
 if (!jQuery.ui.menu)
 try{
- (function(e,t){var n=!1;e.widget("ui.menu",{version:"1.9.2",defaultElement:"<ul>",delay:300,options:{icons:{submenu:"ui-icon-carat-1-e"},menus:"ul",position:{my:"left top",at:"right top"},role:"menu",blur:null,focus:null,select:null},_create:function(){this.activeMenu=this.element,this.element.uniqueId().addClass("ui-menu ui-widget ui-widget-content ui-corner-all").toggleClass("ui-menu-icons",!!this.element.find(".ui-icon").length).attr({role:this.options.role,tabIndex:0}).bind("click"+this.eventNamespace,e.proxy(function(e){this.options.disabled&&e.preventDefault()},this)),this.options.disabled&&this.element.addClass("ui-state-disabled").attr("aria-disabled","true"),this._on({"mousedown .ui-menu-item > a":function(e){e.preventDefault()},"click .ui-state-disabled > a":function(e){e.preventDefault()},"click .ui-menu-item:has(a)":function(t){var r=e(t.target).closest(".ui-menu-item");!n&&r.not(".ui-state-disabled").length&&(n=!0,this.select(t),r.has(".ui-menu").length?this.expand(t):this.element.is(":focus")||(this.element.trigger("focus",[!0]),this.active&&this.active.parents(".ui-menu").length===1&&clearTimeout(this.timer)))},"mouseenter .ui-menu-item":function(t){var n=e(t.currentTarget);n.siblings().children(".ui-state-active").removeClass("ui-state-active"),this.focus(t,n)},mouseleave:"collapseAll","mouseleave .ui-menu":"collapseAll",focus:function(e,t){var n=this.active||this.element.children(".ui-menu-item").eq(0);t||this.focus(e,n)},blur:function(t){this._delay(function(){e.contains(this.element[0],this.document[0].activeElement)||this.collapseAll(t)})},keydown:"_keydown"}),this.refresh(),this._on(this.document,{click:function(t){e(t.target).closest(".ui-menu").length||this.collapseAll(t),n=!1}})},_destroy:function(){this.element.removeAttr("aria-activedescendant").find(".ui-menu").andSelf().removeClass("ui-menu ui-widget ui-widget-content ui-corner-all ui-menu-icons").removeAttr("role").removeAttr("tabIndex").removeAttr("aria-labelledby").removeAttr("aria-expanded").removeAttr("aria-hidden").removeAttr("aria-disabled").removeUniqueId().show(),this.element.find(".ui-menu-item").removeClass("ui-menu-item").removeAttr("role").removeAttr("aria-disabled").children("a").removeUniqueId().removeClass("ui-corner-all ui-state-hover").removeAttr("tabIndex").removeAttr("role").removeAttr("aria-haspopup").children().each(function(){var t=e(this);t.data("ui-menu-submenu-carat")&&t.remove()}),this.element.find(".ui-menu-divider").removeClass("ui-menu-divider ui-widget-content")},_keydown:function(t){function a(e){return e.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g,"\\$&")}var n,r,i,s,o,u=!0;switch(t.keyCode){case e.ui.keyCode.PAGE_UP:this.previousPage(t);break;case e.ui.keyCode.PAGE_DOWN:this.nextPage(t);break;case e.ui.keyCode.HOME:this._move("first","first",t);break;case e.ui.keyCode.END:this._move("last","last",t);break;case e.ui.keyCode.UP:this.previous(t);break;case e.ui.keyCode.DOWN:this.next(t);break;case e.ui.keyCode.LEFT:this.collapse(t);break;case e.ui.keyCode.RIGHT:this.active&&!this.active.is(".ui-state-disabled")&&this.expand(t);break;case e.ui.keyCode.ENTER:case e.ui.keyCode.SPACE:this._activate(t);break;case e.ui.keyCode.ESCAPE:this.collapse(t);break;default:u=!1,r=this.previousFilter||"",i=String.fromCharCode(t.keyCode),s=!1,clearTimeout(this.filterTimer),i===r?s=!0:i=r+i,o=new RegExp("^"+a(i),"i"),n=this.activeMenu.children(".ui-menu-item").filter(function(){return o.test(e(this).children("a").text())}),n=s&&n.index(this.active.next())!==-1?this.active.nextAll(".ui-menu-item"):n,n.length||(i=String.fromCharCode(t.keyCode),o=new RegExp("^"+a(i),"i"),n=this.activeMenu.children(".ui-menu-item").filter(function(){return o.test(e(this).children("a").text())})),n.length?(this.focus(t,n),n.length>1?(this.previousFilter=i,this.filterTimer=this._delay(function(){delete this.previousFilter},1e3)):delete this.previousFilter):delete this.previousFilter}u&&t.preventDefault()},_activate:function(e){this.active.is(".ui-state-disabled")||(this.active.children("a[aria-haspopup='true']").length?this.expand(e):this.select(e))},refresh:function(){var t,n=this.options.icons.submenu,r=this.element.find(this.options.menus);r.filter(":not(.ui-menu)").addClass("ui-menu ui-widget ui-widget-content ui-corner-all").hide().attr({role:this.options.role,"aria-hidden":"true","aria-expanded":"false"}).each(function(){var t=e(this),r=t.prev("a"),i=e("<span>").addClass("ui-menu-icon ui-icon "+n).data("ui-menu-submenu-carat",!0);r.attr("aria-haspopup","true").prepend(i),t.attr("aria-labelledby",r.attr("id"))}),t=r.add(this.element),t.children(":not(.ui-menu-item):has(a)").addClass("ui-menu-item").attr("role","presentation").children("a").uniqueId().addClass("ui-corner-all").attr({tabIndex:-1,role:this._itemRole()}),t.children(":not(.ui-menu-item)").each(function(){var t=e(this);/[^\-â€�?â€“\s]/.test(t.text())||t.addClass("ui-widget-content ui-menu-divider")}),t.children(".ui-state-disabled").attr("aria-disabled","true"),this.active&&!e.contains(this.element[0],this.active[0])&&this.blur()},_itemRole:function(){return{menu:"menuitem",listbox:"option"}[this.options.role]},focus:function(e,t){var n,r;this.blur(e,e&&e.type==="focus"),this._scrollIntoView(t),this.active=t.first(),r=this.active.children("a").addClass("ui-state-focus"),this.options.role&&this.element.attr("aria-activedescendant",r.attr("id")),this.active.parent().closest(".ui-menu-item").children("a:first").addClass("ui-state-active"),e&&e.type==="keydown"?this._close():this.timer=this._delay(function(){this._close()},this.delay),n=t.children(".ui-menu"),n.length&&/^mouse/.test(e.type)&&this._startOpening(n),this.activeMenu=t.parent(),this._trigger("focus",e,{item:t})},_scrollIntoView:function(t){var n,r,i,s,o,u;this._hasScroll()&&(n=parseFloat(e.css(this.activeMenu[0],"borderTopWidth"))||0,r=parseFloat(e.css(this.activeMenu[0],"paddingTop"))||0,i=t.offset().top-this.activeMenu.offset().top-n-r,s=this.activeMenu.scrollTop(),o=this.activeMenu.height(),u=t.height(),i<0?this.activeMenu.scrollTop(s+i):i+u>o&&this.activeMenu.scrollTop(s+i-o+u))},blur:function(e,t){t||clearTimeout(this.timer);if(!this.active)return;this.active.children("a").removeClass("ui-state-focus"),this.active=null,this._trigger("blur",e,{item:this.active})},_startOpening:function(e){clearTimeout(this.timer);if(e.attr("aria-hidden")!=="true")return;this.timer=this._delay(function(){this._close(),this._open(e)},this.delay)},_open:function(t){var n=e.extend({of:this.active},this.options.position);clearTimeout(this.timer),this.element.find(".ui-menu").not(t.parents(".ui-menu")).hide().attr("aria-hidden","true"),t.show().removeAttr("aria-hidden").attr("aria-expanded","true").position(n)},collapseAll:function(t,n){clearTimeout(this.timer),this.timer=this._delay(function(){var r=n?this.element:e(t&&t.target).closest(this.element.find(".ui-menu"));r.length||(r=this.element),this._close(r),this.blur(t),this.activeMenu=r},this.delay)},_close:function(e){e||(e=this.active?this.active.parent():this.element),e.find(".ui-menu").hide().attr("aria-hidden","true").attr("aria-expanded","false").end().find("a.ui-state-active").removeClass("ui-state-active")},collapse:function(e){var t=this.active&&this.active.parent().closest(".ui-menu-item",this.element);t&&t.length&&(this._close(),this.focus(e,t))},expand:function(e){var t=this.active&&this.active.children(".ui-menu ").children(".ui-menu-item").first();t&&t.length&&(this._open(t.parent()),this._delay(function(){this.focus(e,t)}))},next:function(e){this._move("next","first",e)},previous:function(e){this._move("prev","last",e)},isFirstItem:function(){return this.active&&!this.active.prevAll(".ui-menu-item").length},isLastItem:function(){return this.active&&!this.active.nextAll(".ui-menu-item").length},_move:function(e,t,n){var r;this.active&&(e==="first"||e==="last"?r=this.active[e==="first"?"prevAll":"nextAll"](".ui-menu-item").eq(-1):r=this.active[e+"All"](".ui-menu-item").eq(0));if(!r||!r.length||!this.active)r=this.activeMenu.children(".ui-menu-item")[t]();this.focus(n,r)},nextPage:function(t){var n,r,i;if(!this.active){this.next(t);return}if(this.isLastItem())return;this._hasScroll()?(r=this.active.offset().top,i=this.element.height(),this.active.nextAll(".ui-menu-item").each(function(){return n=e(this),n.offset().top-r-i<0}),this.focus(t,n)):this.focus(t,this.activeMenu.children(".ui-menu-item")[this.active?"last":"first"]())},previousPage:function(t){var n,r,i;if(!this.active){this.next(t);return}if(this.isFirstItem())return;this._hasScroll()?(r=this.active.offset().top,i=this.element.height(),this.active.prevAll(".ui-menu-item").each(function(){return n=e(this),n.offset().top-r+i>0}),this.focus(t,n)):this.focus(t,this.activeMenu.children(".ui-menu-item").first())},_hasScroll:function(){return this.element.outerHeight()<this.element.prop("scrollHeight")},select:function(t){this.active=this.active||e(t.target).closest(".ui-menu-item");var n={item:this.active};this.active.has(".ui-menu").length||this.collapseAll(t,!0),this._trigger("select",t,n)}})
+ (function(e,t){var n=!1;e.widget("ui.menu",{version:"1.9.2",defaultElement:"<ul>",delay:300,options:{icons:{submenu:"ui-icon-carat-1-e"},menus:"ul",position:{my:"left top",at:"right top"},role:"menu",blur:null,focus:null,select:null},_create:function(){this.activeMenu=this.element,this.element.uniqueId().addClass("ui-menu ui-widget ui-widget-content ui-corner-all").toggleClass("ui-menu-icons",!!this.element.find(".ui-icon").length).attr({role:this.options.role,tabIndex:0}).bind("click"+this.eventNamespace,e.proxy(function(e){this.options.disabled&&e.preventDefault()},this)),this.options.disabled&&this.element.addClass("ui-state-disabled").attr("aria-disabled","true"),this._on({"mousedown .ui-menu-item > a":function(e){e.preventDefault()},"click .ui-state-disabled > a":function(e){e.preventDefault()},"click .ui-menu-item:has(a)":function(t){var r=e(t.target).closest(".ui-menu-item");!n&&r.not(".ui-state-disabled").length&&(n=!0,this.select(t),r.has(".ui-menu").length?this.expand(t):this.element.is(":focus")||(this.element.trigger("focus",[!0]),this.active&&this.active.parents(".ui-menu").length===1&&clearTimeout(this.timer)))},"mouseenter .ui-menu-item":function(t){var n=e(t.currentTarget);n.siblings().children(".ui-state-active").removeClass("ui-state-active"),this.focus(t,n)},mouseleave:"collapseAll","mouseleave .ui-menu":"collapseAll",focus:function(e,t){var n=this.active||this.element.children(".ui-menu-item").eq(0);t||this.focus(e,n)},blur:function(t){this._delay(function(){e.contains(this.element[0],this.document[0].activeElement)||this.collapseAll(t)})},keydown:"_keydown"}),this.refresh(),this._on(this.document,{click:function(t){e(t.target).closest(".ui-menu").length||this.collapseAll(t),n=!1}})},_destroy:function(){this.element.removeAttr("aria-activedescendant").find(".ui-menu").andSelf().removeClass("ui-menu ui-widget ui-widget-content ui-corner-all ui-menu-icons").removeAttr("role").removeAttr("tabIndex").removeAttr("aria-labelledby").removeAttr("aria-expanded").removeAttr("aria-hidden").removeAttr("aria-disabled").removeUniqueId().show(),this.element.find(".ui-menu-item").removeClass("ui-menu-item").removeAttr("role").removeAttr("aria-disabled").children("a").removeUniqueId().removeClass("ui-corner-all ui-state-hover").removeAttr("tabIndex").removeAttr("role").removeAttr("aria-haspopup").children().each(function(){var t=e(this);t.data("ui-menu-submenu-carat")&&t.remove()}),this.element.find(".ui-menu-divider").removeClass("ui-menu-divider ui-widget-content")},_keydown:function(t){function a(e){return e.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g,"\\$&")}var n,r,i,s,o,u=!0;switch(t.keyCode){case e.ui.keyCode.PAGE_UP:this.previousPage(t);break;case e.ui.keyCode.PAGE_DOWN:this.nextPage(t);break;case e.ui.keyCode.HOME:this._move("first","first",t);break;case e.ui.keyCode.END:this._move("last","last",t);break;case e.ui.keyCode.UP:this.previous(t);break;case e.ui.keyCode.DOWN:this.next(t);break;case e.ui.keyCode.LEFT:this.collapse(t);break;case e.ui.keyCode.RIGHT:this.active&&!this.active.is(".ui-state-disabled")&&this.expand(t);break;case e.ui.keyCode.ENTER:case e.ui.keyCode.SPACE:this._activate(t);break;case e.ui.keyCode.ESCAPE:this.collapse(t);break;default:u=!1,r=this.previousFilter||"",i=String.fromCharCode(t.keyCode),s=!1,clearTimeout(this.filterTimer),i===r?s=!0:i=r+i,o=new RegExp("^"+a(i),"i"),n=this.activeMenu.children(".ui-menu-item").filter(function(){return o.test(e(this).children("a").text())}),n=s&&n.index(this.active.next())!==-1?this.active.nextAll(".ui-menu-item"):n,n.length||(i=String.fromCharCode(t.keyCode),o=new RegExp("^"+a(i),"i"),n=this.activeMenu.children(".ui-menu-item").filter(function(){return o.test(e(this).children("a").text())})),n.length?(this.focus(t,n),n.length>1?(this.previousFilter=i,this.filterTimer=this._delay(function(){delete this.previousFilter},1e3)):delete this.previousFilter):delete this.previousFilter}u&&t.preventDefault()},_activate:function(e){this.active.is(".ui-state-disabled")||(this.active.children("a[aria-haspopup='true']").length?this.expand(e):this.select(e))},refresh:function(){var t,n=this.options.icons.submenu,r=this.element.find(this.options.menus);r.filter(":not(.ui-menu)").addClass("ui-menu ui-widget ui-widget-content ui-corner-all").hide().attr({role:this.options.role,"aria-hidden":"true","aria-expanded":"false"}).each(function(){var t=e(this),r=t.prev("a"),i=e("<span>").addClass("ui-menu-icon ui-icon "+n).data("ui-menu-submenu-carat",!0);r.attr("aria-haspopup","true").prepend(i),t.attr("aria-labelledby",r.attr("id"))}),t=r.add(this.element),t.children(":not(.ui-menu-item):has(a)").addClass("ui-menu-item").attr("role","presentation").children("a").uniqueId().addClass("ui-corner-all").attr({tabIndex:-1,role:this._itemRole()}),t.children(":not(.ui-menu-item)").each(function(){var t=e(this);/[^\-+�G��G��+�G��G��\s]/.test(t.text())||t.addClass("ui-widget-content ui-menu-divider")}),t.children(".ui-state-disabled").attr("aria-disabled","true"),this.active&&!e.contains(this.element[0],this.active[0])&&this.blur()},_itemRole:function(){return{menu:"menuitem",listbox:"option"}[this.options.role]},focus:function(e,t){var n,r;this.blur(e,e&&e.type==="focus"),this._scrollIntoView(t),this.active=t.first(),r=this.active.children("a").addClass("ui-state-focus"),this.options.role&&this.element.attr("aria-activedescendant",r.attr("id")),this.active.parent().closest(".ui-menu-item").children("a:first").addClass("ui-state-active"),e&&e.type==="keydown"?this._close():this.timer=this._delay(function(){this._close()},this.delay),n=t.children(".ui-menu"),n.length&&/^mouse/.test(e.type)&&this._startOpening(n),this.activeMenu=t.parent(),this._trigger("focus",e,{item:t})},_scrollIntoView:function(t){var n,r,i,s,o,u;this._hasScroll()&&(n=parseFloat(e.css(this.activeMenu[0],"borderTopWidth"))||0,r=parseFloat(e.css(this.activeMenu[0],"paddingTop"))||0,i=t.offset().top-this.activeMenu.offset().top-n-r,s=this.activeMenu.scrollTop(),o=this.activeMenu.height(),u=t.height(),i<0?this.activeMenu.scrollTop(s+i):i+u>o&&this.activeMenu.scrollTop(s+i-o+u))},blur:function(e,t){t||clearTimeout(this.timer);if(!this.active)return;this.active.children("a").removeClass("ui-state-focus"),this.active=null,this._trigger("blur",e,{item:this.active})},
+ 
+ _startOpening:function(e){
+ 
+ if (e.hasClass("ui-state-disabled"))return // BH
+ 
+ clearTimeout(this.timer);if(e.attr("aria-hidden")!=="true")return;this.timer=this._delay(function(){this._close(),this._open(e)},this.delay)},_open:function(t){var n=e.extend({of:this.active},this.options.position);clearTimeout(this.timer),this.element.find(".ui-menu").not(t.parents(".ui-menu")).hide().attr("aria-hidden","true"),t.show().removeAttr("aria-hidden").attr("aria-expanded","true").position(n)},collapseAll:function(t,n){clearTimeout(this.timer),this.timer=this._delay(function(){var r=n?this.element:e(t&&t.target).closest(this.element.find(".ui-menu"));r.length||(r=this.element),this._close(r),this.blur(t),this.activeMenu=r},this.delay)},_close:function(e){e||(e=this.active?this.active.parent():this.element),e.find(".ui-menu").hide().attr("aria-hidden","true").attr("aria-expanded","false").end().find("a.ui-state-active").removeClass("ui-state-active")},collapse:function(e){var t=this.active&&this.active.parent().closest(".ui-menu-item",this.element);t&&t.length&&(this._close(),this.focus(e,t))},expand:function(e){var t=this.active&&this.active.children(".ui-menu ").children(".ui-menu-item").first();t&&t.length&&(this._open(t.parent()),this._delay(function(){this.focus(e,t)}))},next:function(e){this._move("next","first",e)},previous:function(e){this._move("prev","last",e)},isFirstItem:function(){return this.active&&!this.active.prevAll(".ui-menu-item").length},isLastItem:function(){return this.active&&!this.active.nextAll(".ui-menu-item").length},_move:function(e,t,n){var r;this.active&&(e==="first"||e==="last"?r=this.active[e==="first"?"prevAll":"nextAll"](".ui-menu-item").eq(-1):r=this.active[e+"All"](".ui-menu-item").eq(0));if(!r||!r.length||!this.active)r=this.activeMenu.children(".ui-menu-item")[t]();this.focus(n,r)},nextPage:function(t){var n,r,i;if(!this.active){this.next(t);return}if(this.isLastItem())return;this._hasScroll()?(r=this.active.offset().top,i=this.element.height(),this.active.nextAll(".ui-menu-item").each(function(){return n=e(this),n.offset().top-r-i<0}),this.focus(t,n)):this.focus(t,this.activeMenu.children(".ui-menu-item")[this.active?"last":"first"]())},previousPage:function(t){var n,r,i;if(!this.active){this.next(t);return}if(this.isFirstItem())return;this._hasScroll()?(r=this.active.offset().top,i=this.element.height(),this.active.prevAll(".ui-menu-item").each(function(){return n=e(this),n.offset().top-r+i>0}),this.focus(t,n)):this.focus(t,this.activeMenu.children(".ui-menu-item").first())},_hasScroll:function(){return this.element.outerHeight()<this.element.prop("scrollHeight")},select:function(t){this.active=this.active||e(t.target).closest(".ui-menu-item");var n={item:this.active};this.active.has(".ui-menu").length||this.collapseAll(t,!0),this._trigger("select",t,n)}})
  })(jQuery);
 }catch (e) {
 	System.out.println("JSmolMenu failed to load jQuery.ui.menu -- jQuery version conflict?");
@@ -130,7 +136,7 @@ try{
 
 /*
 
-Jmol.Swing methods to coordinate with javajs.swing.JPopupMenu && javajs.swing.AbstractButton
+Jmol.Swing methods to coordinate with org.jmol.awtjs.swing.JPopupMenu && org.jmol.awtjs.swing.AbstractButton
 classes, which call SwingController (aka Jmol.Swing in this case)
 @author: Bob Hanson 2/17/2014 8:21:10 AM
 
@@ -165,12 +171,12 @@ Swing.__getMenuStyle = function(applet) { return '\
 	.jmolPopupMenu .ui-state-active a{color:#e17009;text-decoration:none}\
 	.jmolPopupMenu .ui-state-highlight{border:1px solid #fad42e;background:#fbec88;color:#363636}\
 	.jmolPopupMenu .ui-state-highlight a{color:#363636}\
-	.jmolPopupMenu .ui-state-disabled *{color:#d6d6d6!important;font-weight:normal;cursor:default}\
+	.jmolPopupMenu .ui-state-disabled *{background:grey!important,color:#d6d6d6!important;font-weight:normal;cursor:default}\
 	.jmolPopupMenu .ui-state-disabled a:hover{background-color:transparent!important;border-color:transparent!important}\
 	.jmolPopupMenu .ui-state-disabled .ui-icon{filter:Alpha(Opacity=35)}'};
 
 Swing.setMenu = function(menu) {
-  // called by javajs.swing.JPopupMenu
+  // called by org.jmol.awtjs.swing.JPopupMenu
   // note that the z-index is only set by the FIRST applet accessing this method
 	Swing.__getMenuStyle && Jmol.$after("head", '<style>'+Swing.__getMenuStyle(menu.applet)+'</style>');  
 	Swing.__getStyle = null; // once only
@@ -185,7 +191,7 @@ Swing.setMenu = function(menu) {
 }
 
 Swing.showMenu = function(menu, x, y) {
-  // called by javajs.swing.JPopupMenu
+  // called by org.jmol.awtjs.swing.JPopupMenu
   // allow for a user callback for customization of menu
   if (Jmol._showMenuCallback)
 		Jmol._showMenuCallback(menu, x, y);
@@ -196,7 +202,7 @@ Swing.showMenu = function(menu, x, y) {
 	}
 	menu.setPosition();
 	menu.container.hide().menu().menu('refresh').show();
-	menu.visible = true;
+	menu._visible = true;
 	menu.timestamp = System.currentTimeMillis();
 	menu.dragBind(true);
 	menu.container.unbind('clickoutjsmol');
@@ -209,7 +215,7 @@ Swing.showMenu = function(menu, x, y) {
 }
 
 Swing.disposeMenu = function(menu) {
-  // called by javajs.swing.JPopupMenu
+  // called by org.jmol.awtjs.swing.JPopupMenu
   if (Jmol._persistentMenu)
   	return
   Swing.hideMenu(menu);
@@ -218,7 +224,7 @@ Swing.disposeMenu = function(menu) {
 }
 
 Swing.initMenuItem = function(item) {
-  // called by javajs.swing.AbstractButton
+  // called by org.jmol.awtjs.swing.AbstractButton
   item.applet = item.popupMenu.applet;
   item.id = Swing.getMenuID(item);
   item.icon && (item.icon = '<img src="' + item.applet._j2sPath + '/' + item.icon + '" style="max-height: 20px;" />')
@@ -232,53 +238,61 @@ Swing.getMenuID = function(item) {
 
 Swing.hideMenu = function(menu) {
   // called internally
-	if (!menu.visible)return;
+	if (!menu._visible)return;
 	//menu.container.unbind('clickoutjsmol');
 	menu.dragBind(false);
 	menu.container.hide();
-	menu.visible = menu.isDragging = false;
+	menu._visible = menu.isDragging = false;
 };
+
+var delayHide = function(menu, f) {
+	setTimeout(function(){Swing.hideMenus(menu.applet);f();},500);			
+}
 
 Swing.bindMenuActionCommands = function(menu, isBind) {
   // called internally
 	var n = menu.getComponentCount();
 	for(var i = 0; i < n; i++)
 		Swing.bindMenuActionCommands(menu.getComponent(i), isBind);
-	Jmol.$documentOff('click', menu.id);
-	if (isBind)
-		Jmol.$documentOn('click', menu.id, function() {	
+	Jmol.$documentOff('click mouseup mouseover mousedown touchstart touchend mouseenter mouseleave', menu.id);
+	if (isBind) {
+		Jmol.$documentOn('click', menu.id, function(event) {	
+			var name= "" + menu.name;
+			var dohide = (name.indexOf("Persist") < 0 || name.indexOf("!Persist") >= 0);
 			if (menu.itemListener) {
-				menu.selected = (menu.btnType == javajs.swing.JMenuItem.TYPE_CHECKBOX ? Jmol.$prop(menu.id + "-cb", "checked") : true); 
-				Swing.hideMenus(menu.applet);
-				menu.itemListener.itemStateChanged({getSource:function(){return menu}});
+				menu.selected = (menu.btnType == 2/*J.awtjs.swing.JMenuItem.TYPE_CHECKBOX*/ ? Jmol.$prop(menu.id + "-cb", "checked") : true); 
+				if (dohide)			
+					delayHide(menu, function() {menu.itemListener.itemStateChanged({getSource:function(){return menu}})});
 			}	else if (menu.actionListener) {
-				Swing.hideMenus(menu.applet);
-				menu.actionListener.actionPerformed({getSource:function(){return menu},getActionCommand:function(){return menu.actionCommand}});
+				if (dohide)			
+					delayHide(menu, function() {menu.actionListener.actionPerformed({getSource:function(){return menu},getActionCommand:function(){return menu.actionCommand}})});
 			}
 		});
+		Jmol.$documentOn('mouseup mouseover mousedown touchstart touchend mouseenter mouseleave', menu.id, function(event) {	
+			if (menu.mouseListener && menu.mouseListener.handleEvent) {
+				menu.mouseListener.handleEvent({jqevent:event,getID:function(){return event.type},getSource:function(){return menu}});
+			}
+		});
+	}
 }
 
 })(Jmol.Swing);
 
-})(Jmol.__$);Clazz_declarePackage ("javajs.api");
-Clazz_declareInterface (javajs.api, "GenericMenuInterface");
-Clazz_declarePackage ("JSV.api");
-Clazz_load (["javajs.api.GenericMenuInterface"], "JSV.api.JSVPopupMenu", null, function () {
-Clazz_declareInterface (JSV.api, "JSVPopupMenu", javajs.api.GenericMenuInterface);
-});
+})(Jmol.__$);Clazz_declarePackage ("J.api");
+Clazz_declareInterface (J.api, "GenericMenuInterface");
 Clazz_declarePackage ("JSV.js2d");
-Clazz_load (["JSV.popup.JSVGenericPopup"], "JSV.js2d.JsPopup", ["JSV.popup.JSVPopupResourceBundle", "J.popup.JSSwingPopupHelper"], function () {
+Clazz_load (["JSV.popup.JSVGenericPopup"], "JSV.js2d.JsPopup", ["JSV.popup.JSVPopupResourceBundle", "J.awtjs2d.JSPopupHelper"], function () {
 c$ = Clazz_declareType (JSV.js2d, "JsPopup", JSV.popup.JSVGenericPopup);
 Clazz_makeConstructor (c$, 
 function () {
 Clazz_superConstructor (this, JSV.js2d.JsPopup, []);
-this.helper =  new J.popup.JSSwingPopupHelper (this);
+this.helper =  new J.awtjs2d.JSPopupHelper (this);
 });
 Clazz_overrideMethod (c$, "jpiInitialize", 
 function (viewer, menu) {
 var bundle =  new JSV.popup.JSVPopupResourceBundle ();
 this.initialize (viewer, bundle, menu);
-}, "javajs.api.PlatformViewer,~S");
+}, "J.api.PlatformViewer,~S");
 Clazz_overrideMethod (c$, "menuShowPopup", 
 function (popup, x, y) {
 try {
@@ -289,7 +303,7 @@ if (Clazz_exceptionOf (e, Exception)) {
 throw e;
 }
 }
-}, "javajs.api.SC,~N,~N");
+}, "J.api.SC,~N,~N");
 Clazz_overrideMethod (c$, "getImageIcon", 
 function (fileName) {
 return null;
@@ -299,7 +313,7 @@ function (name, actionCommand, b) {
 }, "~S,~S,~B");
 });
 Clazz_declarePackage ("JSV.popup");
-Clazz_load (["JSV.api.JSVPopupMenu", "J.popup.GenericSwingPopup"], "JSV.popup.JSVGenericPopup", ["JU.PT", "JSV.common.JSVersion", "JSV.popup.JSVPopupResourceBundle"], function () {
+Clazz_load (["J.popup.GenericPopup"], "JSV.popup.JSVGenericPopup", ["JU.PT", "JSV.common.JSVersion", "$.JSViewer", "JSV.popup.JSVPopupResourceBundle"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.vwr = null;
 this.updateMode = 0;
@@ -311,7 +325,7 @@ this.zoomEnabled = false;
 this.pd = null;
 this.thisJsvp = null;
 Clazz_instantialize (this, arguments);
-}, JSV.popup, "JSVGenericPopup", J.popup.GenericSwingPopup, JSV.api.JSVPopupMenu);
+}, JSV.popup, "JSVGenericPopup", J.popup.GenericPopup);
 Clazz_makeConstructor (c$, 
 function () {
 Clazz_superConstructor (this, JSV.popup.JSVGenericPopup, []);
@@ -319,7 +333,7 @@ Clazz_superConstructor (this, JSV.popup.JSVGenericPopup, []);
 Clazz_defineMethod (c$, "initialize", 
 function (viewer, bundle, title) {
 this.vwr = viewer;
-this.initSwing (title, bundle, viewer.getApplet (), viewer.isJS, viewer.isSigned, false);
+this.initSwing (title, bundle, viewer.getApplet (), JSV.common.JSViewer.isJS, viewer.isSigned, false);
 }, "JSV.common.JSViewer,J.popup.PopupResource,~S");
 Clazz_overrideMethod (c$, "jpiDispose", 
 function () {
@@ -348,10 +362,7 @@ this.updateAboutSubmenu ();
 });
 Clazz_overrideMethod (c$, "appCheckItem", 
 function (item, newMenu) {
-}, "~S,javajs.api.SC");
-Clazz_overrideMethod (c$, "appCheckSpecialMenu", 
-function (item, subMenu, word) {
-}, "~S,javajs.api.SC,~S");
+}, "~S,J.api.SC");
 Clazz_overrideMethod (c$, "appFixLabel", 
 function (label) {
 if (label.startsWith ("_")) label = label.substring (label.indexOf ("_", 2) + 1);
@@ -362,10 +373,10 @@ label = JU.PT.rep (label, "Menu", "");
 label = JU.PT.rep (label, "_", " ");
 return label;
 }, "~S");
-Clazz_overrideMethod (c$, "appFixScript", 
-function (id, script) {
+Clazz_overrideMethod (c$, "getScriptForCallback", 
+function (source, id, script) {
 return script;
-}, "~S,~S");
+}, "J.api.SC,~S,~S");
 Clazz_overrideMethod (c$, "appGetMenuAsString", 
 function (title) {
 return ( new JSV.popup.JSVPopupResourceBundle ()).getMenuAsText (title);
@@ -374,10 +385,10 @@ Clazz_overrideMethod (c$, "appGetBooleanProperty",
 function (name) {
 return false;
 }, "~S");
-Clazz_overrideMethod (c$, "appIsSpecialCheckBox", 
+Clazz_overrideMethod (c$, "appRunSpecialCheckBox", 
 function (item, basename, what, TF) {
 return false;
-}, "javajs.api.SC,~S,~S,~B");
+}, "J.api.SC,~S,~S,~B");
 Clazz_overrideMethod (c$, "appRestorePopupMenu", 
 function () {
 this.thisPopup = this.popupMenu;
@@ -398,7 +409,7 @@ this.updateAboutSubmenu ();
 });
 Clazz_overrideMethod (c$, "appUpdateSpecialCheckBoxValue", 
 function (item, what, TF) {
-}, "javajs.api.SC,~S,~B");
+}, "J.api.SC,~S,~B");
 Clazz_defineMethod (c$, "getViewerData", 
  function () {
 });
@@ -439,21 +450,14 @@ if (atoms != null) this.menuCreateItem (menu, title, "select visible & (@" + JU.
 }
 this.menuEnable (menu, true);
 return true;
-}, "javajs.api.SC,JU.Lst");
+}, "J.api.SC,JU.Lst");
 Clazz_defineMethod (c$, "updateAboutSubmenu", 
  function () {
 var menu = this.htMenus.get ("aboutComputedMenu");
 if (menu == null) return;
 this.menuRemoveAll (menu, this.aboutComputedMenuBaseCount);
 });
-Clazz_overrideMethod (c$, "getSelected", 
-function (key) {
-return false;
-}, "~S");
-Clazz_overrideMethod (c$, "setCompoundMenu", 
-function (panelNodes, allowCompoundMenu) {
-}, "JU.Lst,~B");
-Clazz_overrideMethod (c$, "setEnabled", 
+Clazz_defineMethod (c$, "setEnabled", 
 function (allowMenu, zoomEnabled) {
 this.allowMenu = allowMenu;
 this.zoomEnabled = zoomEnabled;
@@ -498,7 +502,7 @@ Clazz_defineMethod (c$, "setItemEnabled",
  function (key, TF) {
 this.menuEnable (this.htMenus.get (key), TF);
 }, "~S,~B");
-Clazz_overrideMethod (c$, "setSelected", 
+Clazz_defineMethod (c$, "setSelected", 
 function (key, TF) {
 var item = this.htMenus.get (key);
 if (item == null || item.isSelected () == TF) return;
@@ -506,10 +510,10 @@ this.menuEnable (item, false);
 item.setSelected (TF);
 this.menuEnable (item, true);
 }, "~S,~B");
-Clazz_overrideMethod (c$, "menuSetCheckBoxOption", 
-function (item, name, what) {
+Clazz_overrideMethod (c$, "getUnknownCheckBoxScriptToRun", 
+function (item, name, what, TF) {
 return null;
-}, "javajs.api.SC,~S,~S");
+}, "J.api.SC,~S,~S,~B");
 Clazz_defineStatics (c$,
 "dumpList", false,
 "UPDATE_NEVER", -1,
@@ -543,8 +547,8 @@ function (title) {
 return this.getStuctureAsText (title, JSV.popup.JSVPopupResourceBundle.menuContents, JSV.popup.JSVPopupResourceBundle.structureContents);
 }, "~S");
 Clazz_defineStatics (c$,
-"menuContents",  Clazz_newArray (-1, [ Clazz_newArray (-1, ["appMenu", "_SIGNED_FileMenu Spectra... ShowMenu OptionsMenu ZoomMenu - Integration Peaks Measurements - Script... Properties"]),  Clazz_newArray (-1, ["appletMenu", "_SIGNED_FileMenu Spectra... - OptionsMenu ZoomMenu - Integration Peaks Measurements - Script... - Print... - AboutMenu"]),  Clazz_newArray (-1, ["_SIGNED_FileMenu", "Open_File... Open_Simulation... Open_URL... - Add_File... Add_Simulation... Add_URL... - Save_AsMenu Export_AsMenu - Close_Views Close_Simulations Close_All"]),  Clazz_newArray (-1, ["Save_AsMenu", "Original... JDXMenu CML XML(AnIML)"]),  Clazz_newArray (-1, ["JDXMenu", "XY DIF DIFDUP FIX PAC SQZ"]),  Clazz_newArray (-1, ["Export_AsMenu", "PDF - JAVAJPG PNG"]),  Clazz_newArray (-1, ["ShowMenu", "Show_Header Show_Source Show_Overlay_Key"]),  Clazz_newArray (-1, ["OptionsMenu", "Toggle_Grid Toggle_X_Axis Toggle_Y_Axis Toggle_Coordinates Toggle_Trans/Abs Reverse_Plot - Predicted_Solution_Colour Fill_Solution_Colour_(all)  Fill_Solution_Colour_(none)"]),  Clazz_newArray (-1, ["ZoomMenu", "Next_Zoom Previous_Zoom Reset_Zoom - Set_X_Scale... Reset_X_Scale"]),  Clazz_newArray (-1, ["AboutMenu", "VERSION"])]),
-"structureContents",  Clazz_newArray (-1, [ Clazz_newArray (-1, ["Open_File...", "load ?"]),  Clazz_newArray (-1, ["Open_URL...", "load http://?"]),  Clazz_newArray (-1, ["Open_Simulation...", "load $?"]),  Clazz_newArray (-1, ["Add_File...", "load append ?"]),  Clazz_newArray (-1, ["Add_URL...", "load append http://?"]),  Clazz_newArray (-1, ["Add_Simulation...", "load append $?; view \"1HNMR\""]),  Clazz_newArray (-1, ["Close_All", "close all"]),  Clazz_newArray (-1, ["Close_Views", "close views"]),  Clazz_newArray (-1, ["Close Simulations", "close simulations"]),  Clazz_newArray (-1, ["Show_Header", "showProperties"]),  Clazz_newArray (-1, ["Show_Source", "showSource"]),  Clazz_newArray (-1, ["Show_Overlay_Key...", "showKey"]),  Clazz_newArray (-1, ["Next_Zoom", "zoom next;showMenu"]),  Clazz_newArray (-1, ["Previous_Zoom", "zoom prev;showMenu"]),  Clazz_newArray (-1, ["Reset_Zoom", "zoom clear"]),  Clazz_newArray (-1, ["Reset_X_Scale", "zoom out"]),  Clazz_newArray (-1, ["Set_X_Scale...", "zoom"]),  Clazz_newArray (-1, ["Spectra...", "view"]),  Clazz_newArray (-1, ["Overlay_Offset...", "stackOffsetY"]),  Clazz_newArray (-1, ["Script...", "script INLINE"]),  Clazz_newArray (-1, ["Properties", "showProperties"]),  Clazz_newArray (-1, ["Toggle_X_Axis", "XSCALEON toggle;showMenu"]),  Clazz_newArray (-1, ["Toggle_Y_Axis", "YSCALEON toggle;showMenu"]),  Clazz_newArray (-1, ["Toggle_Grid", "GRIDON toggle;showMenu"]),  Clazz_newArray (-1, ["Toggle_Coordinates", "COORDINATESON toggle;showMenu"]),  Clazz_newArray (-1, ["Reverse_Plot", "REVERSEPLOT toggle;showMenu"]),  Clazz_newArray (-1, ["Measurements", "SHOWMEASUREMENTS"]),  Clazz_newArray (-1, ["Peaks", "SHOWPEAKLIST"]),  Clazz_newArray (-1, ["Integration", "SHOWINTEGRATION"]),  Clazz_newArray (-1, ["Toggle_Trans/Abs", "IRMODE TOGGLE"]),  Clazz_newArray (-1, ["Predicted_Solution_Colour", "GETSOLUTIONCOLOR"]),  Clazz_newArray (-1, ["Fill_Solution_Colour_(all)", "GETSOLUTIONCOLOR fillall"]),  Clazz_newArray (-1, ["Fill_Solution_Colour_(none)", "GETSOLUTIONCOLOR fillallnone"]),  Clazz_newArray (-1, ["Print...", "print"]),  Clazz_newArray (-1, ["Original...", "write SOURCE"]),  Clazz_newArray (-1, ["CML", "write CML"]),  Clazz_newArray (-1, ["XML(AnIML)", "write XML"]),  Clazz_newArray (-1, ["XY", "write XY"]),  Clazz_newArray (-1, ["DIF", "write DIF"]),  Clazz_newArray (-1, ["DIFDUP", "write DIFDUP"]),  Clazz_newArray (-1, ["FIX", "write FIX"]),  Clazz_newArray (-1, ["PAC", "write PAC"]),  Clazz_newArray (-1, ["SQZ", "write SQZ"]),  Clazz_newArray (-1, ["JPG", "write JPG"]),  Clazz_newArray (-1, ["SVG", "write SVG"]),  Clazz_newArray (-1, ["PNG", "write PNG"]),  Clazz_newArray (-1, ["PDF", "write PDF"])]));
+"menuContents",  Clazz_newArray (-1, [ Clazz_newArray (-1, ["appMenu", "_SIGNED_FileMenu Spectra... ShowMenu OptionsMenu ZoomMenu - Integration Peaks Measurements - Script... Properties"]),  Clazz_newArray (-1, ["appletMenu", "_SIGNED_FileMenu Spectra... - OptionsMenu ZoomMenu - Integration Peaks Measurements - Script... - Print... - AboutMenu"]),  Clazz_newArray (-1, ["_SIGNED_FileMenu", "Open_File... Open_Simulation... Open_URL... - Add_File... Add_Simulation... Add_URL... - Save_AsMenu Export_AsMenu - Close_Views Close_Simulations Close_All"]),  Clazz_newArray (-1, ["Save_AsMenu", "Original... JDXMenu CML XML(AnIML)"]),  Clazz_newArray (-1, ["JDXMenu", "XY DIF DIFDUP FIX PAC SQZ"]),  Clazz_newArray (-1, ["Export_AsMenu", "PDF - JAVAJPG PNG"]),  Clazz_newArray (-1, ["ShowMenu", "Show_Header Show_Source Show_Overlay_Key"]),  Clazz_newArray (-1, ["OptionsMenu", "Toggle_Grid Toggle_X_Axis Toggle_Y_Axis Toggle_Coordinates Toggle_Trans/Abs Reverse_Plot Points_Only - Predicted_Solution_Colour Fill_Solution_Colour_(all)  Fill_Solution_Colour_(none)"]),  Clazz_newArray (-1, ["ZoomMenu", "Next_Zoom Previous_Zoom Reset_Zoom - Set_X_Scale... Reset_X_Scale"]),  Clazz_newArray (-1, ["AboutMenu", "VERSION"])]),
+"structureContents",  Clazz_newArray (-1, [ Clazz_newArray (-1, ["Open_File...", "load ?"]),  Clazz_newArray (-1, ["Open_URL...", "load http://?"]),  Clazz_newArray (-1, ["Open_Simulation...", "load $?"]),  Clazz_newArray (-1, ["Add_File...", "load append ?"]),  Clazz_newArray (-1, ["Add_URL...", "load append http://?"]),  Clazz_newArray (-1, ["Add_Simulation...", "load append $?; view \"1HNMR\""]),  Clazz_newArray (-1, ["Close_All", "close all"]),  Clazz_newArray (-1, ["Close_Views", "close views"]),  Clazz_newArray (-1, ["Close Simulations", "close simulations"]),  Clazz_newArray (-1, ["Show_Header", "showProperties"]),  Clazz_newArray (-1, ["Show_Source", "showSource"]),  Clazz_newArray (-1, ["Show_Overlay_Key...", "showKey"]),  Clazz_newArray (-1, ["Next_Zoom", "zoom next;showMenu"]),  Clazz_newArray (-1, ["Previous_Zoom", "zoom prev;showMenu"]),  Clazz_newArray (-1, ["Reset_Zoom", "zoom clear"]),  Clazz_newArray (-1, ["Reset_X_Scale", "zoom out"]),  Clazz_newArray (-1, ["Set_X_Scale...", "zoom"]),  Clazz_newArray (-1, ["Spectra...", "view"]),  Clazz_newArray (-1, ["Overlay_Offset...", "stackOffsetY"]),  Clazz_newArray (-1, ["Script...", "script INLINE"]),  Clazz_newArray (-1, ["Properties", "showProperties"]),  Clazz_newArray (-1, ["Toggle_X_Axis", "XSCALEON toggle;showMenu"]),  Clazz_newArray (-1, ["Toggle_Y_Axis", "YSCALEON toggle;showMenu"]),  Clazz_newArray (-1, ["Toggle_Grid", "GRIDON toggle;showMenu"]),  Clazz_newArray (-1, ["Toggle_Coordinates", "COORDINATESON toggle;showMenu"]),  Clazz_newArray (-1, ["Reverse_Plot", "REVERSEPLOT toggle;showMenu"]),  Clazz_newArray (-1, ["Points_Only", "POINTSONLY toggle;showMenu"]),  Clazz_newArray (-1, ["Measurements", "SHOWMEASUREMENTS"]),  Clazz_newArray (-1, ["Peaks", "SHOWPEAKLIST"]),  Clazz_newArray (-1, ["Integration", "SHOWINTEGRATION"]),  Clazz_newArray (-1, ["Toggle_Trans/Abs", "IRMODE TOGGLE"]),  Clazz_newArray (-1, ["Predicted_Solution_Colour", "GETSOLUTIONCOLOR"]),  Clazz_newArray (-1, ["Fill_Solution_Colour_(all)", "GETSOLUTIONCOLOR fillall"]),  Clazz_newArray (-1, ["Fill_Solution_Colour_(none)", "GETSOLUTIONCOLOR fillallnone"]),  Clazz_newArray (-1, ["Print...", "print"]),  Clazz_newArray (-1, ["Original...", "write SOURCE"]),  Clazz_newArray (-1, ["CML", "write CML"]),  Clazz_newArray (-1, ["XML(AnIML)", "write XML"]),  Clazz_newArray (-1, ["XY", "write XY"]),  Clazz_newArray (-1, ["DIF", "write DIF"]),  Clazz_newArray (-1, ["DIFDUP", "write DIFDUP"]),  Clazz_newArray (-1, ["FIX", "write FIX"]),  Clazz_newArray (-1, ["PAC", "write PAC"]),  Clazz_newArray (-1, ["SQZ", "write SQZ"]),  Clazz_newArray (-1, ["JPG", "write JPG"]),  Clazz_newArray (-1, ["SVG", "write SVG"]),  Clazz_newArray (-1, ["PNG", "write PNG"]),  Clazz_newArray (-1, ["PDF", "write PDF"])]));
 });
 })(Clazz
 ,Clazz.getClassName

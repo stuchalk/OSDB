@@ -25,3 +25,9 @@ this.paperWidth = Clazz.floatToInt (Math.min (8.5, 8.27) * 72);
 this.imageableHeight = this.paperHeight;
 this.imageableWidth = this.paperWidth;
 });
+Clazz.makeConstructor (c$, 
+function (pd) {
+if (pd != null) {
+this.asPDF = true;
+pd.setDefaultPrintOptions (this);
+}}, "JSV.common.PanelData");

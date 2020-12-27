@@ -59,6 +59,10 @@ return 96;
 }
 return -1;
 }, "~S");
+Clazz.defineMethod (c$, "getAtom1", 
+function () {
+return this.atom1;
+});
 Clazz.defineMethod (c$, "set", 
 function (bond) {
 this.order = bond.order;
@@ -180,10 +184,10 @@ Clazz.overrideMethod (c$, "getCovalentOrder",
 function () {
 return this.order;
 });
-Clazz.overrideMethod (c$, "getOtherAtomNode", 
+Clazz.overrideMethod (c$, "getOtherNode", 
 function (atom) {
-return (atom === this.atom1 ? this.atom2 : atom === this.atom2 ? this.atom1 : null);
-}, "JU.Node");
+return (atom === this.atom1 ? this.atom2 : atom === this.atom2 || atom == null ? this.atom1 : null);
+}, "JU.SimpleNode");
 Clazz.overrideMethod (c$, "isCovalent", 
 function () {
 return this.order != 112;
@@ -211,6 +215,21 @@ case 1041:
 this.order = 1025;
 break;
 }
+});
+Clazz.defineMethod (c$, "getRealCovalentOrder", 
+function () {
+switch (this.order) {
+case 65537:
+case 65538:
+case 1025:
+case 1041:
+return 1;
+}
+return this.order;
+});
+Clazz.defineMethod (c$, "getMatchingBond", 
+function () {
+return this.matchingBond == null ? this : this.matchingBond;
 });
 Clazz.defineStatics (c$,
 "TYPE_UNKNOWN", -1,

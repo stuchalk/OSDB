@@ -29,7 +29,7 @@ this.viewSelectedButton = this.dialog.addButton ("btnViewSelected", "View Select
 this.combineSelectedButton = this.dialog.addButton ("btnCombineSelected", "Combine Selected");
 this.closeSelectedButton = this.dialog.addButton ("btnCloseSelected", "Close Selected");
 this.dialog.addButton ("btnDone", "Done");
-this.dialog.setPreferredSize (500, 350);
+this.dialog.setPreferredSize (800, 350);
 this.txt1 = this.dialog.addCheckBox (null, null, 0, false);
 this.addCheckBoxes (this.vwr.spectraTree.getRootNode (), 0, true);
 this.addCheckBoxes (this.vwr.spectraTree.getRootNode (), 0, false);

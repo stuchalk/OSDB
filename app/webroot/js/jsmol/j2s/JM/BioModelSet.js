@@ -52,7 +52,7 @@ for (var j = m.bioPolymerCount; --j >= 0; ) m.bioPolymers[j].calcSelectedMonomer
 });
 Clazz.defineMethod (c$, "calculateAllPolymers", 
 function (groups, groupCount, baseGroupIndex, modelsExcluded) {
-var checkConnections = !this.vwr.getBoolean (603979894);
+var checkConnections = !this.vwr.getBoolean (603979896);
 if (groupCount < 0) groupCount = groups.length;
 if (modelsExcluded != null) for (var j = 0; j < groupCount; ++j) {
 var group = groups[j];
@@ -246,12 +246,12 @@ case 1073742189:
 return this.getAnnotationBits ("validation", 1073742189, specInfo);
 case 1073742128:
 return this.getAnnotationBits ("rna3d", 1073742128, specInfo);
-case 1073741864:
+case 1073741863:
 var s = specInfo;
 bs =  new JU.BS ();
 return (s.length % 2 != 0 ? bs : this.ms.getAtomBitsMDa (1086324742, this.getAllBasePairBits (s), bs));
-case 1073741916:
-return this.getAnnotationBits ("dssr", 1073741916, specInfo);
+case 1111490587:
+return this.getAnnotationBits ("dssr", 1111490587, specInfo);
 case 1086324744:
 return this.getAllSequenceBits (specInfo, null, bs);
 }

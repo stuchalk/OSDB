@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JU");
-Clazz.load (["javajs.api.GenericLineReader"], "JU.Rdr", ["java.io.BufferedInputStream", "$.BufferedReader", "$.ByteArrayInputStream", "$.InputStreamReader", "$.StringReader", "JU.AU", "$.Base64", "$.Encoding", "$.SB"], function () {
+Clazz.load (["java.io.BufferedReader", "javajs.api.GenericLineReader"], "JU.Rdr", ["java.io.BufferedInputStream", "$.ByteArrayInputStream", "$.InputStreamReader", "$.StringReader", "JU.AU", "$.Base64", "$.Encoding", "$.SB"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.reader = null;
 Clazz.instantialize (this, arguments);
@@ -14,7 +14,7 @@ return this.reader.readLine ();
 });
 c$.readCifData = Clazz.defineMethod (c$, "readCifData", 
 function (parser, br) {
-return parser.set (null, br).getAllCifData ();
+return parser.set (null, br, false).getAllCifData ();
 }, "javajs.api.GenericCifDataParser,java.io.BufferedReader");
 c$.fixUTF = Clazz.defineMethod (c$, "fixUTF", 
 function (bytes) {
@@ -80,10 +80,18 @@ c$.isCompoundDocumentB = Clazz.defineMethod (c$, "isCompoundDocumentB",
 function (bytes) {
 return (bytes.length >= 8 && (bytes[0] & 0xFF) == 0xD0 && (bytes[1] & 0xFF) == 0xCF && (bytes[2] & 0xFF) == 0x11 && (bytes[3] & 0xFF) == 0xE0 && (bytes[4] & 0xFF) == 0xA1 && (bytes[5] & 0xFF) == 0xB1 && (bytes[6] & 0xFF) == 0x1A && (bytes[7] & 0xFF) == 0xE1);
 }, "~A");
+c$.isBZip2S = Clazz.defineMethod (c$, "isBZip2S", 
+function (is) {
+return JU.Rdr.isBZip2B (JU.Rdr.getMagic (is, 3));
+}, "java.io.InputStream");
 c$.isGzipS = Clazz.defineMethod (c$, "isGzipS", 
 function (is) {
 return JU.Rdr.isGzipB (JU.Rdr.getMagic (is, 2));
 }, "java.io.InputStream");
+c$.isBZip2B = Clazz.defineMethod (c$, "isBZip2B", 
+function (bytes) {
+return (bytes != null && bytes.length >= 3 && (bytes[0] & 0xFF) == 0x42 && (bytes[1] & 0xFF) == 0x5A && (bytes[2] & 0xFF) == 0x68);
+}, "~A");
 c$.isGzipB = Clazz.defineMethod (c$, "isGzipB", 
 function (bytes) {
 return (bytes != null && bytes.length >= 2 && (bytes[0] & 0xFF) == 0x1F && (bytes[1] & 0xFF) == 0x8B);
@@ -98,11 +106,12 @@ return (bytes != null && bytes.length >= 2 && (bytes[0] & 0xFF) == 0x7D && (byte
 }, "~A");
 c$.isMessagePackS = Clazz.defineMethod (c$, "isMessagePackS", 
 function (is) {
-return JU.Rdr.isMessagePackB (JU.Rdr.getMagic (is, 1));
+return JU.Rdr.isMessagePackB (JU.Rdr.getMagic (is, 2));
 }, "java.io.InputStream");
 c$.isMessagePackB = Clazz.defineMethod (c$, "isMessagePackB", 
 function (bytes) {
-return (bytes != null && bytes.length >= 1 && (bytes[0] & 0xFF) == 0xDE);
+var b;
+return (bytes != null && bytes.length >= 1 && (((b = bytes[0] & 0xFF)) == 0xDE || (b & 0xE0) == 0x80 && bytes[1] != 0x50));
 }, "~A");
 c$.isPngZipStream = Clazz.defineMethod (c$, "isPngZipStream", 
 function (is) {
@@ -122,13 +131,15 @@ return (bytes.length >= 4 && bytes[0] == 0x50 && bytes[1] == 0x4B && bytes[2] ==
 }, "~A");
 c$.getMagic = Clazz.defineMethod (c$, "getMagic", 
 function (is, n) {
-var abMagic =  Clazz.newByteArray (n, 0);
+var abMagic = (n > 264 ?  Clazz.newByteArray (n, 0) : JU.Rdr.b264 == null ? (JU.Rdr.b264 =  Clazz.newByteArray (264, 0)) : JU.Rdr.b264);
 {
 is.resetStream();
 }try {
 is.mark (n + 1);
-is.read (abMagic, 0, n);
-} catch (e) {
+var i = is.read (abMagic, 0, n);
+if (i < n) {
+abMagic[0] = abMagic[257] = 0;
+}} catch (e) {
 if (Clazz.exceptionOf (e, java.io.IOException)) {
 } else {
 throw e;
@@ -173,6 +184,12 @@ while (JU.Rdr.isGzipS (bis)) bis =  new java.io.BufferedInputStream (jzt.newGZIP
 
 return bis;
 }, "javajs.api.GenericZipTools,java.io.BufferedInputStream");
+c$.getUnzippedInputStreamBZip2 = Clazz.defineMethod (c$, "getUnzippedInputStreamBZip2", 
+function (jzt, bis) {
+while (JU.Rdr.isBZip2S (bis)) bis =  new java.io.BufferedInputStream (jzt.newBZip2InputStream (bis));
+
+return bis;
+}, "javajs.api.GenericZipTools,java.io.BufferedInputStream");
 c$.getBytesFromSB = Clazz.defineMethod (c$, "getBytesFromSB", 
 function (sb) {
 return (JU.Rdr.isBase64 (sb) ? JU.Base64.decodeBase64 (sb.substring (8)) : sb.toBytes (0, -1));
@@ -198,7 +215,7 @@ return JU.AU.arrayCopyByte (bytes, totalLen);
 }, "java.io.BufferedInputStream,JU.OC");
 c$.getBufferedReader = Clazz.defineMethod (c$, "getBufferedReader", 
 function (bis, charSet) {
-if (JU.Rdr.getUTFEncodingForStream (bis) === JU.Encoding.NONE) return  new java.io.BufferedReader ( new java.io.InputStreamReader (bis, (charSet == null ? "UTF-8" : charSet)));
+if (JU.Rdr.getUTFEncodingForStream (bis) === JU.Encoding.NONE) return  new JU.Rdr.StreamReader (bis, charSet);
 var bytes = JU.Rdr.getLimitedStreamBytes (bis, -1);
 bis.close ();
 return JU.Rdr.getBR (charSet == null ? JU.Rdr.fixUTF (bytes) :  String.instantialize (bytes, charSet));
@@ -222,7 +239,7 @@ buf =  Clazz.newByteArray (totalLen, 0);
 System.arraycopy (bytes, 0, buf, 0, totalLen);
 return buf;
 }, "java.io.InputStream,~N");
-c$.StreamToUTF8String = Clazz.defineMethod (c$, "StreamToUTF8String", 
+c$.streamToUTF8String = Clazz.defineMethod (c$, "streamToUTF8String", 
 function (bis) {
 var data =  new Array (1);
 try {
@@ -316,4 +333,34 @@ function (fileName) {
 var pt = fileName.indexOf ("|");
 return (pt < 0 ? fileName : fileName.substring (0, pt));
 }, "~S");
+c$.isTar = Clazz.defineMethod (c$, "isTar", 
+function (bis) {
+var bytes = JU.Rdr.getMagic (bis, 264);
+return (bytes[0] != 0 && (bytes[257] & 0xFF) == 0x75 && (bytes[258] & 0xFF) == 0x73 && (bytes[259] & 0xFF) == 0x74 && (bytes[260] & 0xFF) == 0x61 && (bytes[261] & 0xFF) == 0x72);
+}, "java.io.BufferedInputStream");
+Clazz.pu$h(self.c$);
+c$ = Clazz.decorateAsClass (function () {
+this.stream = null;
+Clazz.instantialize (this, arguments);
+}, JU.Rdr, "StreamReader", java.io.BufferedReader);
+Clazz.makeConstructor (c$, 
+function (a, b) {
+Clazz.superConstructor (this, JU.Rdr.StreamReader, [ new java.io.InputStreamReader (a, (b == null ? "UTF-8" : b))]);
+this.stream = a;
+}, "java.io.BufferedInputStream,~S");
+Clazz.defineMethod (c$, "getStream", 
+function () {
+try {
+this.stream.reset ();
+} catch (e) {
+if (Clazz.exceptionOf (e, java.io.IOException)) {
+} else {
+throw e;
+}
+}
+return this.stream;
+});
+c$ = Clazz.p0p ();
+Clazz.defineStatics (c$,
+"b264", null);
 });

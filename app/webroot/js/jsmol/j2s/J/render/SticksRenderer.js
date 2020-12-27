@@ -37,14 +37,15 @@ this.p1 = null;
 this.p2 = null;
 this.bsForPass2 = null;
 this.isPass2 = false;
-this.rot = null;
-this.a4 = null;
+this.rTheta = 0;
 this.xAxis1 = 0;
 this.yAxis1 = 0;
 this.xAxis2 = 0;
 this.yAxis2 = 0;
 this.dxStep = 0;
 this.dyStep = 0;
+this.rot = null;
+this.a4 = null;
 Clazz.instantialize (this, arguments);
 }, J.render, "SticksRenderer", J.render.FontLineShapeRenderer);
 Clazz.prepareFields (c$, function () {
@@ -64,7 +65,7 @@ if (!this.isPass2) this.bsForPass2.clearAll ();
 this.slabbing = this.tm.slabEnabled;
 this.slabByAtom = this.vwr.getBoolean (603979939);
 this.endcaps = 3;
-this.dashDots = (this.vwr.getBoolean (603979891) ? J.render.FontLineShapeRenderer.sixdots : J.render.FontLineShapeRenderer.dashes);
+this.dashDots = (this.vwr.getBoolean (603979893) ? J.render.FontLineShapeRenderer.sixdots : J.render.FontLineShapeRenderer.dashes);
 this.isCartesian = (this.exportType == 1);
 this.getMultipleBondSettings (false);
 this.wireframeOnly = !this.vwr.checkMotionRendering (1677721602);
@@ -147,10 +148,15 @@ if (!this.showMultipleBonds || (this.modeMultipleBond == 2 && this.mad > 500) ||
 this.bondOrder = 1;
 }}}var mask = 0;
 switch (this.bondOrder) {
+case 1025:
+case 1041:
+this.bondOrder = 1;
 case 1:
 case 2:
 case 3:
 case 4:
+case 5:
+case 6:
 break;
 case 17:
 case 513:
@@ -200,7 +206,54 @@ case -1:
 this.drawDashed (this.xA, this.yA, this.zA, this.xB, this.yB, this.zB, J.render.FontLineShapeRenderer.hDashes);
 break;
 default:
+switch (this.bondOrder) {
+case 4:
+{
+this.bondOrder = 2;
+var f = this.multipleBondRadiusFactor;
+if (f == 0 && this.width > 1) this.width = Clazz.doubleToInt (this.width * 0.5);
+var m = this.multipleBondSpacing;
+if (m < 0) this.multipleBondSpacing = 0.30;
 this.drawBond (mask);
+this.bondsPerp = !this.bondsPerp;
+this.bondOrder = 2;
+this.drawBond (mask >> 2);
+this.bondsPerp = !this.bondsPerp;
+this.multipleBondSpacing = m;
+}break;
+case 5:
+{
+this.bondOrder = 3;
+var f = this.multipleBondRadiusFactor;
+if (f == 0 && this.width > 1) this.width = Clazz.doubleToInt (this.width * 0.5);
+var m = this.multipleBondSpacing;
+if (m < 0) this.multipleBondSpacing = 0.20;
+this.drawBond (mask);
+this.bondsPerp = !this.bondsPerp;
+this.bondOrder = 2;
+this.multipleBondSpacing *= 1.5;
+this.drawBond (mask >> 3);
+this.bondsPerp = !this.bondsPerp;
+this.multipleBondSpacing = m;
+}break;
+case 6:
+{
+this.bondOrder = 4;
+var f = this.multipleBondRadiusFactor;
+if (f == 0 && this.width > 1) this.width = Clazz.doubleToInt (this.width * 0.5);
+var m = this.multipleBondSpacing;
+if (m < 0) this.multipleBondSpacing = 0.15;
+this.drawBond (mask);
+this.bondsPerp = !this.bondsPerp;
+this.bondOrder = 2;
+this.multipleBondSpacing *= 1.5;
+this.drawBond (mask >> 4);
+this.bondsPerp = !this.bondsPerp;
+this.multipleBondSpacing = m;
+}break;
+default:
+this.drawBond (mask);
+}
 break;
 }
 return needTranslucent;
@@ -280,7 +333,18 @@ return;
 var dyB = this.dy * this.dy;
 this.mag2d = Math.round (Math.sqrt (dxB + dyB));
 this.resetAxisCoordinates ();
-while (true) {
+if (this.isCartesian && this.bondOrder == 3) {
+this.fillCylinder (this.colixA, this.colixB, this.endcaps, this.width, this.xAxis1, this.yAxis1, this.zA, this.xAxis2, this.yAxis2, this.zB);
+this.stepAxisCoordinates ();
+this.x.sub2 (this.b, this.a);
+this.x.scale (0.05);
+this.p1.sub2 (this.a, this.x);
+this.p2.add2 (this.b, this.x);
+this.g3d.drawBond (this.p1, this.p2, this.colixA, this.colixB, this.endcaps, this.mad, -2);
+this.stepAxisCoordinates ();
+this.fillCylinder (this.colixA, this.colixB, this.endcaps, this.width, this.xAxis1, this.yAxis1, this.zA, this.xAxis2, this.yAxis2, this.zB);
+return;
+}while (true) {
 if ((dottedMask & 1) != 0) this.drawDashed (this.xAxis1, this.yAxis1, this.zA, this.xAxis2, this.yAxis2, this.zB, this.dashDots);
  else this.fillCylinder (this.colixA, this.colixB, this.endcaps, this.width, this.xAxis1, this.yAxis1, this.zA, this.xAxis2, this.yAxis2, this.zB);
 dottedMask >>= 1;
@@ -288,29 +352,6 @@ if (--this.bondOrder <= 0) break;
 this.stepAxisCoordinates ();
 }
 }, "~N");
-Clazz.defineMethod (c$, "drawBanana", 
- function (a, b, x, deg) {
-this.g3d.addRenderer (553648147);
-this.vectorT.sub2 (b, a);
-if (this.rot == null) {
-this.rot =  new JU.M3 ();
-this.a4 =  new JU.A4 ();
-}this.a4.setVA (this.vectorT, (deg * 3.141592653589793 / 180));
-this.rot.setAA (this.a4);
-this.pointT.setT (a);
-this.pointT3.setT (b);
-this.pointT2.ave (a, b);
-this.rot.rotate2 (x, this.vectorT);
-this.pointT2.add (this.vectorT);
-this.tm.transformPtScrT3 (a, this.pointT);
-this.tm.transformPtScrT3 (this.pointT2, this.pointT2);
-this.tm.transformPtScrT3 (b, this.pointT3);
-var w = Math.max (this.width, 1);
-this.g3d.setC (this.colixA);
-this.g3d.fillHermite (5, w, w, w, this.pointT, this.pointT, this.pointT2, this.pointT3);
-this.g3d.setC (this.colixB);
-this.g3d.fillHermite (5, w, w, w, this.pointT, this.pointT2, this.pointT3, this.pointT3);
-}, "JM.Atom,JM.Atom,JU.V3,~N");
 Clazz.defineMethod (c$, "resetAxisCoordinates", 
  function () {
 var space = this.mag2d >> 3;
@@ -343,4 +384,27 @@ var dxAC = atomC.sX - this.xA;
 var dyAC = atomC.sY - this.yA;
 return ((this.dx * dyAC - this.dy * dxAC) < 0 ? 2 : 1);
 });
+Clazz.defineMethod (c$, "drawBanana", 
+ function (a, b, x, deg) {
+this.g3d.addRenderer (553648145);
+this.vectorT.sub2 (b, a);
+if (this.rot == null) {
+this.rot =  new JU.M3 ();
+this.a4 =  new JU.A4 ();
+}this.a4.setVA (this.vectorT, (deg * 3.141592653589793 / 180));
+this.rot.setAA (this.a4);
+this.pointT.setT (a);
+this.pointT3.setT (b);
+this.pointT2.ave (a, b);
+this.rot.rotate2 (x, this.vectorT);
+this.pointT2.add (this.vectorT);
+this.tm.transformPtScrT3 (a, this.pointT);
+this.tm.transformPtScrT3 (this.pointT2, this.pointT2);
+this.tm.transformPtScrT3 (b, this.pointT3);
+var w = Math.max (this.width, 1);
+this.g3d.setC (this.colixA);
+this.g3d.fillHermite (5, w, w, w, this.pointT, this.pointT, this.pointT2, this.pointT3);
+this.g3d.setC (this.colixB);
+this.g3d.fillHermite (5, w, w, w, this.pointT, this.pointT2, this.pointT3, this.pointT3);
+}, "JM.Atom,JM.Atom,JU.V3,~N");
 });

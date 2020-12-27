@@ -10654,6 +10654,19 @@ return jQuery;
 
 // see JSmolApi.js for public user-interface. All these are private functions
 
+
+// BH 4/30/2019 fixes write xyz "https://...."
+// BH 7/6/2017 2:22:07 AM adds BZ2 as binary
+// BH 4/13/2017 11:23:05 PM adds "binary pmesh" .pmb extension
+// BH 1/14/2017 6:28:07 AM adds &debugCore
+// BH 10/20/2016 10:00:43 AM JmolTracker.php
+// BH 9/19/2016 8:22:48 AM drag-drop broken for https (imageDrop.htm)
+// BH 9/18/2016 btoa() does not work with UTF-8 data (set language es;write menu t.mnu)
+// BH 8/26/2016 11:29:48 AM RCSB ligand 
+// BH 8/26/2016 11:29:48 AM generic fixProtocol for .gov/ to https
+// BH 8/26/2016 6:56:31 AM chemapps.stolaf.edu exclusively https
+// BH 8/25/2016 9:47:26 PM bug fix: NCI/CADD now requires "get3d=true" not "get3d=True"
+// BH 7/31/2016 6:42:06 AM changes mouse wheel from -1 to 507
 // BH 6/27/2016 1:16:57 AM adds Jmol.playAudio(fname)
 // BH 4/26/2016 4:16:07 PM adds Jmol.loadFileFromDialog(applet)
 // BH 4/21/2016 9:25:39 AM adds [URL] button to file load option
@@ -10670,7 +10683,7 @@ return jQuery;
 // BH 2/14/2016 12:30:41 PM Info.appletLoadingImage: "j2s/img/JSmol_spinner.gif", 
    // can be set to "none" or some other image; see Jmol._hideLoadingSpinner(applet)
    // implemented only for JSmolApplet, not others
-// BH 2/14/2016 12:27:09 PM Jmol._setCursor 
+// BH 2/14/2016 12:27:09 PM Jmol.setCursor 
 // BH 2/14/2016 6:48:33 AM _setCursor() and cursor_wait   http://ajaxload.info/
 // BH 1/15/2016 4:23:14 PM adding Info.makeLiveImage
 // BH 12/30/2015 8:18:42 PM adding AMS call to database list; allowing for ?ALLOWSORIGIN? to override settings here
@@ -10816,7 +10829,7 @@ Jmol = (function(document) {
 		}
 	};
 	var j = {
-		_version: "$Date: 2016-05-08 13:20:27 -0500 (Sun, 08 May 2016) $", // svn.keywords:lastUpdated
+		_version: "$Date: 2020-12-12 18:52:48 -0600 (Sat, 12 Dec 2020) $", // svn.keywords:lastUpdated
 		_alertNoBinary: true,
 		// this url is used to Google Analytics tracking of Jmol use. You may remove it or modify it if you wish. 
 		_allowedJmolSize: [25, 2048, 300],   // min, max, default (pixels)
@@ -10838,6 +10851,7 @@ Jmol = (function(document) {
 		_getZOrders: getZOrders,
 		_z:getZOrders(z),
 		_debugCode: true,  // set false in process of minimization
+    _debugCore: false, // set true using URL &debugCore
 		db: {
 			_databasePrefixes: "$=:",
 			_fileLoadScript: ";if (_loadScript = '' && defaultLoadScript == '' && _filetype == 'Pdb') { select protein or nucleic;cartoons Only;color structure; select * };",
@@ -10855,12 +10869,12 @@ Jmol = (function(document) {
 				"materialsproject.org": null, 
 				".ebi.ac.uk": null, 
 				"pubchem.ncbi.nlm.nih.gov":null,
-				"http://www.nmrdb.org/tools/jmol/predict.php":null,
+				"www.nmrdb.org/tools/jmol/predict.php":null,
 				"$": "https://cactus.nci.nih.gov/chemical/structure/%FILENCI/file?format=sdf&get3d=True",
 				"$$": "https://cactus.nci.nih.gov/chemical/structure/%FILENCI/file?format=sdf",
-				"=": "http://files.rcsb.org/view/%FILE.pdb",
-				"*": "http://www.ebi.ac.uk/pdbe/entry-files/download/%FILE.cif",
-				"==": "http://www.rcsb.org/pdb/files/ligand/%FILE.cif",
+				"=": "https://files.rcsb.org/download/%FILE.pdb",
+				"*": "https://www.ebi.ac.uk/pdbe/entry-files/download/%FILE.cif",
+				"==": "https://files.rcsb.org/ligands/download/%FILE.cif",
 				":": "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/%FILE/SDF?record_type=3d"
 			},
 			_restQueryUrl: "http://www.rcsb.org/pdb/rest/search",
@@ -10873,7 +10887,7 @@ Jmol = (function(document) {
 		_lastAppletID: null,
 		_mousePageX: null,
 		_mouseOwner: null,
-		_serverUrl: "http://your.server.here/jsmol.php",
+		_serverUrl: "https://your.server.here/jsmol.php",
 		_syncId: ("" + Math.random()).substring(3),
 		_touching: false,
 		_XhtmlElement: null,
@@ -10881,13 +10895,14 @@ Jmol = (function(document) {
 	}
 	
 	var ref = document.location.href.toLowerCase();
+  j._debugCore = (ref.indexOf("j2sdebugcore") >= 0);
 	j._httpProto = (ref.indexOf("https") == 0 ? "https://" : "http://"); 
 	j._isFile = (ref.indexOf("file:") == 0);
 	if (j._isFile) // ensure no attempt to read XML in local request:
 	  $.ajaxSetup({ mimeType: "text/plain" });
 	j._ajaxTestSite = j._httpProto + "google.com";
 	var isLocal = (j._isFile || ref.indexOf("http://localhost") == 0 || ref.indexOf("http://127.") == 0);
-	j._tracker = (j._httpProto == "http://" && !isLocal && 'http://chemapps.stolaf.edu/jmol/JmolTracker.htm?id=UA-45940799-1');
+	j._tracker = (!isLocal && 'https://chemapps.stolaf.edu/jmol/JmolTracker.php?id=UA-45940799-1');
 	
 	j._isChrome = (navigator.userAgent.toLowerCase().indexOf("chrome") >= 0);
 	j._isSafari = (!j._isChrome && navigator.userAgent.toLowerCase().indexOf("safari") >= 0);
@@ -10948,12 +10963,14 @@ Jmol = (function(document) {
 	}
 
   Jmol._fixProtocol = function(url) {
+    if (url.indexOf("get3d=True") >= 0)
+      url = url.replace(/get3d\=True/, "get3d=true"); // NCI/CADD change 08/2016
   	return (    
     url.indexOf("http://www.rcsb.org/pdb/files/") == 0 && url.indexOf("/ligand/") < 0 ? 
       "http://files.rcsb.org/view/" + url.substring(30).replace(/\.gz/,"")    
     : url.indexOf("http://") == 0 && (
-      url.indexOf("http://pubchem") == 0 
-      || url.indexOf("http://cactus") == 0
+      Jmol._httpProto == "https://"
+      || url.indexOf(".gov/") > 0 
       || url.indexOf("http://www.materialsproject") == 0) 
       ? "https" + url.substring(4) : url);
   }
@@ -11332,7 +11349,7 @@ Jmol = (function(document) {
 				query = encodeURIComponent(query.substring(pt));		
 			}
       if (query.indexOf(".mmtf") >= 0) {
-        query = "http://mmtf.rcsb.org/full/" + query
+        query = "https://mmtf.rcsb.org/v1.0/full/" + query.replace(/\.mmtf/, "");
 			} else if (call.indexOf("FILENCI") >= 0) {
 				query = query.replace(/\%2F/g, "/");				
 				query = call.replace(/\%FILENCI/, query);
@@ -11383,11 +11400,49 @@ Jmol = (function(document) {
 		return fSuccess;
 	}
 	
-  Jmol._playAudio = function(filePath) {
+  Jmol.playAudio = function(filePath) {
+    Jmol.playAudio(null, filePath);
+  }
+  
+  Jmol.playAudio = function(applet, params) {
+  
+    var get = (params.get ? function(key){return params.get(key)} : null);
+    var put = (params.put ? function(key,val){return params.put(key,val)} : null);
+    var filePath = (get ? get("audioFile") : params);
+    var jmolAudio = get && get("audioPlayer");
     var audio = document.createElement("audio");
+    put && put("audioElement", audio);
+    var callback = null;
+    if (jmolAudio) {
+      callback = function(type){jmolAudio.processUpdate(type)};
+      jmolAudio.myClip = {
+         open: function() {callback("open")},
+         start: function() { audio.play(); callback("start")},
+         loop: function(n) { audio.loop = (n != 0); },
+         stop: function() { audio.pause(); },
+         close: function() { callback("close") },
+         setMicrosecondPosition: function(us) { audio.currentTime = us / 1e6; }
+      };
+    }    
     audio.controls = "true";
     audio.src = filePath;
-    audio.play();
+    if (get && get("loop"))
+      audio.loop = "true";
+    if (callback) {
+      audio.addEventListener("pause", function() {
+          callback("pause");
+      });
+      audio.addEventListener("play", function() {
+          callback("play");
+      });
+      audio.addEventListener("playing", function() {
+          callback("playing");
+      });
+      audio.addEventListener("ended", function() {
+          callback("ended");
+      });
+      callback("open")
+    }
   }
   
 	Jmol._loadFileData = function(applet, fileName, fSuccess, fError){
@@ -11567,9 +11622,9 @@ Jmol = (function(document) {
 		return true;  
 	}
 
-	Jmol._binaryTypes = ["mmtf",".gz",".jpg",".gif",".png",".zip",".jmol",".bin",".smol",".spartan",".mrc",".map",".ccp4",".dn6",".delphi",".omap",".pse",".dcd"];
+	Jmol._binaryTypes = ["mmtf",".gz",".bz2",".jpg",".gif",".png",".zip",".jmol",".bin",".smol",".spartan",".pmb",".mrc",".map",".ccp4",".dn6",".delphi",".omap",".pse",".dcd",".uk/pdbe/densities/"];
 
-	Jmol._isBinaryUrl = function(url) {
+	Jmol.isBinaryUrl = function(url) {
 		for (var i = Jmol._binaryTypes.length; --i >= 0;)
 			if (url.indexOf(Jmol._binaryTypes[i]) >= 0) return true;
 		return false;
@@ -11577,7 +11632,7 @@ Jmol = (function(document) {
 
 	Jmol._getFileData = function(fileName, fSuccess, doProcess) {
 		// use host-server PHP relay if not from this host
-		var isBinary = Jmol._isBinaryUrl(fileName);
+		var isBinary = Jmol.isBinaryUrl(fileName);
 		var isPDB = (fileName.indexOf(".gz") >= 0 && fileName.indexOf("rcsb.org") >= 0);
 		if (isPDB) {
 			// avoid unnecessary binary transfer
@@ -11681,14 +11736,14 @@ Jmol = (function(document) {
   Jmol._hideLocalFileReader = function(applet, cursor) {
     applet._localReader && Jmol.$setVisible(applet._localReader, false);
     applet._readingLocal = false;
-    Jmol._setCursor(applet, 0);
+    Jmol.setCursor(applet, 0);
   }
   
   Jmol.loadFileFromDialog = function(applet) {
-    Jmol._loadFileAsynchronously(null, applet, null, null);
+    Jmol.loadFileAsynchronously(null, applet, null, null);
   }
   
-	Jmol._loadFileAsynchronously = function(fileLoadThread, applet, fileName, appData) {
+	Jmol.loadFileAsynchronously = function(fileLoadThread, applet, fileName, appData) {
 		if (fileName && fileName.indexOf("?") != 0) {
 			// LOAD ASYNC command
 			var fileName0 = fileName;
@@ -11701,7 +11756,7 @@ Jmol = (function(document) {
 		}
 		// we actually cannot suggest a fileName, I believe.
 		if (!Jmol.featureDetection.hasFileReader) {
-        var mst = "Local file reading is not enabled in your browser";
+        var msg = "Local file reading is not enabled in your browser";
 				return (fileLoadThread ? fileLoadThread.setData(msg, null, null, appData, applet) : alert(msg));
     }
 		if (!applet._localReader) {
@@ -11753,12 +11808,18 @@ Jmol = (function(document) {
     }    
   }
 
-	Jmol._doAjax = function(url, postOut, dataOut) {
+	Jmol.doAjax = function(url, postOut, dataOut) {
 		// called by org.jmol.awtjs2d.JmolURLConnection.doAjax()
 		url = url.toString();
+		if (dataOut) {
 
-		if (dataOut != null) 
-			return Jmol._saveFile(url, dataOut);
+			if (url.indexOf("http://") != 0 && url.indexOf("https://") != 0)
+				return Jmol._saveFile(url, dataOut);
+			var info = {async:false,url:url,type:"POST",
+				data:typeof data == "string" ? dataOut :";base64," + (JU || J.util).Base64.getBase64(dataOut).toString(), processData:false
+			};
+			return Jmol.$ajax(info).responseText;
+		}
 		if (postOut)
 			url += "?POST?" + postOut;
 		return Jmol._getFileData(url, null, true);
@@ -11775,17 +11836,22 @@ Jmol = (function(document) {
 			: filename.indexOf(".gif") >= 0 ? "image/gif" 
 			: filename.indexOf(".jpg") >= 0 ? "image/jpg" : ""));
 		var isString = (typeof data == "string");
-		if (!isString)
-			data = (JU ? JU : J.util).Base64.getBase64(data).toString();
-		encoding || (encoding = (isString ? "" : "base64"));
+		
+	if (isString && data.indexOf(";base64,") >= 0) {
+	  data = data.split(";base64,")[1];
+	} else {	
+   	data = (JU || J.util).Base64.getBase64(isString ? data.getBytes("UTF-8") : data).toString();
+   	}
+		encoding || (encoding = "base64");
+		
 		var url = Jmol._serverUrl;
 		url && url.indexOf("your.server") >= 0 && (url = "");
 		if (Jmol._useDataURI || !url) {
 			// Asynchronous output generated using an anchor tag
-			encoding || (data = btoa(data));
+			// btoa does not work with UTF-8 data///encoding || (data = btoa(data));
 			var a = document.createElement("a");
 			a.href = "data:" + mimetype + ";base64," + data;
-			a.type = mimetype || (mimetype = "text/plain");	
+			a.type = mimetype || (mimetype = "text/plain;charset=utf-8");	
 			a.download = filename;
 			a.target = "_blank";
 				$("body").append(a);
@@ -11835,7 +11901,7 @@ Jmol = (function(document) {
 	}
 
 	Jmol._registerApplet = function(id, applet) {
-		return window[id] = Jmol._applets[id] = Jmol._applets[id + "__" + Jmol._syncId + "__"] = applet;
+		return window[id] = Jmol._applets[id] = Jmol._applets.master = Jmol._applets[id + "__" + Jmol._syncId + "__"] = applet;
 	} 
 
 	Jmol._readyCallback = function (appId,fullId,isReady,javaApplet,javaAppletPanel) {
@@ -11849,7 +11915,7 @@ Jmol = (function(document) {
       applet._appletPanel = (javaAppletPanel || javaApplet);
       applet._applet = javaApplet;
     }
-		Jmol._track(applet._readyCallback(appId, fullId, isReady));
+		Jmol._track(applet)._readyCallback(appId, fullId, isReady);
 	}
 
 	Jmol._getWrapper = function(applet, isHeader) {
@@ -12254,7 +12320,7 @@ Jmol = (function(document) {
 		return (x == undefined ? null : [Math.round(x), Math.round(y), Jmol._jsGetMouseModifiers(ev)]);
 	}
 
-  Jmol._setCursor = function(applet, c) {
+  Jmol.setCursor = function(applet, c) {
     if (applet._isJava || applet._readingLocal)
       return;
     var curs;
@@ -12391,7 +12457,7 @@ Jmol = (function(document) {
       if (canvas.isdragging && (!ui || !ui.handleJSEvent(canvas, 506, ev))) {}
 			canvas.applet._processEvent((canvas.isDragging ? 506 : 503), xym); // java.awt.Event.MOUSE_DRAG : java.awt.Event.MOUSE_MOVE
 			return !!ui;
-		}
+}
 		
 		Jmol.$bind(canvas, 'DOMMouseScroll mousewheel', function(ev) { // Zoom
       if (doIgnore(ev))
@@ -12403,7 +12469,7 @@ Jmol = (function(document) {
 			var oe = ev.originalEvent;
 			var scroll = (oe.detail ? oe.detail : (Jmol.featureDetection.os == "mac" ? 1 : -1) * oe.wheelDelta); // Mac and PC are reverse; but 
 			var modifiers = Jmol._jsGetMouseModifiers(ev);
-			canvas.applet._processEvent(-1,[scroll < 0 ? -1 : 1,0,modifiers]);
+			canvas.applet._processEvent(507,[scroll < 0 ? -1 : 1,0,modifiers]);
 			return false;
 		});
 
@@ -12655,7 +12721,7 @@ Swing.setText = function(btn) {
 }
 
 Swing.setVisible = function(c) {
-	Jmol.$setVisible(c.id, c.visible);
+	Jmol.$setVisible(c.id, c._visible);
 }
 
 Swing.setEnabled = function(c) {
@@ -12698,7 +12764,7 @@ Swing.hideMenus = function(applet) {
 	var menus = applet._menus;
 	if (menus)
 		for (var i in menus)
-			if (menus[i].visible)
+			if (menus[i]._visible)
 				Swing.hideMenu(menus[i]);
 }
 
@@ -12794,11 +12860,31 @@ Jmol.View = {
 
 // methods called from other modules have no "_" in their name
 
+View.resetView = function(applet, appletNot) {
+  debugger;
+  if (appletNot) {
+  	if (!appletNot._viewSet)
+  		return;
+    var set = Jmol.View.applets[appletNot._viewSet]
+    for (var applet in set) {
+      if (applet == appletNot)
+        continue;
+      Jmol.View.resetView(applet);
+    }
+    return;
+  }
+  if (applet) {
+  	applet._reset();
+    Jmol.View.updateView(applet);
+  }
+}
+
 View.updateView = function(applet, Info, _View_updateView) {
 	// Info.chemID, Info.data, possibly Info.viewID if no chemID
 	// return from applet after asynchronous download of new data
 	if (applet._viewSet == null)
 		return;
+  Info || (Info = {});
 	Info.chemID || (applet._searchQuery = null);
 	Info.data || (Info.data = "N/A");
 	Info.type = applet._viewType;
@@ -12974,7 +13060,7 @@ Jmol.Cache.put = function(filename, data) {
 				// but it will be only a URL, not an actual file. 
 				try {
 				  file = "" + oe.dataTransfer.getData("text");
-				  if (file.indexOf("file:/") == 0 || file.indexOf("http:/") == 0) {
+				  if (file.indexOf("file:/") == 0 || file.indexOf("http:/") == 0 || file.indexOf("https:/") == 0) {
 				  	me._scriptLoad(file);
 				  	return;
 			  	}

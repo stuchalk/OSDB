@@ -224,7 +224,7 @@
     proto._getWidth = function() { return this._canvas.width }; 
     proto._getHeight = function() { return this._canvas.height };
     proto._getContentLayer = function() { return Jmol.$(this, "contentLayer")[0] };
-    proto._repaintNow = function() { Jmol._repaint(this, false) }; 
+    proto._repaintNow = function() { Jmol.repaint(this, false) }; 
 ////////
 
 
@@ -350,6 +350,7 @@
 					base[base.length - 1] = codePath;
 				codePath = base.join("/");
 			}
+			applet._j2sFullPath = codePath.substring(0, codePath.length-1);
 			viewerOptions.put("codePath", codePath);
 			Jmol._registerApplet(applet._id, applet);
 			try {
@@ -380,7 +381,7 @@
 		proto._show = function(tf) {
 			Jmol.$setVisible(Jmol.$(this,"appletdiv"), tf);
 			if (tf)
-				Jmol._repaint(this, true);
+				Jmol.repaint(this, true);
 		};
 
 		proto._canScript = function(script) {return true};
@@ -403,13 +404,13 @@
 			if (Jmol[s])
 				clearTimeout(Jmol[s]);
 			var me = this;
-			Jmol[s] = setTimeout(function() {Jmol._repaint(me, true);Jmol[s]=null}, 100);
+			Jmol[s] = setTimeout(function() {Jmol.repaint(me, true);Jmol[s]=null}, 100);
 		}
 
 		return proto;
 	};
 
-	Jmol._repaint = function(applet, asNewThread) {
+	Jmol.repaint = function(applet, asNewThread) {
     // JmolObjectInterface 
 		// asNewThread: true is from RepaintManager.repaintNow()
 		// false is from Repaintmanager.requestRepaintAndWait()
@@ -442,25 +443,25 @@
 	}
 
   /**
-   * _loadImage is called for asynchronous image loading.   
+   * loadImage is called for asynchronous image loading.   
    * If bytes are not null, they are from a ZIP file. They are processed sychronously
    * here using an image data URI. Can all browsers handle MB of data in data URI?
    *
    */        
-	Jmol._loadImage = function(platform, echoName, path, bytes, fOnload, image) {
+	Jmol.loadImage = function(platform, echoName, path, bytes, fOnload, image) {
     // JmolObjectInterface  
 		var id = "echo_" + echoName + path + (bytes ? "_" + bytes.length : "");
-		var canvas = Jmol._getHiddenCanvas(platform.vwr.html5Applet, id, 0, 0, false, true);
+		var canvas = Jmol.getHiddenCanvas(platform.vwr.html5Applet, id, 0, 0, false, true);
 //    System.out.println(["JSmol.js loadImage ",id,path,canvas,image])
     if (canvas == null) { 
   		if (image == null) {
   			image = new Image();
         if (bytes == null) {
-          image.onload = function() {Jmol._loadImage(platform, echoName, path, null, fOnload, image)};
+          image.onload = function() {Jmol.loadImage(platform, echoName, path, null, fOnload, image)};
     			image.src = path;
           return null;
         }
-        System.out.println("Jsmol.js Jmol._loadImage using data URI for " + id) 
+        System.out.println("Jsmol.js Jmol.loadImage using data URI for " + id) 
         image.src = (typeof bytes == "string" ? bytes : 
           "data:" + JU.Rdr.guessMimeTypeForBytes(bytes) + ";base64," + JU.Base64.getBase64(bytes));
       }
@@ -471,22 +472,22 @@
        width /= 2;
        height /= 2; 
       } 
-		  canvas = Jmol._getHiddenCanvas(platform.vwr.html5Applet, id, width, height, true, false);
+		  canvas = Jmol.getHiddenCanvas(platform.vwr.html5Applet, id, width, height, true, false);
   		canvas.imageWidth = width;
   		canvas.imageHeight = height;
   		canvas.id = id;
   		canvas.image=image;
-  		Jmol._setCanvasImage(canvas, width, height);
+  		Jmol.setCanvasImage(canvas, width, height);
 		// return a null canvas and the error in path if there is a problem
     } else {
-      System.out.println("Jsmol.js Jmol._loadImage reading cached image for " + id) 
+      System.out.println("Jsmol.js Jmol.loadImage reading cached image for " + id) 
     }
     return (bytes == null? fOnload(canvas,path) : canvas);
 	};
 
 Jmol._canvasCache = {};
 
-	Jmol._getHiddenCanvas = function(applet, id, width, height, forceNew, checkOnly) {
+	Jmol.getHiddenCanvas = function(applet, id, width, height, forceNew, checkOnly) {
 		id = applet._id + "_" + id;
     var d = Jmol._canvasCache[id];
     if (checkOnly)
@@ -504,7 +505,7 @@ Jmol._canvasCache = {};
 		return d;
    	}
 
-	Jmol._setCanvasImage = function(canvas, width, height) {
+	Jmol.setCanvasImage = function(canvas, width, height) {
     // called from org.jmol.awtjs2d.Platform
 		canvas.buf32 = null;
 		canvas.width = width;
@@ -512,7 +513,7 @@ Jmol._canvasCache = {};
 		canvas.getContext("2d").drawImage(canvas.image, 0, 0, canvas.image.width, canvas.image.height, 0, 0, width, height);
 	};
   
-  Jmol._apply = function(f,a) {
+  Jmol.applyFunc = function(f,a) {
     // JmolObjectInterface
     return f(a);
   }

@@ -101,12 +101,7 @@ text.setXYZs (this.atomPt.sX, this.atomPt.sY, this.zBox, this.zSlab);
 text.colix = this.labelColix;
 text.bgcolix = this.bgcolix;
 } else {
-if (Math.abs (text.pymolOffset[0]) == 1) this.pTemp.setT (this.atomPt);
- else this.pTemp.set (0, 0, 0);
-this.pTemp.add3 (text.pymolOffset[4], text.pymolOffset[5], text.pymolOffset[6]);
-this.tm.transformPtScr (this.pTemp, this.screen);
-text.setXYZs (this.screen.x, this.screen.y, this.screen.z, this.zSlab);
-text.setScalePixelsPerMicron (this.sppm);
+text.getPymolScreenOffset (this.atomPt, this.screen, this.zSlab, this.pTemp, this.sppm);
 }} else {
 var isLeft = (this.textAlign == 4 || this.textAlign == 0);
 if (this.fid != this.fidPrevious || this.ascent == 0) {
@@ -131,6 +126,7 @@ text.atomZ = this.zSlab;
 text.setXYZs (this.atomPt.sX, this.atomPt.sY, this.zBox, this.zSlab);
 newText = true;
 }if (text.pymolOffset == null) {
+if (text.font == null) text.setFontFromFid (this.font3d.fid);
 text.setOffset (this.offset);
 if (this.textAlign != 0) text.setAlignment (this.textAlign);
 }text.pointer = this.pointer;

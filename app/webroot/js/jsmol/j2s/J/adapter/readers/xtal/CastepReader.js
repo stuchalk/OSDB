@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.readers.xtal");
-Clazz.load (["J.adapter.smarter.AtomSetCollectionReader"], "J.adapter.readers.xtal.CastepReader", ["java.lang.Double", "$.Float", "JU.DF", "$.Lst", "$.P3", "$.PT", "$.V3", "J.adapter.smarter.Atom", "JU.Escape", "$.Logger", "$.Tensor"], function () {
+Clazz.load (["J.adapter.smarter.AtomSetCollectionReader"], "J.adapter.readers.xtal.CastepReader", ["java.lang.Double", "$.Float", "JU.DF", "$.Lst", "$.M4", "$.P3", "$.PT", "$.V3", "J.adapter.smarter.Atom", "JU.Escape", "$.Logger", "$.Tensor"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.tokens = null;
 this.isPhonon = false;
@@ -24,6 +24,7 @@ this.chargeType = "MULL";
 this.isAllQ = false;
 this.haveCharges = false;
 this.tsType = null;
+this.matSupercell = null;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.xtal, "CastepReader", J.adapter.smarter.AtomSetCollectionReader);
 Clazz.prepareFields (c$, function () {
@@ -236,7 +237,7 @@ for (var i = 0; i < 3; i++) {
 lv[0] = this.abc[i].x;
 lv[1] = this.abc[i].y;
 lv[2] = this.abc[i].z;
-this.addPrimitiveLatticeVector (i, lv, 0);
+this.addExplicitLatticeVector (i, lv, 0);
 }
 });
 Clazz.defineMethod (c$, "readLatticeAbc", 
@@ -432,16 +433,20 @@ if (!isOK) return;
 var nx = 1;
 var ny = 1;
 var nz = 1;
-var xSym = this.asc.getXSymmetry ();
 if (this.ptSupercell != null && !isOK && !isSecond) {
-xSym.setSupercellFromPoint (this.ptSupercell);
+this.matSupercell =  new JU.M4 ();
+this.matSupercell.m00 = this.ptSupercell.x;
+this.matSupercell.m11 = this.ptSupercell.y;
+this.matSupercell.m22 = this.ptSupercell.z;
+this.matSupercell.m33 = 1;
+JU.Logger.info ("Using supercell \n" + this.matSupercell);
 nx = this.ptSupercell.x;
 ny = this.ptSupercell.y;
 nz = this.ptSupercell.z;
 var dx = (qvec.x == 0 ? 1 : qvec.x) * nx;
 var dy = (qvec.y == 0 ? 1 : qvec.y) * ny;
 var dz = (qvec.z == 0 ? 1 : qvec.z) * nz;
-if (!J.adapter.readers.xtal.CastepReader.isInt (dx) || !J.adapter.readers.xtal.CastepReader.isInt (dy) || !J.adapter.readers.xtal.CastepReader.isInt (dz)) return;
+if ((nx != 1 || ny != 1 || nz != 1) && isGammaPoint || !J.adapter.readers.xtal.CastepReader.isInt (dx) || !J.adapter.readers.xtal.CastepReader.isInt (dy) || !J.adapter.readers.xtal.CastepReader.isInt (dz)) return;
 isOK = true;
 }if (this.ptSupercell == null || !this.havePhonons) this.appendLoadNote (this.line);
 if (!isOK && isSecond) return;
@@ -479,13 +484,13 @@ for (var j = 0; j < this.ac; j++) {
 this.fillFloatArray (null, 0, data);
 for (var k = iatom++; k < aCount; k++) if (atoms[k].atomSite == j) {
 t.sub2 (atoms[k], atoms[atoms[k].atomSite]);
-xSym.rotateToSuperCell (t);
+if (this.matSupercell != null) this.matSupercell.rotTrans (t);
 this.setPhononVector (data, atoms[k], t, qvec, v);
 this.asc.addVibrationVectorWithSymmetry (k, v.x, v.y, v.z, true);
 }
 }
 if (this.isTrajectory) this.asc.setTrajectory ();
-this.asc.setAtomSetFrequency (null, null, "" + freq, null);
+this.asc.setAtomSetFrequency (this.vibrationNumber, null, null, "" + freq, null);
 this.asc.setAtomSetName (JU.DF.formatDecimal (freq, 2) + " cm-1 " + qname);
 }
 });

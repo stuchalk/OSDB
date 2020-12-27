@@ -75,7 +75,7 @@ if (!Float.isNaN (atom.x)) {
 xyz[j] = atom.x;
 xyz[j + 1] = atom.y;
 xyz[j + 2] = atom.z;
-}this.addPrimitiveLatticeVector (i, xyz, j);
+}this.addExplicitLatticeVector (i, xyz, j);
 }
 for (var i = this.ac; --i >= 0; ) this.setAtomCoord (this.vAtoms.get (i));
 

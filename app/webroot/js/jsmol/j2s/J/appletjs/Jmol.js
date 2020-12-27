@@ -97,8 +97,28 @@ return fxyz;
 }, "~S,~N,~N,~N");
 Clazz.overrideMethod (c$, "doShowDocument", 
 function (url) {
+var surl = JU.PT.split (url.toString (), "?POST?");
+if (surl.length == 1) {
 {
-window.open(url.toString());
+window.open(surl[0]);
+}return;
+}var f = "<form id=f method=POST action='" + surl[0] + "'>";
+f += "<input type='hidden' name='name' value='nmr-1h-prediction' id='name'>";
+f += "<input type='submit' value='working...'>";
+var fields = surl[1].$plit ("&");
+for (var i = 0; i < fields.length; i++) {
+var field = fields[i];
+var pt = field.indexOf ("=");
+var name = field.substring (0, pt);
+var value = field.substring (pt);
+if (value.indexOf ("\n") >= 0) {
+f += "<textarea style='display:none' name=" + name + ">" + value + "</textarea>";
+} else {
+f += "<input type=hidden name=" + name + " value=\"" + value + "\">";
+}}
+f += "</form>";
+{
+var w=window.open("");w.document.write(f);w.document.getElementById("f").submit();
 }}, "java.net.URL");
 Clazz.overrideMethod (c$, "doSendCallback", 
 function (callback, data, strInfo) {

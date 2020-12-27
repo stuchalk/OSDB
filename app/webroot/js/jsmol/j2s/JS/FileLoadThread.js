@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JS");
-Clazz.load (["J.thread.JmolThread"], "JS.FileLoadThread", null, function () {
+Clazz.load (["J.thread.JmolThread"], "JS.FileLoadThread", ["JV.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.fileName = null;
 this.cacheName = null;
@@ -25,10 +25,7 @@ case 0:
 if (this.stopped || !this.vwr.testAsync && this.eval.isStopped ()) {
 mode = -2;
 break;
-}var jmol = null;
-{
-jmol = Jmol;
-}if (jmol != null) jmol._loadFileAsynchronously (this, this.vwr.html5Applet, this.fileName, null);
+}if (JV.Viewer.jmolObject != null) JV.Viewer.jmolObject.loadFileAsynchronously (this, this.vwr.html5Applet, this.fileName, null);
 {
 }return;
 case 1:

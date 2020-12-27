@@ -13,6 +13,7 @@ return JSV.dialog.PeakListDialog.posXY;
 Clazz.defineMethod (c$, "addUniqueControls", 
 function () {
 this.txt1 = this.dialog.addTextField ("txtThreshold", "Threshold", null, "", "", true);
+this.dialog.setPreferredSize (780, 350);
 this.setThreshold (NaN);
 this.combo1 = this.dialog.addSelectOption ("cmbInterpolation", "Interpolation",  Clazz.newArray (-1, ["parabolic", "none"]), 0, true);
 });

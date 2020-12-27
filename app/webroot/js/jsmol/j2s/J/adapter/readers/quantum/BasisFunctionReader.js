@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.readers.quantum");
-Clazz.load (["J.adapter.smarter.AtomSetCollectionReader", "java.util.Hashtable", "JU.Lst"], "J.adapter.readers.quantum.BasisFunctionReader", ["java.util.Arrays", "JU.PT", "J.quantum.QS", "JU.Logger"], function () {
+Clazz.load (["J.adapter.smarter.AtomSetCollectionReader", "java.util.Hashtable", "JU.Lst", "J.quantum.QS"], "J.adapter.readers.quantum.BasisFunctionReader", ["java.util.Arrays", "JU.PT", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.shells = null;
 this.moData = null;
@@ -14,12 +14,16 @@ this.spin = null;
 if (!Clazz.isClassDefined ("J.adapter.readers.quantum.BasisFunctionReader.MOEnergySorter")) {
 J.adapter.readers.quantum.BasisFunctionReader.$BasisFunctionReader$MOEnergySorter$ ();
 }
+this.orbitalMaps = null;
+this.highLEnabled = null;
 this.nCoef = 0;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.quantum, "BasisFunctionReader", J.adapter.smarter.AtomSetCollectionReader);
 Clazz.prepareFields (c$, function () {
 this.moData =  new java.util.Hashtable ();
 this.orbitals =  new JU.Lst ();
+this.orbitalMaps =  new java.util.Hashtable ();
+this.highLEnabled =  Clazz.newIntArray (J.quantum.QS.idSpherical.length, 0);
 });
 Clazz.defineMethod (c$, "filterMO", 
 function () {
@@ -51,15 +55,23 @@ if (this.dfCoefMaps != null) mo.put ("dfCoefMaps", this.dfCoefMaps);
 this.orbitals.addLast (mo);
 mo.put ("index", Integer.$valueOf (this.orbitals.size ()));
 if (this.spin != null) mo.put ("spin", this.spin);
+this.moData.put ("highLEnabled", this.highLEnabled);
 }, "java.util.Map");
 Clazz.defineMethod (c$, "getDFMap", 
-function (fileList, shellType, jmolList, minLength) {
+function (shell, fileList, shellType, jmolList, minLength) {
+this.orbitalMaps.put (shell, fileList);
+this.moData.put ("orbitalMaps", this.orbitalMaps);
+this.enableShell (shellType);
 if (fileList.equals (jmolList)) return true;
 this.getDfCoefMaps ();
 var isOK = J.quantum.QS.createDFMap (this.dfCoefMaps[shellType], fileList, jmolList, minLength);
 if (!isOK) JU.Logger.error ("Disabling orbitals of type " + shellType + " -- Cannot read orbital order for: " + fileList + "\n expecting: " + jmolList);
 return isOK;
-}, "~S,~N,~S,~N");
+}, "~S,~S,~N,~S,~N");
+Clazz.defineMethod (c$, "enableShell", 
+function (shellType) {
+this.highLEnabled[shellType] = 1;
+}, "~N");
 Clazz.defineMethod (c$, "getDfCoefMaps", 
 function () {
 return (this.dfCoefMaps == null ? (this.dfCoefMaps = J.quantum.QS.getNewDfCoefMap ()) : this.dfCoefMaps);
@@ -102,6 +114,12 @@ function () {
 this.asc.discardPreviousAtoms ();
 this.moData.remove ("mos");
 this.orbitals.clear ();
+});
+Clazz.defineMethod (c$, "clearOrbitals", 
+function () {
+this.orbitals =  new JU.Lst ();
+this.moData =  new java.util.Hashtable ();
+this.alphaBeta = "";
 });
 c$.$BasisFunctionReader$MOEnergySorter$ = function () {
 Clazz.pu$h(self.c$);

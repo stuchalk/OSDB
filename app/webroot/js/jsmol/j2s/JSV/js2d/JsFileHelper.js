@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JSV.js2d");
-Clazz.load (["JSV.api.JSVFileHelper"], "JSV.js2d.JsFileHelper", ["JU.PT", "JSV.js2d.JsFile"], function () {
+Clazz.load (["JSV.api.JSVFileHelper"], "JSV.js2d.JsFileHelper", ["JU.PT", "JSV.common.JSViewer", "JSV.js2d.JsFile"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 Clazz.instantialize (this, arguments);
@@ -29,10 +29,8 @@ function (pdf) {
 }, "JSV.common.ExportType");
 Clazz.overrideMethod (c$, "showFileOpenDialog", 
 function (panelOrFrame, userData) {
-var applet = this.vwr.html5Applet;
-{
-Jmol._loadFileAsynchronously(this, applet, "?", userData);
-}return null;
+JSV.common.JSViewer.jmolObject.loadFileAsynchronously (this, this.vwr.html5Applet, "?", userData);
+return null;
 }, "~O,~A");
 Clazz.defineMethod (c$, "setData", 
 function (fileName, data, userInfo) {

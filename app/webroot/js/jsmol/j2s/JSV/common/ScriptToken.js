@@ -2,11 +2,12 @@ Clazz.declarePackage ("JSV.common");
 Clazz.load (["java.lang.Enum"], "JSV.common.ScriptToken", ["java.util.Hashtable", "JU.Lst", "$.PT", "$.SB", "JSV.common.ScriptTokenizer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.tip = null;
+this.description = null;
 Clazz.instantialize (this, arguments);
 }, JSV.common, "ScriptToken", Enum);
 Clazz.defineMethod (c$, "getTip", 
 function () {
-return "  " + (this.tip === "T" ? "TRUE/FALSE/TOGGLE" : this.tip === "TF" ? "TRUE or FALSE" : this.tip === "C" ? "<color>" : this.tip);
+return "  " + (this.tip === "T" ? "TRUE/FALSE/TOGGLE" : this.tip === "TF" ? "TRUE or FALSE" : this.tip === "C" ? "COLOR" : this.tip);
 });
 Clazz.makeConstructor (c$, 
  function () {
@@ -14,25 +15,35 @@ Clazz.makeConstructor (c$,
 Clazz.makeConstructor (c$, 
  function (tip) {
 this.tip = tip;
+this.description = "";
 }, "~S");
-c$.getScriptToken = Clazz.defineMethod (c$, "getScriptToken", 
-function (name) {
+Clazz.makeConstructor (c$, 
+ function (tip, description) {
+this.tip = tip;
+this.description = "-- " + description;
+}, "~S,~S");
+c$.getParams = Clazz.defineMethod (c$, "getParams", 
+ function () {
 if (JSV.common.ScriptToken.htParams == null) {
 JSV.common.ScriptToken.htParams =  new java.util.Hashtable ();
 for (var item, $item = 0, $$item = JSV.common.ScriptToken.values (); $item < $$item.length && ((item = $$item[$item]) || true); $item++) JSV.common.ScriptToken.htParams.put (item.name (), item);
 
-}var st = JSV.common.ScriptToken.htParams.get (name.toUpperCase ());
+}return JSV.common.ScriptToken.htParams;
+});
+c$.getScriptToken = Clazz.defineMethod (c$, "getScriptToken", 
+function (name) {
+var st = JSV.common.ScriptToken.getParams ().get (name.toUpperCase ());
 return (st == null ? JSV.common.ScriptToken.UNKNOWN : st);
 }, "~S");
 c$.getScriptTokenList = Clazz.defineMethod (c$, "getScriptTokenList", 
 function (name, isExact) {
-name = name.toUpperCase ();
+if (name != null) name = name.toUpperCase ();
 var list =  new JU.Lst ();
-var st = JSV.common.ScriptToken.getScriptToken (name);
 if (isExact) {
+var st = JSV.common.ScriptToken.getScriptToken (name);
 if (st != null) list.addLast (st);
 } else {
-for (var entry, $entry = JSV.common.ScriptToken.htParams.entrySet ().iterator (); $entry.hasNext () && ((entry = $entry.next ()) || true);) if (entry.getKey ().startsWith (name) && entry.getValue ().tip != null) list.addLast (entry.getValue ());
+for (var entry, $entry = JSV.common.ScriptToken.getParams ().entrySet ().iterator (); $entry.hasNext () && ((entry = $entry.next ()) || true);) if ((name == null || entry.getKey ().startsWith (name)) && entry.getValue ().tip != null) list.addLast (entry.getValue ());
 
 }return list;
 }, "~S,~B");
@@ -94,98 +105,106 @@ for (var i = 0; i < list.size (); i++) sb.append (",").append (list.get (i).toSt
 
 return sb.toString ().substring (1);
 }, "JU.Lst");
+Clazz.defineMethod (c$, "getDescription", 
+function () {
+return this.description;
+});
 c$.htParams = null;
 Clazz.defineEnumConstant (c$, "UNKNOWN", 0, []);
 Clazz.defineEnumConstant (c$, "APPLETID", 1, []);
 Clazz.defineEnumConstant (c$, "APPLETREADYCALLBACKFUNCTIONNAME", 2, []);
-Clazz.defineEnumConstant (c$, "AUTOINTEGRATE", 3, ["TF"]);
-Clazz.defineEnumConstant (c$, "BACKGROUNDCOLOR", 4, ["C"]);
-Clazz.defineEnumConstant (c$, "CLOSE", 5, ["spectrumId or fileName or ALL or VIEWS or SIMULATIONS"]);
-Clazz.defineEnumConstant (c$, "COMPOUNDMENUON", 6, ["TF"]);
+Clazz.defineEnumConstant (c$, "AUTOINTEGRATE", 3, ["TF", "automatically integrate an NMR spectrum"]);
+Clazz.defineEnumConstant (c$, "BACKGROUNDCOLOR", 4, ["C", "set the background color"]);
+Clazz.defineEnumConstant (c$, "CLOSE", 5, ["spectrumId or fileName or ALL or VIEWS or SIMULATIONS", "close one or more views or simulations"]);
+Clazz.defineEnumConstant (c$, "COMPOUNDMENUON", 6, []);
 Clazz.defineEnumConstant (c$, "COORDCALLBACKFUNCTIONNAME", 7, []);
-Clazz.defineEnumConstant (c$, "COORDINATESCOLOR", 8, ["C"]);
-Clazz.defineEnumConstant (c$, "COORDINATESON", 9, ["T"]);
-Clazz.defineEnumConstant (c$, "DEBUG", 10, ["TF"]);
-Clazz.defineEnumConstant (c$, "DEFAULTLOADSCRIPT", 11, ["\"script...\""]);
-Clazz.defineEnumConstant (c$, "DEFAULTNMRNORMALIZATION", 12, ["maxYvalue"]);
-Clazz.defineEnumConstant (c$, "DISPLAYFONTNAME", 13, ["fontName"]);
-Clazz.defineEnumConstant (c$, "DISPLAY1D", 14, ["T"]);
-Clazz.defineEnumConstant (c$, "DISPLAY2D", 15, ["T"]);
-Clazz.defineEnumConstant (c$, "ENABLEZOOM", 16, ["T"]);
+Clazz.defineEnumConstant (c$, "COORDINATESCOLOR", 8, ["C", "set the color of the coordinates shown in the upper right-hand corner"]);
+Clazz.defineEnumConstant (c$, "COORDINATESON", 9, ["T", "turn on or off the coordinates shown in the upper right-hand corner"]);
+Clazz.defineEnumConstant (c$, "DEBUG", 10, ["TF", "turn debugging on and off"]);
+Clazz.defineEnumConstant (c$, "DEFAULTLOADSCRIPT", 11, ["\"script...\"", "set the script to be run after each file is loaded"]);
+Clazz.defineEnumConstant (c$, "DEFAULTNMRNORMALIZATION", 12, ["maxYvalue", "set the value to be given the largest peak in an HMR spectrum"]);
+Clazz.defineEnumConstant (c$, "DISPLAYFONTNAME", 13, []);
+Clazz.defineEnumConstant (c$, "DISPLAY1D", 14, ["T", "turn on or off display of 1D spectra when 1D and 2D spectra are loaded"]);
+Clazz.defineEnumConstant (c$, "DISPLAY2D", 15, ["T", "turn on or off display of the 2D spectrum when 1D and 2D spectra are loaded"]);
+Clazz.defineEnumConstant (c$, "ENABLEZOOM", 16, ["T", "allow or disallow zooming"]);
 Clazz.defineEnumConstant (c$, "ENDINDEX", 17, []);
-Clazz.defineEnumConstant (c$, "FINDX", 18, ["x-value"]);
-Clazz.defineEnumConstant (c$, "GETPROPERTY", 19, ["[ALL] [propertyName]"]);
-Clazz.defineEnumConstant (c$, "GETSOLUTIONCOLOR", 20, [" FILL or FILLNONE or FILLALL or FILLALLNONE"]);
-Clazz.defineEnumConstant (c$, "GRIDCOLOR", 21, ["C"]);
-Clazz.defineEnumConstant (c$, "GRIDON", 22, ["T"]);
-Clazz.defineEnumConstant (c$, "HIDDEN", 23, ["TF"]);
-Clazz.defineEnumConstant (c$, "HIGHLIGHTCOLOR", 24, ["C"]);
-Clazz.defineEnumConstant (c$, "HIGHLIGHT", 25, ["OFF or X1 X2 [OFF] or X1 X2 r g b [a]"]);
-Clazz.defineEnumConstant (c$, "INTEGRALOFFSET", 26, ["percent"]);
-Clazz.defineEnumConstant (c$, "INTEGRALRANGE", 27, ["percent"]);
-Clazz.defineEnumConstant (c$, "INTEGRATE", 28, []);
-Clazz.defineEnumConstant (c$, "INTEGRATION", 29, ["ON/OFF/AUTO/TOGGLE/MIN value/MARK ppm1-ppm2:norm,ppm3-ppm4,... (start with 0-0 to clear)"]);
-Clazz.defineEnumConstant (c$, "INTEGRALPLOTCOLOR", 30, []);
-Clazz.defineEnumConstant (c$, "INTEGRATIONRATIOS", 31, []);
-Clazz.defineEnumConstant (c$, "INTERFACE", 32, []);
-Clazz.defineEnumConstant (c$, "IRMODE", 33, ["A or T or TOGGLE"]);
-Clazz.defineEnumConstant (c$, "JMOL", 34, ["...Jmol command..."]);
-Clazz.defineEnumConstant (c$, "JSV", 35, []);
-Clazz.defineEnumConstant (c$, "LABEL", 36, ["x y [color and/or \"text\"]"]);
-Clazz.defineEnumConstant (c$, "LINK", 37, ["AB or ABC or NONE or ALL"]);
-Clazz.defineEnumConstant (c$, "LOAD", 38, ["[APPEND] \"fileName\" [first] [last]; use \"\" to reload current file"]);
-Clazz.defineEnumConstant (c$, "LOADFILECALLBACKFUNCTIONNAME", 39, []);
-Clazz.defineEnumConstant (c$, "LOADIMAGINARY", 40, ["T/F - default is to NOT load imaginary spectra"]);
-Clazz.defineEnumConstant (c$, "MENUON", 41, []);
-Clazz.defineEnumConstant (c$, "OBSCURE", 42, []);
-Clazz.defineEnumConstant (c$, "OVERLAY", 43, []);
-Clazz.defineEnumConstant (c$, "OVERLAYSTACKED", 44, ["TF"]);
-Clazz.defineEnumConstant (c$, "PEAK", 45, ["<type(IR,CNMR,HNMR,MS, etc)> id=xxx or \"match\" [ALL], for example: PEAK HNMR id=3"]);
-Clazz.defineEnumConstant (c$, "PEAKCALLBACKFUNCTIONNAME", 46, []);
-Clazz.defineEnumConstant (c$, "PEAKLIST", 47, [" Example: PEAKLIST threshold=20 [%, or include=10] skip=0 interpolate=parabolic [or NONE]"]);
-Clazz.defineEnumConstant (c$, "PEAKTABCOLOR", 48, ["C"]);
-Clazz.defineEnumConstant (c$, "PLOTAREACOLOR", 49, ["C"]);
-Clazz.defineEnumConstant (c$, "PLOTCOLOR", 50, ["C"]);
-Clazz.defineEnumConstant (c$, "PLOTCOLORS", 51, ["color,color,color,..."]);
-Clazz.defineEnumConstant (c$, "PRINT", 52, []);
-Clazz.defineEnumConstant (c$, "REVERSEPLOT", 53, ["T"]);
-Clazz.defineEnumConstant (c$, "SCALEBY", 54, ["factor"]);
-Clazz.defineEnumConstant (c$, "SCALECOLOR", 55, ["C"]);
-Clazz.defineEnumConstant (c$, "SCRIPT", 56, ["filename.jsv"]);
-Clazz.defineEnumConstant (c$, "SELECT", 57, ["spectrumID, spectrumID,..."]);
-Clazz.defineEnumConstant (c$, "SETPEAK", 58, ["x (ppm) or NONE does peak search, unlike SETX -- NMR only"]);
-Clazz.defineEnumConstant (c$, "SETX", 59, ["x (ppm) does no peak search, unlike SETPEAK -- NMR only"]);
-Clazz.defineEnumConstant (c$, "SHIFTX", 60, ["dx (ppm) or NONE -- NMR only"]);
-Clazz.defineEnumConstant (c$, "SHOWERRORS", 61, []);
-Clazz.defineEnumConstant (c$, "SHOWINTEGRATION", 62, ["T"]);
-Clazz.defineEnumConstant (c$, "SHOWKEY", 63, ["T"]);
-Clazz.defineEnumConstant (c$, "SHOWMEASUREMENTS", 64, ["T"]);
-Clazz.defineEnumConstant (c$, "SHOWMENU", 65, []);
-Clazz.defineEnumConstant (c$, "SHOWPEAKLIST", 66, ["T"]);
-Clazz.defineEnumConstant (c$, "SHOWPROPERTIES", 67, []);
-Clazz.defineEnumConstant (c$, "SHOWSOURCE", 68, []);
-Clazz.defineEnumConstant (c$, "SPECTRUM", 69, ["spectrumID"]);
-Clazz.defineEnumConstant (c$, "SPECTRUMNUMBER", 70, []);
-Clazz.defineEnumConstant (c$, "STACKOFFSETY", 71, ["percent"]);
-Clazz.defineEnumConstant (c$, "STARTINDEX", 72, []);
-Clazz.defineEnumConstant (c$, "SYNCCALLBACKFUNCTIONNAME", 73, []);
-Clazz.defineEnumConstant (c$, "SYNCID", 74, []);
-Clazz.defineEnumConstant (c$, "TEST", 75, []);
-Clazz.defineEnumConstant (c$, "TITLEON", 76, ["T"]);
-Clazz.defineEnumConstant (c$, "TITLEBOLDON", 77, ["T"]);
-Clazz.defineEnumConstant (c$, "TITLECOLOR", 78, ["C"]);
-Clazz.defineEnumConstant (c$, "TITLEFONTNAME", 79, ["fontName"]);
-Clazz.defineEnumConstant (c$, "UNITSCOLOR", 80, ["C"]);
-Clazz.defineEnumConstant (c$, "VERSION", 81, []);
-Clazz.defineEnumConstant (c$, "VIEW", 82, ["spectrumID, spectrumID, ... Example: VIEW 3.1, 3.2  or  VIEW \"acetophenone\""]);
-Clazz.defineEnumConstant (c$, "XSCALEON", 83, ["T"]);
-Clazz.defineEnumConstant (c$, "XUNITSON", 84, ["T"]);
-Clazz.defineEnumConstant (c$, "YSCALE", 85, ["[ALL] lowValue highValue"]);
-Clazz.defineEnumConstant (c$, "YSCALEON", 86, ["T"]);
-Clazz.defineEnumConstant (c$, "YUNITSON", 87, ["T"]);
-Clazz.defineEnumConstant (c$, "WINDOW", 88, []);
-Clazz.defineEnumConstant (c$, "WRITE", 89, ["[XY,DIF,DIFDUP,PAC,FIX,SQZ,AML,CML,JPG,PDF,PNG,SVG] \"filename\""]);
-Clazz.defineEnumConstant (c$, "ZOOM", 90, ["OUT or x1,x2 or x1,y1 x2,y2"]);
-Clazz.defineEnumConstant (c$, "ZOOMBOXCOLOR", 91, []);
-Clazz.defineEnumConstant (c$, "ZOOMBOXCOLOR2", 92, []);
+Clazz.defineEnumConstant (c$, "FINDX", 18, ["value", "move the vertical-line cursor to a specific x-axis value"]);
+Clazz.defineEnumConstant (c$, "GETPROPERTY", 19, ["[propertyName] or ALL or NAMES", "get a property value or all property values as key/value pairs, or a list of names"]);
+Clazz.defineEnumConstant (c$, "GETSOLUTIONCOLOR", 20, [" FILL or FILLNONE or FILLALL or FILLALLNONE", "estimate the solution color for UV/VIS spectra"]);
+Clazz.defineEnumConstant (c$, "GRIDCOLOR", 21, ["C", "color of the grid"]);
+Clazz.defineEnumConstant (c$, "GRIDON", 22, ["T", "turn the grid lines on or off"]);
+Clazz.defineEnumConstant (c$, "HELP", 23, ["[command]", "get this listing or help for a specific command"]);
+Clazz.defineEnumConstant (c$, "HIDDEN", 24, []);
+Clazz.defineEnumConstant (c$, "HIGHLIGHTCOLOR", 25, ["C", "set the highlight color"]);
+Clazz.defineEnumConstant (c$, "HIGHLIGHT", 26, ["OFF or X1 X2 [OFF] or X1 X2 r g b [a]", "turns on or off a highlight color, possibily setting its color, where r g b a are 0-255 or 0.0-1.0"]);
+Clazz.defineEnumConstant (c$, "INTEGRALOFFSET", 27, ["percent", "sets the integral offset from baseline"]);
+Clazz.defineEnumConstant (c$, "INTEGRALRANGE", 28, ["percent", "sets the height of the total integration"]);
+Clazz.defineEnumConstant (c$, "INTEGRATE", 29, ["", "see INTEGRATION"]);
+Clazz.defineEnumConstant (c$, "INTEGRATION", 30, ["ON/OFF/TOGGLE/AUTO/CLEAR/MIN value/MARK ppm1-ppm2:norm,ppm3-ppm4,...", "show/hide integration or set integrals (1D 1H NMR only)"]);
+Clazz.defineEnumConstant (c$, "INTEGRALPLOTCOLOR", 31, ["C", "color of the integration line"]);
+Clazz.defineEnumConstant (c$, "INTEGRATIONRATIOS", 32, ["'x:value,x:value,..'", "annotate the spectrum with numbers or text at specific x values"]);
+Clazz.defineEnumConstant (c$, "INTERFACE", 33, ["SINGLE or OVERLAY", "set how multiple spectra are displayed"]);
+Clazz.defineEnumConstant (c$, "INVERTY", 34, ["", "invert the Y axis"]);
+Clazz.defineEnumConstant (c$, "IRMODE", 35, ["A or T or TOGGLE", "set the IR mode to absorption or transmission"]);
+Clazz.defineEnumConstant (c$, "JMOL", 36, ["...Jmol command...", "send a command to Jmol (if present)"]);
+Clazz.defineEnumConstant (c$, "JSV", 37, []);
+Clazz.defineEnumConstant (c$, "LABEL", 38, ["x y [color and/or \"text\"]", "add a text label"]);
+Clazz.defineEnumConstant (c$, "LINK", 39, ["AB or ABC or NONE or ALL", "synchronize the crosshair of a 2D spectrum with 1D cursors"]);
+Clazz.defineEnumConstant (c$, "LOAD", 40, ["[APPEND] \"fileName\" [first] [last]; use \"\" for current file; $H1/name or $C13/name for simulation", "load a specturm"]);
+Clazz.defineEnumConstant (c$, "LOADFILECALLBACKFUNCTIONNAME", 41, []);
+Clazz.defineEnumConstant (c$, "LOADIMAGINARY", 42, ["TF", "set TRUE to load imaginary NMR component"]);
+Clazz.defineEnumConstant (c$, "MENUON", 43, []);
+Clazz.defineEnumConstant (c$, "OBSCURE", 44, []);
+Clazz.defineEnumConstant (c$, "OVERLAY", 45, []);
+Clazz.defineEnumConstant (c$, "OVERLAYSTACKED", 46, ["TF", "whether viewed spectra are shown separately, in a stack"]);
+Clazz.defineEnumConstant (c$, "PEAK", 47, ["[IR,CNMR,HNMR,MS] [#nnn or ID=xxx or text] [ALL], for example: PEAK HNMR #3", "highlights a peak based on its number or title text, optionally checking all loade spectra"]);
+Clazz.defineEnumConstant (c$, "PEAKCALLBACKFUNCTIONNAME", 48, []);
+Clazz.defineEnumConstant (c$, "PEAKLIST", 49, ["[THRESHOLD=n] [INTERPOLATE=PARABOLIC or NONE]", "creates a peak list based on a threshold value and parabolic or no interpolation"]);
+Clazz.defineEnumConstant (c$, "PEAKTABCOLOR", 50, ["C", "sets the color of peak marks for a peak listing"]);
+Clazz.defineEnumConstant (c$, "PEAKTABSON", 51, ["T", "show peak tabs for simulated spectra"]);
+Clazz.defineEnumConstant (c$, "PLOTAREACOLOR", 52, ["C", "sets the color of the plot background"]);
+Clazz.defineEnumConstant (c$, "PLOTCOLOR", 53, ["C", "sets the color of the graph line"]);
+Clazz.defineEnumConstant (c$, "PLOTCOLORS", 54, ["color,color,color,...", "sets the colors of multiple plots"]);
+Clazz.defineEnumConstant (c$, "POINTSONLY", 55, ["TF", "show points only for all data"]);
+Clazz.defineEnumConstant (c$, "PRINT", 56, ["", "prints the current spectrum"]);
+Clazz.defineEnumConstant (c$, "REVERSEPLOT", 57, ["T", "reverses the x-axis of a spectrum"]);
+Clazz.defineEnumConstant (c$, "SCALEBY", 58, ["factor", "multiplies the y-scale of the spectrum by a factor"]);
+Clazz.defineEnumConstant (c$, "SCALECOLOR", 59, ["C", "sets the color of the x-axis and y-axis scales"]);
+Clazz.defineEnumConstant (c$, "SCRIPT", 60, ["filename.jsv", "runs a script from a file"]);
+Clazz.defineEnumConstant (c$, "SELECT", 61, ["spectrumID, spectrumID,...", "selects one or more spectra based on IDs"]);
+Clazz.defineEnumConstant (c$, "SETPEAK", 62, ["xNew, xOld xNew, ?, or NONE", "sets nearest peak to xOld ppm to a new value; NONE resets (1D NMR only)"]);
+Clazz.defineEnumConstant (c$, "SETX", 63, ["xNew, xOld xNew, ?, or NONE", "sets an old ppm position in the spectrum to a new value; NONE resets (1D NMR only)"]);
+Clazz.defineEnumConstant (c$, "SHIFTX", 64, ["dx or NONE", "shifts the x-axis of a 1D NMR spectrum by the given ppm; NONE resets (1D NMR only)"]);
+Clazz.defineEnumConstant (c$, "SHOWERRORS", 65, ["shows recent errors"]);
+Clazz.defineEnumConstant (c$, "SHOWINTEGRATION", 66, ["T", "shows an integration listing"]);
+Clazz.defineEnumConstant (c$, "SHOWKEY", 67, ["T", "shows a color key when multiple spectra are displayed"]);
+Clazz.defineEnumConstant (c$, "SHOWMEASUREMENTS", 68, ["T", "shows a listing of measurements"]);
+Clazz.defineEnumConstant (c$, "SHOWMENU", 69, ["displays the popup menu"]);
+Clazz.defineEnumConstant (c$, "SHOWPEAKLIST", 70, ["T", "shows a listing for peak picking"]);
+Clazz.defineEnumConstant (c$, "SHOWPROPERTIES", 71, ["displays the header information of a JDX file"]);
+Clazz.defineEnumConstant (c$, "SHOWSOURCE", 72, ["displays the source JDX file associated with the selected data"]);
+Clazz.defineEnumConstant (c$, "SPECTRUM", 73, ["id", "displays a specific spectrum, where id is a number 1, 2, 3... or a file.spectrum number such as 2.1"]);
+Clazz.defineEnumConstant (c$, "SPECTRUMNUMBER", 74, ["n", "displays the nth spectrum loaded"]);
+Clazz.defineEnumConstant (c$, "STACKOFFSETY", 75, ["percent", "sets the y-axis offset of stacked spectra"]);
+Clazz.defineEnumConstant (c$, "STARTINDEX", 76, []);
+Clazz.defineEnumConstant (c$, "SYNCCALLBACKFUNCTIONNAME", 77, []);
+Clazz.defineEnumConstant (c$, "SYNCID", 78, []);
+Clazz.defineEnumConstant (c$, "TEST", 79, []);
+Clazz.defineEnumConstant (c$, "TITLEON", 80, ["T", "turns the title in the bottom left corner on or off"]);
+Clazz.defineEnumConstant (c$, "TITLEBOLDON", 81, ["T", "makes the title bold"]);
+Clazz.defineEnumConstant (c$, "TITLECOLOR", 82, ["C", "sets the color of the title"]);
+Clazz.defineEnumConstant (c$, "TITLEFONTNAME", 83, ["fontName", "sets the title font"]);
+Clazz.defineEnumConstant (c$, "UNITSCOLOR", 84, ["C", "sets the color of the x-axis and y-axis units"]);
+Clazz.defineEnumConstant (c$, "VERSION", 85, []);
+Clazz.defineEnumConstant (c$, "VIEW", 86, ["spectrumID, spectrumID, ... Example: VIEW 3.1, 3.2  or  VIEW \"acetophenone\"", "creates a view of one or more spectra"]);
+Clazz.defineEnumConstant (c$, "XSCALEON", 87, ["T", "set FALSE to turn off the x-axis scale"]);
+Clazz.defineEnumConstant (c$, "XUNITSON", 88, ["T", "set FALSE to turn off the x-axis units"]);
+Clazz.defineEnumConstant (c$, "YSCALE", 89, ["[ALL] lowValue highValue"]);
+Clazz.defineEnumConstant (c$, "YSCALEON", 90, ["T", "set FALSE to turn off the y-axis scale"]);
+Clazz.defineEnumConstant (c$, "YUNITSON", 91, ["T", "set FALSE to turn off the y-axis units"]);
+Clazz.defineEnumConstant (c$, "WINDOW", 92, []);
+Clazz.defineEnumConstant (c$, "WRITE", 93, ["[XY,DIF,DIFDUP,PAC,FIX,SQZ,AML,CML,JPG,PDF,PNG,SVG] \"filename\"", "writes a file in the specified format"]);
+Clazz.defineEnumConstant (c$, "ZOOM", 94, ["OUT or PREVIOUS or NEXT or x1,x2 or x1,y1 x2,y2", "sets the zoom"]);
+Clazz.defineEnumConstant (c$, "ZOOMBOXCOLOR", 95, []);
+Clazz.defineEnumConstant (c$, "ZOOMBOXCOLOR2", 96, []);
 });

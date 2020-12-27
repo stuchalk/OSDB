@@ -1,6 +1,7 @@
 Clazz.declarePackage ("J.export");
 Clazz.load (["JU.P3", "$.V3"], "J.export.___Exporter", ["java.lang.Float", "$.Short", "java.util.Hashtable", "JU.AU", "$.Lst", "$.M3", "$.Quat", "$.SB", "JU.C", "$.Logger", "$.MeshSurface"], function () {
 c$ = Clazz.decorateAsClass (function () {
+this.solidOnly = false;
 this.vwr = null;
 this.tm = null;
 this.privateKey = 0;
@@ -19,7 +20,7 @@ this.fixedRotationCenter = null;
 this.referenceCenter = null;
 this.cameraPosition = null;
 this.cameraDistance = 0;
-this.aperatureAngle = 0;
+this.apertureAngle = 0;
 this.scalePixelsPerAngstrom = 0;
 this.exportScale = 1;
 this.exportType = 0;
@@ -63,6 +64,9 @@ this.privateKey = privateKey;
 this.backgroundColix = vwr.getObjectColix (0);
 this.center.setT (this.tm.fixedRotationCenter);
 this.exportScale = vwr.getFloat (570425358);
+if (this.exportScale == 0) {
+this.exportScale = 10;
+}JU.Logger.info ("__Exporter exportScale: " + this.exportScale);
 if ((this.screenWidth <= 0) || (this.screenHeight <= 0)) {
 this.screenWidth = vwr.getScreenWidth ();
 this.screenHeight = vwr.getScreenHeight ();
@@ -74,7 +78,7 @@ this.referenceCenter = cameraFactors[0];
 this.cameraPosition = cameraFactors[1];
 this.fixedRotationCenter = cameraFactors[2];
 this.cameraDistance = cameraFactors[3].x;
-this.aperatureAngle = cameraFactors[3].y;
+this.apertureAngle = cameraFactors[3].y;
 this.scalePixelsPerAngstrom = cameraFactors[3].z;
 this.out = params.get ("outputChannel");
 this.commandLineOptions = params.get ("params");
@@ -86,6 +90,10 @@ Clazz.defineMethod (c$, "output",
 function (data) {
 this.out.append (data);
 }, "~S");
+Clazz.defineMethod (c$, "getByteCount", 
+function () {
+return this.out.getByteCount ();
+});
 Clazz.defineMethod (c$, "outputComment", 
 function (comment) {
 if (this.commentChar != null) this.output (this.commentChar + comment + "\n");
@@ -105,8 +113,8 @@ this.output ("\n");
 }, "~A,~N,JU.T3");
 Clazz.defineMethod (c$, "outputVertex", 
 function (pt, offset) {
-J["export"].___Exporter.setTempVertex (pt, offset, this.tempP1);
-this.output (this.tempP1);
+J["export"].___Exporter.setTempVertex (pt, offset, this.tempV1);
+this.output (this.tempV1);
 }, "JU.T3,JU.T3");
 Clazz.defineMethod (c$, "outputJmolPerspective", 
 function () {
@@ -120,7 +128,7 @@ sb.append (this.commentChar).append ("Jmol perspective:");
 sb.append ("\n").append (this.commentChar).append ("screen width height dim: " + this.screenWidth + " " + this.screenHeight + " " + this.vwr.getScreenDim ());
 sb.append ("\n").append (this.commentChar).append ("perspectiveDepth: " + this.vwr.tm.perspectiveDepth);
 sb.append ("\n").append (this.commentChar).append ("cameraDistance(angstroms): " + this.cameraDistance);
-sb.append ("\n").append (this.commentChar).append ("aperatureAngle(degrees): " + this.aperatureAngle);
+sb.append ("\n").append (this.commentChar).append ("aperatureAngle(degrees): " + this.apertureAngle);
 sb.append ("\n").append (this.commentChar).append ("scalePixelsPerAngstrom: " + this.scalePixelsPerAngstrom);
 sb.append ("\n").append (this.commentChar).append ("light source: " + this.lightSource);
 sb.append ("\n").append (this.commentChar).append ("lighting: " + this.vwr.getLightingState ().$replace ('\n', ' '));
@@ -129,7 +137,7 @@ sb.append ("\n").append (this.commentChar).append ("rotationRadius: " + this.vwr
 sb.append ("\n").append (this.commentChar).append ("boundboxCenter: " + this.vwr.getBoundBoxCenter ());
 sb.append ("\n").append (this.commentChar).append ("translationOffset: " + this.tm.getTranslationScript ());
 sb.append ("\n").append (this.commentChar).append ("zoom: " + this.vwr.tm.zmPct);
-sb.append ("\n").append (this.commentChar).append ("moveto command: " + this.vwr.getOrientationText (4129, null));
+sb.append ("\n").append (this.commentChar).append ("moveto command: " + this.vwr.getOrientationText (4129, null, null));
 sb.append ("\n");
 return sb.toString ();
 });
@@ -273,16 +281,16 @@ Clazz.defineMethod (c$, "drawSurface",
 function (meshSurface, colix) {
 var nVertices = meshSurface.vc;
 if (nVertices == 0) return;
-var nFaces = 0;
+var nTriangles = 0;
 var nPolygons = meshSurface.pc;
 var bsPolygons = meshSurface.bsPolygons;
 var faceVertexMax = (meshSurface.haveQuads ? 4 : 3);
 var indices = meshSurface.pis;
 var isAll = (bsPolygons == null);
 var i0 = (isAll ? nPolygons - 1 : bsPolygons.nextSetBit (0));
-for (var i = i0; i >= 0; i = (isAll ? i - 1 : bsPolygons.nextSetBit (i + 1))) nFaces += (faceVertexMax == 4 && indices[i].length == 4 ? 2 : 1);
+for (var i = i0; i >= 0; i = (isAll ? i - 1 : bsPolygons.nextSetBit (i + 1))) nTriangles += (faceVertexMax == 4 && indices[i].length == 4 ? 2 : 1);
 
-if (nFaces == 0) return;
+if (nTriangles == 0) return;
 var vertices = meshSurface.getVertices ();
 var normals = meshSurface.normals;
 var colorSolid = (colix != 0);
@@ -294,10 +302,10 @@ if (!this.isWebGL) {
 htColixes =  new java.util.Hashtable ();
 if (polygonColixes != null) colorList = this.getColorList (0, polygonColixes, nPolygons, bsPolygons, htColixes);
  else if (colixes != null) colorList = this.getColorList (0, colixes, nVertices, null, htColixes);
-}this.outputSurface (vertices, normals, colixes, indices, polygonColixes, nVertices, nPolygons, nFaces, bsPolygons, faceVertexMax, colix, colorList, htColixes, meshSurface.offset);
+}this.outputSurface (vertices, normals, colixes, indices, polygonColixes, nVertices, nPolygons, nTriangles, bsPolygons, faceVertexMax, colix, colorList, htColixes, meshSurface.offset);
 }, "JU.MeshSurface,~N");
 Clazz.defineMethod (c$, "outputSurface", 
-function (vertices, normals, colixes, indices, polygonColixes, nVertices, nPolygons, nFaces, bsPolygons, faceVertexMax, colix, colorList, htColixes, offset) {
+function (vertices, normals, colixes, indices, polygonColixes, nVertices, nPolygons, nTriangles, bsPolygons, faceVertexMax, colix, colorList, htColixes, offset) {
 }, "~A,~A,~A,~A,~A,~N,~N,~N,JU.BS,~N,~N,JU.Lst,java.util.Map,JU.P3");
 Clazz.defineMethod (c$, "drawFilledCircle", 
 function (colixRing, colixFill, diameter, x, y, z) {
@@ -319,7 +327,7 @@ function (x, y, z, colix, text, font3d) {
 this.outputComment ("start text " + (++this.nText) + ": " + text);
 this.gdata.plotText (x, y, z, this.gdata.getColorArgbOrGray (colix), 0, text, font3d, this.export3D);
 this.outputComment ("end text " + this.nText + ": " + text);
-}, "~N,~N,~N,~N,~S,javajs.awt.Font");
+}, "~N,~N,~N,~N,~S,JU.Font");
 Clazz.defineStatics (c$,
 "degreesPerRadian", (57.29577951308232));
 });

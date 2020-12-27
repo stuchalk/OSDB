@@ -125,7 +125,7 @@ this.appendLoadNote (title);
 }}, "~S");
 Clazz.defineMethod (c$, "rdLine", 
  function () {
-while (this.rd () != null && (this.line.length == 0 || this.checkComment ())) {
+while (this.rd () != null && (this.line.trim ().length == 0 || this.checkComment ())) {
 }
 return this.line;
 });

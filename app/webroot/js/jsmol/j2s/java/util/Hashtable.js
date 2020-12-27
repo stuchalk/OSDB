@@ -1,4 +1,4 @@
-
+// BH 7/7/2017 7:10:39 AM fixes Clazz.clone for arrays
 // BH 3/30/2015 11:01:35 PM incorrect constructor for HashtableKeySet and HashtableEntrySet (extends, not implements)
 // BH 8/24/2014 8:48:58 PM all synchronization and inner classes removed
 // BH 3/21/2014 6:44:21 AM  to reduce this.b$[....] phrases to simply this.h$
@@ -332,12 +332,10 @@ Clazz.defineMethod(c$,"clone",
 function(){
 try{
 var hashtable=Clazz.superCall(this,java.util.Hashtable,"clone",[]);
-hashtable.elementData=this.elementData.clone();
-var entry;
-for(var i=this.elementData.length;--i>=0;){
-if((entry=this.elementData[i])){
-hashtable.elementData[i]=entry.clone();
-}}
+hashtable.elementData=new Array(this.elementData.length);
+for(var i = this.elementData.length; --i >= 0;)
+ if (this.elementData[i] != null)
+  hashtable.elementData[i]=this.elementData[i].clone();
 return hashtable;
 }catch(e){
 if(Clazz.instanceOf(e,CloneNotSupportedException)){

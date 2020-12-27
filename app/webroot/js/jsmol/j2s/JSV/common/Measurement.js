@@ -72,4 +72,11 @@ Clazz.overrideMethod (c$, "toString",
 function () {
 return "[" + this.getXVal () + "," + this.pt2.getXVal () + "]";
 });
+Clazz.defineStatics (c$,
+"PT_XY1", 1,
+"PT_XY2", 2,
+"PT_INT_LABEL", -5,
+"PT_ON_LINE1", -1,
+"PT_ON_LINE2", -2,
+"PT_ON_LINE", 0);
 });

@@ -10,7 +10,7 @@ Clazz.defineMethod (c$, "doAjax",
 var jmol = null;
 {
 jmol = Jmol;
-}return jmol._doAjax (this.url, this.postOut, this.bytesOut);
+}return jmol.doAjax (this.url, this.postOut, this.bytesOut, false);
 });
 Clazz.overrideMethod (c$, "connect", 
 function () {

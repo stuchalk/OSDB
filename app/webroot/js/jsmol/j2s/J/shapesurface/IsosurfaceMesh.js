@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shapesurface");
-Clazz.load (["J.shape.Mesh"], "J.shapesurface.IsosurfaceMesh", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.CU", "$.Lst", "$.M4", "$.P3", "$.P3i", "$.PT", "$.SB", "$.V3", "J.api.Interface", "J.jvxl.data.JvxlCoder", "$.JvxlData", "JS.T", "JU.C", "$.ColorEncoder", "$.Logger", "JV.Viewer"], function () {
+Clazz.load (["J.shape.Mesh"], "J.shapesurface.IsosurfaceMesh", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.CU", "$.Lst", "$.M4", "$.P3", "$.P3i", "$.PT", "$.SB", "$.V3", "J.api.Interface", "J.jvxl.data.JvxlCoder", "$.JvxlData", "JS.T", "JU.C", "$.ColorEncoder", "$.Logger", "$.SimpleUnitCell", "JV.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.jvxlData = null;
 this.vertexIncrement = 1;
@@ -18,6 +18,7 @@ this.contourColixes = null;
 this.colorEncoder = null;
 this.bsVdw = null;
 this.colorPhased = false;
+this.probeValues = null;
 Clazz.instantialize (this, arguments);
 }, J.shapesurface, "IsosurfaceMesh", J.shape.Mesh);
 Clazz.overrideMethod (c$, "getResolution", 
@@ -26,6 +27,7 @@ return 1 / this.jvxlData.pointsPerAngstrom;
 });
 Clazz.makeConstructor (c$, 
 function (vwr, thisID, colix, index) {
+Clazz.superConstructor (this, J.shapesurface.IsosurfaceMesh, []);
 this.mesh1 (vwr, thisID, colix, index);
 this.jvxlData =  new J.jvxl.data.JvxlData ();
 this.checkByteCount = 2;
@@ -167,6 +169,11 @@ this.jvxlData.contourColixes[i] = (vContours[i].get (3))[0];
 }
 return this.jvxlData.vContours = vContours;
 });
+Clazz.defineMethod (c$, "getPmeshData", 
+function (isBinary) {
+var mw = J.api.Interface.getInterface ("J.shapesurface.PMeshWriter", this.vwr, "script");
+return mw.write (this, isBinary);
+}, "~B");
 c$.get3dContour = Clazz.defineMethod (c$, "get3dContour", 
  function (m, v, value, colix) {
 var bsContour = JU.BS.newN (m.pc);
@@ -558,7 +565,7 @@ return ipt;
 }, "JU.MeshSurface,~N,~N,~A");
 Clazz.overrideMethod (c$, "getUnitCell", 
 function () {
-return (this.unitCell != null || (this.unitCell = this.vwr.ms.am[this.modelIndex].biosymmetry) != null || (this.unitCell = this.vwr.ms.getUnitCell (this.modelIndex)) != null || this.spanningVectors != null && (this.unitCell = J.api.Interface.getSymmetry (this.vwr, "symmetry").getUnitCell (this.spanningVectors, true, null)) != null ? this.unitCell : null);
+return (this.unitCell != null || (this.unitCell = this.vwr.ms.am[this.modelIndex].biosymmetry) != null || (this.unitCell = this.vwr.ms.getUnitCell (this.modelIndex)) != null || this.oabc != null && (this.unitCell = J.api.Interface.getSymmetry (this.vwr, "symmetry").getUnitCell (this.oabc, true, null)) != null ? this.unitCell : null);
 });
 Clazz.defineMethod (c$, "fixLattice", 
 function () {
@@ -567,7 +574,7 @@ var minXYZ =  new JU.P3i ();
 var maxXYZ = JU.P3i.new3 (Clazz.floatToInt (this.lattice.x), Clazz.floatToInt (this.lattice.y), Clazz.floatToInt (this.lattice.z));
 this.jvxlData.fixedLattice = this.lattice;
 this.lattice = null;
-this.unitCell.setMinMaxLatticeParameters (minXYZ, maxXYZ);
+JU.SimpleUnitCell.setMinMaxLatticeParameters (Clazz.floatToInt (this.unitCell.getUnitCellInfoType (6)), minXYZ, maxXYZ, 0);
 var nCells = (maxXYZ.x - minXYZ.x) * (maxXYZ.y - minXYZ.y) * (maxXYZ.z - minXYZ.z);
 var latticeOffset =  new JU.P3 ();
 var vc0 = this.vc;
@@ -634,6 +641,17 @@ if (this.mat4 == null) this.mat4 = JU.M4.newM4 (null);
 this.mat4.mul2 (m, this.mat4);
 }this.recalcAltVertices = true;
 }, "JU.M4,JU.BS");
+Clazz.defineMethod (c$, "getDataMinMax", 
+function () {
+var min = 3.4028235E38;
+var max = 1.4E-45;
+for (var i = this.vvs.length; --i >= 0; ) {
+var v = this.vvs[i];
+if (v < min) min = v;
+if (v > max) max = v;
+}
+return  Clazz.newFloatArray (-1, [min, max]);
+});
 Clazz.defineMethod (c$, "getDataRange", 
 function () {
 return (this.jvxlData.jvxlPlane != null && this.colorEncoder == null ? null :  Clazz.newFloatArray (-1, [this.jvxlData.mappedDataMin, this.jvxlData.mappedDataMax, (this.jvxlData.isColorReversed ? this.jvxlData.valueMappedToBlue : this.jvxlData.valueMappedToRed), (this.jvxlData.isColorReversed ? this.jvxlData.valueMappedToRed : this.jvxlData.valueMappedToBlue)]));

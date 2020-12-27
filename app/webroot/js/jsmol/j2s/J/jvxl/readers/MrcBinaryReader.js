@@ -9,9 +9,9 @@ function () {
 Clazz.superConstructor (this, J.jvxl.readers.MrcBinaryReader, []);
 });
 Clazz.overrideMethod (c$, "init2", 
-function (sg, brNull) {
+function (sg, br) {
 var fileName = (sg.getReaderData ())[0];
-this.init2MFR (sg, this.br);
+this.init2MFR (sg, br);
 this.binarydoc = this.newBinaryDocument ();
 this.setStream (fileName, true);
 this.nSurfaces = 1;
@@ -27,35 +27,35 @@ var map =  Clazz.newByteArray (4, 0);
 var machst =  Clazz.newByteArray (4, 0);
 var rmsDeviation;
 var nlabel;
-this.nx = this.binarydoc.readInt ();
-if (this.nx < 0 || this.nx > 256) {
+this.n0 = this.binarydoc.readInt ();
+if (this.n0 < 0 || this.n0 > 256) {
 this.setStream (null, false);
-this.nx = this.binarydoc.swapBytesI (this.nx);
-if (this.nx < 0 || this.nx > 1000) {
-JU.Logger.info ("nx=" + this.nx + " not displayable as MRC file");
+this.n0 = this.binarydoc.swapBytesI (this.n0);
+if (this.n0 < 0 || this.n0 > 1000) {
+JU.Logger.info ("nx=" + this.n0 + " not displayable as MRC file");
 throw  new Exception ("MRC file type not readable");
 }JU.Logger.info ("reading little-endian MRC file");
-}this.ny = this.binarydoc.readInt ();
-this.nz = this.binarydoc.readInt ();
+}this.n1 = this.binarydoc.readInt ();
+this.n2 = this.binarydoc.readInt ();
 this.mode = this.binarydoc.readInt ();
 if (this.mode < 0 || this.mode > 6) {
 this.setStream (null, false);
-this.nx = this.binarydoc.swapBytesI (this.nx);
-this.ny = this.binarydoc.swapBytesI (this.ny);
-this.nz = this.binarydoc.swapBytesI (this.nz);
+this.n0 = this.binarydoc.swapBytesI (this.n0);
+this.n1 = this.binarydoc.swapBytesI (this.n1);
+this.n2 = this.binarydoc.swapBytesI (this.n2);
 this.mode = this.binarydoc.swapBytesI (this.mode);
 }JU.Logger.info ("MRC header: mode: " + this.mode);
-JU.Logger.info ("MRC header: nx ny nz: " + this.nx + " " + this.ny + " " + this.nz);
-this.nxyzStart[0] = this.binarydoc.readInt ();
-this.nxyzStart[1] = this.binarydoc.readInt ();
-this.nxyzStart[2] = this.binarydoc.readInt ();
-JU.Logger.info ("MRC header: nxyzStart: " + this.nxyzStart[0] + " " + this.nxyzStart[1] + " " + this.nxyzStart[2]);
+JU.Logger.info ("MRC header: nx ny nz: " + this.n0 + " " + this.n1 + " " + this.n2);
+this.xyzStart[0] = this.binarydoc.readInt ();
+this.xyzStart[1] = this.binarydoc.readInt ();
+this.xyzStart[2] = this.binarydoc.readInt ();
+JU.Logger.info ("MRC header: nxyzStart: " + this.xyzStart[0] + " " + this.xyzStart[1] + " " + this.xyzStart[2]);
 this.na = this.binarydoc.readInt ();
 this.nb = this.binarydoc.readInt ();
 this.nc = this.binarydoc.readInt ();
-if (this.na == 0) this.na = this.nx - 1;
-if (this.nb == 0) this.nb = this.ny - 1;
-if (this.nc == 0) this.nc = this.nz - 1;
+if (this.na == 0) this.na = this.n0 - 1;
+if (this.nb == 0) this.nb = this.n1 - 1;
+if (this.nc == 0) this.nc = this.n2 - 1;
 JU.Logger.info ("MRC header: na nb nc: " + this.na + " " + this.nb + " " + this.nc);
 this.a = this.binarydoc.readFloat ();
 this.b = this.binarydoc.readFloat ();
@@ -71,6 +71,7 @@ if (this.params.thePlane == null) this.params.insideOut = !this.params.insideOut
 }this.mapc = this.binarydoc.readInt ();
 this.mapr = this.binarydoc.readInt ();
 this.maps = this.binarydoc.readInt ();
+if (this.mapc == 2 && this.mapr == 1 && this.params.thePlane == null) this.params.insideOut = !this.params.insideOut;
 var s = "" + this.mapc + this.mapr + this.maps;
 JU.Logger.info ("MRC header: mapc mapr maps: " + s);
 if (this.params.thePlane == null && "21321".indexOf (s) >= 1) {
@@ -148,7 +149,6 @@ voxelValue = this.binarydoc.readUnsignedShort ();
 break;
 }
 this.nBytes = this.binarydoc.getPosition ();
-if (voxelValue > 1000) System.out.println (this.nBytes + " " + voxelValue);
 return voxelValue;
 });
 Clazz.overrideMethod (c$, "skipData", 

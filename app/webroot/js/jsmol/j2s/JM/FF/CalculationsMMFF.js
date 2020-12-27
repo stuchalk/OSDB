@@ -39,11 +39,11 @@ calc = this.calculations[1] =  new JU.Lst ();
 var angleCalc =  new JM.FF.MMFFAngleCalc ().set (this);
 for (var i = 0; i < this.angleCount; i++) angleCalc.setData (calc, this.minAngles[i]);
 
-calc = this.calculations[2] =  new JU.Lst ();
+calc = this.calculations[3] =  new JU.Lst ();
 var sbCalc =  new JM.FF.MMFFSBCalc ().set (this);
 for (var i = 0; i < this.angleCount; i++) sbCalc.setData (calc, this.minAngles[i]);
 
-calc = this.calculations[3] =  new JU.Lst ();
+calc = this.calculations[2] =  new JU.Lst ();
 var torsionCalc =  new JM.FF.MMFFTorsionCalc ().set (this);
 for (var i = 0; i < this.torsionCount; i++) torsionCalc.setData (calc, this.minTorsions[i]);
 
@@ -95,9 +95,9 @@ case 0:
 return this.bondCalc.compute (dataIn);
 case 1:
 return this.angleCalc.compute (dataIn);
-case 2:
-return this.sbCalc.compute (dataIn);
 case 3:
+return this.sbCalc.compute (dataIn);
+case 2:
 return this.torsionCalc.compute (dataIn);
 case 4:
 return this.oopCalc.compute (dataIn);
@@ -117,7 +117,7 @@ function (iType) {
 switch (iType) {
 case -1:
 return "MMFF94 Force Field -- T. A. Halgren, J. Comp. Chem. 5 & 6 490-519ff (1996).\n";
-case 3:
+case 2:
 return "\nT O R S I O N A L (" + this.minTorsions.length + " torsions)\n\n" + "      ATOMS           ATOM TYPES          TORSION\n" + "  I   J   K   L   I     J     K     L      ANGLE       V1       V2       V3     ENERGY\n" + "--------------------------------------------------------------------------------------\n";
 default:
 return this.getDebugHeader2 (iType);
@@ -128,9 +128,9 @@ function (iType, c) {
 var energy = this.ff.toUserUnits (c.energy);
 switch (iType) {
 case 1:
-case 2:
-return JU.PT.sprintf ("%11s  %-5s %-5s %-5s  %8.3f  %8.3f     %8.3f   %8.3f", "ssssFI",  Clazz.newArray (-1, [JM.MinObject.decodeKey (c.key), this.minAtoms[c.ia].sType, this.minAtoms[c.ib].sType, this.minAtoms[c.ic].sType,  Clazz.newFloatArray (-1, [(c.theta * 57.29577951308232), c.dData[1], c.dData[0], energy]),  Clazz.newIntArray (-1, [this.minAtoms[c.ia].atom.getAtomNumber (), this.minAtoms[c.ib].atom.getAtomNumber (), this.minAtoms[c.ic].atom.getAtomNumber ()])]));
 case 3:
+return JU.PT.sprintf ("%11s  %-5s %-5s %-5s  %8.3f  %8.3f     %8.3f   %8.3f", "ssssFI",  Clazz.newArray (-1, [JM.MinObject.decodeKey (c.key), this.minAtoms[c.ia].sType, this.minAtoms[c.ib].sType, this.minAtoms[c.ic].sType,  Clazz.newFloatArray (-1, [(c.theta * 57.29577951308232), c.dData[1], c.dData[0], energy]),  Clazz.newIntArray (-1, [this.minAtoms[c.ia].atom.getAtomNumber (), this.minAtoms[c.ib].atom.getAtomNumber (), this.minAtoms[c.ic].atom.getAtomNumber ()])]));
+case 2:
 return JU.PT.sprintf ("%15s  %-5s %-5s %-5s %-5s  %8.3f %8.3f %8.3f %8.3f %8.3f", "sssssF",  Clazz.newArray (-1, [JM.MinObject.decodeKey (c.key), this.minAtoms[c.ia].sType, this.minAtoms[c.ib].sType, this.minAtoms[c.ic].sType, this.minAtoms[c.id].sType,  Clazz.newFloatArray (-1, [(c.theta * 57.29577951308232), c.dData[0], c.dData[1], c.dData[2], energy])]));
 default:
 return this.getDebugLineC (iType, c);

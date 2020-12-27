@@ -94,7 +94,7 @@ this.isShell = false;
 this.havePlanarContours = false;
 this.haveXyPoints = false;
 this.isModelConnected = false;
-this.isTriangleSet = false;
+this.isDrawPolygon = false;
 this.isTwoSided = false;
 this.lattice = null;
 this.mat4 = null;
@@ -106,7 +106,7 @@ this.showPoints = false;
 this.showTriangles = false;
 this.slabbingObject = null;
 this.slabOptions = null;
-this.spanningVectors = null;
+this.oabc = null;
 this.symopNormixes = null;
 this.title = null;
 this.unitCell = null;
@@ -140,7 +140,7 @@ return this.normixes;
 }, "~A");
 Clazz.defineMethod (c$, "getNormals", 
 function (vertices, plane) {
-this.normixCount = (this.isTriangleSet ? this.pc : this.vc);
+this.normixCount = (this.isDrawPolygon ? this.pc : this.vc);
 if (this.normixCount < 0) return null;
 var normals =  new Array (this.normixCount);
 for (var i = this.normixCount; --i >= 0; ) normals[i] =  new JU.V3 ();
@@ -151,7 +151,7 @@ this.sumVertexNormals (vertices, normals);
 var normal = JU.V3.new3 (plane.x, plane.y, plane.z);
 for (var i = this.normixCount; --i >= 0; ) normals[i] = normal;
 
-}if (!this.isTriangleSet) for (var i = this.normixCount; --i >= 0; ) {
+}if (!this.isDrawPolygon) for (var i = this.normixCount; --i >= 0; ) {
 normals[i].normalize ();
 }
 return normals;
@@ -197,7 +197,7 @@ var vB = vertices[face[1]];
 var vC = vertices[face[2]];
 if (vA.distanceSquared (vB) < min || vB.distanceSquared (vC) < min || vA.distanceSquared (vC) < min) continue;
 JU.Measure.calcNormalizedNormal (vA, vB, vC, m.vTemp, m.vAB);
-if (m.isTriangleSet) {
+if (m.isDrawPolygon) {
 normals[i].setT (m.vTemp);
 } else {
 var l = m.vTemp.length ();

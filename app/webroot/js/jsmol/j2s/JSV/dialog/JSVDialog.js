@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JSV.dialog");
-Clazz.load (["JSV.api.AnnotationData", "JSV.common.Annotation"], "JSV.dialog.JSVDialog", ["java.lang.Double", "JU.DF", "$.PT", "JSV.common.IntegralData", "$.PeakData"], function () {
+Clazz.load (["JSV.api.AnnotationData", "JSV.common.Annotation"], "JSV.dialog.JSVDialog", ["java.lang.Double", "JU.DF", "$.PT", "JSV.common.IntegralData", "$.PeakData", "JSV.dialog.DialogManager"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.optionKey = null;
 this.options = null;
@@ -40,8 +40,13 @@ this.iRowSelected = -1;
 this.iColSelected = -1;
 Clazz.instantialize (this, arguments);
 }, JSV.dialog, "JSVDialog", JSV.common.Annotation, JSV.api.AnnotationData);
+Clazz.overrideMethod (c$, "isDialog", 
+function () {
+return true;
+});
 Clazz.defineMethod (c$, "setParams", 
 function (title, viewer, spec) {
+title = JSV.dialog.DialogManager.fixTitle (title);
 this.title = title;
 this.vwr = viewer;
 this.$spec = spec;

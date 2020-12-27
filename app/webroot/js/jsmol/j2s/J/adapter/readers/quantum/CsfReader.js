@@ -249,9 +249,9 @@ break;
 }
 }
 for (var i = 0; i < this.nVibrations; i++) {
-if (!this.doGetVibration (i + 1)) continue;
+if (!this.doGetVibration (++this.vibrationNumber)) continue;
 this.asc.cloneAtomSetWithBonds (false);
-this.asc.setAtomSetFrequency (null, null, energies[i], null);
+this.asc.setAtomSetFrequency (this.vibrationNumber, null, null, energies[i], null);
 var ipt = 0;
 var baseAtom = this.nAtoms * (i + 1);
 for (var iAtom = 0; iAtom < this.nAtoms; iAtom++) this.asc.addVibrationVector (baseAtom + iAtom, vibData[i][ipt++], vibData[i][ipt++], vibData[i][ipt++]);
@@ -372,7 +372,7 @@ if (shells[ipt] != iShell) {
 iShell = shells[ipt];
 var slater =  Clazz.newIntArray (4, 0);
 var iAtom = this.asc.getAtomIndex (this.connectors.get (sto_gto + "_basis_fxn" + (ipt + 1))[0]);
-slater[0] = iAtom;
+slater[0] = iAtom + 1;
 slater[1] = J.adapter.readers.quantum.BasisFunctionReader.getQuantumShellTagID (types[ipt].substring (0, 1));
 var nZ = 0;
 while (++nZ < nZetas && zetas[ipt][nZ] != 0) {

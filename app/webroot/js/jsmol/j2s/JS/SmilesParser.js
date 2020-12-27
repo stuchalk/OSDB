@@ -37,7 +37,6 @@ if (pattern.indexOf ("$(select") >= 0) pattern = this.parseNested (search, patte
 var ret =  Clazz.newIntArray (1, 0);
 pattern = JS.SmilesParser.extractFlags (pattern, ret);
 this.flags = ret[0];
-this.ignoreStereochemistry = ((this.flags & 32) == 32);
 search.setFlags (this.flags);
 if (pattern.indexOf ("$") >= 0) pattern = this.parseVariables (pattern);
 if (this.isSmarts && pattern.indexOf ("[$") >= 0) pattern = this.parseVariableLength (pattern);
@@ -404,7 +403,7 @@ var tokens = JU.PT.split (strMeasure, ",");
 if (tokens.length % 2 == 1 || isNot && tokens.length != 2) break;
 var vals =  Clazz.newFloatArray (tokens.length, 0);
 var i = tokens.length;
-for (; --i >= 0; ) if (Float.isNaN (vals[i] = JU.PT.fVal (tokens[i]))) break;
+for (; --i >= 0; ) if (Float.isNaN (vals[i] = Float.parseFloat (tokens[i]))) break;
 
 if (i >= 0) break;
 m =  new JS.SmilesMeasure (search, index, type, isNot, vals);
@@ -518,10 +517,16 @@ if (biopt >= 0) {
 newAtom.isBioResidue = true;
 var resOrName = pattern.substring (index, biopt);
 pattern = pattern.substring (biopt + 1).toUpperCase ();
-if ((biopt = resOrName.indexOf ("#")) >= 0) {
+var len = resOrName.length;
+if ((biopt = resOrName.indexOf ("^")) >= 0) {
+if (biopt == len - 2) {
+ch = resOrName.charAt (len - 1);
+if (ch != '*') newAtom.insCode = ch;
+}resOrName = resOrName.substring (0, biopt);
+}if ((biopt = resOrName.indexOf ("#")) >= 0) {
 JS.SmilesParser.getDigits (resOrName, biopt + 1, ret);
-resOrName = resOrName.substring (0, biopt);
 newAtom.residueNumber = ret[0];
+resOrName = resOrName.substring (0, biopt);
 }if (resOrName.length == 0) resOrName = "*";
 if (resOrName.length > 1) newAtom.residueName = resOrName.toUpperCase ();
  else if (!resOrName.equals ("*")) newAtom.residueChar = resOrName;
@@ -577,8 +582,8 @@ case '+':
 index = this.checkCharge (pattern, index, newAtom);
 break;
 case '@':
-if (search.stereo == null) search.stereo = JS.SmilesStereo.newStereo (null);
-index = JS.SmilesStereo.checkChirality (pattern, index, search.patternAtoms[newAtom.index]);
+if (search.stereo == null) search.stereo = JS.SmilesStereo.newStereo (search);
+index = JS.SmilesStereo.checkChirality (search, pattern, index, search.patternAtoms[newAtom.index]);
 break;
 case ':':
 index = JS.SmilesParser.getDigits (pattern, ++index, ret);

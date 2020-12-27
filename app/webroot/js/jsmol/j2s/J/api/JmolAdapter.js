@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.api");
-Clazz.load (null, "J.api.JmolAdapter", ["java.util.Hashtable", "JU.PT", "J.api.JmolViewer", "JU.Elements"], function () {
+Clazz.load (null, "J.api.JmolAdapter", ["JU.PT", "J.api.JmolViewer", "JU.Elements"], function () {
 c$ = Clazz.declareType (J.api, "JmolAdapter");
 c$.getElementSymbol = Clazz.defineMethod (c$, "getElementSymbol", 
 function (elementNumber) {
@@ -19,9 +19,7 @@ return JU.Elements.getBondingRadius (atomicNumberWithIsotope, charge);
 }, "~N,~N");
 Clazz.defineMethod (c$, "getAtomSetCollectionFromReaderType", 
 function (name, type, bufferedReader, htParams) {
-if (htParams == null) htParams =  new java.util.Hashtable ();
-if (!htParams.containsKey ("vwr")) htParams.put ("vwr", J.api.JmolViewer.allocateViewer (null, this));
-var a = this.getAtomSetCollectionReader (name, type, bufferedReader, htParams);
+var a = this.getAtomSetCollectionReader (name, type, bufferedReader, (J.api.JmolViewer.allocateViewer (null, this)).setLoadParameters (htParams, false));
 if (Clazz.instanceOf (a, String)) return a;
 return this.getAtomSetCollection (a);
 }, "~S,~S,~O,java.util.Map");
@@ -54,6 +52,8 @@ Clazz.defineStatics (c$,
 "ORDER_COVALENT_DOUBLE", 2,
 "ORDER_COVALENT_TRIPLE", 3,
 "ORDER_COVALENT_QUAD", 4,
+"ORDER_COVALENT_QUINT", 5,
+"ORDER_COVALENT_HEX", 6,
 "ORDER_AROMATIC", 515,
 "ORDER_AROMATIC_SINGLE", 513,
 "ORDER_AROMATIC_DOUBLE", 514,

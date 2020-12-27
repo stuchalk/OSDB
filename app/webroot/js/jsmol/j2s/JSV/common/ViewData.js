@@ -5,6 +5,7 @@ this.scaleData = null;
 this.thisScale = null;
 this.nSpectra = 0;
 this.iThisScale = 0;
+this.spectra = null;
 Clazz.instantialize (this, arguments);
 }, JSV.common, "ViewData");
 Clazz.defineMethod (c$, "getScaleData", 
@@ -32,7 +33,9 @@ this.scaleData[0] =  new JSV.common.ScaleData (0, n - 1);
 this.init (spectra, yPt1, yPt2, isContinuous);
 }, "JU.Lst,~N,~N,~B");
 Clazz.defineMethod (c$, "init", 
- function (spectra, yPt1, yPt2, isContinuous) {
+function (spectra, yPt1, yPt2, isContinuous) {
+if (spectra == null) spectra = this.spectra;
+ else this.spectra = spectra;
 this.thisScale = this.scaleData[this.iThisScale = 0];
 for (var i = 0; i < this.scaleData.length; i++) {
 this.scaleData[i].userYFactor = spectra.get (i).getUserYFactor ();
@@ -80,7 +83,7 @@ ptCount++;
 if (x >= finalX) {
 break;
 }}
-this.scaleData[i % this.scaleData.length].endDataPointIndex = index - 1;
+this.scaleData[i % this.scaleData.length].endDataPointIndex = index;
 return ptCount;
 }, "~N,~A,~N,~N,~N,~N");
 Clazz.defineMethod (c$, "getStartingPointIndex", 

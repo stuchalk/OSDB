@@ -27,7 +27,7 @@ this.calcs.setAngleVariables (this);
 var dr_ab = this.rab - r0_ab;
 this.delta = this.theta * 57.29577951308232 - t0;
 this.energy = k * dr_ab * this.delta;
-if (this.calcs.logging) this.calcs.appendLogData (this.calcs.getDebugLine (2, this));
+if (this.calcs.logging) this.calcs.appendLogData (this.calcs.getDebugLine (3, this));
 if (this.calcs.gradients) {
 this.dE = k * dr_ab;
 this.calcs.addForces (this, 3);

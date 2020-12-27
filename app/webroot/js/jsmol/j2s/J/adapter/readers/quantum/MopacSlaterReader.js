@@ -9,16 +9,16 @@ function (iAtom, atomicNumber, type, zeta, coef) {
 var pt = "S Px Py Pz  Dx2-y2Dxz Dz2 Dyz Dxy".indexOf (type);
 switch (pt) {
 case 0:
-this.addSlater (iAtom, 0, 0, 0, J.adapter.readers.quantum.MopacSlaterReader.getNPQs (atomicNumber) - 1, zeta, coef);
+this.addSlater (iAtom + 1, 0, 0, 0, J.adapter.readers.quantum.MopacSlaterReader.getNPQs (atomicNumber) - 1, zeta, coef);
 return;
 case 2:
 case 5:
 case 8:
-this.addSlater (iAtom, pt == 2 ? 1 : 0, pt == 5 ? 1 : 0, pt == 8 ? 1 : 0, J.adapter.readers.quantum.MopacSlaterReader.getNPQp (atomicNumber) - 2, zeta, coef);
+this.addSlater (iAtom + 1, pt == 2 ? 1 : 0, pt == 5 ? 1 : 0, pt == 8 ? 1 : 0, J.adapter.readers.quantum.MopacSlaterReader.getNPQp (atomicNumber) - 2, zeta, coef);
 return;
 }
 pt = (pt >> 2) * 3 - 9;
-this.addSlater (iAtom, J.adapter.readers.quantum.MopacSlaterReader.sphericalDValues[pt++], J.adapter.readers.quantum.MopacSlaterReader.sphericalDValues[pt++], J.adapter.readers.quantum.MopacSlaterReader.sphericalDValues[pt++], J.adapter.readers.quantum.MopacSlaterReader.getNPQd (atomicNumber) - 3, zeta, coef);
+this.addSlater (iAtom + 1, J.adapter.readers.quantum.MopacSlaterReader.sphericalDValues[pt++], J.adapter.readers.quantum.MopacSlaterReader.sphericalDValues[pt++], J.adapter.readers.quantum.MopacSlaterReader.sphericalDValues[pt++], J.adapter.readers.quantum.MopacSlaterReader.getNPQd (atomicNumber) - 3, zeta, coef);
 }, "~N,~N,~S,~N,~N");
 Clazz.defineMethod (c$, "scaleSlater", 
 function (ex, ey, ez, er, zeta) {

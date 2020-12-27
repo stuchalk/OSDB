@@ -35,7 +35,7 @@ var units = "cm^-1";
 if (this.atts.containsKey ("units")) {
 units = this.atts.get ("units");
 if (units.startsWith ("inverseCent")) units = "cm^-1";
-}this.asc.setAtomSetFrequency (null, null, wavenumber, units);
+}this.asc.setAtomSetFrequency (this.vibrationNumber, null, null, wavenumber, units);
 this.setKeepChars (true);
 }return;
 }if (localName.equals ("vibrations")) {

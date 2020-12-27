@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.render");
-Clazz.load (["J.api.JmolRepaintManager", "JU.BS"], "J.render.RepaintManager", ["java.lang.NullPointerException", "J.api.Interface", "JU.Logger", "JV.JC"], function () {
+Clazz.load (["J.api.JmolRepaintManager", "JU.BS"], "J.render.RepaintManager", ["java.lang.NullPointerException", "$.Thread", "J.api.Interface", "JU.Logger", "JV.JC", "$.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.shapeManager = null;
@@ -40,12 +40,26 @@ this.repaintNow (why);
 Clazz.overrideMethod (c$, "requestRepaintAndWait", 
 function (why) {
 var jmol = null;
+if (JV.Viewer.isJS && !JV.Viewer.isSwingJS) {
 {
-jmol = (self.Jmol && Jmol._repaint ? Jmol : null);
-}if (jmol != null) {
-jmol._repaint (this.vwr.html5Applet, false);
+jmol = (self.Jmol && Jmol.repaint ? Jmol : null)
+}}if (jmol == null) {
+try {
+this.repaintNow (why);
+if (!JV.Viewer.isJS) this.wait (this.vwr.g.repaintWaitMs);
+if (this.repaintPending) {
+JU.Logger.error ("repaintManager requestRepaintAndWait timeout");
 this.repaintDone ();
-}{
+}} catch (e) {
+if (Clazz.exceptionOf (e, InterruptedException)) {
+System.out.println ("repaintManager requestRepaintAndWait interrupted thread=" + Thread.currentThread ().getName ());
+} else {
+throw e;
+}
+}
+} else {
+jmol.repaint (this.vwr.html5Applet, false);
+this.repaintDone ();
 }}, "~S");
 Clazz.overrideMethod (c$, "repaintIfReady", 
 function (why) {
@@ -107,7 +121,7 @@ if (logTime) JU.Logger.checkTimer (msg, false);
 g3d.renderAllStrings (null);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
-if (!this.vwr.isJS) e.printStackTrace ();
+e.printStackTrace ();
 if (this.vwr.async && "Interface".equals (e.getMessage ())) throw  new NullPointerException ();
 JU.Logger.error ("rendering error? " + e);
 } else {
@@ -152,7 +166,7 @@ exporter3D.renderAllStrings (exporter3D);
 msg = exporter3D.finalizeOutput ();
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
-if (!this.vwr.isJS) e.printStackTrace ();
+e.printStackTrace ();
 JU.Logger.error ("rendering error? " + e);
 } else {
 throw e;

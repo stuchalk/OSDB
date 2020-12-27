@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JSV.export");
-Clazz.load (["JSV.api.ExportInterface"], "JSV.export.Exporter", ["JU.Base64", "$.PT", "JSV.common.Annotation", "$.ExportType", "$.JSVFileManager", "$.JSViewer"], function () {
+Clazz.load (["JSV.api.ExportInterface"], "JSV.export.Exporter", ["JU.OC", "$.PT", "JSV.common.ExportType", "$.JSVFileManager", "$.JSViewer"], function () {
 c$ = Clazz.declareType (JSV["export"], "Exporter", null, JSV.api.ExportInterface);
 Clazz.makeConstructor (c$, 
 function () {
@@ -114,33 +114,18 @@ viewer.fileHelper.setFileChooser (mode);
 var name = this.getSuggestedFileName (viewer, mode);
 var file = viewer.fileHelper.getFile (name, jsvp, true);
 if (file == null) return null;
-if (viewer.isJS) {
-var fname = file.getName ();
-var isPNG = type.equals (JSV.common.ExportType.PNG);
-var s = (isPNG ? "png" : "jpeg");
-{
-s = viewer.display.toDataURL(s);
-if (!isPNG && s.contains("/png"))
-fname = fname.split('.jp')[0] + ".png";
-}try {
-out = viewer.getOutputChannel (fname, true);
-var data = JU.Base64.decodeBase64 (s);
-out.write (data, 0, data.length);
-out.closeChannel ();
-return "OK " + out.getByteCount () + " bytes";
-} catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
-return e.toString ();
-} else {
-throw e;
-}
-}
-}return jsvp.saveImage (type.toLowerCase (), file);
+return jsvp.saveImage (type.toLowerCase (), file, out);
 case JSV.common.ExportType.PDF:
 return this.printPDF (viewer, "PDF", asBase64);
 case JSV.common.ExportType.SOURCE:
 if (jsvp == null) return null;
-return JSV["export"].Exporter.fileCopy (jsvp.getPanelData ().getSpectrum ().getFilePath (), out);
+var data = jsvp.getPanelData ().getSpectrum ().getInlineData ();
+if (data != null) {
+out.append (data);
+out.closeChannel ();
+return "OK " + out.getByteCount () + " bytes";
+}var path = jsvp.getPanelData ().getSpectrum ().getFilePath ();
+return JSV["export"].Exporter.fileCopy (path, out);
 case JSV.common.ExportType.UNK:
 return null;
 }
@@ -152,11 +137,14 @@ var isJob = (pdfFileName == null || pdfFileName.length == 0);
 if (!isBase64 && !viewer.si.isSigned ()) return "Error: Applet must be signed for the PRINT command.";
 var pd = viewer.pd ();
 if (pd == null) return null;
-pd.closeAllDialogsExcept (JSV.common.Annotation.AType.NONE);
+var useDialog = false;
 var pl;
 {
-pl = new JSV.common.PrintLayout(); pl.asPDF = true;
-}if (isJob && pl.asPDF) {
+useDialog = false;
+}pl = viewer.getDialogPrint (isJob);
+if (pl == null) return null;
+if (!useDialog) pl.asPDF = true;
+if (isJob && pl.asPDF) {
 isJob = false;
 pdfFileName = "PDF";
 }var jsvp = viewer.selectedPanel;
@@ -166,17 +154,17 @@ helper.setFileChooser (JSV.common.ExportType.PDF);
 if (pdfFileName.equals ("?") || pdfFileName.equalsIgnoreCase ("PDF")) pdfFileName = this.getSuggestedFileName (viewer, JSV.common.ExportType.PDF);
 var file = helper.getFile (pdfFileName, jsvp, true);
 if (file == null) return null;
-if (!viewer.isJS) viewer.setProperty ("directoryLastExportedFile", helper.setDirLastExported (file.getParentAsFile ().getFullPath ()));
+if (!JSV.common.JSViewer.isJS) viewer.setProperty ("directoryLastExportedFile", helper.setDirLastExported (file.getParentAsFile ().getFullPath ()));
 pdfFileName = file.getFullPath ();
 }var s = null;
 try {
-var out = (isJob ? null : viewer.getOutputChannel (isBase64 ? null : pdfFileName, true));
+var out = (isJob ? null : isBase64 ?  new JU.OC ().setParams (null, ";base64,", false, null) : viewer.getOutputChannel (pdfFileName, true));
 var printJobTitle = pd.getPrintJobTitle (true);
 if (pl.showTitle) {
 printJobTitle = jsvp.getInput ("Title?", "Title for Printing", printJobTitle);
 if (printJobTitle == null) return null;
 }jsvp.printPanel (pl, out, printJobTitle);
-s = (isBase64 ? JU.Base64.getBase64 (out.toByteArray ()).toString () : out.toString ());
+s = out.toString ();
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 jsvp.showMessage (e.toString (), "File Error");

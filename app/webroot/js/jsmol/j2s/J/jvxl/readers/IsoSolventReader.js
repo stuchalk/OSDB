@@ -106,7 +106,7 @@ this.isProgressive = this.isXLowToHigh = true;
 Clazz.overrideMethod (c$, "generateCube", 
 function () {
 if (this.isCavity && this.params.theProperty != null) return;
-if (this.isCavity && this.dataType != 1205 && this.dataType != 1206) {
+if (this.isCavity && this.dataType != 1207 && this.dataType != 1208) {
 this.params.vertexSource = null;
 this.newVoxelDataCube ();
 this.resetVoxelData (3.4028235E38);
@@ -121,7 +121,7 @@ this.generateSolventCube ();
 var info = this.params.slabInfo;
 if (info != null) for (var i = 0; i < info.size (); i++) if ((info.get (i)[2]).booleanValue () && Clazz.instanceOf (info.get (i)[0], JU.P4)) {
 this.volumeData.capData (info.get (i)[0], this.params.cutoff);
-info.remove (i--);
+info.removeItemAt (i--);
 }
 });
 Clazz.overrideMethod (c$, "getSurfacePointAndFraction", 
@@ -254,7 +254,7 @@ this.setRadii ();
 });
 Clazz.defineMethod (c$, "generateSolventCube", 
  function () {
-if (this.dataType == 1205) return;
+if (this.dataType == 1207) return;
 this.params.vertexSource =  Clazz.newIntArray (this.volumeData.nPoints, 0);
 this.bsSurfaceDone =  new JU.BS ();
 this.bsSurfaceVoxels =  new JU.BS ();

@@ -16,7 +16,7 @@ this.bgargb = bgargb;
 this.x = x;
 this.y = y;
 this.z = z;
-}, "~S,javajs.awt.Font,~N,~N,~N,~N,~N");
+}, "~S,JU.Font,~N,~N,~N,~N,~N");
 Clazz.overrideMethod (c$, "compare", 
 function (a, b) {
 return (a == null || b == null ? 0 : a.z > b.z ? -1 : a.z < b.z ? 1 : 0);

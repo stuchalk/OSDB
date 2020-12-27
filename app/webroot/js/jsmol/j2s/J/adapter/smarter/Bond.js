@@ -11,6 +11,7 @@ Clazz.instantialize (this, arguments);
 }, J.adapter.smarter, "Bond", J.adapter.smarter.AtomSetObject);
 Clazz.makeConstructor (c$, 
 function (atomIndex1, atomIndex2, order) {
+Clazz.superConstructor (this, J.adapter.smarter.Bond, []);
 this.atomIndex1 = atomIndex1;
 this.atomIndex2 = atomIndex2;
 this.order = order;

@@ -1,6 +1,10 @@
 Clazz.declarePackage ("JU");
 Clazz.load (["JU.BS"], "JU.Elements", ["java.util.Hashtable", "JU.PT", "JU.Logger"], function () {
 c$ = Clazz.declareType (JU, "Elements");
+c$.getNaturalIsotope = Clazz.defineMethod (c$, "getNaturalIsotope", 
+function (elementNumber) {
+return JU.Elements.isotopeMass[elementNumber & 0x7F];
+}, "~N");
 c$.getAtomicMass = Clazz.defineMethod (c$, "getAtomicMass", 
 function (i) {
 return (i < 1 || i >= JU.Elements.atomicMass.length ? 0 : JU.Elements.atomicMass[i]);
@@ -109,15 +113,9 @@ for (var i = 0; i < JU.Elements.altElementMax; i++) if (JU.Elements.altElementNu
 
 return 0;
 }, "~N");
-c$.getNaturalIsotope = Clazz.defineMethod (c$, "getNaturalIsotope", 
-function (elementNumber) {
-for (var i = 0; i < JU.Elements.naturalIsotopeMasses.length; i += 2) if (JU.Elements.naturalIsotopeMasses[i] == elementNumber) return JU.Elements.naturalIsotopeMasses[++i];
-
-return 0;
-}, "~N");
 c$.isNaturalIsotope = Clazz.defineMethod (c$, "isNaturalIsotope", 
 function (isotopeSymbol) {
-return ("1H,12C,14N,".indexOf (isotopeSymbol + ",") >= 0);
+return ("1H,12C,14N".indexOf (isotopeSymbol + ",") >= 0);
 }, "~S");
 c$.getBondingRadius = Clazz.defineMethod (c$, "getBondingRadius", 
 function (atomicNumberAndIsotope, charge) {
@@ -165,13 +163,13 @@ return ((atomicAndIsotopeNumber & 127) == elemNo);
 }, "~N,~N");
 Clazz.defineStatics (c$,
 "elementSymbols",  Clazz.newArray (-1, ["Xx", "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh", "Hs", "Mt"]),
-"atomicMass",  Clazz.newFloatArray (-1, [0, 1.008, 4.003, 6.941, 9.012, 10.81, 12.011, 14.007, 15.999, 18.998, 20.18, 22.99, 24.305, 26.981, 28.086, 30.974, 32.07, 35.453, 39.948, 39.1, 40.08, 44.956, 47.88, 50.941, 52, 54.938, 55.847, 58.93, 58.69, 63.55, 65.39, 69.72, 72.61, 74.92, 78.96, 79.9, 83.8, 85.47, 87.62, 88.91, 91.22, 92.91, 95.94, 98.91, 101.07, 102.91, 106.42, 107.87, 112.41, 114.82, 118.71, 121.75, 127.6, 126.91, 131.29, 132.91, 137.33, 138.91, 140.12, 140.91, 144.24, 144.9, 150.36, 151.96, 157.25, 158.93, 162.5, 164.93, 167.26, 168.93, 173.04, 174.97, 178.49, 180.95, 183.85, 186.21, 190.2, 192.22, 195.08, 196.97, 200.59, 204.38, 207.2, 208.98, 210, 210, 222, 223, 226.03, 227.03, 232.04, 231.04, 238.03, 237.05, 239.1, 243.1, 247.1, 247.1, 252.1, 252.1, 257.1, 256.1, 259.1, 260.1, 261, 262, 263, 262, 265, 268]));
+"atomicMass",  Clazz.newFloatArray (-1, [0, 1.008, 4.002, 6.9675, 9.012, 10.8135, 12.0106, 14.006, 15.999, 18.998, 20.1797, 22.989, 24.307, 26.981, 28.084, 30.973, 32.059, 35.4515, 39.948, 39.0983, 40.078, 44.955, 47.867, 50.9415, 51.9961, 54.938, 55.845, 58.933, 58.6934, 63.546, 65.38, 69.723, 72.63, 74.921, 78.971, 79.904, 83.798, 85.4678, 87.62, 88.905, 91.224, 92.906, 95.95, 98.91, 101.07, 102.905, 106.42, 107.8682, 112.414, 114.818, 118.71, 121.76, 127.6, 126.904, 131.293, 132.905, 137.327, 138.905, 140.116, 140.907, 144.242, 144.9, 150.36, 151.964, 157.25, 158.925, 162.5, 164.93, 167.259, 168.934, 173.054, 174.9668, 178.49, 180.947, 183.84, 186.207, 190.23, 192.217, 195.084, 196.966, 200.592, 204.3835, 207.2, 208.98, 210, 210, 222, 223, 226.03, 227.03, 232.0377, 231.035, 238.028, 237.05, 239.1, 243.1, 247.1, 247.1, 252.1, 252.1, 257.1, 256.1, 259.1, 260.1, 261, 262, 263, 262, 265, 268]),
+"isotopeMass",  Clazz.newIntArray (-1, [0, 1, 4, 7, 9, 11, 12, 14, 16, 19, 20, 23, 24, 27, 28, 31, 32, 35, 40, 39, 40, 45, 48, 51, 52, 55, 56, 59, 59, 64, 65, 70, 73, 75, 79, 80, 84, 85, 88, 89, 91, 93, 96, 98, 101, 103, 106, 108, 112, 115, 119, 122, 128, 127, 131, 133, 137, 139, 140, 141, 144, 145, 150, 152, 157, 159, 163, 165, 167, 169, 173, 175, 179, 181, 184, 186, 190, 192, 195, 197, 201, 204, 207, 209, 209, 210, 222, 223, 226, 227, 232, 231, 238, 237, 244, 243, 247, 247, 251, 252, 257, 258, 259, 260, 261, 262, 263, 262, 265, 268]));
 c$.elementNumberMax = c$.prototype.elementNumberMax = JU.Elements.elementSymbols.length;
 Clazz.defineStatics (c$,
 "htElementMap", null,
 "elementNames",  Clazz.newArray (-1, ["unknown", "hydrogen", "helium", "lithium", "beryllium", "boron", "carbon", "nitrogen", "oxygen", "fluorine", "neon", "sodium", "magnesium", "aluminum", "silicon", "phosphorus", "sulfur", "chlorine", "argon", "potassium", "calcium", "scandium", "titanium", "vanadium", "chromium", "manganese", "iron", "cobalt", "nickel", "copper", "zinc", "gallium", "germanium", "arsenic", "selenium", "bromine", "krypton", "rubidium", "strontium", "yttrium", "zirconium", "niobium", "molybdenum", "technetium", "ruthenium", "rhodium", "palladium", "silver", "cadmium", "indium", "tin", "antimony", "tellurium", "iodine", "xenon", "cesium", "barium", "lanthanum", "cerium", "praseodymium", "neodymium", "promethium", "samarium", "europium", "gadolinium", "terbium", "dysprosium", "holmium", "erbium", "thulium", "ytterbium", "lutetium", "hafnium", "tantalum", "tungsten", "rhenium", "osmium", "iridium", "platinum", "gold", "mercury", "thallium", "lead", "bismuth", "polonium", "astatine", "radon", "francium", "radium", "actinium", "thorium", "protactinium", "uranium", "neptunium", "plutonium", "americium", "curium", "berkelium", "californium", "einsteinium", "fermium", "mendelevium", "nobelium", "lawrencium", "rutherfordium", "dubnium", "seaborgium", "bohrium", "hassium", "meitnerium"]),
-"naturalIsotopeMasses",  Clazz.newIntArray (-1, [1, 1, 6, 12, 7, 14, 8, 16]),
-"naturalIsotopes", "1H,12C,14N,",
+"naturalIsotopes", "1H,12C,14N",
 "firstIsotope", 4,
 "altElementNumbers",  Clazz.newIntArray (-1, [0, 13, 16, 55, 257, 385, 1414, 1670, 1798, 1927]));
 c$.altElementMax = c$.prototype.altElementMax = JU.Elements.altElementNumbers.length;

@@ -10,6 +10,7 @@ Clazz.instantialize (this, arguments);
 }, J.adapter.smarter, "BondIterator", J.api.JmolAdapterBondIterator);
 Clazz.makeConstructor (c$, 
 function (asc) {
+Clazz.superConstructor (this, J.adapter.smarter.BondIterator, []);
 this.bsAtoms = asc.bsAtoms;
 this.bonds = asc.bonds;
 this.bondCount = asc.bondCount;

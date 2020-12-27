@@ -77,6 +77,7 @@ this.atomList.setBits (0, this.nodes.length);
 }this.elementCounts =  Clazz.newIntArray (JU.Elements.elementNumberMax, 0);
 this.altElementCounts =  Clazz.newIntArray (JU.Elements.altElementMax, 0);
 this.ac = this.atomList.cardinality ();
+this.nElements = 0;
 for (var p = 0, i = this.atomList.nextSetBit (0); i >= 0; i = this.atomList.nextSetBit (i + 1), p++) {
 var node = this.nodes[i];
 if (node == null) continue;
@@ -176,7 +177,7 @@ var bonds = atom.getEdges ();
 if (bonds == null) return true;
 for (var i = bonds.length; --i >= 0; ) {
 var bond = bonds[i];
-if (bond != null && bond.isCovalent () && !JU.JmolMolecule.getCovalentlyConnectedBitSet (atoms, bond.getOtherAtomNode (atom), bsToTest, allowCyclic, allowBioResidue, biobranches, bsResult)) return false;
+if (bond != null && bond.isCovalent () && !JU.JmolMolecule.getCovalentlyConnectedBitSet (atoms, bond.getOtherNode (atom), bsToTest, allowCyclic, allowBioResidue, biobranches, bsResult)) return false;
 }
 return true;
 }, "~A,JU.Node,JU.BS,~B,~B,JU.Lst,JU.BS");

@@ -46,7 +46,7 @@ context.fillStyle = "#FFFFFF";
 context.font = font3d.font;
 context.fillText(text, 0, ascent);
 }return JSV.js2d.Image.grabPixels (context, width, height);
-}, "~S,javajs.awt.Font,~O,~N,~N,~N");
+}, "~S,JU.Font,~O,~N,~N,~N");
 c$.allocateRgbImage = Clazz.defineMethod (c$, "allocateRgbImage", 
 function (windowWidth, windowHeight, pBuffer, windowSize, backgroundTransparent, canvas) {
 {

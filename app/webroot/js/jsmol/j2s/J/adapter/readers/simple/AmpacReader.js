@@ -81,7 +81,7 @@ this.asc.setAtomSetName (frequencies[i + 2] + " cm^-1");
 this.asc.setAtomSetModelProperty ("Frequency", frequencies[i + 2] + " cm^-1");
 this.asc.setAtomSetModelProperty (".PATH", "Frequencies");
 }
-this.fillFrequencyData (iAtom0, this.ac, this.ac, ignore, false, 8, 9, null, 0);
+this.fillFrequencyData (iAtom0, this.ac, this.ac, ignore, false, 8, 9, null, 0, null);
 this.rd ();
 this.rd ();
 }

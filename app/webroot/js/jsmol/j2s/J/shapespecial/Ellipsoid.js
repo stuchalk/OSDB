@@ -14,6 +14,9 @@ this.pid = 0;
 this.lengths = null;
 this.scale = 1;
 this.percent = 0;
+this.scaleXYZ = null;
+this.info = null;
+this.label = null;
 Clazz.instantialize (this, arguments);
 }, J.shapespecial, "Ellipsoid");
 Clazz.prepareFields (c$, function () {
@@ -48,11 +51,16 @@ function (i) {
 if (this.lengths == null) this.setLengths ();
 return (this.lengths == null ? NaN : this.lengths[i]);
 }, "~N");
+Clazz.defineMethod (c$, "scaleAxes", 
+function (value) {
+this.scaleXYZ = value;
+this.setLengths ();
+}, "~A");
 Clazz.defineMethod (c$, "setLengths", 
 function () {
 if (this.tensor == null) return;
 if (this.lengths == null) this.lengths =  Clazz.newFloatArray (3, 0);
-for (var i = 0; i < this.lengths.length; i++) this.lengths[i] = this.tensor.getFactoredValue (i) * this.scale;
+for (var i = 0; i < this.lengths.length; i++) this.lengths[i] = this.tensor.getFactoredValue (i) * this.scale * (this.scaleXYZ == null ? 1 : Math.abs (this.scaleXYZ[i]));
 
 });
 Clazz.defineMethod (c$, "setScale", 

@@ -58,7 +58,7 @@ if (this.isNewSet) {
 if (size == 1) {
 this.atokenInfix[0] = JS.T.tv (134320141, 0, this.atokenInfix[0].value);
 this.isNewSet = false;
-}}if ((this.isNewSet || this.isSetBrace) && size < this.ptNewSetModifier + 2) {
+}}if ((this.isNewSet || this.isSetBrace) && this.ptNewSetModifier != 2147483647 && size < this.ptNewSetModifier + 2) {
 if (!this.isNewSet || !this.haveMacro) return this.commandExpected ();
 this.htUserFunctions.put (this.atokenInfix[0].value, Boolean.TRUE);
 }return (size == 1 || !JS.T.tokAttr (this.tokCommand, 262144) ? true : this.error (0));
@@ -222,7 +222,7 @@ if (token == null) return false;
 if (this.logMessages) JU.Logger.debug ("addTokenToPostfix" + token);
 if (token.tok == 268435520 && (this.lastToken.tok == 1073742336 || this.lastToken.tok == 1073742337)) {
 var ipt = this.ltokenPostfix.size () - 1;
-this.ltokenPostfix.remove (ipt);
+this.ltokenPostfix.removeItemAt (ipt);
 this.ltokenPostfix.addLast (JS.T.tokenRightParen);
 var pcount = 0;
 var tok;
@@ -382,7 +382,7 @@ this.addNextToken ();
 if (isHash) {
 isImplicitExpression = false;
 this.returnToken ();
-this.ltokenPostfix.remove (this.ltokenPostfix.size () - 1);
+this.ltokenPostfix.removeItemAt (this.ltokenPostfix.size () - 1);
 this.addNextToken ();
 var nBrace = 1;
 while (nBrace != 0) {
@@ -476,7 +476,7 @@ break;
 if (isWithin && distance == 3.4028235E38) switch (tok0) {
 case 12290:
 break;
-case 1073741916:
+case 1111490587:
 case 1073742128:
 case 134218756:
 case 134218757:
@@ -506,9 +506,9 @@ case 1073742328:
 allowComma = false;
 case 1086326785:
 case 1086326786:
-case 1073741864:
+case 1073741863:
 case 1678381065:
-case 1086324740:
+case 1086326788:
 case 1073742329:
 case 1086326789:
 case 1086324742:
@@ -717,7 +717,7 @@ this.tokenNext ();
 if (!this.tokenNextTok (268435860)) return this.errorStr (15, "=");
 if (this.getToken () == null) return this.error (3);
 if (this.theToken.tok == 2) {
-JU.SimpleUnitCell.ijkToPoint3f (this.theToken.intValue, cell, 1);
+JU.SimpleUnitCell.ijkToPoint3f (this.theToken.intValue, cell, 1, 0);
 return this.addTokenToPostfix (tok, cell);
 }if (this.theToken.tok != 1073742332 || !this.getNumericalToken ()) return this.error (3);
 cell.x = this.floatValue ();
@@ -986,64 +986,64 @@ default:
 msg = "Unknown compiler error message number: " + iError;
 break;
 case 0:
-msg = J.i18n.GT._ ("bad argument count");
+msg = J.i18n.GT.$ ("bad argument count");
 break;
 case 1:
-msg = J.i18n.GT._ ("invalid context for {0}");
+msg = J.i18n.GT.$ ("invalid context for {0}");
 break;
 case 2:
-msg = J.i18n.GT._ ("command expected");
+msg = J.i18n.GT.$ ("command expected");
 break;
 case 3:
-msg = J.i18n.GT._ ("{ number number number } expected");
+msg = J.i18n.GT.$ ("{ number number number } expected");
 break;
 case 4:
-msg = J.i18n.GT._ ("unexpected end of script command");
+msg = J.i18n.GT.$ ("unexpected end of script command");
 break;
 case 5:
-msg = J.i18n.GT._ ("end of expression expected");
+msg = J.i18n.GT.$ ("end of expression expected");
 break;
 case 6:
-msg = J.i18n.GT._ ("identifier or residue specification expected");
+msg = J.i18n.GT.$ ("identifier or residue specification expected");
 break;
 case 7:
-msg = J.i18n.GT._ ("invalid atom specification");
+msg = J.i18n.GT.$ ("invalid atom specification");
 break;
 case 8:
-msg = J.i18n.GT._ ("invalid chain specification");
+msg = J.i18n.GT.$ ("invalid chain specification");
 break;
 case 9:
-msg = J.i18n.GT._ ("invalid expression token: {0}");
+msg = J.i18n.GT.$ ("invalid expression token: {0}");
 break;
 case 10:
-msg = J.i18n.GT._ ("invalid model specification");
+msg = J.i18n.GT.$ ("invalid model specification");
 break;
 case 11:
-msg = J.i18n.GT._ ("missing END for {0}");
+msg = J.i18n.GT.$ ("missing END for {0}");
 break;
 case 12:
-msg = J.i18n.GT._ ("number expected");
+msg = J.i18n.GT.$ ("number expected");
 break;
 case 13:
-msg = J.i18n.GT._ ("number or variable name expected");
+msg = J.i18n.GT.$ ("number or variable name expected");
 break;
 case 14:
-msg = J.i18n.GT._ ("residue specification (ALA, AL?, A*) expected");
+msg = J.i18n.GT.$ ("residue specification (ALA, AL?, A*) expected");
 break;
 case 15:
-msg = J.i18n.GT._ ("{0} expected");
+msg = J.i18n.GT.$ ("{0} expected");
 break;
 case 16:
-msg = J.i18n.GT._ ("{0} unexpected");
+msg = J.i18n.GT.$ ("{0} unexpected");
 break;
 case 17:
-msg = J.i18n.GT._ ("unrecognized expression token: {0}");
+msg = J.i18n.GT.$ ("unrecognized expression token: {0}");
 break;
 case 18:
-msg = J.i18n.GT._ ("unrecognized {0} parameter");
+msg = J.i18n.GT.$ ("unrecognized {0} parameter");
 break;
 case 19:
-msg = J.i18n.GT._ ("unrecognized token: {0}");
+msg = J.i18n.GT.$ ("unrecognized token: {0}");
 break;
 }
 if (msg.indexOf ("{0}") < 0) {

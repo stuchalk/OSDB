@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.thread");
-Clazz.load (["java.lang.Thread"], "J.thread.JmolThread", ["JU.Logger"], function () {
+Clazz.load (["java.lang.Thread"], "J.thread.JmolThread", ["JU.Logger", "JV.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.$name = "JmolThread";
 this.vwr = null;
@@ -78,7 +78,7 @@ throw e$$;
 Clazz.defineMethod (c$, "oops", 
 function (e) {
 JU.Logger.debug (this.$name + " exception " + e);
-if (!this.vwr.isJS) e.printStackTrace ();
+if (!JV.Viewer.isJS) e.printStackTrace ();
 this.vwr.queueOnHold = false;
 }, "Exception");
 Clazz.defineMethod (c$, "runSleep", 

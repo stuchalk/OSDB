@@ -27,15 +27,21 @@ jmol_isReady = function(applet) {
 	Jmol._getElement(applet, "appletdiv").style.border="1px solid blue"
 }		
 
+var Styles = [];
+Styles.push(["reset lighting; set cartoonsfancy off;set hermitelevel 0;set antialiasDisplay", "Jmol Fast Style"]);
+Styles.push(["reset lighting; set cartoonsfancy; set hermitelevel 20;set antialiasDisplay;", "Jmol Fancy Style"]);
+Styles.push(["set ambientpercent 25; set specularpower 100; set specularpercent 22; set specularexponent 4; set cartoonsfancy; set antialiasdisplay; set hermitelevel 20;","Chimera Style"]);
+
 var xxxx = document.location.search
 if (xxxx.indexOf("_USE=") > 0)xxxx = xxxx.substring(0, xxxx.indexOf("_USE=") - 1);
 if (xxxx.length == 5 || xxxx.length == 0) { 
 	xxxx = (xxxx + "?1crn").substring(1,5)
 	script = 'h2oOn=true;set animframecallback "jmolscript:if (!selectionHalos) {select model=_modelNumber}";'
+     + ' set antialiasdisplay;'
 	+'set errorCallback "myCallback";'
 	+'set defaultloadscript "isDssp = false;set defaultVDW babel;if(!h2oOn){display !water}";'
 	+'set zoomlarge false;set echo top left;echo loading XXXX...;refresh;'
-	+'load "http://www.rcsb.org/pdb/files/XXXX.pdb";set echo top center;echo XXXX;'
+	+'load "=XXXX";set echo top center;echo XXXX;'
 	+'spacefill off;wireframe off;cartoons on;color structure;'
 	script = script.replace(/XXXX/g, xxxx)
 } else {
@@ -49,7 +55,7 @@ var Info = {
 	debug: false,
 	color: "white",
 	addSelectionOptions: false,
-	serverURL: "http://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
+	serverURL: "https://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
 	use: "HTML5",
 	j2sPath: "j2s",
 	readyFunction: jmol_isReady,
@@ -87,7 +93,7 @@ function jmolMenu(a) {Jmol.jmolMenu(jmolApplet0, a)}
 
 </script>
 </head>
-<body>
+<body onload="document.getElementsByTagName('form')[0].reset()">
 
 <center>
 
@@ -112,7 +118,7 @@ function jmolMenu(a) {Jmol.jmolMenu(jmolApplet0, a)}
 jmolApplet0 = Jmol.getApplet("jmolApplet0", Info)
 
 </script>
-</td><td>
+</td><td rowspan=2>
 <form><!-- (FORM tag is important to automatically set checkbox off when page reloads) -->
 <script type="text/javascript">
 Jmol.setButtonCss(null,"style='width:160px'")
@@ -136,20 +142,31 @@ jmolBr()
 jmolButton("script ?.spt","Load SCRIPT")
 jmolBr()
 jmolBr()
+jmolCheckbox("if (getproperty('shapeInfo.isosurface').length){isosurface on} else {isosurface @{'='+_modelName};}","isosurface off","show electron density",false)
+jmolBr()
+jmolBr()
+jmolMenu(Styles)
+jmolBr()
+jmolCheckbox("set antialiasdisplay TRUE","set antialiasdisplay FALSE","antialiasDisplay",true)
+jmolBr()
 jmolCheckbox("h2oOn=true;display *","h2oOn=false;display !water","display water",true)
+jmolBr()
+jmolCheckbox("set zshade true","set zshade false","zshade (fog)",false)
+jmolBr()
+jmolCheckbox("background black","background white","background black",false)
 jmolBr()
 jmolBr()
 jmolButton("write FILE ?","Save FILE")
 jmolBr()
-jmolButton("write IMAGE ?.jpg","Save JPG")
+jmolButton("write IMAGE jsmol.jpg","Save JPG")
 jmolBr()
-jmolButton("write IMAGE ?.png","Save PNG")
+jmolButton("write IMAGE jsmol.png","Save PNG")
 jmolBr()
-jmolButton("write ?.jmol","Save Jmol")
+jmolButton("write jsmol.jmol","Save Jmol")
 jmolBr()
-jmolButton("write PNGJ ?.png","Save PNG+Jmol")
+jmolButton("write PNGJ jsmol.png","Save PNG+Jmol")
 jmolBr()
-jmolButton("write STATE ?.spt","Save STATE")
+jmolButton("write STATE jsmol.spt","Save STATE")
 jmolBr()
 
 
@@ -171,9 +188,11 @@ jmolButton("color group")
 jmolButton("color amino")
 jmolButton("color structure")
 jmolBr()
-jmolButton("trace only")
-jmolButton("cartoon only")
-jmolButton("backbone only")
+Jmol.setButtonCss(null,"style='width:96px'")
+jmolButton("backbone only", "backbone")
+jmolButton("trace only", "trace")
+jmolButton("cartoon only", "cartoon")
+jmolButton("spacefill only", "spacefill")
 jmolButton("spacefill only;spacefill 23%;wireframe 0.15","ball&stick")
 jmolBr()
 Jmol.setButtonCss(null,"style='width:60px'")

@@ -7,7 +7,7 @@ function (g, img, x, y, width, height, isDTI) {
 Clazz.overrideMethod (c$, "getTextPixels", 
 function (text, font3d, gObj, image, width, height, ascent) {
 return null;
-}, "~S,javajs.awt.Font,~O,~O,~N,~N,~N");
+}, "~S,JU.Font,~O,~O,~N,~N,~N");
 Clazz.overrideMethod (c$, "getGraphics", 
 function (image) {
 return null;

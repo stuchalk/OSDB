@@ -10,6 +10,7 @@ Clazz.instantialize (this, arguments);
 }, J.adapter.smarter, "StructureIterator", J.api.JmolAdapterStructureIterator);
 Clazz.makeConstructor (c$, 
 function (asc) {
+Clazz.superConstructor (this, J.adapter.smarter.StructureIterator, []);
 this.structureCount = asc.structureCount;
 this.structures = asc.structures;
 this.istructure = 0;

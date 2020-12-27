@@ -1,14 +1,14 @@
 Clazz.declarePackage ("J.export");
-Clazz.load (["J.export.___Exporter", "JU.A4", "$.M4", "$.P3"], "J.export.__CartesianExporter", ["java.lang.Float", "java.util.Hashtable", "JU.M3", "JU.C"], function () {
+Clazz.load (["J.export.___Exporter", "JU.A4", "$.M4"], "J.export.__CartesianExporter", ["java.lang.Float", "java.util.Hashtable", "JU.M3", "$.P3", "JU.C", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.viewpoint = null;
-this.ptScaled = null;
+this.canCapCylinders = false;
+this.noColor = false;
 this.sphereMatrix = null;
 Clazz.instantialize (this, arguments);
 }, J["export"], "__CartesianExporter", J["export"].___Exporter);
 Clazz.prepareFields (c$, function () {
 this.viewpoint =  new JU.A4 ();
-this.ptScaled =  new JU.P3 ();
 this.sphereMatrix =  new JU.M4 ();
 });
 Clazz.makeConstructor (c$, 
@@ -42,17 +42,6 @@ this.tempP2.setT (ptB);
 this.tm.unTransformPoint (ptA, this.tempP1);
 this.tm.unTransformPoint (ptB, this.tempP2);
 }}, "JU.P3,JU.P3,~B");
-Clazz.defineMethod (c$, "scale", 
-function (f) {
-return f * this.exportScale;
-}, "~N");
-Clazz.defineMethod (c$, "scalePt", 
-function (pt) {
-if (this.exportScale == 1) return pt;
-this.ptScaled.setT (pt);
-this.ptScaled.scale (this.exportScale);
-return this.ptScaled;
-}, "JU.T3");
 Clazz.defineMethod (c$, "getCoordinateMap", 
 function (vertices, coordMap, bsValid) {
 var n = 0;
@@ -93,15 +82,16 @@ for (var i = i0; i >= 0; i = (isAll ? i - 1 : bsPolygons.nextSetBit (i + 1))) th
 Clazz.overrideMethod (c$, "plotText", 
 function (x, y, z, colix, text, font3d) {
 this.gdata.plotText (x, y, z, this.gdata.getColorArgbOrGray (colix), 0, text, font3d, this.export3D);
-}, "~N,~N,~N,~N,~S,javajs.awt.Font");
+}, "~N,~N,~N,~N,~S,JU.Font");
 Clazz.overrideMethod (c$, "plotImage", 
 function (x, y, z, image, bgcolix, width, height) {
 }, "~N,~N,~N,~O,~N,~N,~N");
 Clazz.overrideMethod (c$, "drawAtom", 
-function (atom) {
+function (atom, radius) {
+if (JU.Logger.debugging) this.outputComment ("atom " + atom);
 var colix = atom.colixAtom;
-this.outputSphere (atom, atom.madAtom / 2000, colix, JU.C.isColixTranslucent (colix));
-}, "JM.Atom");
+this.outputSphere (atom, radius == 0 ? atom.madAtom / 2000 : radius, colix, JU.C.isColixTranslucent (colix));
+}, "JM.Atom,~N");
 Clazz.overrideMethod (c$, "drawCircle", 
 function (x, y, z, diameter, colix, doFill) {
 this.tempP3.set (x, y, z);
@@ -146,12 +136,15 @@ Clazz.overrideMethod (c$, "drawCylinder",
 function (ptA, ptB, colix1, colix2, endcaps, mad, bondOrder) {
 this.setTempPoints (ptA, ptB, bondOrder < 0);
 var radius = mad / 2000;
-if (colix1 == colix2) {
+if (JU.Logger.debugging) this.outputComment ("bond " + ptA + " " + ptB);
+if (colix1 == colix2 || this.noColor) {
 this.outputCylinder (null, this.tempP1, this.tempP2, colix1, endcaps, radius, null, null, bondOrder != -1);
 } else {
 this.tempV2.ave (this.tempP2, this.tempP1);
 this.tempP3.setT (this.tempV2);
-this.outputCylinder (null, this.tempP1, this.tempP3, colix1, (endcaps == 3 ? 0 : endcaps), radius, null, null, true);
+if (this.solidOnly && endcaps == 0) endcaps = 2;
+ else if (this.canCapCylinders && endcaps == 3) endcaps = (this.solidOnly ? 5 : 4);
+this.outputCylinder (null, this.tempP3, this.tempP1, colix1, (endcaps == 3 ? 0 : endcaps), radius, null, null, true);
 this.outputCylinder (null, this.tempP3, this.tempP2, colix2, (endcaps == 3 ? 0 : endcaps), radius, null, null, true);
 if (endcaps == 3) {
 this.outputSphere (this.tempP1, radius * 1.01, colix1, bondOrder != -2);
@@ -185,9 +178,15 @@ function (colix, ptA, ptB, ptC, twoSided) {
 this.tm.unTransformPoint (ptA, this.tempP1);
 this.tm.unTransformPoint (ptB, this.tempP2);
 this.tm.unTransformPoint (ptC, this.tempP3);
+if (this.solidOnly) {
+this.outputSolidPlate (this.tempP1, this.tempP2, this.tempP3, colix);
+} else {
 this.outputTriangle (this.tempP1, this.tempP2, this.tempP3, colix);
 if (twoSided) this.outputTriangle (this.tempP1, this.tempP3, this.tempP2, colix);
-}, "~N,JU.T3,JU.T3,JU.T3,~B");
+}}, "~N,JU.T3,JU.T3,JU.T3,~B");
+Clazz.defineMethod (c$, "outputSolidPlate", 
+function (tempP1, tempP2, tempP3, colix) {
+}, "JU.P3,JU.P3,JU.P3,~N");
 Clazz.defineMethod (c$, "setSphereMatrix", 
 function (center, rx, ry, rz, a, sphereMatrix) {
 if (a != null) {

@@ -144,8 +144,11 @@ this.extendGrid = 0;
 this.isMapped = false;
 this.showTiming = false;
 this.pointSize = 0;
+this.probes = null;
 this.isModelConnected = false;
 this.surfaceAtoms = null;
+this.filesData = null;
+this.probeValues = null;
 Clazz.instantialize (this, arguments);
 }, J.jvxl.readers, "Parameters");
 Clazz.prepareFields (c$, function () {
@@ -189,6 +192,7 @@ this.extendGrid = 0;
 this.fileIndex = 1;
 this.readAllData = true;
 this.fileName = "";
+this.filesData = null;
 this.fullyLit = false;
 this.functionInfo = null;
 this.iAddGridPoints = false;
@@ -215,6 +219,8 @@ this.modelInvRotation = null;
 this.nContours = 0;
 this.pocket = null;
 this.pointSize = NaN;
+this.probes = null;
+this.probeValues = null;
 this.propertyDistanceMax = 2147483647;
 this.propertySmoothing = false;
 this.propertySmoothingPower = 4;
@@ -362,13 +368,13 @@ Clazz.defineMethod (c$, "setSolvent",
 function (propertyName, radius) {
 this.isEccentric = this.isAnisotropic = false;
 this.solventRadius = Math.abs (radius);
-this.dataType = (this.intersection != null ? 1333 : "nomap" === propertyName ? 1205 : "molecular" === propertyName ? 1203 : "sasurface" === propertyName || this.solventRadius == 0 ? 1196 : 1195);
+this.dataType = (this.intersection != null ? 1333 : "nomap" === propertyName ? 1207 : "molecular" === propertyName ? 1203 : "sasurface" === propertyName || this.solventRadius == 0 ? 1196 : 1195);
 if (this.state < 2 && (this.cutoffAutomatic || !this.colorDensity) && (this.intersection == null || this.cutoff == 3.4028235E38)) this.cutoff = 0.0;
 switch (this.dataType) {
 case 1333:
 this.calculationType = "VDW intersection";
 break;
-case 1205:
+case 1207:
 this.calculationType = "unmapped plane";
 break;
 case 1203:
@@ -382,7 +388,7 @@ this.calculationType = "solvent-accessible surface with radius " + this.solventR
 break;
 }
 switch (this.dataType) {
-case 1205:
+case 1207:
 this.solventExtendedAtomRadius = this.solventRadius;
 this.solventRadius = 0;
 this.isContoured = false;
@@ -512,6 +518,7 @@ this.mappedDataMin = -1;
 this.mappedDataMax = 1;
 }if (this.mappedDataMin == 3.4028235E38 || this.mappedDataMin == this.mappedDataMax) {
 var minMax = surfaceReader.getMinMaxMappedValues (haveData);
+System.out.println ("parameters - setmapranges " + minMax[0] + " " + minMax[1]);
 this.mappedDataMin = minMax[0];
 this.mappedDataMax = minMax[1];
 }if (this.mappedDataMin == 0 && this.mappedDataMax == 0) {
@@ -564,9 +571,10 @@ Clazz.defineStatics (c$,
 "SURFACE_MLP", 1329,
 "SURFACE_MOLECULAR", 1203,
 "SURFACE_NCI", 1844,
-"SURFACE_INTERSECT", 1333,
-"SURFACE_NOMAP", 1205,
-"SURFACE_PROPERTY", 1206,
+"SURFACE_INTERSECT_ATOM", 1333,
+"SURFACE_INTERSECT_FILE", 1334,
+"SURFACE_NOMAP", 1207,
+"SURFACE_PROPERTY", 1208,
 "ANGSTROMS_PER_BOHR", 0.5291772,
 "defaultEdgeFractionBase", 35,
 "defaultEdgeFractionRange", 90,

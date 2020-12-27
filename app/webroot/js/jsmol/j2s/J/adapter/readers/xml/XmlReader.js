@@ -1,7 +1,8 @@
 Clazz.declarePackage ("J.adapter.readers.xml");
-Clazz.load (["J.adapter.smarter.AtomSetCollectionReader", "JU.SB"], "J.adapter.readers.xml.XmlReader", ["java.io.BufferedInputStream", "java.util.Hashtable", "JU.Rdr", "J.adapter.smarter.AtomSetCollection", "$.Resolver", "J.api.Interface", "JU.Logger"], function () {
+Clazz.load (["J.adapter.smarter.AtomSetCollectionReader", "JU.SB"], "J.adapter.readers.xml.XmlReader", ["java.io.BufferedInputStream", "java.util.Hashtable", "JU.Rdr", "J.adapter.smarter.AtomSetCollection", "$.Resolver", "J.api.Interface", "JU.Logger", "JV.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.atom = null;
+this.bond = null;
 this.parent = null;
 this.atts = null;
 this.keepChars = false;
@@ -10,6 +11,9 @@ this.domObj = null;
 this.attribs = null;
 this.attArgs = null;
 this.nullObj = null;
+if (!Clazz.isClassDefined ("J.adapter.readers.xml.XmlReader.NVPair")) {
+J.adapter.readers.xml.XmlReader.$XmlReader$NVPair$ ();
+}
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.xml, "XmlReader", J.adapter.smarter.AtomSetCollectionReader);
 Clazz.prepareFields (c$, function () {
@@ -52,7 +56,7 @@ try {
 thisReader.processXml (this, saxReader);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
-return "Error reading XML: " + ((this.parent == null ? this.vwr : this.parent.vwr).isJS ? e : e.getMessage ());
+return "Error reading XML: " + (((this.parent == null ? this.vwr : this.parent.vwr), JV.Viewer).isJS ? e : e.getMessage ());
 } else {
 throw e;
 }
@@ -77,23 +81,24 @@ var o = "";
 var data = null;
 {
 o = this.reader.lock.lock; if (o.$in) data = o.$in.buf;
-}if (Clazz.instanceOf (o, java.io.BufferedInputStream)) o = JU.Rdr.StreamToUTF8String (JU.Rdr.getBIS (data));
+}if (Clazz.instanceOf (o, java.io.BufferedInputStream)) o = JU.Rdr.streamToUTF8String (JU.Rdr.getBIS (data));
+var isjs = false;
 {
-this.domObj[0] = this.createDomNodeJS("xmlReader",o);
-this.walkDOMTree(); this.createDomNodeJS("xmlReader",null);
+isjs = true;
+}if (isjs) {
+this.domObj[0] = this.createDomNodeJS ("xmlReader", o);
+this.walkDOMTree ();
+this.createDomNodeJS ("xmlReader", null);
 }} else {
 (J.api.Interface.getOption ("adapter.readers.xml.XmlHandler", this.vwr, "file")).parseXML (this, saxReader, this.reader);
 }}, "J.adapter.readers.xml.XmlReader,~O");
 Clazz.defineMethod (c$, "createDomNodeJS", 
 function (id, data) {
 var applet = this.parent.vwr.html5Applet;
+var d = null;
 {
-// id = applet._id + "_" + id;
-// var d = document.getElementById(id);
-// if (d)
-//   document.body.removeChild(d);
 if (!data)
-return;
+return null;
 if (data.indexOf("<?") == 0)
 data = data.substring(data.indexOf("<", 1));
 if (data.indexOf("/>") >= 0) {
@@ -114,10 +119,10 @@ break;
 }
 data = D.join('');
 }
-var d = document.createElement("_xml");
+d = document.createElement("_xml");
 d.innerHTML = data;
-return d;
-}}, "~S,~O");
+}return d;
+}, "~S,~O");
 Clazz.overrideMethod (c$, "applySymmetryAndSetTrajectory", 
 function () {
 try {
@@ -125,7 +130,7 @@ if (this.parent == null) this.applySymTrajASCR ();
  else this.parent.applySymmetryAndSetTrajectory ();
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
-System.out.println ((this.parent == null ? this : this.parent).vwr.isJS ? e : e.getMessage ());
+System.out.println (((this.parent == null ? this : this.parent).vwr, JV.Viewer).isJS ? e : e.getMessage ());
 JU.Logger.error ("applySymmetry failed: " + e);
 } else {
 throw e;
@@ -187,12 +192,12 @@ Clazz.defineMethod (c$, "getDOMAttributesA",
  function (attributes) {
 this.atts.clear ();
 if (attributes == null) return;
+var nodes = null;
 {
-var nodes = attributes[0]; for (var i = nodes.length; --i >=
-0;) { var key = this.fixLocal(nodes[i].name);
-this.atts.put(key.toLowerCase(), nodes[i].value); }
-return;
-}}, "~A");
+nodes = attributes[0];
+}for (var i = nodes.length; --i >= 0; ) this.atts.put (this.fixLocal (nodes[i].name).toLowerCase (), nodes[i].value);
+
+}, "~A");
 Clazz.defineMethod (c$, "jsObjectGetMember", 
  function (jsObject, name) {
 {
@@ -201,4 +206,14 @@ return jsObject[0][name];
 Clazz.defineMethod (c$, "endDocument", 
 function () {
 });
+c$.$XmlReader$NVPair$ = function () {
+Clazz.pu$h(self.c$);
+c$ = Clazz.decorateAsClass (function () {
+Clazz.prepareCallback (this, arguments);
+this.name = null;
+this.value = null;
+Clazz.instantialize (this, arguments);
+}, J.adapter.readers.xml.XmlReader, "NVPair");
+c$ = Clazz.p0p ();
+};
 });

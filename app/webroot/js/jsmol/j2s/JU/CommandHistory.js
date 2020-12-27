@@ -6,6 +6,7 @@ this.maxSize = 100;
 this.nextCommand = 0;
 this.cursorPos = 0;
 this.isOn = true;
+this.lstStates = null;
 Clazz.instantialize (this, arguments);
 }, JU, "CommandHistory");
 Clazz.makeConstructor (c$, 
@@ -29,7 +30,7 @@ function (maxSize) {
 if (maxSize == this.maxSize) return;
 if (maxSize < 2) maxSize = 2;
 while (this.nextCommand > maxSize) {
-this.commandList.remove (0);
+this.commandList.removeItemAt (0);
 this.nextCommand--;
 }
 if (this.nextCommand > maxSize) this.nextCommand = maxSize - 1;
@@ -113,7 +114,7 @@ return this.removeCommand (this.nextCommand - 1);
 Clazz.defineMethod (c$, "removeCommand", 
 function (n) {
 if (n < 0 || n >= this.nextCommand) return "";
-var str = this.commandList.remove (n);
+var str = this.commandList.removeItemAt (n);
 this.nextCommand--;
 return str;
 }, "~N");
@@ -122,13 +123,24 @@ Clazz.defineMethod (c$, "addCommandLine",
 if (command == null || command.length == 0) return;
 if (command.endsWith ("#--")) return;
 if (this.nextCommand >= this.maxSize) {
-this.commandList.remove (0);
+this.commandList.removeItemAt (0);
 this.nextCommand = this.maxSize - 1;
 }this.commandList.add (this.nextCommand, command);
 this.nextCommand++;
 this.cursorPos = this.nextCommand;
 this.commandList.add (this.nextCommand, "");
 }, "~S");
+Clazz.defineMethod (c$, "pushState", 
+function (stateInfo) {
+if (this.lstStates == null) this.lstStates =  new JU.Lst ();
+this.lstStates.addLast (stateInfo);
+}, "~S");
+Clazz.defineMethod (c$, "popState", 
+function () {
+if (this.lstStates == null || this.lstStates.size () == 0) return null;
+var s = this.lstStates.removeItemAt (this.lstStates.size () - 1);
+return s;
+});
 Clazz.defineStatics (c$,
 "ERROR_FLAG", "#??",
 "NOHISTORYLINE_FLAG", "#--",

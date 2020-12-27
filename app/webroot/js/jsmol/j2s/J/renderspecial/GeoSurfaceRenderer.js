@@ -52,7 +52,7 @@ if (p1 >= mapMax || p2 >= mapMax || p3 >= mapMax || !points.get (p1) || !points.
 this.facePt1.set (coords[this.faceMap[p1]], coords[this.faceMap[p1] + 1], coords[this.faceMap[p1] + 2]);
 this.facePt2.set (coords[this.faceMap[p2]], coords[this.faceMap[p2] + 1], coords[this.faceMap[p2] + 2]);
 this.facePt3.set (coords[this.faceMap[p3]], coords[this.faceMap[p3] + 1], coords[this.faceMap[p3] + 2]);
-this.g3d.fillTriangle3CNBits (this.facePt1, this.colix, p1, this.facePt2, this.colix, p2, this.facePt3, this.colix, p3);
+this.g3d.fillTriangle3CNBits (this.facePt1, this.colix, p1, this.facePt2, this.colix, p2, this.facePt3, this.colix, p3, false);
 }
 }, "JU.BS");
 });

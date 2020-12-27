@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JSV.js2d");
-Clazz.load (["JSV.api.JSVPanel"], "JSV.js2d.JsPanel", ["javajs.awt.Font", "JSV.common.JSViewer", "$.PanelData", "JU.Logger"], function () {
+Clazz.load (["JSV.api.JSVPanel"], "JSV.js2d.JsPanel", ["JSV.common.JSViewer", "$.PanelData", "JU.Font", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.apiPlatform = null;
 this.pd = null;
@@ -86,12 +86,12 @@ if (this.pd != null) this.pd.dialogsToFront (null);
 }, "~B");
 Clazz.overrideMethod (c$, "getFontFaceID", 
 function (name) {
-return javajs.awt.Font.getFontFaceID ("SansSerif");
+return JU.Font.getFontFaceID ("SansSerif");
 }, "~S");
 Clazz.overrideMethod (c$, "doRepaint", 
 function (andTaintAll) {
 if (this.pd == null) return;
-this.pd.taintedAll = new Boolean (this.pd.taintedAll | andTaintAll).valueOf ();
+if (andTaintAll) this.pd.setTaintedAll ();
 if (!this.pd.isPrinting) this.vwr.requestRepaint ();
 }, "~B");
 Clazz.overrideMethod (c$, "paintComponent", 
@@ -131,9 +131,12 @@ this.pd.setPrint (null, null);
 }
 }, "JSV.common.PrintLayout,java.io.OutputStream,~S");
 Clazz.overrideMethod (c$, "saveImage", 
-function (type, file) {
-return null;
-}, "~S,javajs.api.GenericFileInterface");
+function (type, file, out) {
+var fname = file.getName ();
+if (out != null) out.cancel ();
+JSV.common.JSViewer.jmolObject.saveImage (this.vwr.html5Applet, "png", fname);
+return "OK";
+}, "~S,J.api.GenericFileInterface,JU.OC");
 Clazz.overrideMethod (c$, "hasFocus", 
 function () {
 return false;
@@ -143,7 +146,12 @@ function () {
 });
 Clazz.overrideMethod (c$, "setToolTipText", 
 function (s) {
-}, "~S");
+var x = this.pd.mouseX;
+var y = this.pd.mouseY;
+var applet = this.vwr.html5Applet;
+{
+applet._showTooltip && applet._showTooltip(s, x, y);
+}}, "~S");
 Clazz.overrideMethod (c$, "getHeight", 
 function () {
 return this.vwr.getHeight ();

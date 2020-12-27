@@ -112,7 +112,7 @@ if (this.isSpherical) otype = (2 * (this.minL) + 1) + otype;
 this.lstGaussians.addLast (this.basisData);
 var nPrimitives = this.basisData.get (0).length;
 for (var i = 1, n = this.basisData.size (); i < n; i++) {
-this.htSlaterIDs.put (this.basisId + "_" + i,  Clazz.newIntArray (-1, [-1, this.moReader.getQuantumShellTagID (otype), this.gaussianCount, nPrimitives]));
+this.htSlaterIDs.put (this.basisId + "_" + i,  Clazz.newIntArray (-1, [-1, this.moReader.getQuantumShellTagID (otype), this.gaussianCount + 1, nPrimitives]));
 this.gaussianCount += nPrimitives;
 }
 return true;
@@ -181,7 +181,7 @@ var slater = this.htSlaterIDs.get (ids[k] + "_" + kk);
 if (slater == null) break;
 slater = JU.AU.arrayCopyI (slater, -1);
 this.moReader.shells = slaters;
-slater[0] = i;
+slater[0] = i + 1;
 slaters.addLast (slater);
 }
 }

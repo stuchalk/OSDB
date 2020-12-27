@@ -1,11 +1,11 @@
 Clazz.declarePackage ("J.awtjs2d");
-Clazz.load (["javajs.api.GenericPlatform"], "J.awtjs2d.Platform", ["java.net.URL", "JU.AjaxURLStreamHandlerFactory", "$.Rdr", "$.SB", "J.api.Interface", "J.awtjs2d.Display", "$.Image", "$.JSFile", "$.JSFont", "$.Mouse"], function () {
+Clazz.load (["J.api.GenericPlatform"], "J.awtjs2d.Platform", ["java.net.URL", "JU.AjaxURLStreamHandlerFactory", "$.Rdr", "$.SB", "J.api.Interface", "J.awtjs2d.Display", "$.Image", "$.JSFile", "$.JSFont", "$.Mouse"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.canvas = null;
 this.vwr = null;
 this.context = null;
 Clazz.instantialize (this, arguments);
-}, J.awtjs2d, "Platform", null, javajs.api.GenericPlatform);
+}, J.awtjs2d, "Platform", null, J.api.GenericPlatform);
 Clazz.overrideMethod (c$, "setViewer", 
 function (vwr, canvas) {
 {
@@ -18,12 +18,12 @@ this.context = canvas.getContext("2d");
 canvas.imgdata = this.context.getImageData(0, 0, canvas.width, canvas.height);
 canvas.buf8 = canvas.imgdata.data;
 }
-this.canvas = canvas;
-}try {
+}this.canvas = canvas;
+try {
 java.net.URL.setURLStreamHandlerFactory ( new JU.AjaxURLStreamHandlerFactory ());
 } catch (e) {
 }
-}, "javajs.api.PlatformViewer,~O");
+}, "J.api.PlatformViewer,~O");
 Clazz.overrideMethod (c$, "isSingleThreaded", 
 function () {
 return true;
@@ -51,7 +51,7 @@ J.awtjs2d.Display.getFullScreenDimensions (canvas, widthHeight);
 }, "~O,~A");
 Clazz.overrideMethod (c$, "getMenuPopup", 
 function (menuStructure, type) {
-var c = (type == 'j' ? "awtjs2d.JmolJSPopup" : "awtjs2d.JSModelKitPopup");
+var c = (type == 'j' ? "awtjs2d.JSJmolPopup" : "awtjs2d.JSModelKitPopup");
 var jmolpopup = J.api.Interface.getOption (c, this.vwr, "popup");
 try {
 if (jmolpopup != null) jmolpopup.jpiInitialize (this.vwr, menuStructure);
@@ -90,15 +90,15 @@ Clazz.overrideMethod (c$, "repaint",
 function (canvas) {
 var jmol = null;
 {
-jmol = (self.Jmol && Jmol._repaint ? Jmol : null);
-}if (jmol != null) jmol._repaint ((this.vwr).html5Applet, true);
+jmol = (self.Jmol && Jmol.repaint ? Jmol : null);
+}if (jmol != null) jmol.repaint ((this.vwr).html5Applet, true);
 }, "~O");
 Clazz.overrideMethod (c$, "setTransparentCursor", 
 function (canvas) {
 }, "~O");
 Clazz.overrideMethod (c$, "setCursor", 
 function (c, canvas) {
-J.awtjs2d.Platform.Jmol ()._setCursor ((this.vwr).html5Applet, c);
+J.awtjs2d.Platform.Jmol ().setCursor ((this.vwr).html5Applet, c);
 }, "~N,~O");
 Clazz.overrideMethod (c$, "allocateRgbImage", 
 function (windowWidth, windowHeight, pBuffer, windowSize, backgroundTransparent, isImageWrite) {
@@ -121,13 +121,13 @@ var context2d = null;
 var isWebGL = (canvas == null);
 {
 if(isWebGL) { this.canvas = canvas =
-Jmol._loadImage(this,"webgl",""
+Jmol.loadImage(this,"webgl",""
 +System.currentTimeMillis(),this
 .vwr.html5Applet._canvas.toDataURL(),null,null); width =
 canvas.imageWidth; height = canvas.imageHeight;
 canvas.imageWidth = 0; }
 if (canvas.image && (width != canvas.width || height !=
-canvas.height)) Jmol._setCanvasImage(canvas, width, height);
+canvas.height)) Jmol.setCanvasImage(canvas, width, height);
 if (canvas.buf32) return canvas.buf32; context2d =
 canvas.getContext('2d');
 }var buf = J.awtjs2d.Image.grabPixels (context2d, width, height);
@@ -144,7 +144,7 @@ return this.grabPixels (canvas, width, height, null, 0, 0);
 Clazz.overrideMethod (c$, "getTextPixels", 
 function (text, font3d, context, image, width, height, ascent) {
 return J.awtjs2d.Image.getTextPixels (text, font3d, context, width, height, ascent);
-}, "~S,javajs.awt.Font,~O,~O,~N,~N,~N");
+}, "~S,JU.Font,~O,~O,~N,~N,~N");
 Clazz.overrideMethod (c$, "flushImage", 
 function (imagePixelBuffer) {
 }, "~O");
@@ -167,11 +167,11 @@ return this.getGraphics (image);
 }, "~O,~B");
 Clazz.overrideMethod (c$, "newBufferedImage", 
 function (image, w, h) {
-return J.awtjs2d.Platform.Jmol ()._getHiddenCanvas ((this.vwr).html5Applet, "stereoImage", w, h);
+return J.awtjs2d.Platform.Jmol ().getHiddenCanvas ((this.vwr).html5Applet, "stereoImage", w, h);
 }, "~O,~N,~N");
 Clazz.overrideMethod (c$, "newOffScreenImage", 
 function (w, h) {
-return J.awtjs2d.Platform.Jmol ()._getHiddenCanvas ((this.vwr).html5Applet, "textImage", w, h);
+return J.awtjs2d.Platform.Jmol ().getHiddenCanvas ((this.vwr).html5Applet, "textImage", w, h);
 }, "~N,~N");
 Clazz.overrideMethod (c$, "waitForDisplay", 
 function (echoNameAndPath, zipBytes) {
@@ -187,12 +187,12 @@ var sc = (bytes == null ? vwr.getEvalContextAndHoldQueue (vwr.eval) : null);
 var f = null;
 {
 f = function(canvas, pathOrError) { vwr.loadImageData(canvas, pathOrError, echoName, sc) };
-}return J.awtjs2d.Platform.Jmol ()._loadImage (this, echoName, path, bytes, f);
+}return J.awtjs2d.Platform.Jmol ().loadImage (this, echoName, path, bytes, f);
 }, "~O");
 Clazz.overrideMethod (c$, "fontStringWidth", 
 function (font, text) {
 return J.awtjs2d.JSFont.stringWidth (font, this.context, text);
-}, "javajs.awt.Font,~S");
+}, "JU.Font,~S");
 Clazz.overrideMethod (c$, "getFontAscent", 
 function (context) {
 return J.awtjs2d.JSFont.getAscent (context);
@@ -204,7 +204,7 @@ return J.awtjs2d.JSFont.getDescent (context);
 Clazz.overrideMethod (c$, "getFontMetrics", 
 function (font, context) {
 return J.awtjs2d.JSFont.getFontMetrics (font, context == null ? this.context : context);
-}, "javajs.awt.Font,~O");
+}, "JU.Font,~O");
 Clazz.overrideMethod (c$, "newFont", 
 function (fontFace, isBold, isItalic, fontSize) {
 return J.awtjs2d.JSFont.newFont (fontFace, isBold, isItalic, fontSize, "px");
@@ -271,6 +271,12 @@ return Jmol;
 }});
 Clazz.overrideMethod (c$, "forceAsyncLoad", 
 function (filename) {
-return J.awtjs2d.Platform.Jmol ()._isBinaryUrl (filename);
+return J.awtjs2d.Platform.Jmol ().isBinaryUrl (filename);
 }, "~S");
+Clazz.overrideMethod (c$, "getInChI", 
+function () {
+return (J.awtjs2d.Platform.inchi == null ? (J.awtjs2d.Platform.inchi = J.api.Interface.getInterface ("J.inchi.InChIJS", this.vwr, "platform")) : J.awtjs2d.Platform.inchi);
+});
+Clazz.defineStatics (c$,
+"inchi", null);
 });

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.readers.pymol");
-Clazz.load (null, "J.adapter.readers.pymol.JmolObject", ["java.lang.Float", "JU.P3", "$.PT", "$.SB", "J.adapter.readers.pymol.PyMOLScene", "JU.BSUtil", "$.Escape"], function () {
+Clazz.load (null, "J.adapter.readers.pymol.JmolObject", ["java.lang.Float", "JU.P3", "$.PT", "$.SB", "J.adapter.readers.pymol.PyMOLReader", "JU.BSUtil", "$.Escape"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.id = 0;
 this.bsAtoms = null;
@@ -34,7 +34,7 @@ case 4115:
 var i = (this.info).intValue ();
 if (i >= 0) this.info = Integer.$valueOf (modelOffset + i);
 return;
-case 1073742032:
+case 1073742031:
 var movie = this.info;
 var frames = movie.get ("frames");
 for (var j = frames.length; --j >= 0; ) frames[j] += modelOffset;
@@ -83,7 +83,7 @@ sm.vwr.displayAtoms (this.bsAtoms, this.id == 1610625028, false, 1275069441, tru
 case 12290:
 sm.vwr.defineAtomSets (this.info);
 return;
-case 1073742032:
+case 1073742031:
 sm.vwr.am.setMovie (this.info);
 return;
 case 4115:
@@ -196,8 +196,8 @@ case 1073742016:
 var mep = this.info;
 sID = mep.get (mep.size () - 2).toString ();
 var mapID = mep.get (mep.size () - 1).toString ();
-var min = J.adapter.readers.pymol.PyMOLScene.floatAt (J.adapter.readers.pymol.PyMOLScene.listAt (mep, 3), 0);
-var max = J.adapter.readers.pymol.PyMOLScene.floatAt (J.adapter.readers.pymol.PyMOLScene.listAt (mep, 3), 2);
+var min = J.adapter.readers.pymol.PyMOLReader.floatAt (J.adapter.readers.pymol.PyMOLReader.listAt (mep, 3), 0);
+var max = J.adapter.readers.pymol.PyMOLReader.floatAt (J.adapter.readers.pymol.PyMOLReader.listAt (mep, 3), 2);
 sb =  new JU.SB ();
 sb.append (";isosurface ID ").append (JU.PT.esc (sID)).append (" map ").append (JU.PT.esc (this.cacheID)).append (" ").append (JU.PT.esc (mapID)).append (";color isosurface range " + min + " " + max + ";isosurface colorscheme rwb;set isosurfacekey true");
 if (this.translucency > 0) sb.append (";color isosurface translucent " + this.translucency);
@@ -209,13 +209,14 @@ var mesh = this.info;
 sID = mesh.get (mesh.size () - 2).toString ();
 sb =  new JU.SB ();
 sb.append ("isosurface ID ").append (JU.PT.esc (sID)).append (" model ").append (m.getModelNumberDotted (this.modelIndex)).append (" color ").append (JU.Escape.escapeColor (this.argb)).append ("  ").append (JU.PT.esc (this.cacheID)).append (" ").append (JU.PT.esc (sID)).append (" mesh nofill frontonly");
-var within = J.adapter.readers.pymol.PyMOLScene.floatAt (J.adapter.readers.pymol.PyMOLScene.listAt (J.adapter.readers.pymol.PyMOLScene.listAt (mesh, 2), 0), 11);
-var list = J.adapter.readers.pymol.PyMOLScene.listAt (J.adapter.readers.pymol.PyMOLScene.listAt (J.adapter.readers.pymol.PyMOLScene.listAt (mesh, 2), 0), 12);
+var list = J.adapter.readers.pymol.PyMOLReader.sublistAt (mesh, [2, 0]);
+var within = J.adapter.readers.pymol.PyMOLReader.floatAt (list, 11);
+list = J.adapter.readers.pymol.PyMOLReader.listAt (list, 12);
 if (within > 0) {
 var pt =  new JU.P3 ();
 sb.append (";isosurface slab within ").appendF (within).append (" [ ");
 for (var j = list.size () - 3; j >= 0; j -= 3) {
-J.adapter.readers.pymol.PyMOLScene.pointAt (list, j, pt);
+J.adapter.readers.pymol.PyMOLReader.pointAt (list, j, pt);
 sb.append (JU.Escape.eP (pt));
 }
 sb.append (" ]");
@@ -231,7 +232,7 @@ sm.setShapePropertyBs (this.id, "putty", this.info, this.bsAtoms);
 break;
 }
 if (sb != null) {
-sm.vwr.runScript (sb.toString ());
+sm.vwr.runScriptCautiously (sb.toString ());
 return;
 }if (this.size != -1 || this.rd != null) sm.setShapeSizeBs (this.id, this.size, this.rd, this.bsAtoms);
 if (this.argb != 0) sm.setShapePropertyBs (this.id, color, Integer.$valueOf (this.argb), this.bsAtoms);

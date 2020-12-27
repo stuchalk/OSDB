@@ -138,7 +138,7 @@ JU.Logger.error ("slater for atom " + i + " atomType " + atomType + " was not fo
 return;
 }for (var j = 0; j < slaters.size (); j++) {
 var slater = slaters.get (j);
-sdata.addLast ( Clazz.newIntArray (-1, [i, slater[0], slater[1], slater[2]]));
+sdata.addLast ( Clazz.newIntArray (-1, [i + 1, slater[0], slater[1], slater[2]]));
 }
 }
 this.moData.put ("shells", sdata);
@@ -162,7 +162,7 @@ mos[i].put ("symmetry", tokens[i]);
 }
 tokens = J.adapter.smarter.AtomSetCollectionReader.getStrings (this.rd ().substring (21), nThisLine, 10);
 for (var i = 0; i < nThisLine; i++) {
-mos[i].put ("energy", Float.$valueOf (JU.PT.fVal (tokens[i])));
+mos[i].put ("energy", Float.$valueOf (tokens[i]));
 }
 continue;
 }try {
@@ -193,9 +193,9 @@ var iAtom0 = this.asc.ac;
 var ignore =  Clazz.newBooleanArray (1, false);
 if (!this.doGetVibration (++this.vibrationNumber)) continue;
 this.asc.cloneLastAtomSet ();
-this.asc.setAtomSetFrequency (null, null, tokens[1], null);
+this.asc.setAtomSetFrequency (this.vibrationNumber, null, null, tokens[1], null);
 this.readLines (2);
-this.fillFrequencyData (iAtom0, ac, ac, ignore, true, 0, 0, null, 0);
+this.fillFrequencyData (iAtom0, ac, ac, ignore, true, 0, 0, null, 0, null);
 this.rd ();
 }
 });

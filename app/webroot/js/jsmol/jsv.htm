@@ -31,7 +31,7 @@ Info = {
 	addSelectionOptions: true,
   jarPath: "java",
   j2sPath: "j2s",  
-	serverURL: "http://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
+	serverURL: "https://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
 	use: "HTML5",
 	readyFunction: null,
 	script: "load data/t.jdx",
@@ -63,6 +63,7 @@ $(document).ready(function() {
 <a href="javascript:Jmol.script(jsv, 'gridon')">grid on</a> <a href="javascript:Jmol.script(jsv, 'gridon false')">grid off</a>
 <a href="javascript:Jmol.script(jsv, 'showpeaklist')">show peak list</a>
 <a href="javascript:Jmol.script(jsv, 'load data/vinylpyrr.jdx;view 1.2;showIntegration')">load vinylpyrr.jdx (1HNMR)</a>
+<a href="javascript:Jmol.script(jsv, 'load data/aquation20.jdx')">load aquation20.jdx (multi-UV-VIS)</a>
 <a href="javascript:Jmol.script(jsv, 'load data/t2d.jdx')">load t2d.jdx (2D NMR)</a>
 <a href="javascript:Jmol.script(jsv, 'print PDF')">print PDF</a>
 </div>

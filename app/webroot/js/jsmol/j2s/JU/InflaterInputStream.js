@@ -29,7 +29,7 @@ if (this.closed) {
 throw  new java.io.IOException ("Stream closed");
 }return this.read (this.byte1, 0, 1) == -1 ? -1 : this.byte1[0] & 0xff;
 });
-Clazz.overrideMethod (c$, "read", 
+Clazz.defineMethod (c$, "read", 
 function (b, off, len) {
 return this.readInf (b, off, len);
 }, "~A,~N,~N");

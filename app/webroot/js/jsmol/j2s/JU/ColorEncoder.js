@@ -10,6 +10,7 @@ this.argbsRoygb = null;
 this.argbsRwb = null;
 this.argbsShapely = null;
 this.argbsAmino = null;
+this.argbsNucleic = null;
 this.ihalf = 0;
 this.schemes = null;
 this.currentPalette = 0;
@@ -37,8 +38,7 @@ this.schemes =  new java.util.Hashtable ();
 this.argbsCpk = J.c.PAL.argbsCpk;
 this.argbsRoygb = JV.JC.argbsRoygbScale;
 this.argbsRwb = JV.JC.argbsRwbScale;
-this.argbsAmino = null;
-this.argbsShapely = null;
+this.argbsAmino = this.argbsNucleic = this.argbsShapely = null;
 this.ihalf = Clazz.doubleToInt (JV.JC.argbsRoygbScale.length / 3);
 this.ce = this;
 } else {
@@ -90,6 +90,9 @@ break;
 case 3:
 JU.ColorEncoder.getRasmolScale ();
 break;
+case 17:
+this.getNucleic ();
+break;
 case 5:
 this.getAmino ();
 break;
@@ -125,6 +128,9 @@ break;
 case 5:
 this.argbsAmino = this.thisScale;
 break;
+case 17:
+this.argbsNucleic = this.thisScale;
+break;
 case 4:
 this.argbsShapely = this.thisScale;
 break;
@@ -138,6 +144,10 @@ return (this.argbsShapely == null ? this.argbsShapely = this.vwr.getJBR ().getAr
 Clazz.defineMethod (c$, "getAmino", 
  function () {
 return (this.argbsAmino == null ? this.argbsAmino = this.vwr.getJBR ().getArgbs (2097154) : this.argbsAmino);
+});
+Clazz.defineMethod (c$, "getNucleic", 
+ function () {
+return (this.argbsNucleic == null ? this.argbsNucleic = this.vwr.getJBR ().getArgbs (2097166) : this.argbsNucleic);
 });
 Clazz.defineMethod (c$, "createColorScheme", 
 function (colorScheme, defaultToRoygb, isOverloaded) {
@@ -219,6 +229,8 @@ case 3:
 return JU.ColorEncoder.getRasmolScale ();
 case 4:
 return this.ce.getShapely ();
+case 17:
+return this.ce.getNucleic ();
 case 5:
 return this.ce.getAmino ();
 case -13:
@@ -265,6 +277,8 @@ case 3:
 return JU.ColorEncoder.getRasmolScale ().length;
 case 4:
 return this.ce.getShapely ().length;
+case 17:
+return this.ce.getNucleic ().length;
 case 5:
 return this.ce.getAmino ().length;
 case 12:
@@ -311,6 +325,8 @@ case 4:
 return this.ce.getShapely ()[JU.ColorEncoder.colorIndex (val, n)];
 case 5:
 return this.ce.getAmino ()[JU.ColorEncoder.colorIndex (val, n)];
+case 17:
+return this.ce.getNucleic ()[JU.ColorEncoder.colorIndex (val - 24 + 2, n)];
 case 12:
 return this.getPaletteAC ()[JU.ColorEncoder.colorIndexRepeat (val, n)];
 default:
@@ -478,6 +494,7 @@ c$.BYELEMENT_JMOL = c$.prototype.BYELEMENT_JMOL = "byelement_jmol";
 c$.BYELEMENT_RASMOL = c$.prototype.BYELEMENT_RASMOL = "byelement_rasmol";
 c$.BYRESIDUE_SHAPELY = c$.prototype.BYRESIDUE_SHAPELY = "byresidue_shapely";
 c$.BYRESIDUE_AMINO = c$.prototype.BYRESIDUE_AMINO = "byresidue_amino";
+c$.BYRESIDUE_NUCLEIC = c$.prototype.BYRESIDUE_NUCLEIC = "byresidue_nucleic";
 Clazz.defineStatics (c$,
 "CUSTOM", -1,
 "ROYGB", 0,
@@ -496,8 +513,9 @@ Clazz.defineStatics (c$,
 "USER", -13,
 "RESU", -14,
 "INHERIT", 15,
-"ALT", 16);
-c$.colorSchemes = c$.prototype.colorSchemes =  Clazz.newArray (-1, ["roygb", "bgyor", "byelement_jmol", "byelement_rasmol", "byresidue_shapely", "byresidue_amino", "rwb", "bwr", "low", "high", "bw", "wb", "friendly", "user", "resu", "inherit", "rgb", "bgr", "jmol", "rasmol", "byresidue"]);
+"ALT", 16,
+"NUCLEIC", 17);
+c$.colorSchemes = c$.prototype.colorSchemes =  Clazz.newArray (-1, ["roygb", "bgyor", "byelement_jmol", "byelement_rasmol", "byresidue_shapely", "byresidue_amino", "rwb", "bwr", "low", "high", "bw", "wb", "friendly", "user", "resu", "inherit", "rgb", "bgr", "jmol", "rasmol", "byresidue", "byresidue_nucleic"]);
 Clazz.defineStatics (c$,
 "rasmolScale", null,
 "argbsChainAtom", null,

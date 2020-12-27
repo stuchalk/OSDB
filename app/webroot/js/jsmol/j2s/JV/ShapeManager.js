@@ -118,7 +118,9 @@ Clazz.defineMethod (c$, "checkObjectClicked",
 function (x, y, modifiers, bsVisible, drawPicking) {
 var shape;
 var map = null;
-if (modifiers != 0 && this.vwr.getBondPicking () && (map = this.shapes[1].checkObjectClicked (x, y, modifiers, bsVisible, false)) != null) return map;
+if (this.vwr.getPickingMode () == 2) {
+return this.shapes[5].checkObjectClicked (x, y, modifiers, bsVisible, false);
+}if (modifiers != 0 && this.vwr.getBondsPickable () && (map = this.shapes[1].checkObjectClicked (x, y, modifiers, bsVisible, false)) != null) return map;
 for (var i = 0; i < JV.ShapeManager.clickableMax; i++) if ((shape = this.shapes[JV.ShapeManager.hoverable[i]]) != null && (map = shape.checkObjectClicked (x, y, modifiers, bsVisible, drawPicking)) != null) return map;
 
 return null;
@@ -359,6 +361,6 @@ if (!isBond) this.vwr.setBooleanProperty ("bondModeOr", bondmode);
 this.vwr.select (bsSelected, false, 0, true);
 }, "~B,~B");
 Clazz.defineStatics (c$,
-"hoverable",  Clazz.newIntArray (-1, [31, 25, 24, 22, 36]));
+"hoverable",  Clazz.newIntArray (-1, [31, 20, 25, 24, 22, 36]));
 c$.clickableMax = c$.prototype.clickableMax = JV.ShapeManager.hoverable.length - 1;
 });

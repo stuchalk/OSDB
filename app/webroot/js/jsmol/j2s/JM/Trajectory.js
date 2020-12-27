@@ -4,6 +4,7 @@ c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.ms = null;
 this.steps = null;
+this.isFractional = true;
 Clazz.instantialize (this, arguments);
 }, JM, "Trajectory");
 Clazz.makeConstructor (c$, 
@@ -29,7 +30,8 @@ function (modelIndex) {
 var am = this.ms.am;
 var baseModelIndex = am[modelIndex].trajectoryBaseIndex;
 am[baseModelIndex].selectedTrajectory = modelIndex;
-this.setAtomPositions (baseModelIndex, modelIndex, this.steps.get (modelIndex), null, 0, (this.ms.vibrationSteps == null ? null : this.ms.vibrationSteps.get (modelIndex)), true);
+this.isFractional = !this.ms.getMSInfoB ("ignoreUnitCell");
+this.setAtomPositions (baseModelIndex, modelIndex, this.steps.get (modelIndex), null, 0, (this.ms.vibrationSteps == null ? null : this.ms.vibrationSteps.get (modelIndex)), this.isFractional);
 var currentModelIndex = this.vwr.am.cmi;
 if (currentModelIndex >= 0 && currentModelIndex != modelIndex && am[currentModelIndex].fileIndex == am[modelIndex].fileIndex) this.vwr.setCurrentModelIndexClear (modelIndex, false);
 }, "~N");

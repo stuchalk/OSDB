@@ -4,7 +4,6 @@ c$ = Clazz.decorateAsClass (function () {
 this.lattvecs = null;
 this.thisSub = 0;
 this.modAxes = null;
-this.modDim = 0;
 this.haveM40Data = false;
 this.qicount = 0;
 this.molName = null;

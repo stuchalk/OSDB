@@ -165,7 +165,7 @@ this.g3d.fillCylinderBits (2, d, this.ptTemp4, this.ptTemp2);
 }
 }if (this.drawShaft) {
 this.pTemp3.set (atom.sX, atom.sY, atom.sZ);
-if (this.standardVector) this.g3d.fillCylinderBits (1, this.diameter, this.pTemp3, this.screenArrowHead);
+if (this.standardVector) this.g3d.fillCylinderBits (2, this.diameter, this.pTemp3, this.screenArrowHead);
  else this.g3d.fillCylinderBits (2, this.diameter, this.screenVectorStart, this.screenArrowHead);
 }if (this.drawCap) this.g3d.fillConeScreen3f (2, this.headWidthPixels, this.screenArrowHead, this.screenVectorEnd, false);
 }, "JM.Atom,JU.Vibration");

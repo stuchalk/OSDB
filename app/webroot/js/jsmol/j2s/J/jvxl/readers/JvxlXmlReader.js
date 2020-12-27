@@ -91,7 +91,7 @@ return true;
 Clazz.overrideMethod (c$, "readParameters", 
 function () {
 var s = this.xr.getXmlData ("jvxlFileTitle", null, false, false);
-this.jvxlFileHeaderBuffer = JU.SB.newS (s);
+this.jvxlFileHeaderBuffer = JU.SB.newS (s == null ? "" : s);
 this.xr.toTag ("jvxlVolumeData");
 var data = this.tempDataXml = this.xr.getXmlData ("jvxlVolumeData", null, true, false);
 this.volumetricOrigin.setT (this.xr.getXmlPoint (data, "origin"));

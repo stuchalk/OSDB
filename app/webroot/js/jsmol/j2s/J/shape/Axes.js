@@ -59,7 +59,7 @@ Clazz.overrideMethod (c$, "initShape",
 function () {
 this.translucentAllowed = false;
 this.myType = "axes";
-this.font3d = this.vwr.gdata.getFont3D (14);
+this.font3d = this.vwr.gdata.getFont3D (16);
 var axesMode = this.vwr.g.axesMode;
 if (axesMode == 603979808 && this.ms.unitCells != null) {
 var unitcell = this.vwr.getCurrentUnitCell ();
@@ -78,7 +78,7 @@ this.axisPoints[0].scaleAdd2 (this.scale, vertices[4], this.originPoint);
 this.axisPoints[1].scaleAdd2 (this.scale, vertices[2], this.originPoint);
 this.axisPoints[2].scaleAdd2 (this.scale, vertices[1], this.originPoint);
 return;
-}}this.originPoint.setT (this.fixedOrigin != null ? this.fixedOrigin : axesMode == 603979810 ? this.vwr.getBoundBoxCenter () : this.pt0);
+}}this.originPoint.setT (this.fixedOrigin != null ? this.fixedOrigin : axesMode == 603979809 ? this.vwr.getBoundBoxCenter () : this.pt0);
 this.setScale (this.vwr.getFloat (570425346) / 2);
 });
 Clazz.defineMethod (c$, "reinitShape", 

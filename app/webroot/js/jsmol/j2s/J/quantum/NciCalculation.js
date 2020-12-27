@@ -188,8 +188,8 @@ function () {
 if (this.noValuesAtAll) return;
 for (var ix = this.xMax; --ix >= this.xMin; ) {
 for (var iy = this.yMin; iy < this.yMax; iy++) {
-this.vd = this.voxelData[ix][(this.havePoints ? 0 : iy)];
-for (var iz = this.zMin; iz < this.zMax; iz++) this.vd[(this.havePoints ? 0 : iz)] = this.getValue (this.processAtoms (ix, iy, iz, -1), this.isReducedDensity);
+var vd = this.voxelData[ix][(this.havePoints ? 0 : iy)];
+for (var iz = this.zMin; iz < this.zMax; iz++) vd[(this.havePoints ? 0 : iz)] = this.getValue (this.processAtoms (ix, iy, iz, -1), this.isReducedDensity);
 
 }
 }

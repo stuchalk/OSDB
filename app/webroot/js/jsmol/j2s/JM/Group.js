@@ -12,6 +12,7 @@ this.seqcode = 0;
 this.groupID = 0;
 this.selectedIndex = 0;
 this.shapeVisibilityFlags = 0;
+this.dssrNT = null;
 Clazz.instantialize (this, arguments);
 }, JM, "Group", null, JM.Structure);
 Clazz.makeConstructor (c$, 
@@ -69,7 +70,7 @@ return (this.groupID < 1 ? "" : JM.Group.group3Names[this.groupID]);
 });
 Clazz.defineMethod (c$, "getGroup1", 
 function () {
-return '?';
+return (this.group1 == '\0' ? '?' : this.group1);
 });
 Clazz.defineMethod (c$, "getBioPolymerLength", 
 function () {
@@ -121,7 +122,7 @@ return this.isPurineByID ();
 });
 Clazz.defineMethod (c$, "isPurineByID", 
 function () {
-return (this.isNucleic () && (153957 & (1 << (this.groupID - 24))) != 0);
+return (this.isNucleic () && ((153957 & (1 << (this.groupID - 24))) != 0) || "AGag".indexOf (this.getGroup1 ()) >= 0);
 });
 Clazz.defineMethod (c$, "isPyrimidine", 
 function () {
@@ -330,6 +331,10 @@ return  new JU.BS ();
 Clazz.overrideMethod (c$, "toString", 
 function () {
 return "[" + this.getGroup3 () + "-" + this.getSeqcodeString () + "]";
+});
+Clazz.defineMethod (c$, "isNucleicMonomer", 
+function () {
+return false;
 });
 Clazz.defineStatics (c$,
 "standardGroupList", null);

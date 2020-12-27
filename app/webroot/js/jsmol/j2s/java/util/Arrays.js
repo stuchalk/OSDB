@@ -1,30 +1,15 @@
 // BH adjusted to have only one sort method.
-// BH -- added Java 6  copyOfRange
-// BH -- REMOVED copyOfRange (because it is only int[] and is not necessary)
-
+// BH 4/7/2017 1:49:45 PM fixing "instanceof Comparable"
+// BH adding copyOf 7/12/2016 10:35:01 AM
 Clazz.load(["java.util.AbstractList","$.RandomAccess"],"java.util.Arrays",["java.lang.ArrayIndexOutOfBoundsException","$.IllegalArgumentException","$.NullPointerException"],function(){
 c$=Clazz.declareType(java.util,"Arrays");
-
-//c$.copyOfRange = Clazz.defineMethod (c$, "copyOfRange", 
-//function (original, from, to) {
-//to = Math.min(original.length, to);
-//var newLength = to - from;
-//if (newLength < 0) throw  new IllegalArgumentException (from + " > " + to);
-//if (original.slice)
-//  return original.slice(from, to);
-//  // MSIE and Chrome do not have Int32Array.slice()
-//var c = Clazz.newIntArray(newLength, 0);
-//for (var i = 0; i < newLength; i++)
-//  c[i] = original[from++];
-//return c;  
-//}, "~A,~N,~N");
 
 c$.sort=Clazz.overrideMethod(c$,"sort",
 function(a,c,d,e){
   switch (arguments.length) {
   case 1:
     var aux=a.sort(function(o1,o2){
-      if(typeof o1=="string"||o1 instanceof Comparable){
+      if(typeof o1=="string"||Clazz.instanceOf(o1, Comparable)){
         return o1.compareTo(o2);
       }
       return o1-o2;
@@ -37,7 +22,7 @@ function(a,c,d,e){
     var aux=a.sort(function(o1,o2){
       if(c!=null){
         return c.compare(o1,o2);
-      }else if(typeof o1=="string"||o1 instanceof Comparable){
+      }else if(typeof o1=="string"||Clazz.instanceOf(o1, Comparable)){
         return o1.compareTo(o2);
       }
       return o1-o2;
@@ -55,7 +40,7 @@ function(a,c,d,e){
       aux[i-fromIndex]=a[i];
     }
     aux=aux.sort(function(o1,o2){
-      if(typeof o1=="string"||o1 instanceof Comparable){
+      if(typeof o1=="string"||Clazz.instanceOf(o1, Comparable)){
         return o1.compareTo(o2);
       }
       return o1-o2;
@@ -76,7 +61,7 @@ function(a,c,d,e){
     aux=aux.sort(function(o1,o2){
       if(c!=null){
         return c.compare(o1,o2);
-      }else if(typeof o1=="string"||o1 instanceof Comparable){
+      }else if(typeof o1=="string"||Clazz.instanceOf(o1, Comparable)){
         return o1.compareTo(o2);
       }
       return o1-o2;
@@ -159,6 +144,13 @@ if (arguments.length == 2) {
 	}	
 	java.util.Arrays.rangeCheck(a.length,fromIndex,toIndex);
 	for(var i=fromIndex;i<toIndex;i++)a[i]=val;
+});
+
+c$.copyOf=Clazz.overrideMethod(c$,"copyOf",
+function(a,len){
+  var b = Clazz.newArray(len,null)
+  for(var i=Math.min(a.length, len);--i >= 0;)b[i]=a[i];
+  return b;
 });
 
 c$.asList=Clazz.defineMethod(c$,"asList",

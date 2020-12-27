@@ -66,7 +66,7 @@ this.modMatrices =  Clazz.newArray (-1, [sigma_nu, tFactor]);
 if (!setOperators) return;
 this.isFinalized = true;
 JU.Logger.info ("unit cell parameters: " + this.symmetry.getUnitCellInfo ());
-this.symmetry.createSpaceGroup (-1, "[subsystem " + this.code + "]",  new JU.Lst ());
+this.symmetry.createSpaceGroup (-1, "[subsystem " + this.code + "]",  new JU.Lst (), this.d);
 var nOps = s0.getSpaceGroupOperationCount ();
 for (var iop = 0; iop < nOps; iop++) {
 var rv = s0.getOperationRsVs (iop);

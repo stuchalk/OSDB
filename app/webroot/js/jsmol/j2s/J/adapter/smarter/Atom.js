@@ -34,8 +34,9 @@ this.tensors.addLast (tensor);
 if (type != null) tensor.setType (type);
 return tensor;
 }, "JU.Tensor,~S,~B");
-Clazz.overrideConstructor (c$, 
+Clazz.makeConstructor (c$, 
 function () {
+Clazz.superConstructor (this, J.adapter.smarter.Atom, []);
 this.set (NaN, NaN, NaN);
 });
 Clazz.defineMethod (c$, "getClone", 

@@ -27,7 +27,6 @@ return (result == null ? -1 : result.length);
 Clazz.defineMethod (c$, "areEqualTest", 
 function (smiles, search) {
 var ret = this.findPriv (smiles, search, 9, 2);
-if (ret.length == 0) System.out.println ("OHOJH");
 return (ret != null && ret.length == 1);
 }, "~S,JS.SmilesSearch");
 Clazz.overrideMethod (c$, "find", 
@@ -44,6 +43,14 @@ for (var j = a.length; --j >= 0; ) a[j] = (search.targetAtoms[a[j]]).mapIndex;
 }
 return array;
 }, "~S,~S,~N");
+Clazz.overrideMethod (c$, "getAtoms", 
+function (target) {
+JS.InvalidSmilesException.clear ();
+target = JS.SmilesParser.cleanPattern (target);
+var search = JS.SmilesParser.newSearch (target, false, true);
+search.createTopoMap ( new JU.BS ());
+return search.targetAtoms;
+}, "~S");
 Clazz.overrideMethod (c$, "getRelationship", 
 function (smiles1, smiles2) {
 if (smiles1 == null || smiles2 == null || smiles1.length == 0 || smiles2.length == 0) return "";
@@ -185,6 +192,7 @@ search.getSelections ();
 if (!doTestAromatic) search.bsAromatic = bsAromatic;
 search.setRingData (null, null, is3D || doTestAromatic);
 search.exitFirstMatch = ((flags & 8) == 8);
+search.mapUnique = ((flags & 128) == 128);
 }switch (mode) {
 case 1:
 search.asVector = false;
@@ -200,6 +208,7 @@ search.search ();
 return search.atropKeys;
 case 3:
 search.getMaps = true;
+search.setFlags (flags | search.flags);
 var vl = search.search ();
 return vl.toArray (JU.AU.newInt2 (vl.size ()));
 }
@@ -218,6 +227,63 @@ Clazz.overrideMethod (c$, "cleanSmiles",
 function (smiles) {
 return JS.SmilesParser.cleanPattern (smiles);
 }, "~S");
+Clazz.overrideMethod (c$, "getMapForJME", 
+function (jme, at, bsAtoms) {
+var molecule =  new JS.SmilesSearch ();
+var tokens = JU.PT.getTokens (jme);
+var nAtoms = JU.PT.parseInt (tokens[0]);
+var nBonds = JU.PT.parseInt (tokens[1]);
+var pt = 2;
+for (var i = 0; i < nAtoms; i++, pt += 3) {
+var sa = tokens[pt];
+var a = molecule.addAtom ();
+var ic = sa.indexOf ("+");
+var charge = 0;
+if (ic >= 0) {
+charge = (ic == sa.length - 1 ? 1 : JU.PT.parseInt (sa.substring (ic + 1)));
+} else if ((ic = sa.indexOf ("-")) >= 0) {
+charge = JU.PT.parseInt (sa.substring (ic));
+}a.setCharge (charge);
+a.setSymbol (ic < 0 ? sa : sa.substring (0, ic));
+}
+for (var i = 0; i < nBonds; i++) {
+var ia = JU.PT.parseInt (tokens[pt++]) - 1;
+var ib = JU.PT.parseInt (tokens[pt++]) - 1;
+var iorder = JU.PT.parseInt (tokens[pt++]);
+var a1 = molecule.patternAtoms[ia];
+var a2 = molecule.patternAtoms[ib];
+var order = 1;
+switch (iorder) {
+default:
+case 1:
+break;
+case 2:
+order = 2;
+break;
+case 3:
+order = 3;
+break;
+}
+ new JS.SmilesBond (a1, a2, order, false).index = i;
+}
+var s = "";
+try {
+molecule.isSmarts = true;
+molecule.set ();
+var bs = JU.BSUtil.newBitSet2 (0, nAtoms);
+s = this.getSmiles (molecule.patternAtoms, molecule.ac, bs, null, 34);
+var map = this.getCorrelationMaps (s, molecule.patternAtoms, nAtoms, bs, 42);
+var map2 = this.getCorrelationMaps (s, at, bsAtoms.cardinality (), bsAtoms, 42);
+return  Clazz.newArray (-1, [map[0], map2[0]]);
+} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+e.printStackTrace ();
+} else {
+throw e;
+}
+}
+return null;
+}, "~S,~A,JU.BS");
 Clazz.defineStatics (c$,
 "MODE_BITSET", 0x01,
 "MODE_ARRAY", 0x02,

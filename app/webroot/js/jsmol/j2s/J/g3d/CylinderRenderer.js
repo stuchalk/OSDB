@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.g3d");
-Clazz.load (null, "J.g3d.CylinderRenderer", ["JU.AU", "$.P3"], function () {
+Clazz.load (["JU.P3i"], "J.g3d.CylinderRenderer", ["JU.AU", "$.P3"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.g3d = null;
 this.line3d = null;
@@ -23,7 +23,7 @@ this.dzBf = 0;
 this.tEvenDiameter = false;
 this.diameter = 0;
 this.endcaps = 0;
-this.tEndcapOpen = false;
+this.endCapHidden = false;
 this.xEndcap = 0;
 this.yEndcap = 0;
 this.zEndcap = 0;
@@ -41,6 +41,8 @@ this.xyztRaster = null;
 this.xyzfRaster = null;
 this.ptA0 = null;
 this.ptB0 = null;
+this.ptA0i = null;
+this.ptB0i = null;
 this.xTip = 0;
 this.yTip = 0;
 this.zTip = 0;
@@ -49,6 +51,8 @@ Clazz.instantialize (this, arguments);
 Clazz.prepareFields (c$, function () {
 this.xyztRaster =  Clazz.newArray (-1, [ Clazz.newFloatArray (32, 0),  Clazz.newFloatArray (32, 0),  Clazz.newFloatArray (32, 0),  Clazz.newFloatArray (32, 0)]);
 this.xyzfRaster =  Clazz.newArray (-1, [ Clazz.newIntArray (32, 0),  Clazz.newIntArray (32, 0),  Clazz.newIntArray (32, 0),  Clazz.newIntArray (32, 0)]);
+this.ptA0i =  new JU.P3i ();
+this.ptB0i =  new JU.P3i ();
 });
 Clazz.makeConstructor (c$, 
 function (g3d) {
@@ -87,7 +91,7 @@ this.calcPoints (3, false);
 this.interpolate (0, 1, this.xyzfRaster, this.xyztRaster);
 this.interpolate (1, 2, this.xyzfRaster, this.xyztRaster);
 var xyzf = this.xyzfRaster;
-if (endcaps == 2 || endcaps == 4) this.renderFlatEndcap (true, false, xyzf);
+if (endcaps == 2) this.renderFlatEndcap (true, false, xyzf);
 g.setZMargin (5);
 var width = g.width;
 var zbuf = g.zbuf;
@@ -102,7 +106,7 @@ var fpzBack = fpz >> 1;
 var x = xr[i];
 var y = yr[i];
 var z = zr[i];
-if (this.tEndcapOpen && this.argbEndcap != 0) {
+if (this.endCapHidden && this.argbEndcap != 0) {
 if (this.clipped) {
 g.plotPixelClippedArgb (this.argbEndcap, this.xEndcap + x, this.yEndcap + y, this.zEndcap - z - 1, width, zbuf, p);
 g.plotPixelClippedArgb (this.argbEndcap, this.xEndcap - x, this.yEndcap - y, this.zEndcap + z - 1, width, zbuf, p);
@@ -116,13 +120,10 @@ this.line3d.plotLineDeltaOld (this.shadesA[fpzBack], this.shadesB[fpzBack], this
 g.setZMargin (0);
 if (endcaps == 3) this.renderSphericalEndcaps ();
 }, "~N,~N,~N,~N,~N,~N,~N,~N,~N,~N,~N");
-Clazz.defineMethod (c$, "renderBits", 
+Clazz.defineMethod (c$, "renderBitsFloat", 
 function (colixA, colixB, screen, endcaps, diameter, ptA, ptB) {
 var g = this.g3d;
-if (diameter == 0 || diameter == 1) {
-this.line3d.plotLineBits (g.getColorArgbOrGray (colixA), g.getColorArgbOrGray (colixB), ptA, ptB);
-return;
-}if (this.ptA0 == null) {
+if (this.ptA0 == null) {
 this.ptA0 =  new JU.P3 ();
 this.ptB0 =  new JU.P3 ();
 }this.ptA0.setT (ptA);
@@ -177,7 +178,7 @@ var fpzBack = fpz >> 1;
 var x = xr[i];
 var y = yr[i];
 var z = zr[i];
-if (this.tEndcapOpen && this.argbEndcap != 0) {
+if (this.endCapHidden && this.argbEndcap != 0) {
 if (this.clipped) {
 g.plotPixelClippedArgb (this.argbEndcap, this.xEndcap + x, this.yEndcap + y, this.zEndcap - z - 1, width, zbuf, p);
 g.plotPixelClippedArgb (this.argbEndcap, this.xEndcap - x, this.yEndcap - y, this.zEndcap + z - 1, width, zbuf, p);
@@ -189,14 +190,14 @@ this.ptB0.setT (this.ptA0);
 this.ptB0.x += this.dxB;
 this.ptB0.y += this.dyB;
 this.ptB0.z += this.dzB;
-this.line3d.plotLineDeltaABits (this.shadesA, this.shadesB, fpz, this.ptA0, this.ptB0, screen, this.clipped);
+this.line3d.plotLineDeltaABitsFloat (this.shadesA, this.shadesB, fpz, this.ptA0, this.ptB0, screen, this.clipped);
 if (drawBackside) {
 this.ptA0.set (this.xA - x, this.yA - y, this.zA + z);
 this.ptB0.setT (this.ptA0);
 this.ptB0.x += this.dxB;
 this.ptB0.y += this.dyB;
 this.ptB0.z += this.dzB;
-this.line3d.plotLineDeltaABits (this.shadesA, this.shadesB, fpzBack, this.ptA0, this.ptB0, screen, this.clipped);
+this.line3d.plotLineDeltaABitsFloat (this.shadesA, this.shadesB, fpzBack, this.ptA0, this.ptB0, screen, this.clipped);
 }}
 g.setZMargin (0);
 if (endcaps == 3) this.renderSphericalEndcaps ();
@@ -204,6 +205,91 @@ this.xAf += this.dxBf;
 this.yAf += this.dyBf;
 this.zAf += this.dzBf;
 }, "~N,~N,~N,~N,~N,JU.P3,JU.P3");
+Clazz.defineMethod (c$, "renderBits", 
+function (colixA, colixB, screen, endcaps, diameter, ptA, ptB) {
+var g = this.g3d;
+if (diameter == 0 || diameter == 1) {
+this.line3d.plotLineBits (g.getColorArgbOrGray (colixA), g.getColorArgbOrGray (colixB), ptA, ptB, 0, 0, false);
+return;
+}this.ptA0i.setT (ptA);
+var r = Clazz.doubleToInt (diameter / 2) + 1;
+var ixA = ptA.x;
+var iyA = ptA.y;
+var izA = ptA.z;
+var ixB = ptB.x;
+var iyB = ptB.y;
+var izB = ptB.z;
+var codeMinA = g.clipCode3 (ixA - r, iyA - r, izA - r);
+var codeMaxA = g.clipCode3 (ixA + r, iyA + r, izA + r);
+var codeMinB = g.clipCode3 (ixB - r, iyB - r, izB - r);
+var codeMaxB = g.clipCode3 (ixB + r, iyB + r, izB + r);
+var c = (codeMinA | codeMaxA | codeMinB | codeMaxB);
+this.clipped = (c != 0);
+if (c == -1 || (codeMinA & codeMaxB & codeMaxA & codeMinB) != 0) return;
+this.dxBf = ptB.x - ptA.x;
+this.dyBf = ptB.y - ptA.y;
+this.dzBf = ptB.z - ptA.z;
+if (diameter > 0) {
+this.diameter = diameter;
+this.xAf = ptA.x;
+this.yAf = ptA.y;
+this.zAf = ptA.z;
+}var drawBackside = (screen == 0 && (this.clipped || endcaps == 2 || endcaps == 0));
+this.xA = Clazz.floatToInt (this.xAf);
+this.yA = Clazz.floatToInt (this.yAf);
+this.zA = Clazz.floatToInt (this.zAf);
+this.dxB = Clazz.floatToInt (this.dxBf);
+this.dyB = Clazz.floatToInt (this.dyBf);
+this.dzB = Clazz.floatToInt (this.dzBf);
+this.shadesA = g.getShades (this.colixA = colixA);
+this.shadesB = g.getShades (this.colixB = colixB);
+this.endcaps = endcaps;
+this.calcArgbEndcap (true, true);
+var xyzf = this.xyzfRaster;
+if (diameter > 0) this.generateBaseEllipsePrecisely (false);
+if (endcaps == 2) this.renderFlatEndcap (true, true, xyzf);
+this.line3d.setLineBits (this.dxBf, this.dyBf);
+g.setZMargin (5);
+var p = g.pixel;
+var width = g.width;
+var zbuf = g.zbuf;
+var xr = xyzf[0];
+var yr = xyzf[1];
+var zr = xyzf[2];
+var fr = xyzf[3];
+for (var i = this.rasterCount; --i >= 0; ) {
+var fpz = fr[i] >> (8);
+var fpzBack = fpz >> 1;
+var x = xr[i];
+var y = yr[i];
+var z = zr[i];
+if (this.endCapHidden && this.argbEndcap != 0) {
+if (this.clipped) {
+g.plotPixelClippedArgb (this.argbEndcap, this.xEndcap + x, this.yEndcap + y, this.zEndcap - z - 1, width, zbuf, p);
+g.plotPixelClippedArgb (this.argbEndcap, this.xEndcap - x, this.yEndcap - y, this.zEndcap + z - 1, width, zbuf, p);
+} else {
+g.plotPixelUnclipped (this.argbEndcap, this.xEndcap + x, this.yEndcap + y, this.zEndcap - z - 1, width, zbuf, p);
+g.plotPixelUnclipped (this.argbEndcap, this.xEndcap - x, this.yEndcap - y, this.zEndcap + z - 1, width, zbuf, p);
+}}this.ptA0i.set (this.xA + x, this.yA + y, this.zA - z);
+this.ptB0i.setT (this.ptA0i);
+this.ptB0i.x += this.dxB;
+this.ptB0i.y += this.dyB;
+this.ptB0i.z += this.dzB;
+this.line3d.plotLineDeltaABitsInt (this.shadesA, this.shadesB, fpz, this.ptA0i, this.ptB0i, screen, this.clipped);
+if (drawBackside) {
+this.ptA0i.set (this.xA - x, this.yA - y, this.zA + z);
+this.ptB0i.setT (this.ptA0i);
+this.ptB0i.x += this.dxB;
+this.ptB0i.y += this.dyB;
+this.ptB0i.z += this.dzB;
+this.line3d.plotLineDeltaABitsInt (this.shadesA, this.shadesB, fpzBack, this.ptA0i, this.ptB0i, screen, this.clipped);
+}}
+g.setZMargin (0);
+if (endcaps == 3) this.renderSphericalEndcaps ();
+this.xAf += this.dxBf;
+this.yAf += this.dyBf;
+this.zAf += this.dzBf;
+}, "~N,~N,~N,~N,~N,JU.P3i,JU.P3i");
 Clazz.defineMethod (c$, "renderConeOld", 
 function (colix, endcap, diameter, xa, ya, za, xtip, ytip, ztip, doFill, isBarb) {
 this.dxBf = (xtip) - (this.xAf = xa);
@@ -239,7 +325,7 @@ var yr = this.xyztRaster[1];
 var zr = this.xyztRaster[2];
 var fr = this.xyzfRaster[3];
 var sA = this.shadesA;
-var doOpen = (this.tEndcapOpen && this.argbEndcap != 0);
+var doOpen = (this.endCapHidden && this.argbEndcap != 0);
 for (var i = this.rasterCount; --i >= 0; ) {
 var x = xr[i];
 var y = yr[i];
@@ -421,7 +507,6 @@ xT = this.xA;
 yT = this.yA;
 zT = this.zA;
 if (isCylinder && this.dzB < 0) {
-if (this.endcaps == 4) return;
 xT += this.dxB;
 yT += this.dyB;
 zT += this.dzB;
@@ -477,7 +562,7 @@ Clazz.defineMethod (c$, "calcArgbEndcap",
 this.tEvenDiameter = ((this.diameter & 1) == 0);
 this.radius = this.diameter / 2.0;
 this.radius2 = this.radius * this.radius;
-this.tEndcapOpen = false;
+this.endCapHidden = false;
 var dzf = (isFloat ? this.dzBf : this.dzB);
 if (this.endcaps == 3 || dzf == 0) return;
 this.xEndcap = this.xA;
@@ -499,6 +584,6 @@ this.yEndcap += this.dyB;
 this.zEndcap += this.dzB;
 }if (this.endcapShadeIndex > 56) this.endcapShadeIndex = 56;
 this.argbEndcap = shadesEndcap[this.endcapShadeIndex];
-this.tEndcapOpen = (this.endcaps == 1);
+this.endCapHidden = (this.endcaps == 1);
 }, "~B,~B");
 });

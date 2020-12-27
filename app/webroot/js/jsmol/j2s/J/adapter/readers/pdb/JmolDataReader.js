@@ -54,7 +54,7 @@ if (plotScale.z <= 0) plotScale.z = 100;
 if (this.fileScaling.y == 0) this.fileScaling.y = 1;
 if (this.fileScaling.z == 0) this.fileScaling.z = 1;
 this.setFractionalCoordinates (true);
-this.latticeCells =  Clazz.newIntArray (3, 0);
+this.latticeCells =  Clazz.newIntArray (4, 0);
 this.asc.xtalSymmetry = null;
 this.setUnitCell (plotScale.x * 2 / (maxXYZ.x - minXYZ.x), plotScale.y * 2 / (maxXYZ.y - minXYZ.y), plotScale.z * 2 / (maxXYZ.z == minXYZ.z ? 1 : maxXYZ.z - minXYZ.z), 90, 90, 90);
 this.unitCellOffset = JU.P3.newP (plotScale);

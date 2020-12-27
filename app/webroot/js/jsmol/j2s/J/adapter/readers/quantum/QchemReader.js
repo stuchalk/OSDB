@@ -93,10 +93,10 @@ for (var i = 0; i < frequencyCount; ++i) {
 ignore[i] = !this.doGetVibration (++this.vibrationNumber);
 if (ignore[i]) continue;
 this.asc.cloneLastAtomSet ();
-this.asc.setAtomSetFrequency ("Job " + this.calculationNumber, null, frequencies[i + 1], null);
+this.asc.setAtomSetFrequency (this.vibrationNumber, "Job " + this.calculationNumber, null, frequencies[i + 1], null);
 }
 this.discardLinesUntilStartsWith ("               X");
-this.fillFrequencyData (iAtom0, ac, ac, ignore, true, 0, 0, null, 0);
+this.fillFrequencyData (iAtom0, ac, ac, ignore, true, 0, 0, null, 0, null);
 this.discardLinesUntilBlank ();
 }
 });
@@ -121,7 +121,7 @@ this.asc.setModelInfoForSet ("name", energyKey + " " + energyString, ac);
 Clazz.defineMethod (c$, "readBasis", 
  function () {
 this.moData =  new java.util.Hashtable ();
-var ac = 0;
+var ac = 1;
 var shellCount = 0;
 var gaussianCount = 0;
 this.shells =  new JU.Lst ();
@@ -139,7 +139,7 @@ var slater =  Clazz.newIntArray (4, 0);
 tokens = this.getTokens ();
 slater[0] = ac;
 slater[1] = J.adapter.readers.quantum.BasisFunctionReader.getQuantumShellTagID (tokens[0]);
-slater[2] = gaussianCount;
+slater[2] = gaussianCount + 1;
 var nGaussians = this.parseIntStr (tokens[1]);
 slater[3] = nGaussians;
 this.shells.addLast (slater);
@@ -212,14 +212,14 @@ this.alphaBeta = "B";
 this.readMOs (false, this.betas);
 }var isOK = true;
 if (this.dList.length > 0) {
-if (this.dSpherical) isOK = this.getDFMap (this.dList, 3, J.adapter.readers.quantum.QchemReader.$DS_LIST, 2);
- else isOK = this.getDFMap (this.dList, 4, J.adapter.readers.quantum.QchemReader.$DC_LIST, 3);
+if (this.dSpherical) isOK = this.getDFMap ("DS", this.dList, 3, J.adapter.readers.quantum.QchemReader.$DS_LIST, 2);
+ else isOK = this.getDFMap ("DC", this.dList, 4, J.adapter.readers.quantum.QchemReader.$DC_LIST, 3);
 if (!isOK) {
 JU.Logger.error ("atomic orbital order is unrecognized -- skipping reading of MOs. dList=" + this.dList);
 this.shells = null;
 }}if (this.fList.length > 0) {
-if (this.fSpherical) isOK = this.getDFMap (this.fList, 5, J.adapter.readers.quantum.QchemReader.$FS_LIST, 2);
- else isOK = this.getDFMap (this.fList, 6, J.adapter.readers.quantum.QchemReader.$FC_LIST, 3);
+if (this.fSpherical) isOK = this.getDFMap ("FS", this.fList, 5, J.adapter.readers.quantum.QchemReader.$FS_LIST, 2);
+ else isOK = this.getDFMap ("FC", this.fList, 6, J.adapter.readers.quantum.QchemReader.$FC_LIST, 3);
 if (!isOK) {
 JU.Logger.error ("atomic orbital order is unrecognized -- skipping reading of MOs. fList=" + this.fList);
 this.shells = null;
@@ -276,7 +276,7 @@ pt++;
 }
 for (var i = 0; i < nMO; i++) {
 var moInfo = moInfos[moid[i]];
-mos[i].put ("energy", Float.$valueOf (JU.PT.fVal (energy[i])));
+mos[i].put ("energy", Float.$valueOf (energy[i]));
 mos[i].put ("coefficients", mocoef[i]);
 var label = this.alphaBeta;
 var ne = moInfo.ne;

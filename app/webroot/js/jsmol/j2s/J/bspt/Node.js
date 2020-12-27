@@ -59,6 +59,7 @@ this.eleRight = this.eleRight.addTuple (level + 1, tuple);
 }, "~N,JU.T3");
 c$.getDimensionValue = Clazz.defineMethod (c$, "getDimensionValue", 
 function (pt, dim) {
+if (pt == null) System.out.println ("bspt.Node ???");
 switch (dim) {
 case 0:
 return pt.x;

@@ -1,10 +1,10 @@
 Clazz.declarePackage ("J.awtjs2d");
-Clazz.load (["javajs.api.GenericFileInterface"], "J.awtjs2d.JSFile", ["JU.OC", "$.PT", "JV.Viewer"], function () {
+Clazz.load (["J.api.GenericFileInterface"], "J.awtjs2d.JSFile", ["JU.OC", "$.PT", "JV.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.name = null;
 this.fullName = null;
 Clazz.instantialize (this, arguments);
-}, J.awtjs2d, "JSFile", null, javajs.api.GenericFileInterface);
+}, J.awtjs2d, "JSFile", null, J.api.GenericFileInterface);
 c$.newFile = Clazz.defineMethod (c$, "newFile", 
 function (name) {
 return  new J.awtjs2d.JSFile (name);

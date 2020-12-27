@@ -1,4 +1,5 @@
 Clazz.declarePackage ("JS");
+Clazz.load (null, "JS.ScriptExt", ["JU.AU"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.e = null;
@@ -51,7 +52,7 @@ return this.e.floatParameter (i);
 }, "~N");
 Clazz.defineMethod (c$, "getPoint3f", 
 function (i, allowFractional) {
-return this.e.getPoint3f (i, allowFractional);
+return this.e.getPoint3f (i, allowFractional, true);
 }, "~N,~B");
 Clazz.defineMethod (c$, "intParameter", 
 function (index) {
@@ -130,3 +131,46 @@ this.setShapeProperty (shapeID, "scale", Integer.$valueOf (intScale));
 }if (iptDisplayProperty > 0) {
 if (!this.e.setMeshDisplayProperty (shapeID, iptDisplayProperty, 0)) this.invArg ();
 }}, "~N,~N,~N,~N,~B,~O,~N,JU.BS");
+Clazz.defineMethod (c$, "getIntArray2", 
+function (i) {
+var list = (this.e.getToken (i)).getList ();
+var faces = JU.AU.newInt2 (list.size ());
+for (var vi = faces.length; --vi >= 0; ) {
+var face = list.get (vi).getList ();
+if (face == null) this.invArg ();
+faces[vi] =  Clazz.newIntArray (face.size (), 0);
+for (var vii = faces[vi].length; --vii >= 0; ) faces[vi][vii] = face.get (vii).intValue;
+
+}
+return faces;
+}, "~N");
+Clazz.defineMethod (c$, "getAllPoints", 
+function (index, nmin) {
+var points = null;
+var bs = null;
+try {
+switch (this.e.tokAt (index)) {
+case 7:
+points = this.e.getPointArray (index, -1, false);
+break;
+case 12290:
+case 10:
+case 1073742325:
+bs = this.atomExpressionAt (index);
+break;
+}
+if (points == null) {
+if (bs == null) bs = this.vwr.getAllAtoms ();
+points =  new Array (bs.cardinality ());
+for (var i = bs.nextSetBit (0), pt = 0; i >= 0; i = bs.nextSetBit (i + 1)) points[pt++] = this.vwr.ms.at[i];
+
+}} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+} else {
+throw e;
+}
+}
+if (points == null || points.length < nmin) this.invArg ();
+return points;
+}, "~N,~N");
+});

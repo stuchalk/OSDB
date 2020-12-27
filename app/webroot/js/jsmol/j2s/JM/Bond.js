@@ -98,10 +98,10 @@ Clazz.defineMethod (c$, "is",
 function (bondType) {
 return (this.order & -131073) == bondType;
 }, "~N");
-Clazz.overrideMethod (c$, "getOtherAtomNode", 
+Clazz.overrideMethod (c$, "getOtherNode", 
 function (thisAtom) {
-return (this.atom1 === thisAtom ? this.atom2 : this.atom2 === thisAtom ? this.atom1 : null);
-}, "JU.Node");
+return (this.atom1 === thisAtom ? this.atom2 : this.atom2 === thisAtom || thisAtom == null ? this.atom1 : null);
+}, "JU.SimpleNode");
 Clazz.defineMethod (c$, "setAtropisomerOptions", 
 function (bsA, bsB) {
 var isBA = bsB.get (this.atom1.i);
@@ -122,6 +122,13 @@ if (bs2.get (a.i) && a !== this.atom1) break;
 }
 }this.order = (i1 > 2 || i2 >= bonds.length || i2 > 2 ? 1 : JU.Edge.getAtropismOrder (i1 + 1, i2 + 1));
 }, "JU.BS,JU.BS");
+Clazz.overrideMethod (c$, "getCIPChirality", 
+function (doCalculate) {
+return "";
+}, "~B");
+Clazz.overrideMethod (c$, "setCIPChirality", 
+function (c) {
+}, "~N");
 Clazz.overrideMethod (c$, "toString", 
 function () {
 return this.atom1 + " - " + this.atom2;

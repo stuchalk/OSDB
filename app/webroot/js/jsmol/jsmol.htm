@@ -43,7 +43,7 @@ var Info = {
 	jarFile: "JmolAppletSigned.jar",
 	isSigned: true,
 	script: "set zoomlarge false;set antialiasDisplay;load data/caffeine.mol",
-	serverURL: "http://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
+	serverURL: "https://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
 	readyFunction: jmol_isReady,
 	disableJ2SLoadMonitor: true,
   disableInitialConsole: true,
@@ -62,7 +62,7 @@ var lastPrompt=0;
 <table width=1000 cellpadding=10>
 <tr><td colspan=2 style="font-size:8pt">
 <b><a href="http://jsmol.sourceforge.net">JSmol</a> is an HTML5/Java-switchable version of <a href="http://jmol.sourceforge.net">Jmol</a>.</b> For a zip file containing all the files in this directory, 
-see <a href=http://chemapps.stolaf.edu/jmol/zip/Jmol.zip>http://chemapps.stolaf.edu/jmol/zip/Jmol.zip</a>. 
+see <a href=https://chemapps.stolaf.edu/jmol/zip/Jmol.zip>https://chemapps.stolaf.edu/jmol/zip/Jmol.zip</a>. 
 
 This page demonstrates Jmol using HTML5, Java, or WebGL.  
 Credits:                           
@@ -127,7 +127,7 @@ labels <a href="javascript:Jmol.script(jmolApplet0,'if (_fileType == &quot;Pdb&q
 <br><br> 
 
 <span style="font-size:8pt">
-Enter "!" and a command into the search box and press ENTER or open the <a href="javascript:Jmol.script(jmolApplet0,'console')">applet console</a> to execute a <a target=_blank href=http://chemapps.stolaf.edu/jmol/docs>script command</a>.
+Enter "!" and a command into the search box and press ENTER or open the <a href="javascript:Jmol.script(jmolApplet0,'console')">applet console</a> to execute a <a target=_blank href=https://chemapps.stolaf.edu/jmol/docs>script command</a>.
    </span>
 <br><br> 
 <table cellpadding=5><tr><td valign=top>
@@ -174,6 +174,10 @@ Enter "!" and a command into the search box and press ENTER or open the <a href=
  <a href="javascript:Jmol.script(jmolApplet0,'load data/pp2.pse')">PP 2</a>
   <br>
   <br>
+ <a href="javascript:Jmol.script(jmolApplet0,'load data/1crntour.pdb')">navigate trace</a>
+ <a href="javascript:Jmol.script(jmolApplet0,'load data/cyc35_nocompare.png')">C6H12_nocompare</a>
+ <a href="javascript:Jmol.script(jmolApplet0,'load data/cyc35_compare.png')">C6H12_compare</a>
+<br>
  <a href="javascript:Jmol.script(jmolApplet0,'load data/estron.cml;display molecule=1;moveto /* time, axisAngle */ 0.0 { -569 -266 778 170.22} /* zoom, translation */ 210.8 0.0 0.0 /* center, rotationRadius */ {1.612277686904762 3.7877332476190473 1.6109263519047616} 16.399569513870535 /* navigation center, translation, depth */ {0 0 0} 9.485930041021248 -20.361702729557265 0;')">estron.cml</a>
  <a href="javascript:Jmol.script(jmolApplet0,'load data/vasp.xml')">vasp.xml</a>
  <a href="javascript:Jmol.script(jmolApplet0,'load data/water.xodydata')">water.xodydata</a>
@@ -246,7 +250,7 @@ Enter "!" and a command into the search box and press ENTER or open the <a href=
  <br> 
 
  </td><td valign=top>
-	<b>direct database calls(<a href="javascript:alert('MSIE cannot do synchronous cross-domain file transfer, so if you want to do that, you must put jsmol.php on your OWN server and point to it using Info.serverURL, which for this page is ' + Info.serverURL + '\nA text version of this php file is at http://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php.txt')">unless MSIE</a>)</b>
+	<b>direct database calls(<a href="javascript:alert('MSIE cannot do synchronous cross-domain file transfer, so if you want to do that, you must put jsmol.php on your OWN server and point to it using Info.serverURL, which for this page is ' + Info.serverURL + '\nA text version of this php file is at https://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php.txt')">unless MSIE</a>)</b>
  <br>
  <a href="javascript:Jmol.loadFile(jmolApplet0,'$caffeine')">load $caffeine (from NCI)</a>
  <br> 

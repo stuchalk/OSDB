@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.render");
-Clazz.load (["J.render.LabelsRenderer"], "J.render.MeasuresRenderer", ["java.util.Hashtable", "JU.A4", "$.M3", "$.Measure", "$.P3", "J.render.FontLineShapeRenderer", "JU.Point3fi"], function () {
+Clazz.load (["J.render.LabelsRenderer"], "J.render.MeasuresRenderer", ["java.util.Hashtable", "JU.A4", "$.M3", "$.Measure", "$.P3", "J.render.FontLineShapeRenderer", "J.shape.Measures", "JU.Point3fi"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.doJustify = false;
 this.modulating = false;
@@ -26,15 +26,15 @@ if (measures.ms !== this.ms) {
 System.out.println ("!measure wrong modelset!");
 measures.clear ();
 return false;
-}this.doJustify = this.vwr.getBoolean (603979871);
+}this.doJustify = this.vwr.getBoolean (603979870);
 this.modulating = this.ms.bsModulated != null;
 this.imageFontScaling = this.vwr.imageFontScaling;
 this.mad0 = measures.mad;
-this.font3d = this.vwr.gdata.getFont3DScaled (measures.font3d, this.imageFontScaling);
+this.font3d = this.vwr.gdata.getFont3DScaled (J.shape.Measures.font3d, this.imageFontScaling);
 this.m = measures.mPending;
 if (!this.isExport && this.m != null && (this.count = this.m.count) != 0) this.renderPendingMeasurement ();
 if (!this.vwr.getBoolean (603979926)) return false;
-var showMeasurementLabels = this.vwr.getBoolean (603979879);
+var showMeasurementLabels = this.vwr.getBoolean (603979878);
 measures.setVisibilityInfo ();
 for (var i = measures.measurementCount; --i >= 0; ) {
 this.m = measures.measurements.get (i);
@@ -138,7 +138,7 @@ var x = Clazz.doubleToInt ((a.sX + b.sX) / 2);
 var y = Clazz.doubleToInt ((a.sY + b.sY) / 2);
 if (this.m.text == null) {
 this.g3d.setC (this.labelColix);
-this.drawString (x, y, z, radius, this.doJustify && (x - a.sX) * (y - a.sY) > 0, false, false, (this.doJustify ? 0 : 2147483647), s);
+this.drawString (x, y, z, radius, this.doJustify && (x - a.sX) * (y - a.sY) > 0, false, true, (this.doJustify ? 0 : 2147483647), s);
 } else {
 this.atomPt.ave (a, b);
 this.atomPt.sX = Clazz.doubleToInt ((a.sX + b.sX) / 2);

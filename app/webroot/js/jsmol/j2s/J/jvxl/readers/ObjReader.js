@@ -81,7 +81,11 @@ if (ia < 0 || ib < 0 || ic < 0) continue;
 break;
 case 'g':
 htPymol = null;
-if (this.params.readAllData) color = JU.CU.getArgbFromString ("[x" + this.line.substring (3) + "]");
+if (this.params.readAllData) try {
+color = JU.PT.parseIntRadix (this.line.substring (3), 16);
+} catch (e) {
+color = 0;
+}
 break;
 }
 }

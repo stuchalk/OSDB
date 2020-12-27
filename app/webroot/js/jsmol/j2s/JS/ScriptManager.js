@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JS");
-Clazz.load (["J.api.JmolScriptManager", "JU.Lst"], "JS.ScriptManager", ["java.io.BufferedReader", "java.lang.Boolean", "$.Thread", "javajs.api.ZInputStream", "JU.AU", "$.BS", "$.PT", "$.Rdr", "$.SB", "J.api.Interface", "JS.ScriptQueueThread", "JU.Elements", "$.Logger", "JV.FileManager"], function () {
+Clazz.load (["J.api.JmolScriptManager", "JU.Lst"], "JS.ScriptManager", ["java.io.BufferedInputStream", "$.BufferedReader", "java.lang.Boolean", "$.Thread", "javajs.api.ZInputStream", "JU.AU", "$.BS", "$.PT", "$.Rdr", "$.SB", "J.api.Interface", "JS.ScriptQueueThread", "JU.Elements", "$.Logger", "JV.FileManager"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.eval = null;
@@ -87,9 +87,10 @@ var n = 0;
 while (this.isQueueProcessing ()) {
 try {
 Thread.sleep (100);
-if (((n++) % 10) == 0) if (JU.Logger.debugging) {
+if (((n++) % 10) == 0) {
+if (JU.Logger.debugging) {
 JU.Logger.debug ("...scriptManager waiting for queue: " + this.scriptQueue.size () + " thread=" + Thread.currentThread ().getName ());
-}} catch (e) {
+}}} catch (e) {
 if (Clazz.exceptionOf (e, InterruptedException)) {
 } else {
 throw e;
@@ -106,7 +107,7 @@ Clazz.defineMethod (c$, "flushQueue",
 for (var i = this.scriptQueue.size (); --i >= 0; ) {
 var strScript = (this.scriptQueue.get (i).get (0));
 if (strScript.indexOf (command) == 0) {
-this.scriptQueue.remove (i);
+this.scriptQueue.removeItemAt (i);
 if (JU.Logger.debugging) JU.Logger.debug (this.scriptQueue.size () + " scripts; removed: " + strScript);
 }}
 }, "~S");
@@ -188,19 +189,20 @@ var historyDisabled = (strScript.indexOf (")") == 0);
 if (historyDisabled) strScript = strScript.substring (1);
 historyDisabled = historyDisabled || !isQueued;
 this.vwr.setErrorMessage (null, null);
-var isOK = this.eval.compileScriptString (strScript, isQuiet);
-var strErrorMessage = this.eval.getErrorMessage ();
-var strErrorMessageUntranslated = this.eval.getErrorMessageUntranslated ();
+var eval = (isQueued ? this.eval : this.newScriptEvaluator ());
+var isOK = eval.compileScriptString (strScript, isQuiet);
+var strErrorMessage = eval.getErrorMessage ();
+var strErrorMessageUntranslated = eval.getErrorMessageUntranslated ();
 this.vwr.setErrorMessage (strErrorMessage, strErrorMessageUntranslated);
 this.vwr.refresh (7, "script complete");
 if (isOK) {
 this.$isScriptQueued = isQueued;
 if (!isQuiet) this.vwr.setScriptStatus (null, strScript, -2 - (++this.scriptIndex), null);
-this.eval.evaluateCompiledScript (this.vwr.isSyntaxCheck, this.vwr.isSyntaxAndFileCheck, historyDisabled, this.vwr.listCommands, outputBuffer, isQueued || !this.vwr.isSingleThreaded);
+eval.evaluateCompiledScript (this.vwr.isSyntaxCheck, this.vwr.isSyntaxAndFileCheck, historyDisabled, this.vwr.listCommands, outputBuffer, isQueued || !this.vwr.isSingleThreaded);
 } else {
 this.vwr.scriptStatus (strErrorMessage);
 this.vwr.setScriptStatus ("Jmol script terminated", strErrorMessage, 1, strErrorMessageUntranslated);
-if (this.eval.isStateScript ()) JS.ScriptManager.setStateScriptVersion (this.vwr, null);
+if (eval.isStateScript ()) JS.ScriptManager.setStateScriptVersion (this.vwr, null);
 }if (strErrorMessage != null && this.vwr.autoExit) this.vwr.exitJmol ();
 if (this.vwr.isSyntaxCheck) {
 if (strErrorMessage == null) JU.Logger.info ("--script check ok");
@@ -225,7 +227,7 @@ return null;
 Clazz.defineMethod (c$, "checkResume", 
  function (str) {
 if (str.equalsIgnoreCase ("resume")) {
-this.vwr.setScriptStatus ("", "execution resumed", 0, null);
+this.vwr.scriptStatusMsg ("", "execution resumed");
 this.eval.resumePausedExecution ();
 return true;
 }return false;
@@ -254,13 +256,13 @@ if (strScript.indexOf ("moveto ") == 0) this.flushQueue ("moveto ");
 return "!" + strScript;
 }this.vwr.setInsertedCommand ("");
 if (isQuiet) strScript += "\u0001## EDITOR_IGNORE ##";
-return this.addScript (strScript, isQuiet && !this.vwr.getBoolean (603979880));
+return this.addScript (strScript, isQuiet && !this.vwr.getBoolean (603979879));
 }, "~S,~B,~B");
 Clazz.overrideMethod (c$, "checkHalt", 
 function (str, isInsert) {
 if (str.equalsIgnoreCase ("pause")) {
 this.vwr.pauseScriptExecution ();
-if (this.vwr.scriptEditorVisible) this.vwr.setScriptStatus ("", "paused -- type RESUME to continue", 0, null);
+if (this.vwr.scriptEditorVisible) this.vwr.scriptStatusMsg ("", "paused -- type RESUME to continue");
 return true;
 }if (str.equalsIgnoreCase ("menu")) {
 this.vwr.getProperty ("DATA_API", "getPopupMenu", "\0");
@@ -304,6 +306,7 @@ function (fileName, flags) {
 var noScript = ((flags & 2) == 2);
 var isAppend = ((flags & 4) == 4);
 var pdbCartoons = ((flags & 1) == 1 && !isAppend);
+var noAutoPlay = ((flags & 8) == 8);
 var cmd = null;
 fileName = fileName.trim ();
 if (fileName.startsWith ("\t")) {
@@ -341,7 +344,7 @@ cmd = JU.PT.rep (cmd, "load SYNC", "load append");
 }}if (cmd == null && !noScript && this.vwr.scriptEditorVisible) this.vwr.showEditor ( Clazz.newArray (-1, [fileName, this.vwr.getFileAsString3 (fileName, true, null)]));
  else cmd = (cmd == null ? "script " : cmd) + JU.PT.esc (fileName);
 } finally {
-if (cmd != null) this.vwr.evalString (cmd);
+if (cmd != null) this.vwr.evalString (cmd + (noAutoPlay ? "#!NOAUTOPLAY" : ""));
 }
 }, "~S,~N");
 Clazz.defineMethod (c$, "getDragDropFileTypeName", 
@@ -351,12 +354,12 @@ if (pt >= 0) return fileName.substring (0, pt);
 if (fileName.startsWith ("=")) return "pdb";
 if (fileName.endsWith (".dssr")) return "dssr";
 var br = this.vwr.fm.getUnzippedReaderOrStreamFromName (fileName, null, true, false, true, true, null);
-if (Clazz.instanceOf (br, java.io.BufferedReader)) return this.vwr.getModelAdapter ().getFileTypeName (br);
 if (Clazz.instanceOf (br, javajs.api.ZInputStream)) {
 var zipDirectory = this.getZipDirectoryAsString (fileName);
 if (zipDirectory.indexOf ("JmolManifest") >= 0) return "Jmol";
 return this.vwr.getModelAdapter ().getFileTypeName (JU.Rdr.getBR (zipDirectory));
-}if (JU.AU.isAS (br)) {
+}if (Clazz.instanceOf (br, java.io.BufferedReader) || Clazz.instanceOf (br, java.io.BufferedInputStream)) return this.vwr.getModelAdapter ().getFileTypeName (br);
+if (JU.AU.isAS (br)) {
 return (br)[0];
 }return null;
 }, "~S");
@@ -395,7 +398,8 @@ vwr.stateScriptVersionInt = 2147483647;
 }, "JV.Viewer,~S");
 Clazz.overrideMethod (c$, "addHydrogensInline", 
 function (bsAtoms, vConnections, pts) {
-var modelIndex = this.vwr.ms.at[bsAtoms.nextSetBit (0)].mi;
+var iatom = bsAtoms.nextSetBit (0);
+var modelIndex = (iatom < 0 ? this.vwr.ms.mc - 1 : this.vwr.ms.at[iatom].mi);
 if (modelIndex != this.vwr.ms.mc - 1) return  new JU.BS ();
 var bsA = this.vwr.getModelUndeletedAtomsBitSet (modelIndex);
 this.vwr.g.appendNew = false;

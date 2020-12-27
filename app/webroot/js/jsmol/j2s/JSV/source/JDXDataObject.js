@@ -4,6 +4,7 @@ c$ = Clazz.decorateAsClass (function () {
 this.filePath = null;
 this.filePathForwardSlash = null;
 this.isSimulation = false;
+this.inlineData = null;
 this.sourceID = "";
 this.blockID = 0;
 this.fileFirstX = 1.7976931348623157E308;
@@ -42,6 +43,14 @@ this.deltaX = NaN;
 this.normalizationFactor = 1;
 Clazz.instantialize (this, arguments);
 }, JSV.source, "JDXDataObject", JSV.source.JDXHeader);
+Clazz.defineMethod (c$, "setInlineData", 
+function (data) {
+this.inlineData = data;
+}, "~S");
+Clazz.defineMethod (c$, "getInlineData", 
+function () {
+return this.inlineData;
+});
 Clazz.defineMethod (c$, "setFilePath", 
 function (filePath) {
 if (filePath != null) this.filePathForwardSlash = (this.filePath = filePath.trim ()).$replace ('\\', '/');
@@ -214,7 +223,7 @@ return true;
 });
 Clazz.defineMethod (c$, "getYRef", 
 function () {
-return (!this.isTransmittance () ? 0.0 : JSV.common.Coordinate.getMaxY (this.xyCoords, 0, this.xyCoords.length) < 2 ? 1.0 : 100.0);
+return (!this.isTransmittance () ? 0.0 : JSV.common.Coordinate.getMaxY (this.xyCoords, 0, this.xyCoords.length - 1) < 2 ? 1.0 : 100.0);
 });
 Clazz.defineMethod (c$, "isInverted", 
 function () {
@@ -325,6 +334,16 @@ Clazz.defineMethod (c$, "setXYCoords",
 function (coords) {
 this.xyCoords = coords;
 }, "~A");
+Clazz.defineMethod (c$, "invertYAxis", 
+function () {
+for (var i = this.xyCoords.length; --i >= 0; ) {
+this.xyCoords[i].setYVal (-this.xyCoords[i].getYVal ());
+}
+var d = this.minY;
+this.minY = -this.maxY;
+this.maxY = -d;
+return this;
+});
 Clazz.defineMethod (c$, "getFirstX", 
 function () {
 return this.xyCoords[0].getXVal ();
@@ -343,19 +362,19 @@ return this.xyCoords[this.xyCoords.length - 1].getYVal ();
 });
 Clazz.defineMethod (c$, "getMinX", 
 function () {
-return (Double.isNaN (this.minX) ? (this.minX = JSV.common.Coordinate.getMinX (this.xyCoords, 0, this.xyCoords.length)) : this.minX);
+return (Double.isNaN (this.minX) ? (this.minX = JSV.common.Coordinate.getMinX (this.xyCoords, 0, this.xyCoords.length - 1)) : this.minX);
 });
 Clazz.defineMethod (c$, "getMinY", 
 function () {
-return (Double.isNaN (this.minY) ? (this.minY = JSV.common.Coordinate.getMinY (this.xyCoords, 0, this.xyCoords.length)) : this.minY);
+return (Double.isNaN (this.minY) ? (this.minY = JSV.common.Coordinate.getMinY (this.xyCoords, 0, this.xyCoords.length - 1)) : this.minY);
 });
 Clazz.defineMethod (c$, "getMaxX", 
 function () {
-return (Double.isNaN (this.maxX) ? (this.maxX = JSV.common.Coordinate.getMaxX (this.xyCoords, 0, this.xyCoords.length)) : this.maxX);
+return (Double.isNaN (this.maxX) ? (this.maxX = JSV.common.Coordinate.getMaxX (this.xyCoords, 0, this.xyCoords.length - 1)) : this.maxX);
 });
 Clazz.defineMethod (c$, "getMaxY", 
 function () {
-return (Double.isNaN (this.maxY) ? (this.maxY = JSV.common.Coordinate.getMaxY (this.xyCoords, 0, this.xyCoords.length)) : this.maxY);
+return (Double.isNaN (this.maxY) ? (this.maxY = JSV.common.Coordinate.getMaxY (this.xyCoords, 0, this.xyCoords.length - 1)) : this.maxY);
 });
 Clazz.defineMethod (c$, "doNormalize", 
 function (max) {

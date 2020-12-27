@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.smarter");
-Clazz.load (["java.util.Hashtable"], "J.adapter.smarter.AtomSetCollection", ["java.lang.Boolean", "$.Float", "java.util.Collections", "$.Properties", "JU.AU", "$.BS", "$.Lst", "$.P3", "$.V3", "J.adapter.smarter.Atom", "$.Bond", "$.SmarterJmolAdapter", "J.api.Interface", "JU.Logger"], function () {
+Clazz.load (["java.util.Hashtable"], "J.adapter.smarter.AtomSetCollection", ["java.lang.Boolean", "$.Float", "java.util.Collections", "$.Properties", "JU.AU", "$.BS", "$.Lst", "$.P3", "$.V3", "J.adapter.smarter.Atom", "$.Bond", "$.SmarterJmolAdapter", "J.api.Interface", "JU.BSUtil", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.reader = null;
 this.bsAtoms = null;
@@ -81,7 +81,7 @@ this.setInfo ("properties", p);
 if (array != null) {
 var n = 0;
 this.readerList =  new JU.Lst ();
-for (var i = 0; i < array.length; i++) if (array[i].ac > 0 || array[i].reader != null && array[i].reader.mustFinalizeModelSet) this.appendAtomSetCollection (n++, array[i]);
+for (var i = 0; i < array.length; i++) if (array[i] != null && (array[i].ac > 0 || array[i].reader != null && array[i].reader.mustFinalizeModelSet)) this.appendAtomSetCollection (n++, array[i]);
 
 if (n > 1) this.setInfo ("isMultiFile", Boolean.TRUE);
 } else if (list != null) {
@@ -530,7 +530,8 @@ Clazz.defineMethod (c$, "setAtomSetCollectionPartialCharges",
 function (auxKey) {
 if (!this.atomSetInfo.containsKey (auxKey)) return false;
 var atomData = this.atomSetInfo.get (auxKey);
-for (var i = atomData.size (); --i >= 0; ) this.atoms[i].partialCharge = atomData.get (i).floatValue ();
+var n = atomData.size ();
+for (var i = this.ac; --i >= 0; ) this.atoms[i].partialCharge = atomData.get (i % n).floatValue ();
 
 JU.Logger.info ("Setting partial charges type " + auxKey);
 return true;
@@ -716,16 +717,18 @@ this.setCurrentModelInfo ("Energy", Float.$valueOf (value));
 this.setAtomSetModelProperty ("Energy", "" + value);
 }, "~S,~N");
 Clazz.defineMethod (c$, "setAtomSetFrequency", 
-function (pathKey, label, freq, units) {
+function (mode, pathKey, label, freq, units) {
 this.setAtomSetModelProperty ("FreqValue", freq);
 freq += " " + (units == null ? "cm^-1" : units);
 var name = (label == null ? "" : label + " ") + freq;
 this.setAtomSetName (name);
 this.setAtomSetModelProperty ("Frequency", freq);
+this.setAtomSetModelProperty ("Mode", "" + mode);
+this.setModelInfoForSet ("vibrationalMode", Integer.$valueOf (mode), this.iSet);
 if (label != null) this.setAtomSetModelProperty ("FrequencyLabel", label);
 this.setAtomSetModelProperty (".PATH", (pathKey == null ? "" : pathKey + J.adapter.smarter.SmarterJmolAdapter.PATH_SEPARATOR + "Frequencies") + "Frequencies");
 return name;
-}, "~S,~S,~S,~S");
+}, "~N,~S,~S,~S,~S");
 Clazz.defineMethod (c$, "getBondList", 
 function () {
 var info =  new Array (this.bondCount);
@@ -754,7 +757,69 @@ if (!this.isTrajectory || !a.isTrajectory || this.vibrationSteps != null) return
 for (var i = 0; i < a.trajectoryStepCount; i++) this.trajectorySteps.add (this.trajectoryStepCount++, a.trajectorySteps.get (i));
 
 this.setInfo ("trajectorySteps", this.trajectorySteps);
+this.setInfo ("ignoreUnitCell", a.atomSetInfo.get ("ignoreUnitCell"));
 }, "J.adapter.smarter.AtomSetCollection");
+Clazz.defineMethod (c$, "removeAtomSet", 
+function (imodel) {
+if (this.bsAtoms == null) this.bsAtoms = JU.BSUtil.newBitSet2 (0, this.ac);
+var i0 = this.atomSetAtomIndexes[imodel];
+var nAtoms = this.atomSetAtomCounts[imodel];
+var i1 = i0 + nAtoms;
+this.bsAtoms.clearBits (i0, i1);
+for (var i = i1; i < this.ac; i++) this.atoms[i].atomSetIndex--;
+
+for (var i = imodel + 1; i < this.atomSetCount; i++) {
+this.atomSetAuxiliaryInfo[i - 1] = this.atomSetAuxiliaryInfo[i];
+this.atomSetAtomIndexes[i - 1] = this.atomSetAtomIndexes[i];
+this.atomSetBondCounts[i - 1] = this.atomSetBondCounts[i];
+this.atomSetAtomCounts[i - 1] = this.atomSetAtomCounts[i];
+this.atomSetNumbers[i - 1] = this.atomSetNumbers[i];
+}
+for (var i = 0; i < this.bondCount; i++) this.bonds[i].atomSetIndex = this.atoms[this.bonds[i].atomIndex1].atomSetIndex;
+
+this.atomSetAuxiliaryInfo[--this.atomSetCount] = null;
+var n = 0;
+for (var i = 0; i < this.structureCount; i++) {
+var s = this.structures[i];
+if (s.modelStartEnd[0] == imodel && s.modelStartEnd[1] == imodel) {
+this.structures[i] = null;
+n++;
+}}
+if (n > 0) {
+var ss =  new Array (this.structureCount - n);
+for (var i = 0, pt = 0; i < this.structureCount; i++) if (this.structures[i] != null) ss[pt++] = this.structures[i];
+
+this.structures = ss;
+}}, "~N");
+Clazz.defineMethod (c$, "removeLastUnselectedAtoms", 
+function () {
+var n = this.ac;
+var nremoved = 0;
+var i0 = this.getLastAtomSetAtomIndex ();
+var nnow = 0;
+for (var i = i0; i < n; i++) {
+if (!this.bsAtoms.get (i)) {
+nremoved++;
+this.ac--;
+this.atoms[i] = null;
+continue;
+}if (nremoved > 0) {
+this.atoms[this.atoms[i].index = i - nremoved] = this.atoms[i];
+this.atoms[i] = null;
+}nnow++;
+}
+this.atomSetAtomCounts[this.iSet] = nnow;
+if (nnow == 0) {
+this.iSet--;
+this.atomSetCount--;
+} else {
+this.bsAtoms.setBits (i0, i0 + nnow);
+}});
+Clazz.defineMethod (c$, "checkNoEmptyModel", 
+function () {
+while (this.atomSetCount > 0 && this.atomSetAtomCounts[this.atomSetCount - 1] == 0) this.atomSetCount--;
+
+});
 Clazz.defineStatics (c$,
 "globalBooleans",  Clazz.newArray (-1, ["someModelsHaveFractionalCoordinates", "someModelsHaveSymmetry", "someModelsHaveUnitcells", "someModelsHaveCONECT", "isPDB", "someModelsHaveDomains", "someModelsHaveValidations"]),
 "GLOBAL_FRACTCOORD", 0,

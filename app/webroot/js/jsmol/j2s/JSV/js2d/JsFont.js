@@ -17,7 +17,7 @@ context._fontAscent = Math.ceil(font.fontSize); //pt, not px
 context._fontDescent = Math.ceil(font.fontSize * 0.25);//approx
 }
 }return context;
-}, "javajs.awt.Font,~O");
+}, "JU.Font,~O");
 c$.getAscent = Clazz.defineMethod (c$, "getAscent", 
 function (context) {
 {
@@ -33,4 +33,4 @@ function (font, text) {
 {
 font.fontMetrics.font = font.font;
 return Math.ceil(font.fontMetrics.measureText(text).width);
-}}, "javajs.awt.Font,~S");
+}}, "JU.Font,~S");

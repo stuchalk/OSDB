@@ -86,175 +86,175 @@ default:
 msg = "Unknown error message number: " + iError;
 break;
 case 0:
-msg = J.i18n.GT._ ("x y z axis expected");
+msg = J.i18n.GT.$ ("x y z axis expected");
 break;
 case 1:
-msg = J.i18n.GT._ ("{0} not allowed with background model displayed");
+msg = J.i18n.GT.$ ("{0} not allowed with background model displayed");
 break;
 case 2:
-msg = J.i18n.GT._ ("bad argument count");
+msg = J.i18n.GT.$ ("bad argument count");
 break;
 case 3:
-msg = J.i18n.GT._ ("Miller indices cannot all be zero.");
+msg = J.i18n.GT.$ ("Miller indices cannot all be zero.");
 break;
 case 4:
-msg = J.i18n.GT._ ("bad [R,G,B] color");
+msg = J.i18n.GT.$ ("bad [R,G,B] color");
 break;
 case 5:
-msg = J.i18n.GT._ ("boolean expected");
+msg = J.i18n.GT.$ ("boolean expected");
 break;
 case 6:
-msg = J.i18n.GT._ ("boolean or number expected");
+msg = J.i18n.GT.$ ("boolean or number expected");
 break;
 case 7:
-msg = J.i18n.GT._ ("boolean, number, or {0} expected");
+msg = J.i18n.GT.$ ("boolean, number, or {0} expected");
 break;
 case 56:
-msg = J.i18n.GT._ ("cannot set value");
+msg = J.i18n.GT.$ ("cannot set value");
 break;
 case 8:
-msg = J.i18n.GT._ ("color expected");
+msg = J.i18n.GT.$ ("color expected");
 break;
 case 9:
-msg = J.i18n.GT._ ("a color or palette name (Jmol, Rasmol) is required");
+msg = J.i18n.GT.$ ("a color or palette name (Jmol, Rasmol) is required");
 break;
 case 10:
-msg = J.i18n.GT._ ("command expected");
+msg = J.i18n.GT.$ ("command expected");
 break;
 case 11:
-msg = J.i18n.GT._ ("{x y z} or $name or (atom expression) required");
+msg = J.i18n.GT.$ ("{x y z} or $name or (atom expression) required");
 break;
 case 12:
-msg = J.i18n.GT._ ("draw object not defined");
+msg = J.i18n.GT.$ ("draw object not defined");
 break;
 case 13:
-msg = J.i18n.GT._ ("unexpected end of script command");
+msg = J.i18n.GT.$ ("unexpected end of script command");
 break;
 case 14:
-msg = J.i18n.GT._ ("valid (atom expression) expected");
+msg = J.i18n.GT.$ ("valid (atom expression) expected");
 break;
 case 15:
-msg = J.i18n.GT._ ("(atom expression) or integer expected");
+msg = J.i18n.GT.$ ("(atom expression) or integer expected");
 break;
 case 16:
-msg = J.i18n.GT._ ("filename expected");
+msg = J.i18n.GT.$ ("filename expected");
 break;
 case 17:
-msg = J.i18n.GT._ ("file not found");
+msg = J.i18n.GT.$ ("file not found");
 break;
 case 18:
-msg = J.i18n.GT._ ("incompatible arguments");
+msg = J.i18n.GT.$ ("incompatible arguments");
 break;
 case 19:
-msg = J.i18n.GT._ ("insufficient arguments");
+msg = J.i18n.GT.$ ("insufficient arguments");
 break;
 case 20:
-msg = J.i18n.GT._ ("integer expected");
+msg = J.i18n.GT.$ ("integer expected");
 break;
 case 21:
-msg = J.i18n.GT._ ("integer out of range ({0} - {1})");
+msg = J.i18n.GT.$ ("integer out of range ({0} - {1})");
 break;
 case 22:
-msg = J.i18n.GT._ ("invalid argument");
+msg = J.i18n.GT.$ ("invalid argument");
 break;
 case 23:
-msg = J.i18n.GT._ ("invalid parameter order");
+msg = J.i18n.GT.$ ("invalid parameter order");
 break;
 case 24:
-msg = J.i18n.GT._ ("keyword expected");
+msg = J.i18n.GT.$ ("keyword expected");
 break;
 case 25:
-msg = J.i18n.GT._ ("no MO coefficient data available");
+msg = J.i18n.GT.$ ("no MO coefficient data available");
 break;
 case 26:
-msg = J.i18n.GT._ ("An MO index from 1 to {0} is required");
+msg = J.i18n.GT.$ ("An MO index from 1 to {0} is required");
 break;
 case 27:
-msg = J.i18n.GT._ ("no MO basis/coefficient data available for this frame");
+msg = J.i18n.GT.$ ("no MO basis/coefficient data available for this frame");
 break;
 case 28:
-msg = J.i18n.GT._ ("no MO occupancy data available");
+msg = J.i18n.GT.$ ("no MO occupancy data available");
 break;
 case 29:
-msg = J.i18n.GT._ ("Only one molecular orbital is available in this file");
+msg = J.i18n.GT.$ ("Only one molecular orbital is available in this file");
 break;
 case 30:
-msg = J.i18n.GT._ ("{0} require that only one model be displayed");
+msg = J.i18n.GT.$ ("{0} require that only one model be displayed");
 break;
 case 55:
-msg = J.i18n.GT._ ("{0} requires that only one model be loaded");
+msg = J.i18n.GT.$ ("{0} requires that only one model be loaded");
 break;
 case 31:
-msg = J.i18n.GT._ ("No data available");
+msg = J.i18n.GT.$ ("No data available");
 break;
 case 32:
-msg = J.i18n.GT._ ("No partial charges were read from the file; Jmol needs these to render the MEP data.");
+msg = J.i18n.GT.$ ("No partial charges were read from the file; Jmol needs these to render the MEP data.");
 break;
 case 33:
-msg = J.i18n.GT._ ("No unit cell");
+msg = J.i18n.GT.$ ("No unit cell");
 break;
 case 34:
-msg = J.i18n.GT._ ("number expected");
+msg = J.i18n.GT.$ ("number expected");
 break;
 case 35:
-msg = J.i18n.GT._ ("number must be ({0} or {1})");
+msg = J.i18n.GT.$ ("number must be ({0} or {1})");
 break;
 case 36:
-msg = J.i18n.GT._ ("decimal number out of range ({0} - {1})");
+msg = J.i18n.GT.$ ("decimal number out of range ({0} - {1})");
 break;
 case 37:
-msg = J.i18n.GT._ ("object name expected after '$'");
+msg = J.i18n.GT.$ ("object name expected after '$'");
 break;
 case 38:
-msg = J.i18n.GT._ ("plane expected -- either three points or atom expressions or {0} or {1} or {2}");
+msg = J.i18n.GT.$ ("plane expected -- either three points or atom expressions or {0} or {1} or {2}");
 break;
 case 39:
-msg = J.i18n.GT._ ("property name expected");
+msg = J.i18n.GT.$ ("property name expected");
 break;
 case 40:
-msg = J.i18n.GT._ ("space group {0} was not found.");
+msg = J.i18n.GT.$ ("space group {0} was not found.");
 break;
 case 41:
-msg = J.i18n.GT._ ("quoted string expected");
+msg = J.i18n.GT.$ ("quoted string expected");
 break;
 case 42:
-msg = J.i18n.GT._ ("quoted string or identifier expected");
+msg = J.i18n.GT.$ ("quoted string or identifier expected");
 break;
 case 43:
-msg = J.i18n.GT._ ("too many rotation points were specified");
+msg = J.i18n.GT.$ ("too many rotation points were specified");
 break;
 case 44:
-msg = J.i18n.GT._ ("too many script levels");
+msg = J.i18n.GT.$ ("too many script levels");
 break;
 case 45:
-msg = J.i18n.GT._ ("unrecognized atom property");
+msg = J.i18n.GT.$ ("unrecognized atom property");
 break;
 case 46:
-msg = J.i18n.GT._ ("unrecognized bond property");
+msg = J.i18n.GT.$ ("unrecognized bond property");
 break;
 case 47:
-msg = J.i18n.GT._ ("unrecognized command");
+msg = J.i18n.GT.$ ("unrecognized command");
 break;
 case 48:
-msg = J.i18n.GT._ ("runtime unrecognized expression");
+msg = J.i18n.GT.$ ("runtime unrecognized expression");
 break;
 case 49:
-msg = J.i18n.GT._ ("unrecognized object");
+msg = J.i18n.GT.$ ("unrecognized object");
 break;
 case 50:
-msg = J.i18n.GT._ ("unrecognized {0} parameter");
+msg = J.i18n.GT.$ ("unrecognized {0} parameter");
 break;
 case 51:
-msg = J.i18n.GT._ ("unrecognized {0} parameter in Jmol state script (set anyway)");
+msg = J.i18n.GT.$ ("unrecognized {0} parameter in Jmol state script (set anyway)");
 break;
 case 52:
-msg = J.i18n.GT._ ("unrecognized SHOW parameter --  use {0}");
+msg = J.i18n.GT.$ ("unrecognized SHOW parameter --  use {0}");
 break;
 case 53:
 msg = "{0}";
 break;
 case 54:
-msg = J.i18n.GT._ ("write what? {0} or {1} \"filename\"");
+msg = J.i18n.GT.$ ("write what? {0} or {1} \"filename\"");
 break;
 }
 if (msg.indexOf ("{0}") < 0) {
@@ -284,7 +284,7 @@ this.errorMessage = null;
 this.iCommandError = -1;
 return;
 }this.$error = true;
-if (this.errorMessage == null) this.errorMessage = J.i18n.GT._ ("script ERROR: ");
+if (this.errorMessage == null) this.errorMessage = J.i18n.GT.$ ("script ERROR: ");
 this.errorMessage += err;
 }, "~S");
 Clazz.defineStatics (c$,

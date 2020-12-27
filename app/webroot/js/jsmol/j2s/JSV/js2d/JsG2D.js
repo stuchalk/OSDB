@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JSV.js2d");
-Clazz.load (["J.api.GenericGraphics"], "JSV.js2d.JsG2D", ["javajs.awt.Color", "JU.CU"], function () {
+Clazz.load (["J.api.GenericGraphics"], "JSV.js2d.JsG2D", ["JU.CU", "JSV.common.JSViewer", "JS.Color"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.windowWidth = 0;
 this.windowHeight = 0;
@@ -12,21 +12,19 @@ function () {
 });
 Clazz.overrideMethod (c$, "getColor4", 
 function (r, g, b, a) {
-return javajs.awt.Color.get4 (r, g, b, a);
+return JS.Color.get4 (r, g, b, a);
 }, "~N,~N,~N,~N");
 Clazz.overrideMethod (c$, "getColor3", 
 function (r, g, b) {
-return javajs.awt.Color.get3 (r, g, b);
+return JS.Color.get3 (r, g, b);
 }, "~N,~N,~N");
 Clazz.overrideMethod (c$, "getColor1", 
 function (rgb) {
-return javajs.awt.Color.get1 (rgb);
+return JS.Color.get1 (rgb);
 }, "~N");
 Clazz.overrideMethod (c$, "newGrayScaleImage", 
 function (context, image, width, height, grayBuffer) {
-{
-image = Jmol._newGrayScaleImage(context, image, width, height, grayBuffer);
-}return image;
+return JSV.common.JSViewer.jmolObject.newGrayScaleImage (context, image, width, height, grayBuffer);
 }, "~O,~O,~N,~N,~A");
 Clazz.overrideMethod (c$, "drawGrayScaleImage", 
 function (g, image, destX0, destY0, destX1, destY1, srcX0, srcY0, srcX1, srcY1) {
@@ -149,7 +147,7 @@ s = s.substring (0, pt) + "px" + s.substring (pt);
 {
 g.font = s;
 }return font;
-}, "~O,javajs.awt.Font");
+}, "~O,JU.Font");
 Clazz.overrideMethod (c$, "setStrokeBold", 
 function (g, tf) {
 {

@@ -118,7 +118,7 @@ function (atom1, atom2, value) {
 this.setValue (value);
 this.set2 (atom1, atom2);
 this.offsetSide = 0.4;
-this.mad = 5;
+this.mad = 10;
 this.atoms[0] = atom1;
 this.atoms[1] = atom2;
 this.haveAtoms = true;
@@ -149,7 +149,7 @@ if (this.lstDipoles != null) s.append (" all ").append (JU.Escape.eBS (this.bsMo
  else if (this.coords[0] == null) return "";
  else s.append (" ").append (JU.Escape.eP (this.coords[0])).append (" ").append (JU.Escape.eP (this.coords[1]));
 if (this.isUserValue) s.append (" value ").appendF (this.dipoleValue);
-if (this.mad != 5) s.append (" width ").appendF (this.mad / 1000);
+if (this.mad != 10) s.append (" width ").appendF (this.mad / 1000);
 if (this.offsetAngstroms != 0) s.append (" offset ").appendF (this.offsetAngstroms);
  else if (this.offsetPercent != 0) s.append (" offset ").appendI (this.offsetPercent);
 if (this.offsetSide != 0.4) s.append (" offsetSide ").appendF (this.offsetSide);

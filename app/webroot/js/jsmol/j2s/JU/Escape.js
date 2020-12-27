@@ -47,7 +47,7 @@ if (Clazz.instanceOf (x, JU.P4)) return JU.Escape.eP4 (x);
 if (Clazz.instanceOf (x, JU.T3)) return JU.Escape.eP (x);
 if (JU.AU.isAP (x)) return JU.Escape.eAP (x);
 if (JU.AU.isAS (x)) return JU.Escape.eAS (x, true);
-if (Clazz.instanceOf (x, JU.M34)) return JU.PT.rep (x.toString (), "\t", ",\t");
+if (Clazz.instanceOf (x, JU.M34)) return JU.PT.rep (JU.PT.rep (x.toString (), "[\n  ", "["), "] ]", "]]");
 if (Clazz.instanceOf (x, JU.A4)) {
 var a = x;
 return "{" + a.x + " " + a.y + " " + a.z + " " + (a.angle * 180 / 3.141592653589793) + "}";
@@ -252,7 +252,7 @@ if (JU.AU.isAS (info)) {
 sb.append ("[");
 var imax = (info).length;
 for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.esc ((info)[i]));
+sb.append (sep).append (JU.Escape.toReadable (null, (info)[i]));
 sep = ",";
 }
 sb.append ("]");

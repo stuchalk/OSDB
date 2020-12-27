@@ -8,7 +8,7 @@ this.setPropFLS (propertyName, value);
 Clazz.defineMethod (c$, "initShape", 
 function () {
 Clazz.superCall (this, J.shape.Uccage, "initShape", []);
-this.font3d = this.vwr.gdata.getFont3D (14);
+this.font3d = this.vwr.gdata.getFont3D (16);
 this.myType = "unitcell";
 });
 });

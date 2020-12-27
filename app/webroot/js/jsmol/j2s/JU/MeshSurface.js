@@ -3,7 +3,7 @@ Clazz.load (null, "JU.MeshSurface", ["java.lang.Float", "JU.AU", "$.P3", "J.api.
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.slicer = null;
-this.spanningVectors = null;
+this.oabc = null;
 this.meshType = null;
 this.vc = 0;
 this.vs = null;
@@ -13,7 +13,7 @@ this.surfaceAtoms = null;
 this.pc = 0;
 this.pis = null;
 this.colorsExplicit = false;
-this.isTriangleSet = false;
+this.isDrawPolygon = false;
 this.haveQuads = false;
 this.colix = 0;
 this.colixBack = 0;

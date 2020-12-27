@@ -129,7 +129,8 @@ return (this.checkType (pi.type) && (this.checkId (pi._match) || this.checkModel
 }, "JSV.common.PeakInfo");
 Clazz.defineMethod (c$, "checkId", 
  function (match) {
-return (this.id != null && match != null && match.toUpperCase ().startsWith ("ID=") && ((match = match.substring (3)).equals (this.id) || match.startsWith ("#") && match.equals ("#" + this.index)));
+if (match == null) return false;
+return (this.id != null && match.toUpperCase ().startsWith ("ID=") && match.substring (3).equals (this.id) || (match = match.toUpperCase ()).startsWith ("INDEX=") && match.equals ("INDEX=" + this.index) || match.startsWith ("#=") && match.equals ("#=" + this.index));
 }, "~S");
 Clazz.defineMethod (c$, "getModel", 
 function () {

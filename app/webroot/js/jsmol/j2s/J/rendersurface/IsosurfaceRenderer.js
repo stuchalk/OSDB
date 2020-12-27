@@ -42,12 +42,12 @@ Clazz.defineMethod (c$, "setGlobals",
  function () {
 this.needTranslucent = false;
 this.antialias = this.g3d.isAntialiased ();
-this.iShowNormals = this.vwr.getTestFlag (4);
-this.showNumbers = this.vwr.getTestFlag (3);
+this.iShowNormals = this.vwr.getBoolean (603979965);
+this.showNumbers = this.vwr.getBoolean (603979964);
 this.isosurface = this.shape;
 this.exportPass = (this.isExport ? 2 : 0);
 this.isNavigationMode = this.vwr.getBoolean (603979889);
-this.showKey = (this.vwr.getBoolean (603979869) ? Boolean.TRUE : null);
+this.showKey = (this.vwr.getBoolean (603979867) ? Boolean.TRUE : null);
 this.isosurface.keyXy = null;
 this.meshScale = -1;
 this.globalSlabValue = this.vwr.gdata.slab;
@@ -213,7 +213,7 @@ var slabPoints = ((this.volumeRender || this.mesh.pc == 0) && this.selectedPolyO
 var incr = this.imesh.vertexIncrement;
 var diam;
 if (this.mesh.diameter <= 0) {
-diam = this.vwr.getInt (553648144);
+diam = this.vwr.getInt (553648142);
 this.frontOnly = this.isShell = false;
 } else {
 diam = Clazz.doubleToInt (this.vwr.getScreenDim () / (this.volumeRender ? 50 : 100));
@@ -353,7 +353,7 @@ Clazz.defineMethod (c$, "getDiameter",
  function () {
 var diam;
 if (this.mesh.diameter <= 0) {
-diam = (this.meshScale < 0 ? this.meshScale = this.vwr.getInt (553648151) : this.meshScale);
+diam = (this.meshScale < 0 ? this.meshScale = this.vwr.getInt (553648150) : this.meshScale);
 if (this.antialias) diam *= 2;
 } else {
 diam = Clazz.doubleToInt (this.vwr.getScreenDim () / 100);

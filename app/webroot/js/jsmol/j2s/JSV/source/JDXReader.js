@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JSV.source");
-Clazz.load (["J.api.JmolJDXMOLReader"], "JSV.source.JDXReader", ["java.io.BufferedReader", "$.StringReader", "java.lang.Double", "$.Float", "java.util.Hashtable", "$.StringTokenizer", "JU.Lst", "$.PT", "$.SB", "JSV.api.JSVZipReader", "JSV.common.Coordinate", "$.JSVFileManager", "$.JSViewer", "$.PeakInfo", "$.Spectrum", "JSV.exception.JSVException", "JSV.source.JDXDecompressor", "$.JDXSource", "$.JDXSourceStreamTokenizer", "JU.Logger"], function () {
+Clazz.load (["J.api.JmolJDXMOLReader"], "JSV.source.JDXReader", ["java.io.BufferedReader", "$.InputStream", "$.StringReader", "java.lang.Double", "$.Float", "java.util.Hashtable", "$.StringTokenizer", "JU.AU", "$.Lst", "$.PT", "$.SB", "JSV.api.JSVZipReader", "JSV.common.Coordinate", "$.JSVFileManager", "$.JSViewer", "$.PeakInfo", "$.Spectrum", "JSV.exception.JSVException", "JSV.source.JDXDecompressor", "$.JDXSource", "$.JDXSourceStreamTokenizer", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.nmrMaxY = NaN;
 this.source = null;
@@ -11,6 +11,7 @@ this.isZipFile = false;
 this.filePath = null;
 this.loadImaginary = true;
 this.isSimulation = false;
+this.ignoreShiftReference = false;
 this.isTabularData = false;
 this.firstSpec = 0;
 this.lastSpec = 0;
@@ -43,11 +44,20 @@ this.loadImaginary = loadImaginary;
 }, "~S,~B,~B,~N,~N,~N");
 c$.createJDXSourceFromStream = Clazz.defineMethod (c$, "createJDXSourceFromStream", 
 function ($in, obscure, loadImaginary, nmrMaxY) {
-return JSV.source.JDXReader.createJDXSource (JSV.common.JSVFileManager.getBufferedReaderForInputStream ($in), "stream", obscure, loadImaginary, -1, -1, nmrMaxY);
+return JSV.source.JDXReader.createJDXSource ($in, "stream", obscure, loadImaginary, -1, -1, nmrMaxY);
 }, "java.io.InputStream,~B,~B,~N");
 c$.createJDXSource = Clazz.defineMethod (c$, "createJDXSource", 
-function (br, filePath, obscure, loadImaginary, iSpecFirst, iSpecLast, nmrMaxY) {
-var header = null;
+function ($in, filePath, obscure, loadImaginary, iSpecFirst, iSpecLast, nmrMaxY) {
+var data = null;
+var br;
+if (Clazz.instanceOf ($in, String) || JU.AU.isAB ($in)) {
+if (Clazz.instanceOf ($in, String)) data = $in;
+br = JSV.common.JSVFileManager.getBufferedReaderForStringOrBytes ($in);
+} else if (Clazz.instanceOf ($in, java.io.InputStream)) {
+br = JSV.common.JSVFileManager.getBufferedReaderForInputStream ($in);
+} else {
+br = $in;
+}var header = null;
 try {
 if (br == null) br = JSV.common.JSVFileManager.getBufferedReaderFromName (filePath, "##TITLE");
 br.mark (400);
@@ -55,19 +65,21 @@ var chs =  Clazz.newCharArray (400, '\0');
 br.read (chs, 0, 400);
 br.reset ();
 header =  String.instantialize (chs);
+var source = null;
 var pt1 = header.indexOf ('#');
 var pt2 = header.indexOf ('<');
 if (pt1 < 0 || pt2 >= 0 && pt2 < pt1) {
 var xmlType = header.toLowerCase ();
 xmlType = (xmlType.contains ("<animl") || xmlType.contains ("<!doctype technique") ? "AnIML" : xmlType.contains ("xml-cml") ? "CML" : null);
-var xmlSource = null;
-if (xmlType != null) xmlSource = (JSV.common.JSViewer.getInterface ("JSV.source." + xmlType + "Reader")).getSource (filePath, br);
+if (xmlType != null) source = (JSV.common.JSViewer.getInterface ("JSV.source." + xmlType + "Reader")).getSource (filePath, br);
 br.close ();
-if (xmlSource == null) {
+if (source == null) {
 JU.Logger.error (header + "...");
 throw  new JSV.exception.JSVException ("File type not recognized");
-}return xmlSource;
-}return ( new JSV.source.JDXReader (filePath, obscure, loadImaginary, iSpecFirst, iSpecLast, nmrMaxY)).getJDXSource (br);
+}} else {
+source = ( new JSV.source.JDXReader (filePath, obscure, loadImaginary, iSpecFirst, iSpecLast, nmrMaxY)).getJDXSource (br);
+}if (data != null) source.setInlineData (data);
+return source;
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 if (br != null) br.close ();
@@ -79,7 +91,7 @@ var s = e.getMessage ();
 throw e;
 }
 }
-}, "java.io.BufferedReader,~S,~B,~B,~N,~N,~N");
+}, "~O,~S,~B,~B,~N,~N,~N");
 Clazz.defineMethod (c$, "getJDXSource", 
  function (reader) {
 this.source =  new JSV.source.JDXSource (0, this.filePath);
@@ -110,6 +122,8 @@ continue;
 this.getNTupleSpectra (dataLDRTable, spectrum, label);
 spectrum = null;
 continue;
+}if (label.equals ("##JCAMPDX")) {
+this.setVenderSpecificValues (this.t.rawLine);
 }if (spectrum == null) spectrum =  new JSV.common.Spectrum ();
 if (this.readDataLabel (spectrum, label, value, this.errorLog, this.obscure)) continue;
 JSV.source.JDXReader.addHeader (dataLDRTable, this.t.rawLabel, value);
@@ -120,6 +134,12 @@ if (!isOK) throw  new JSV.exception.JSVException ("##TITLE record not found");
 this.source.setErrorLog (this.errorLog.toString ());
 return this.source;
 }, "~O");
+Clazz.defineMethod (c$, "setVenderSpecificValues", 
+ function (rawLine) {
+if (rawLine.indexOf ("JEOL") >= 0) {
+System.out.println ("Skipping ##SHIFTREFERENCE for JEOL " + rawLine);
+this.ignoreShiftReference = true;
+}}, "~S");
 Clazz.defineMethod (c$, "getValue", 
  function (label) {
 var value = (this.isTabularDataLabel (label) ? "" : this.t.getValue ());
@@ -384,7 +404,8 @@ spectrum.dataPointNum = 1;
 spectrum.shiftRefType = 2;
 return false;
 }if (label.equals ("##.SHIFTREFERENCE ")) {
-if (!(spectrum.dataType.toUpperCase ().contains ("SPECTRUM"))) return true;
+if (this.ignoreShiftReference || !(spectrum.dataType.toUpperCase ().contains ("SPECTRUM"))) return true;
+value = JU.PT.replaceAllCharacters (value, ")(", "");
 var srt =  new java.util.StringTokenizer (value, ",");
 if (srt.countTokens () != 4) return true;
 try {
@@ -529,9 +550,10 @@ if (d < minMaxY[0]) minMaxY[0] = d;
 d = decompressor.getMaxY ();
 if (d > minMaxY[1]) minMaxY[1] = d;
 }var freq = (Double.isNaN (spec.freq2dX) ? spec.observedFreq : spec.freq2dX);
-if (spec.offset != 1.7976931348623157E308 && freq != 1.7976931348623157E308 && spec.dataType.toUpperCase ().contains ("SPECTRUM")) {
-JSV.common.Coordinate.applyShiftReference (xyCoords, spec.dataPointNum, spec.fileFirstX, spec.fileLastX, spec.offset, freq, spec.shiftRefType);
-}if (freq != 1.7976931348623157E308 && spec.getXUnits ().toUpperCase ().equals ("HZ")) {
+var isHz = freq != 1.7976931348623157E308 && spec.getXUnits ().toUpperCase ().equals ("HZ");
+if (spec.offset != 1.7976931348623157E308 && freq != 1.7976931348623157E308 && spec.dataType.toUpperCase ().contains ("SPECTRUM") && spec.jcampdx.indexOf ("JEOL") < 0) {
+JSV.common.Coordinate.applyShiftReference (xyCoords, spec.dataPointNum, spec.fileFirstX, spec.fileLastX, spec.offset, isHz ? freq : 1, spec.shiftRefType);
+}if (isHz) {
 JSV.common.Coordinate.applyScale (xyCoords, (1.0 / freq), 1);
 spec.setXUnits ("PPM");
 spec.setHZtoPPM (true);

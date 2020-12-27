@@ -34,7 +34,7 @@ for (var i = 0; i < this.slaterArray.length; i++) this.slaterArray[i] = this.sla
 var sd = this.slaterArray[i];
 sd.coef *= this.scaleSlater (sd.x, sd.y, sd.z, sd.r, sd.zeta);
 if (this.debugging) {
-JU.Logger.debug ("SlaterReader " + i + ": " + sd.iAtom + " " + sd.x + " " + sd.y + " " + sd.z + " " + sd.r + " " + sd.zeta + " " + sd.coef);
+JU.Logger.debug ("SlaterReader " + i + ": " + sd.atomNo + " " + sd.x + " " + sd.y + " " + sd.z + " " + sd.r + " " + sd.zeta + " " + sd.coef);
 }}
 if (doSort) {
 java.util.Arrays.sort (this.slaterArray, Clazz.innerTypeInstance (J.adapter.readers.quantum.SlaterReader.SlaterSorter, this, null));
@@ -103,7 +103,7 @@ Clazz.instantialize (this, arguments);
 }, J.adapter.readers.quantum.SlaterReader, "SlaterSorter", null, java.util.Comparator);
 Clazz.overrideMethod (c$, "compare", 
 function (a, b) {
-return (a.iAtom < b.iAtom ? -1 : a.iAtom > b.iAtom ? 1 : 0);
+return (a.atomNo < b.atomNo ? -1 : a.atomNo > b.atomNo ? 1 : 0);
 }, "J.quantum.SlaterData,J.quantum.SlaterData");
 c$ = Clazz.p0p ();
 };

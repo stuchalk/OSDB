@@ -26,7 +26,7 @@ this.mappingPlaneNormalMag = 0;
 this.minGrid = 0;
 this.maxGrid = 0;
 this.voxelVolume = 0;
-this.spanningVectors = null;
+this.oabc = null;
 this.isPeriodic = false;
 this.isSquared = false;
 this.edgeVector = null;
@@ -217,10 +217,10 @@ this.minToPlaneDistance = this.maxVectorLength * 2;
 this.origin[0] = this.volumetricOrigin.x;
 this.origin[1] = this.volumetricOrigin.y;
 this.origin[2] = this.volumetricOrigin.z;
-this.spanningVectors =  new Array (4);
-this.spanningVectors[0] = JU.V3.newV (this.volumetricOrigin);
+this.oabc =  new Array (4);
+this.oabc[0] = JU.V3.newV (this.volumetricOrigin);
 for (var i = 0; i < 3; i++) {
-var v = this.spanningVectors[i + 1] =  new JU.V3 ();
+var v = this.oabc[i + 1] =  new JU.V3 ();
 v.scaleAdd2 (this.voxelCounts[i] - 1, this.volumetricVectors[i], v);
 }
 return this.setMatrix ();

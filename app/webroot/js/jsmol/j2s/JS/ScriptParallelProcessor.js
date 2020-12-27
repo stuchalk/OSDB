@@ -36,7 +36,7 @@ if (inParallel) {
 sm =  new JV.ShapeManager (vwr);
 sm.setParallel ();
 vShapeManagers.addLast (sm);
-}this.runProcess (this.processes.remove (0), sm);
+}this.runProcess (this.processes.removeItemAt (0), sm);
 }
 {
 while (this.counter > 0) {

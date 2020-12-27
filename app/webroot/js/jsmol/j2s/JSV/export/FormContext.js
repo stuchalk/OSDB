@@ -260,7 +260,7 @@ this.b$["JSV.export.FormContext"].commandLevel--;
 if (this.b$["JSV.export.FormContext"].commandLevel < 0) {
 this.b$["JSV.export.FormContext"].strError = "misplaced #end";
 return;
-}this.cmdPtr = this.b$["JSV.export.FormContext"].cmds.remove (0).intValue ();
+}this.cmdPtr = this.b$["JSV.export.FormContext"].cmds.removeItemAt (0).intValue ();
 this.b$["JSV.export.FormContext"].formTokens.get (this.cmdPtr).endPtr = this.ptr;
 } else {
 this.b$["JSV.export.FormContext"].commandLevel++;
@@ -283,7 +283,7 @@ if (this.b$["JSV.export.FormContext"].cmds.size () == 0) {
 this.b$["JSV.export.FormContext"].strError = "misplaced #elseif";
 return;
 }this.cmdType = 3;
-this.cmdPtr = this.b$["JSV.export.FormContext"].cmds.remove (0).intValue ();
+this.cmdPtr = this.b$["JSV.export.FormContext"].cmds.removeItemAt (0).intValue ();
 var d = this.b$["JSV.export.FormContext"].formTokens.get (this.cmdPtr);
 c = true;
 d.endPtr = this.ptr;
@@ -294,7 +294,7 @@ this.b$["JSV.export.FormContext"].strError = "misplaced #else";
 return;
 }this.cmdType = 2;
 c = true;
-this.cmdPtr = this.b$["JSV.export.FormContext"].cmds.remove (0).intValue ();
+this.cmdPtr = this.b$["JSV.export.FormContext"].cmds.removeItemAt (0).intValue ();
 this.b$["JSV.export.FormContext"].formTokens.get (this.cmdPtr).endPtr = this.ptr;
 this.b$["JSV.export.FormContext"].cmds.add (0,  new Integer (this.ptr));
 } else {

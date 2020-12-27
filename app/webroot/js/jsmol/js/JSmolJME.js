@@ -2,6 +2,8 @@
 
 // see http://peter-ertl.com/jsme
 
+// BH 12/3/2017 8:56:35 PM two JSME applets on a page fail.
+// BH 2/16/2017 2:09:40 PM uses show chemical jme not show chemical/file=jme
 // BH 4/24/2016 10:51:22 PM adds getjsmeh Jmol script to derive jsme with H atoms from NCI mrv 
 // BH 9/15/2015 18:10:25 jmolAtoms no var
 // BH 6/19/2015 5:36:23 PM fix for Jmol mouse hook t.x.baseVal not implemented fully on iOS
@@ -11,7 +13,7 @@
 // BH 3/1/2014 4:31:18 PM fix for evaluate returning atom sets as arrays
 // BH 1/27/2014 8:37:06 AM adding Info.viewSet  
 // BH 12/4/2013 7:44:26 PM fix for JME independent search box
-
+// BH 5/25/2017 5:11:17 AM removing Jmol changes to JSME SMILES. Problem is with incomplete assignment of H stereochemistry, as in CC[C@@H](C)[H]
 /*
 
 	Only HTML5 version (JSME) is supported.
@@ -251,12 +253,17 @@
 		var me = this;
 	}
 
+  proto._reset = function(_jmol_resetView) {
+    this._script("clear");
+  }
+
 	proto._updateView = function(_jme_updateView) {
 		// called from model change without chemical identifier, possibly by user action and call to Jmol.updateView(applet)
 		if (this._viewSet != null) {
 			this._search("$" + this._getSmiles())
     }
 		var me = this;
+    // missing View.updateView?
 	}
 
 	proto._setCheck = function(b, why) {
@@ -350,7 +357,8 @@
     if (event.action == "readMolFile" || event.action == "readJME") {
      // JSME marks the selected atom in the third from last column!
       this._molData = this._applet.molFile().replace(/1  0  0\n/g, "0  0  0\n");
-      return;
+      setTimeout(function() {jme.__updateAtomCorrelation()},10);
+	return;
     }
 		var a = this._applet.molFile().replace(/1  0  0\n/g, "0  0  0\n").split("V2000")[1];
 		var b = ("" + this._molData).replace(/1  0  0\n/g, "0  0  0\n").split("V2000")[1];
@@ -376,22 +384,32 @@
 		var A = [];
 		var map = this._currentView.JME.atomMap;    
 		A.push(map == null ? iAtom : map.toJmol[iAtom]);
+
+
 		Jmol.View.updateAtomPick(this, A);
 		this._updateAtomPick(A);
 		if (this._atomPickCallback)
 			setTimeout(this._atomPickCallback+"([" + iAtom + "])",10);    
 	}
 
+	proto.__updateAtomCorrelation = function(){
+			if (this._viewSet && this._currentView) {
+			  var v = this._currentView;
+			  v.JME.data = this._molData;
+				v.JME.atomMap = (v.Jmol && v.Jmol.applet? v.Jmol.applet._getAtomCorrelation(this._molData,false) : null);
+			}
+
+	}
 	proto.__clearAtomSelection = function(andUpdate) {
 		System.out.println("clearAtomSelection");
 		this.__atomSelection = [];
-		this._applet.resetAtomColors(1);
+		this._applet.jmeFile() && this._applet.resetAtomColors(1);
 		if (andUpdate)
 			Jmol.View.updateAtomPick(this, []);
 	}	
 
 	proto._updateAtomPick = function(A, _jme_updateAtomPick) {
-		this._applet.resetAtomColors(1);
+		this._applet.jmeFile() && this._applet.resetAtomColors(1);
 		if (A.length == 0)
 			return;
 		var B = [];
@@ -433,7 +451,7 @@
 			  isOK = false;
 			} else if (jme != null) {
 				jmeSMILES = this._getSmiles();
-        alert(jmeSMILES)
+        //alert(jmeSMILES)
 				// testing here to see that we have the same structure as in the JMOL applet
 				// feature change here --- evaluation of an atom set returns an array now, not an uninterpretable string
         // had "/noncanonical/" here - but this is not necessary. Jmol will convert this
@@ -470,20 +488,17 @@
       var data = jmol._evaluate("getJMEHs()")
       format = "jme"
     } else {
-      var data = jmol._evaluate("script('select visible;show chemical \"file?format="+format+"\"')");
+      var data = jmol._evaluate("script('select visible;show chemical "+format+"')");
     }
     this._molData = data;
 		if (!this._applet)return;
 		this._setCheck(false, "readmoldata");
 		if (this._molData) {
+    //alert(format + " " + data + " reading " + this._molData)
     	Jmol.jmeReadMolecule(this, this._molData);
 //			this._applet.readMolecule(this._molData);
 			this._molData = this._applet.molFile();
-			if (this._viewSet) {
-			  var v = this._currentView;
-			  v.JME.data = this._molData;
-				v.JME.atomMap = (v.Jmol && v.Jmol.applet? v.Jmol.applet._getAtomCorrelation(this._molData) : null);
-			}
+			this.__updateAtomCorrelation();
 		} else {
 			this._applet.reset();
 			this._molData = "<zapped>";
@@ -523,7 +538,7 @@
 					ctx.clearRect( 0, 0, (canvas.width = svg.width.animVal.value - 5), (canvas.height = svg.height.animVal.value));
 					ctx.drawImage(img, 0, 0);
 					// throw out "data:image/png;base64," because we will reconstruct that if we need to, and we might not
-					Jmol._saveFile(me._id + ".png", canvas.toDataURL("image/png").substring(22), "image/png", "base64");
+					Jmol._saveFile(me._id + ".png", canvas.toDataURL("image/png"));
 				}
 				img.src = "data:image/svg+xml;base64," + btoa(svg.outerHTML);
 				break;
@@ -532,18 +547,23 @@
 	}
 
   proto._getSmiles = function(withStereoChemistry) {
-  	var s = (arguments.length == 0 || withStereoChemistry ? jme._applet.smiles() : jme._applet.nonisomericSmiles());
-    s = s.replace(/\:1/g,"");
-		s = s.replace(/@H/g,"@~").replace(/H/g,"")
-    s = s.replace(/\[\]/g,"")
-    // but change [C@][H] to [C@H] and [C@]1[H] to [C@@H]1 
-    s = s.replace(/\@\]\(\)/g,"@H]")
-    s = s.replace(/\@\](\d+)\(\)/g,"@@H]$1")
-    s = s.replace(/\@\@\@/g,"@")
-    s = s.replace(/\(\)/g,"");
-    s = s.replace(/@~/g,"@H");
-		if (s.indexOf("\\") == 0 || s.indexOf("/") == 0)
-		  s= "[H]" + s;
+  	var s = (arguments.length == 0 || withStereoChemistry ? this._applet.smiles() : this._applet.nonisomericSmiles());
+//    s = s.replace(/\:1/g,"");
+//		s = s.replace(/@H/g,"@~").replace(/H/g,"")
+//		s = s.replace(/\/\[\]/g,"/[H]")
+//		s = s.replace(/\\\[\]/g,"\\[H]")
+//		s = s.replace(/\[\]\//g,"[H]/")
+//		s = s.replace(/\[\]\\/g,"[H]\\")
+//    s = s.replace(/\[\]/g,"")
+//    // but change [C@][H] to [C@H] and [C@]1[H] to [C@@H]1 
+//    s = s.replace(/\@\]\(\)/g,"@H]")
+//    s = s.replace(/\@\](\d+)\(\)/g,"@@H]$1")
+//    s = s.replace(/\@\@\@/g,"@")
+//    s = s.replace(/\(\)/g,"");
+//    s = s.replace(/@~/g,"@H");
+//    if (s.lastIndexOf(")") == s.length - 1)
+//      s += "[H]"
+    //alert("JSmolJME s is now " + s)
 		return s;
   }
 
@@ -560,7 +580,9 @@
 	// The final replacement here is to remove markings from star option.
 
 	Jmol.jmeSmiles = function(jme, withStereoChemistry) {
-		return jme._getSmiles();
+   var s = jme._getSmiles();
+   //alert(s)
+		return s;
 	}
 
 	Jmol.jmeReadMolecule = function(jme, jmeOrMolData) {
@@ -603,4 +625,5 @@
 
 
 })(Jmol, document);
+
 

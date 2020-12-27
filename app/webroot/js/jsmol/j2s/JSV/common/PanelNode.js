@@ -62,7 +62,7 @@ c$.findSourceByNameOrId = Clazz.defineMethod (c$, "findSourceByNameOrId",
 function (id, panelNodes) {
 for (var i = panelNodes.size (); --i >= 0; ) {
 var node = panelNodes.get (i);
-if (id.equals (node.id) || id.equalsIgnoreCase (node.source.getFilePath ())) return node.source;
+if (id.equals (node.id) || id.equals (node.source.getSpectra ().get (0).sourceID) || node.source.matchesFilePath (id)) return node.source;
 }
 for (var i = panelNodes.size (); --i >= 0; ) {
 var node = panelNodes.get (i);
@@ -95,7 +95,7 @@ c$.isOpen = Clazz.defineMethod (c$, "isOpen",
 function (panelNodes, filePath) {
 var pt = -1;
 if (filePath != null) for (var i = panelNodes.size (); --i >= 0; ) {
-if (filePath.equals (panelNodes.get (i).source.getFilePath ()) || filePath.equals (panelNodes.get (i).frameTitle)) return pt;
+if (panelNodes.get (i).source.matchesFilePath (filePath) || filePath.equals (panelNodes.get (i).frameTitle)) return pt;
 }
 return -1;
 }, "JU.Lst,~S");

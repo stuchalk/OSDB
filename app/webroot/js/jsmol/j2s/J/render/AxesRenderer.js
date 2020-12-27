@@ -39,7 +39,7 @@ labelPtr = 6;
 } else if (isXY) {
 nPoints = 3;
 labelPtr = 9;
-} else if (this.vwr.g.axesMode == 603979810) {
+} else if (this.vwr.g.axesMode == 603979809) {
 nPoints = 6;
 labelPtr = (this.vwr.getBoolean (603979806) ? 15 : 9);
 }if (axes.labels != null) {
@@ -99,7 +99,7 @@ this.colixes[1] = this.vwr.getObjectColix (2);
 this.colixes[2] = this.vwr.getObjectColix (3);
 var showOrigin = (!isXY && nPoints == 3 && axes.scale == 2);
 for (var i = nPoints; --i >= 0; ) {
-if (checkAxisType && !axes.axisType.contains (J.render.AxesRenderer.axesTypes[i]) || Math.abs (xCenter - this.p3Screens[i].x) + Math.abs (yCenter - this.p3Screens[i].y) <= 2 && (!(showOrigin = false))) continue;
+if (checkAxisType && !axes.axisType.contains (J.render.AxesRenderer.axesTypes[i]) || this.exportType != 1 && (Math.abs (xCenter - this.p3Screens[i].x) + Math.abs (yCenter - this.p3Screens[i].y) <= 2) && (!(showOrigin = false))) continue;
 this.colix = this.colixes[i % 3];
 this.g3d.setC (this.colix);
 var label = (axes.labels == null ? J.render.AxesRenderer.axisLabels[i + labelPtr] : i < axes.labels.length ? axes.labels[i] : null);

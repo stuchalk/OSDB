@@ -161,7 +161,7 @@ this.tm.transformPt3f (center, this.tempP1);
 this.outputSphere (this.tempP1.x, this.tempP1.y, this.tempP1.z, radius, colix);
 }, "JU.P3,~N,~A,~N");
 Clazz.overrideMethod (c$, "outputSurface", 
-function (vertices, normals, colixes, indices, polygonColixes, nVertices, nPolygons, nFaces, bsPolygons, faceVertexMax, colix, colorList, htColixes, offset) {
+function (vertices, normals, colixes, indices, polygonColixes, nVertices, nPolygons, nTriangles, bsPolygons, faceVertexMax, colix, colorList, htColixes, offset) {
 if (polygonColixes != null) {
 var isAll = (bsPolygons == null);
 var i0 = (isAll ? nPolygons - 1 : bsPolygons.nextSetBit (0));
@@ -190,7 +190,7 @@ for (var i = 0; i < nVertices; i++) {
 this.output ((colixes == null ? rgb : this.rgbFractionalFromColix (colixes[i])) + "\n");
 }
 this.outputTextureCode ();
-this.output ("\nTriMesh " + nFaces + "\n");
+this.output ("\nTriMesh " + nTriangles + "\n");
 var isAll = (bsPolygons == null);
 var i0 = (isAll ? nPolygons - 1 : bsPolygons.nextSetBit (0));
 for (var i = i0; i >= 0; i = (isAll ? i - 1 : bsPolygons.nextSetBit (i + 1))) {

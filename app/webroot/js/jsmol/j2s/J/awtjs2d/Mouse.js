@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.awtjs2d");
-Clazz.load (["javajs.api.GenericMouseInterface", "javajs.awt.event.Event"], "J.awtjs2d.Mouse", ["java.lang.Character", "JU.PT", "$.V3", "JU.Logger"], function () {
+Clazz.load (["J.api.GenericMouseInterface"], "J.awtjs2d.Mouse", ["java.lang.Character", "JU.PT", "$.V3", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.manager = null;
@@ -11,7 +11,7 @@ this.xWhenPressed = 0;
 this.yWhenPressed = 0;
 this.modifiersWhenPressed10 = 0;
 Clazz.instantialize (this, arguments);
-}, J.awtjs2d, "Mouse", null, javajs.api.GenericMouseInterface);
+}, J.awtjs2d, "Mouse", null, J.api.GenericMouseInterface);
 Clazz.makeConstructor (c$, 
 function (privateKey, vwr, display) {
 this.vwr = vwr;
@@ -25,9 +25,9 @@ function () {
 });
 Clazz.overrideMethod (c$, "processEvent", 
 function (id, x, y, modifiers, time) {
-if (id != -1) modifiers = J.awtjs2d.Mouse.applyLeftMouse (modifiers);
+if (id != 507) modifiers = J.awtjs2d.Mouse.applyLeftMouse (modifiers);
 switch (id) {
-case -1:
+case 507:
 this.wheeled (time, x, modifiers);
 break;
 case 501:

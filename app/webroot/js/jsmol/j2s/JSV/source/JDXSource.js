@@ -8,6 +8,7 @@ this.errors = "";
 this.filePath = null;
 this.peakCount = 0;
 this.isView = false;
+this.inlineData = null;
 Clazz.instantialize (this, arguments);
 }, JSV.source, "JDXSource", JSV.source.JDXHeader);
 Clazz.defineMethod (c$, "dispose", 
@@ -32,6 +33,7 @@ Clazz.defineMethod (c$, "addJDXSpectrum",
 function (filePath, spectrum, forceSub) {
 if (filePath == null) filePath = this.filePath;
 spectrum.setFilePath (filePath);
+if (this.inlineData != null) spectrum.setInlineData (this.inlineData);
 var n = this.jdxSpectra.size ();
 if (n == 0 || !this.jdxSpectra.get (n - 1).addSubSpectrum (spectrum, forceSub)) this.jdxSpectra.addLast (spectrum);
 }, "~S,JSV.common.Spectrum,~B");
@@ -82,6 +84,16 @@ return data;
 Clazz.defineMethod (c$, "setID", 
 function (id) {
 this.jdxSpectra.get (0).sourceID = id;
+}, "~S");
+Clazz.defineMethod (c$, "matchesFilePath", 
+function (filePath) {
+return this.filePath.equals (filePath) || this.filePath.$replace ('\\', '/').equals (filePath);
+}, "~S");
+Clazz.defineMethod (c$, "setInlineData", 
+function (data) {
+this.inlineData = data;
+if (this.jdxSpectra != null) for (var i = this.jdxSpectra.size (); --i >= 0; ) this.jdxSpectra.get (i).setInlineData (data);
+
 }, "~S");
 Clazz.defineStatics (c$,
 "TYPE_VIEW", -2,

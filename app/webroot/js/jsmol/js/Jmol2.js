@@ -6,6 +6,7 @@ author: Bob Hanson hansonr@stolaf.edu 5/24/2013 12:06:25 PM
 Script replacement for legacy Jmol.js that uses JSmol instead.
 Can be used to turn most legacy Jmol.js-based sites to JSmol.
 
+BH 1/23/2018 11:09:40 AM adding jmolScript(..."all")
 BH 1/16/2014 10:33:46 PM adding serverURL indication, more notes
 BH 1/13/2014 11:14:12 AM incorrect default for missing jmolInitialize() (should be ".")
 BH 1/8/2014 5:56:15 AM simplified instructions; removed option for self.Info
@@ -42,6 +43,24 @@ Procedure:
 4) Try your page and see how it goes. You may still have some problems, because not all of the 
 	 methods in the original Jmol.js are included here. Let me know if that's the case.
 
+Note that if you are using Jmol.setDocument(0) along with jmolApplet() and then placing
+the JSmol HTML code into your document yourself, then you may need to follow that
+jQuery .html() or .innerHTML =   call with 
+   
+      jmolApplet0._cover(false)
+
+in order to start the applet.
+
+Also, note that jmolApplet() now returns the actual object, not a string, so if you use that function,
+then you must use jmolApplet(...)._code to get the actual HTML code for the applet. For example:
+
+   document.getElementById("myDiv").innerHTML = jmolApplet([width,height], readyScript, 1)._code
+
+not
+
+   document.getElementById("myDiv").innerHTML = jmolApplet([width,height], readyScript, 1)
+
+       
 If you wish to change the directories your j2s or JAR files and override the default settings
 (old JAR file location; j2s directory in the directory of those JAR files) and thus override
 your current settings in your HTML files, then you can to that three ways:
@@ -278,7 +297,14 @@ function jmolFindTarget(targetSuffix) {
 }
 
 function jmolScript(script, targetSuffix) {
-	Jmol.script(jmolFindTarget(targetSuffix), script)
+    if (targetSuffix == "all") {
+      for (var app in Jmol._applets) {
+        var applet = (app.indexOf("__") >= 0 ? null  : Jmol._applets[app]);
+        if (applet) applet.script(script);
+      }
+    } else {
+    	Jmol.script(jmolFindTarget(targetSuffix), script)
+    }
 }
 
 function jmolCheckBrowser(action, urlOrMessage, nowOrLater) {

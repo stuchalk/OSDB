@@ -3,8 +3,7 @@ Clazz.load (["J.adapter.smarter.AtomSetCollectionReader"], "J.adapter.readers.xt
 c$ = Clazz.decorateAsClass (function () {
 this.isSlab = false;
 this.isPolymer = false;
-this.$isMolecular = false;
-this.isPrimitive = false;
+this.$isPrimitive = false;
 this.sep = "-------";
 this.coordinatesArePrimitive = false;
 this.atomCharges = null;
@@ -22,7 +21,7 @@ Clazz.instantialize (this, arguments);
 }, J.adapter.readers.xtal, "GulpReader", J.adapter.smarter.AtomSetCollectionReader);
 Clazz.overrideMethod (c$, "initializeReader", 
 function () {
-this.isPrimitive = !this.checkFilterKey ("CONV");
+this.$isPrimitive = !this.checkFilterKey ("CONV");
 this.coordinatesArePrimitive = true;
 this.setFractionalCoordinates (this.readDimensionality ());
 });
@@ -45,7 +44,7 @@ return true;
 }if (this.line.contains ("Monopole - monopole (total)")) {
 this.readEnergy ();
 return true;
-}if (this.line.contains ("Fractional coordinates of asymmetric unit :") || (this.bTest = this.line.contains ("Final asymmetric unit coordinates")) || (this.bTest = this.line.contains ("Final fractional coordinates ")) || this.line.contains ("Mixed fractional/Cartesian coordinates") || this.line.contains ("Cartesian coordinates of cluster ") || this.line.contains ("Final cartesian coordinates of atoms :") && this.$isMolecular) {
+}if (this.line.contains ("Fractional coordinates of asymmetric unit :") || (this.bTest = this.line.contains ("Final asymmetric unit coordinates")) || (this.bTest = this.line.contains ("Final fractional coordinates ")) || this.line.contains ("Mixed fractional/Cartesian coordinates") || this.line.contains ("Cartesian coordinates of cluster ") || this.line.contains ("Final cartesian coordinates of atoms :") && this.isMolecular) {
 if (this.doGetModel (++this.modelNumber, null)) this.readAtomicPos (!this.bTest);
 return true;
 }if (this.line.contains ("Species output for all configurations")) {
@@ -63,16 +62,16 @@ this.discardLinesUntilContains ("Dimensionality");
 var tokens = this.getTokens ();
 switch (this.parseIntStr (tokens[2])) {
 case 0:
-this.$isMolecular = true;
-this.isPrimitive = false;
+this.isMolecular = true;
+this.$isPrimitive = false;
 return false;
 case 1:
 this.isPolymer = true;
-this.isPrimitive = false;
+this.$isPrimitive = false;
 break;
 case 2:
 this.isSlab = true;
-this.isPrimitive = false;
+this.$isPrimitive = false;
 break;
 }
 return true;
@@ -121,9 +120,9 @@ Clazz.defineMethod (c$, "setModelParameters",
  function (isPrimitive) {
 if (this.sgName != null) this.setSpaceGroupName (isPrimitive ? "P1" : this.sgName);
 if (isPrimitive && this.primitiveData != null) {
-this.addPrimitiveLatticeVector (0, this.primitiveData, 0);
-this.addPrimitiveLatticeVector (1, this.primitiveData, 3);
-this.addPrimitiveLatticeVector (2, this.primitiveData, 6);
+this.addExplicitLatticeVector (0, this.primitiveData, 0);
+this.addExplicitLatticeVector (1, this.primitiveData, 3);
+this.addExplicitLatticeVector (2, this.primitiveData, 6);
 } else if (this.a != 0) {
 if (this.isSlab) {
 this.c = -1;
@@ -184,7 +183,7 @@ this.primitiveData[i++] = v.z;
 }, "~N,~N");
 Clazz.overrideMethod (c$, "applySymmetryAndSetTrajectory", 
 function () {
-if (this.coordinatesArePrimitive && this.iHaveUnitCell && this.doCheckUnitCell && this.primitiveData != null && !this.isPrimitive) {
+if (this.coordinatesArePrimitive && this.iHaveUnitCell && this.doCheckUnitCell && this.primitiveData != null && !this.$isPrimitive) {
 this.setModelParameters (false);
 var symFull = this.symmetry;
 this.setModelParameters (true);

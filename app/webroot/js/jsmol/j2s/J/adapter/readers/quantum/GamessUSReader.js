@@ -14,8 +14,9 @@ function () {
 if (this.line.startsWith (" $DATA")) return this.readInputDeck ();
 if (this.line.indexOf ("***************") >= 0) JU.Logger.info (this.rd ());
 var isBohr;
-if (this.line.indexOf ("FINAL ENERGY IS") >= 0 || this.line.indexOf ("TOTAL ENERGY = ") >= 0 || this.line.indexOf ("FINAL RHF ENERGY IS") >= 0) this.readEnergy ();
-if (this.line.indexOf ("BASIS OPTIONS") >= 0) {
+if (this.line.indexOf ("FINAL ENERGY IS") >= 0 || this.line.indexOf ("TOTAL ENERGY = ") >= 0 || this.line.indexOf ("FINAL RHF ENERGY IS") >= 0 || this.line.indexOf ("E(MP2)=") >= 0 || this.line.indexOf ("COUPLED-CLUSTER ENERGY E(CCSD) =") >= 0 || this.line.indexOf ("COUPLED-CLUSTER ENERGY E(   CCSD(T)) =") >= 0) {
+this.readEnergy ();
+}if (this.line.indexOf ("BASIS OPTIONS") >= 0) {
 this.readBasisInfo ();
 return true;
 }if (this.line.indexOf ("$CONTRL OPTIONS") >= 0) {
@@ -65,7 +66,7 @@ this.readLines (2);
 this.asc.newAtomSet ();
 while (this.rd ().indexOf ("$END") < 0) {
 var tokens = this.getTokens ();
-this.addAtomXYZSymName (tokens, 2, tokens[0], null).elementNumber = this.parseIntStr (tokens[1]);
+if (tokens.length > 4) this.addAtomXYZSymName (tokens, 2, tokens[0], null).elementNumber = this.parseIntStr (tokens[1]);
 }
 return (this.continuing = false);
 });

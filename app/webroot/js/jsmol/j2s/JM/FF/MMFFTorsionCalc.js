@@ -23,7 +23,7 @@ if (this.calcs.gradients) {
 var sinTheta = Math.sin (this.theta);
 this.dE = 0.5 * (-v1 * sinTheta + 4 * v2 * sinTheta * cosTheta + 3 * v3 * sinTheta * (1 - 4 * cosTheta2));
 this.calcs.addForces (this, 4);
-}if (this.calcs.logging) this.calcs.appendLogData (this.calcs.getDebugLine (3, this));
+}if (this.calcs.logging) this.calcs.appendLogData (this.calcs.getDebugLine (2, this));
 return this.energy;
 }, "~A");
 });

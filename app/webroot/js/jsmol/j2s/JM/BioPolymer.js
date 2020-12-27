@@ -314,6 +314,10 @@ Clazz.defineMethod (c$, "isCyclic",
 function () {
 return ((this.cyclicFlag == 0 ? (this.cyclicFlag = (this.monomerCount >= 4 && this.monomers[0].isConnectedAfter (this.monomers[this.monomerCount - 1])) ? 1 : -1) : this.cyclicFlag) == 1);
 });
+Clazz.overrideMethod (c$, "toString", 
+function () {
+return "[Polymer type " + this.type + " n=" + this.monomerCount + " " + (this.monomerCount > 0 ? this.monomers[0] + " " + this.monomers[this.monomerCount - 1] : "") + "]";
+});
 Clazz.defineStatics (c$,
 "TYPE_NOBONDING", 0,
 "TYPE_AMINO", 1,

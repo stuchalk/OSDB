@@ -31,7 +31,6 @@ this.pb[offset] = p;
 }, "~N,~N,~N");
 Clazz.defineMethod (c$, "addImagePixel", 
 function (shade, tLog, offset, z, argb, bgargb) {
-if (this.zb !== this.g.zbuf) System.out.println ("OH");
 if (z < this.zb[offset]) {
 switch (shade) {
 case 0:

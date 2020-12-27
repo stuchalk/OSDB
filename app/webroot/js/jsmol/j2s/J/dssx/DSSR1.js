@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.dssx");
-Clazz.load (["J.dssx.AnnotationParser"], "J.dssx.DSSR1", ["java.lang.Character", "JU.BS", "$.Lst", "$.PT", "JM.HBond", "JM.BasePair", "JU.Escape", "$.Logger"], function () {
+Clazz.load (["J.dssx.AnnotationParser"], "J.dssx.DSSR1", ["JU.BS", "$.Lst", "$.P3", "$.PT", "JM.HBond", "JM.BasePair", "JU.Escape", "$.Logger"], function () {
 c$ = Clazz.declareType (J.dssx, "DSSR1", J.dssx.AnnotationParser);
 Clazz.makeConstructor (c$, 
 function () {
@@ -31,20 +31,19 @@ var name = vwr.setLoadFormat ("=dssrModel/", '=', false);
 name = JU.PT.rep (name, "%20", " ");
 JU.Logger.info ("fetching " + name + "[pdb data]");
 var data = vwr.getPdbAtomData (bs, null, false, false);
+var modelNumber = vwr.getModelNumber (vwr.ms.getModelBS (bs, false).nextSetBit (0));
+var s = "          " + modelNumber;
+data = "MODEL" + s.substring (s.length - 9) + "\n" + data + "ENDMDL\n";
 data = vwr.getFileAsString3 (name + data, false, null);
-var x = vwr.parseJSON (data);
+var x = vwr.parseJSONMap (data);
 if (x != null) {
 info.put ("dssr", x);
 this.setGroup1 (vwr.ms, modelIndex);
 this.fixDSSRJSONMap (x);
 this.setBioPolymers (vwr.ms.am[modelIndex], false);
 }} catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
 info = null;
 out = "" + e;
-} else {
-throw e;
-}
 }
 break;
 }
@@ -59,10 +58,6 @@ this.fixIndices (map, "coaxStacks", "stem");
 if (map.containsKey ("counts")) s += "_M.dssr.counts = " + map.get ("counts").toString () + "\n";
 if (map.containsKey ("dbn")) s += "_M.dssr.dbn = " + map.get ("dbn").toString ();
 } catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
-} else {
-throw e;
-}
 }
 return s;
 }, "java.util.Map");
@@ -115,11 +110,7 @@ for (var j = bs.nextSetBit (0); j >= 0; j = bs.nextSetBit (j + 1)) this.setRes (
 
 }
 } catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
 JU.Logger.error ("Exception " + e + " in DSSRParser.getBasePairs");
-} else {
-throw e;
-}
 }
 }, "JV.Viewer,~N");
 Clazz.defineMethod (c$, "setBioPolymers", 
@@ -132,6 +123,7 @@ if (bp.isNucleic ()) (bp).isDssrSet = b;
 }, "JM.BioModel,~B");
 Clazz.defineMethod (c$, "setRes", 
  function (atom) {
+if (atom.group.getBioPolymerLength () == 0) return null;
 var m = atom.group;
 (m.bioPolymer).isDssrSet = true;
 return m;
@@ -142,37 +134,53 @@ if (dbObj == null) return  new JU.BS ();
 var doCache = !key.contains ("NOCACHE");
 if (!doCache) {
 key = JU.PT.rep (key, "NOCACHE", "").trim ();
-}var bs = (doCache ? annotationCache.get (key) : null);
-if (bs != null) return bs;
+}var bs = null;
 bs =  new JU.BS ();
 if (doCache) annotationCache.put (key, bs);
 try {
-var pt = key.toLowerCase ().indexOf (" where ");
+key = JU.PT.rep (key, "[where", "[select * where");
+key = JU.PT.rep (key, "[WHERE", "[select * where");
+var ext = "";
+var n = -2147483648;
+var pt = key.toLowerCase ().indexOf ("[select");
+if (pt >= 0) {
+ext = key.substring (pt);
+key = key.substring (0, pt);
+pt = ext.lastIndexOf ("]..");
+if (pt >= 0 && (n = JU.PT.parseInt (ext.substring (pt + 3))) != -2147483648) ext = ext.substring (0, pt + 1);
+}pt = key.toLowerCase ().indexOf (" where ");
 if (pt < 0) {
 key = key.toLowerCase ();
+pt = (n == -2147483648 ? key.lastIndexOf ('.') : -1);
+var haveIndex = false;
+if (pt >= 0 && (haveIndex = (n = JU.PT.parseInt (key.substring (pt + 1))) != -2147483648)) key = key.substring (0, pt);
 pt = "..bulges.nts_long..coaxstacks.stems.pairs.nt*..hairpins.nts_long..hbonds.atom1_id;atom2_id..helices.pairs.nt*..iloops.nts_long..isocanonpairs.nt*..junctions.nts_long..kissingloops.hairpins.nts_long..multiplets.nts_long..nonstack.nts_long..nts.nt_id..pairs.nt*..sssegments.nts_long..stacks.nts_long..stems.pairs.nt*..".indexOf (".." + key) + 2;
 var len = key.length;
 if (pt < 2) return bs;
-while (pt >= 2 && len > 0) {
-if ("..bulges.nts_long..coaxstacks.stems.pairs.nt*..hairpins.nts_long..hbonds.atom1_id;atom2_id..helices.pairs.nt*..iloops.nts_long..isocanonpairs.nt*..junctions.nts_long..kissingloops.hairpins.nts_long..multiplets.nts_long..nonstack.nts_long..nts.nt_id..pairs.nt*..sssegments.nts_long..stacks.nts_long..stems.pairs.nt*..".substring (pt + len, pt + len + 2).equals ("..")) key = "[select (" + key + ")]";
-dbObj = vwr.extractProperty (dbObj, key, -1);
+var ptLast = (haveIndex ? pt + len : 2147483647);
+while (pt >= 2 && pt < ptLast && len > 0) {
+if (key.indexOf (".") < 0 && "..bulges.nts_long..coaxstacks.stems.pairs.nt*..hairpins.nts_long..hbonds.atom1_id;atom2_id..helices.pairs.nt*..iloops.nts_long..isocanonpairs.nt*..junctions.nts_long..kissingloops.hairpins.nts_long..multiplets.nts_long..nonstack.nts_long..nts.nt_id..pairs.nt*..sssegments.nts_long..stacks.nts_long..stems.pairs.nt*..".substring (pt + len, pt + len + 2).equals ("..")) {
+key = "[select (" + key + ")]";
+}dbObj = vwr.extractProperty (dbObj, key, -1);
 pt += len + 1;
-var pt1 = "..bulges.nts_long..coaxstacks.stems.pairs.nt*..hairpins.nts_long..hbonds.atom1_id;atom2_id..helices.pairs.nt*..iloops.nts_long..isocanonpairs.nt*..junctions.nts_long..kissingloops.hairpins.nts_long..multiplets.nts_long..nonstack.nts_long..nts.nt_id..pairs.nt*..sssegments.nts_long..stacks.nts_long..stems.pairs.nt*..".indexOf (".", pt);
+if (ext.length > 0) {
+dbObj = vwr.extractProperty (dbObj, ext, -1);
+ext = "";
+}var pt1 = "..bulges.nts_long..coaxstacks.stems.pairs.nt*..hairpins.nts_long..hbonds.atom1_id;atom2_id..helices.pairs.nt*..iloops.nts_long..isocanonpairs.nt*..junctions.nts_long..kissingloops.hairpins.nts_long..multiplets.nts_long..nonstack.nts_long..nts.nt_id..pairs.nt*..sssegments.nts_long..stacks.nts_long..stems.pairs.nt*..".indexOf (".", pt);
 key = "..bulges.nts_long..coaxstacks.stems.pairs.nt*..hairpins.nts_long..hbonds.atom1_id;atom2_id..helices.pairs.nt*..iloops.nts_long..isocanonpairs.nt*..junctions.nts_long..kissingloops.hairpins.nts_long..multiplets.nts_long..nonstack.nts_long..nts.nt_id..pairs.nt*..sssegments.nts_long..stacks.nts_long..stems.pairs.nt*..".substring (pt, pt1);
 len = key.length;
 }
 } else {
-key = key.substring (0, pt).trim () + "[select * " + key.substring (pt + 1) + "]";
+key = key.substring (0, pt).trim () + "[select * " + key.substring (pt + 1) + "]" + ext;
 dbObj = vwr.extractProperty (dbObj, key, -1);
+}if (n != -2147483648 && Clazz.instanceOf (dbObj, JU.Lst)) {
+if (n <= 0) n += (dbObj).size ();
+dbObj = (dbObj).get (n - 1);
 }bs.or (vwr.ms.getAtoms (1086324744, dbObj.toString ()));
 bs.and (bsModel);
 } catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
 System.out.println (e.toString () + " in AnnotationParser");
 bs.clearAll ();
-} else {
-throw e;
-}
 }
 return bs;
 }, "JV.Viewer,~S,~O,java.util.Map,~N,~N,JU.BS");
@@ -206,10 +214,6 @@ var energy = 0;
 vHBonds.addLast ( new JM.HBond (ms.at[a1], ms.at[a2], 2048, 1, 0, energy));
 }
 } catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
-} else {
-throw e;
-}
 }
 return "DSSR reports " + list.size () + " hydrogen bonds";
 }, "JM.ModelSet,~N,JU.Lst,~B");
@@ -225,14 +229,53 @@ var bs =  new JU.BS ();
 for (var i = list.size (); --i >= 0; ) {
 var map = list.get (i);
 var ch = (map.get ("nt_code")).charAt (0);
-if (!Character.isLowerCase (ch)) continue;
 var unit1 = map.get ("nt_id");
 ms.bioModelset.getAllSequenceBits (unit1, bsAtoms, bs);
-JU.Logger.info ("" + ch + " " + unit1 + " " + bs);
-atoms[bsAtoms.nextSetBit (0)].group.group1 = ch;
+var pt = bs.nextSetBit (0);
+if (pt < 0) continue;
+if ("ACGTU".indexOf (ch) < 0) atoms[pt].group.group1 = ch;
+atoms[pt].group.dssrNT = map;
 bs.clearAll ();
 }
 }, "JM.ModelSet,~N");
+Clazz.overrideMethod (c$, "getAtomicDSSRData", 
+function (ms, modelIndex, dssrData, dataType) {
+var info = ms.getInfo (modelIndex, "dssr");
+var list;
+if (info == null || (list = info.get (dataType)) == null) return;
+var bsAtoms = ms.am[modelIndex].bsAtoms;
+try {
+var bs =  new JU.BS ();
+for (var i = list.size (); --i >= 0; ) {
+var map = list.get (i);
+bs.clearAll ();
+ms.getSequenceBits (map.toString (), bsAtoms, bs);
+for (var j = bs.nextSetBit (0); j >= 0; j = bs.nextSetBit (j + 1)) dssrData[j] = i;
+
+}
+} catch (e) {
+}
+}, "JM.ModelSet,~N,~A,~S");
+Clazz.overrideMethod (c$, "getDSSRFrame", 
+function (nt) {
+var frame = nt.get ("frame");
+if (frame == null) return null;
+var oxyz =  new Array (4);
+for (var i = 4; --i >= 0; ) oxyz[i] =  new JU.P3 ();
+
+this.getPoint (frame, "origin", oxyz[0]);
+this.getPoint (frame, "x_axis", oxyz[1]);
+this.getPoint (frame, "y_axis", oxyz[2]);
+this.getPoint (frame, "z_axis", oxyz[3]);
+return oxyz;
+}, "java.util.Map");
+Clazz.defineMethod (c$, "getPoint", 
+ function (frame, item, pt) {
+var xyz = frame.get (item);
+pt.x = xyz.get (0).floatValue ();
+pt.y = xyz.get (1).floatValue ();
+pt.z = xyz.get (2).floatValue ();
+}, "java.util.Map,~S,JU.P3");
 Clazz.defineStatics (c$,
 "DSSR_PATHS", "..bulges.nts_long..coaxstacks.stems.pairs.nt*..hairpins.nts_long..hbonds.atom1_id;atom2_id..helices.pairs.nt*..iloops.nts_long..isocanonpairs.nt*..junctions.nts_long..kissingloops.hairpins.nts_long..multiplets.nts_long..nonstack.nts_long..nts.nt_id..pairs.nt*..sssegments.nts_long..stacks.nts_long..stems.pairs.nt*..");
 });

@@ -31,7 +31,7 @@ case 1:
 if (this.moved.is (this.current)) {
 this.currentTime = System.currentTimeMillis ();
 var howLong = (this.currentTime - this.moved.time);
-if (howLong > this.hoverDelay && !this.stopped) {
+if (howLong > (this.vwr.acm.zoomTrigger ? 100 : this.hoverDelay) && !this.stopped) {
 this.actionManager.checkHover ();
 }}mode = 0;
 break;

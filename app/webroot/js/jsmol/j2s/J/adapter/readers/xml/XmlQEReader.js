@@ -53,9 +53,9 @@ m[i] *= this.a;
 m[i + 1] *= this.b;
 m[i + 2] *= this.c;
 }
-this.parent.addPrimitiveLatticeVector (0, m, 0);
-this.parent.addPrimitiveLatticeVector (1, m, 3);
-this.parent.addPrimitiveLatticeVector (2, m, 6);
+this.parent.addExplicitLatticeVector (0, m, 0);
+this.parent.addExplicitLatticeVector (1, m, 3);
+this.parent.addExplicitLatticeVector (2, m, 6);
 break;
 }if ("geometry_info".equals (localName)) {
 try {

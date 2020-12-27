@@ -321,7 +321,7 @@ this.applyRotation (this.matrixTemp3.setAA (axisAngle), false, bsAtoms, null, fa
 Clazz.defineMethod (c$, "rotateAxisAngleAtCenter", 
 function (eval, rotCenter, rotAxis, degreesPerSecond, endDegrees, isSpin, bsAtoms) {
 if (rotCenter != null) this.moveRotationCenter (rotCenter, true);
-this.setSpinOff ();
+if (isSpin) this.setSpinOff ();
 this.setNavOn (false);
 if (this.vwr.headless) {
 if (isSpin && endDegrees == 3.4028235E38) return false;
@@ -352,7 +352,7 @@ this.rotateAxisAngle2 (this.axisangleT, bsAtoms);
 }, "~N,JU.BS");
 Clazz.defineMethod (c$, "rotateAboutPointsInternal", 
 function (eval, point1, point2, degreesPerSecond, endDegrees, isClockwise, isSpin, bsAtoms, isGesture, translation, finalPoints, dihedralList, m4) {
-this.setSpinOff ();
+if (isSpin) this.setSpinOff ();
 this.setNavOn (false);
 if (dihedralList == null && (translation == null || translation.length () < 0.001) && (isSpin ? Float.isNaN (degreesPerSecond) || degreesPerSecond == 0 : endDegrees == 0)) return false;
 var axis = null;
@@ -480,21 +480,25 @@ if (f != 0.0) info += "translate y " + f + ";";
 return info;
 });
 Clazz.defineMethod (c$, "getOrientationText", 
-function (type) {
+function (type, isBest) {
 switch (type) {
 case 4129:
 return this.getMoveToText (1, false);
 case 1073742132:
-return this.getRotationQ ().toString ();
+var q = this.getRotationQ ();
+if (isBest) q = q.inv ();
+return q.toString ();
 case 1073742178:
 var sb =  new JU.SB ();
-JV.TransformManager.truncate2 (sb, this.getTranslationXPercent ());
-JV.TransformManager.truncate2 (sb, this.getTranslationYPercent ());
+var d = this.getTranslationXPercent ();
+JV.TransformManager.truncate2 (sb, (isBest ? -d : d));
+d = this.getTranslationYPercent ();
+JV.TransformManager.truncate2 (sb, (isBest ? -d : d));
 return sb.toString ();
 default:
 return this.getMoveToText (1, true) + "\n#OR\n" + this.getRotateZyzText (true);
 }
-}, "~N");
+}, "~N,~B");
 Clazz.defineMethod (c$, "getRotationQ", 
 function () {
 return JU.Quat.newM (this.matrixRotate);
@@ -1453,13 +1457,15 @@ Clazz.defineMethod (c$, "setCenterAt",
 function (relativeTo, pt) {
 var pt1 = JU.P3.newP (pt);
 switch (relativeTo) {
+case 1073741826:
+break;
 case 96:
 pt1.add (this.vwr.ms.getAverageAtomPoint ());
 break;
 case 1678381065:
 pt1.add (this.vwr.getBoundBoxCenter ());
 break;
-case 1073741826:
+default:
 pt1.setT (this.rotationCenterDefault);
 break;
 }

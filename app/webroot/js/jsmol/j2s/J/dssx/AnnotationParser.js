@@ -417,9 +417,16 @@ Clazz.overrideMethod (c$, "getHBonds",
 function (ms, modelIndex, vHBonds, doReport) {
 return null;
 }, "JM.ModelSet,~N,JU.Lst,~B");
+Clazz.overrideMethod (c$, "getAtomicDSSRData", 
+function (ms, modelIndex, dssrData, dataType) {
+}, "JM.ModelSet,~N,~A,~S");
 Clazz.overrideMethod (c$, "setGroup1", 
 function (ms, modelIndex) {
 }, "JM.ModelSet,~N");
+Clazz.overrideMethod (c$, "getDSSRFrame", 
+function (dssrNT) {
+return null;
+}, "java.util.Map");
 Clazz.defineStatics (c$,
 "pdbAtomForH", null);
 });

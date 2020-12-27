@@ -89,7 +89,7 @@ if (this.pos < this.buf.length) {
 return this.buf[this.pos++] & 0xff;
 }return this.$in.readByteAsInt ();
 });
-Clazz_overrideMethod (c$, "read", 
+Clazz_defineMethod (c$, "read", 
 function (b, off, len) {
 this.ensureOpen ();
 if (b == null) {
@@ -248,7 +248,7 @@ if (b != -1) {
 this.cksum.updateByteAsInt (b);
 }return b;
 });
-Clazz_overrideMethod (c$, "read", 
+Clazz_defineMethod (c$, "read", 
 function (buf, off, len) {
 len = this.$in.read (buf, off, len);
 if (len != -1) {
@@ -563,7 +563,7 @@ function () {
 this.ensureOpen ();
 return (this.entryEOF ? 0 : 1);
 });
-Clazz_overrideMethod (c$, "read", 
+Clazz_defineMethod (c$, "read", 
 function (b, off, len) {
 this.ensureOpen ();
 if (off < 0 || len < 0 || off > b.length - len) {
@@ -802,7 +802,7 @@ function ($in, size) {
 Clazz_superConstructor (this, java.util.zip.GZIPInputStream, [$in,  new java.util.zip.Inflater ().init (0, true), size]);
 this.readHeader ($in);
 }, "java.io.InputStream,~N");
-Clazz_overrideMethod (c$, "read", 
+Clazz_defineMethod (c$, "read", 
 function (buf, off, len) {
 this.ensureOpen ();
 if (this.eos) {
@@ -892,7 +892,7 @@ Clazz_load (["java.util.zip.ZipInputStream", "javajs.api.ZInputStream"], "javajs
 c$ = Clazz_declareType (javajs.api, "GenericZipInputStream", java.util.zip.ZipInputStream, javajs.api.ZInputStream);
 });
 Clazz_declarePackage ("JU");
-Clazz_load (["javajs.api.GenericZipTools"], "JU.ZipTools", ["java.io.BufferedInputStream", "$.IOException", "java.lang.Boolean", "java.util.zip.CRC32", "$.GZIPInputStream", "$.ZipEntry", "$.ZipInputStream", "javajs.api.GenericZipInputStream", "$.ZInputStream", "JU.BArray", "$.Lst", "$.PT", "$.Rdr", "$.SB"], function () {
+Clazz_load (["javajs.api.GenericZipTools"], "JU.ZipTools", ["java.io.BufferedInputStream", "$.IOException", "java.lang.Boolean", "java.util.zip.CRC32", "$.GZIPInputStream", "$.ZipEntry", "$.ZipInputStream", "javajs.api.GenericZipInputStream", "$.Interface", "$.ZInputStream", "JU.BArray", "$.Lst", "$.Rdr", "$.SB"], function () {
 c$ = Clazz_declareType (JU, "ZipTools", null, javajs.api.GenericZipTools);
 Clazz_makeConstructor (c$, 
 function () {
@@ -907,54 +907,15 @@ return (Clazz_instanceOf (is, javajs.api.ZInputStream) ? is : Clazz_instanceOf (
 }, "java.io.InputStream");
 Clazz_overrideMethod (c$, "getAllZipData", 
 function (is, subfileList, name0, binaryFileList, exclude, fileData) {
-var zis = JU.ZipTools.newZIS (is);
-var ze;
-var listing =  new JU.SB ();
-binaryFileList = "|" + binaryFileList + "|";
-var prefix = JU.PT.join (subfileList, '/', 1);
-var prefixd = null;
-if (prefix != null) {
-prefixd = prefix.substring (0, prefix.indexOf ("/") + 1);
-if (prefixd.length == 0) prefixd = null;
-}try {
-while ((ze = zis.getNextEntry ()) != null) {
-var name = ze.getName ();
-if (prefix != null && prefixd != null && !(name.equals (prefix) || name.startsWith (prefixd)) || exclude != null && name.contains (exclude)) continue;
-listing.append (name).appendC ('\n');
-var sname = "|" + name.substring (name.lastIndexOf ("/") + 1) + "|";
-var asBinaryString = (binaryFileList.indexOf (sname) >= 0);
-var bytes = JU.Rdr.getLimitedStreamBytes (zis, ze.getSize ());
-var str;
-if (asBinaryString) {
-str = this.getBinaryStringForBytes (bytes);
-name += ":asBinaryString";
-} else {
-str = JU.Rdr.fixUTF (bytes);
-}str = "BEGIN Directory Entry " + name + "\n" + str + "\nEND Directory Entry " + name + "\n";
-var key = name0 + "|" + name;
-fileData.put (key, str);
-}
-} catch (e) {
-if (Clazz_exceptionOf (e, Exception)) {
-} else {
-throw e;
-}
-}
-fileData.put ("#Directory_Listing", listing.toString ());
 }, "java.io.InputStream,~A,~S,~S,~S,java.util.Map");
-Clazz_defineMethod (c$, "getBinaryStringForBytes", 
- function (bytes) {
-var ret =  new JU.SB ();
-for (var i = 0; i < bytes.length; i++) ret.append (Integer.toHexString (bytes[i] & 0xFF)).appendC (' ');
-
-return ret.toString ();
-}, "~A");
 Clazz_overrideMethod (c$, "getZipFileDirectory", 
 function (bis, list, listPtr, asBufferedInputStream) {
 var ret;
-if (list == null || listPtr >= list.length) return this.getZipDirectoryAsStringAndClose (bis);
+var justDir = (list == null || listPtr >= list.length);
+var fileName = (justDir ? "." : list[listPtr]);
+if (JU.Rdr.isTar (bis)) return JU.ZipTools.getTarFileDirectory (bis, fileName, asBufferedInputStream);
+if (justDir) return this.getZipDirectoryAsStringAndClose (bis);
 bis = JU.Rdr.getPngZipStream (bis, true);
-var fileName = list[listPtr];
 var zis =  new java.util.zip.ZipInputStream (bis);
 var ze;
 try {
@@ -994,12 +955,35 @@ throw e;
 }
 }
 }, "java.io.BufferedInputStream,~A,~N,~B");
+c$.getTarFileDirectory = Clazz_defineMethod (c$, "getTarFileDirectory", 
+ function (bis, fileName, asBufferedInputStream) {
+var ret;
+try {
+var isAll = (fileName.equals ("."));
+if (isAll || fileName.lastIndexOf ("/") == fileName.length - 1) {
+ret =  new JU.SB ();
+JU.ZipTools.getTarContents (bis, fileName, ret);
+var str = ret.toString ();
+return (asBufferedInputStream ? JU.Rdr.getBIS (str.getBytes ()) : str);
+}fileName = fileName.$replace ('\\', '/');
+var bytes = JU.ZipTools.getTarContents (bis, fileName, null);
+bis.close ();
+return (bytes == null ? "" : asBufferedInputStream ? JU.Rdr.getBIS (bytes) : JU.Rdr.fixUTF (bytes));
+} catch (e) {
+if (Clazz_exceptionOf (e, Exception)) {
+return "";
+} else {
+throw e;
+}
+}
+}, "java.io.BufferedInputStream,~S,~B");
 Clazz_overrideMethod (c$, "getZipFileContentsAsBytes", 
 function (bis, list, listPtr) {
 var ret =  Clazz_newByteArray (0, 0);
 var fileName = list[listPtr];
 if (fileName.lastIndexOf ("/") == fileName.length - 1) return ret;
 try {
+if (JU.Rdr.isTar (bis)) return JU.ZipTools.getTarContents (bis, fileName, null);
 bis = JU.Rdr.getPngZipStream (bis, true);
 var zis =  new java.util.zip.ZipInputStream (bis);
 var ze;
@@ -1016,6 +1000,48 @@ throw e;
 }
 return ret;
 }, "java.io.BufferedInputStream,~A,~N");
+c$.getTarContents = Clazz_defineMethod (c$, "getTarContents", 
+ function (bis, fileName, sb) {
+if (JU.ZipTools.b512 == null) JU.ZipTools.b512 =  Clazz_newByteArray (512, 0);
+var len = fileName.length;
+while (bis.read (JU.ZipTools.b512, 0, 512) > 0) {
+var bytes = JU.ZipTools.getTarFile (bis, fileName, len, sb, null, false);
+if (bytes != null) return bytes;
+}
+return null;
+}, "java.io.BufferedInputStream,~S,JU.SB");
+c$.getTarFile = Clazz_defineMethod (c$, "getTarFile", 
+ function (bis, fileName, len, sb, cache, oneFile) {
+var j = 124;
+while (JU.ZipTools.b512[j] == 48) j++;
+
+var isAll = (sb != null && fileName.equals ("."));
+var nbytes = 0;
+while (j < 135) nbytes = (nbytes << 3) + (JU.ZipTools.b512[j++] - 48);
+
+if (nbytes == 0) return null;
+var fname =  String.instantialize (JU.ZipTools.b512, 0, 100).trim ();
+var prefix =  String.instantialize (JU.ZipTools.b512, 345, 155).trim ();
+var name = prefix + fname;
+var found = false;
+if (sb != null) {
+if (name.length == 0) return null;
+if (isAll || (oneFile ? name.equalsIgnoreCase (fileName) : name.startsWith (fileName))) {
+found = (cache != null);
+sb.append (name).appendC ('\n');
+}len = -1;
+}var nul = (512 - (nbytes % 512)) % 512;
+if (!found && (len != name.length || !fileName.equals (name))) {
+var nBlocks = (nbytes + nul) >> 9;
+for (var i = nBlocks; --i >= 0; ) bis.read (JU.ZipTools.b512, 0, 512);
+
+return null;
+}var bytes = JU.Rdr.getLimitedStreamBytes (bis, nbytes);
+if (cache != null) {
+cache.put (name,  new JU.BArray (bytes));
+bis.read (JU.ZipTools.b512, 0, nul);
+}return bytes;
+}, "java.io.BufferedInputStream,~S,~N,JU.SB,java.util.Map,~B");
 Clazz_overrideMethod (c$, "getZipDirectoryAsStringAndClose", 
 function (bis) {
 var sb =  new JU.SB ();
@@ -1073,6 +1099,10 @@ Clazz_overrideMethod (c$, "newGZIPInputStream",
 function (is) {
 return  new java.io.BufferedInputStream ( new java.util.zip.GZIPInputStream (is, 512));
 }, "java.io.InputStream");
+Clazz_overrideMethod (c$, "newBZip2InputStream", 
+function (is) {
+return  new java.io.BufferedInputStream ((javajs.api.Interface.getInterface ("org.apache.tools.bzip2.CBZip2InputStreamFactory")).getStream (is));
+}, "java.io.InputStream");
 Clazz_overrideMethod (c$, "getUnGzippedInputStream", 
 function (bytes) {
 try {
@@ -1107,24 +1137,27 @@ return crc.getValue ();
 }, "~A");
 Clazz_overrideMethod (c$, "readFileAsMap", 
 function (bis, bdata, name) {
+JU.ZipTools.readFileAsMapStatic (bis, bdata, name);
+}, "java.io.BufferedInputStream,java.util.Map,~S");
+c$.readFileAsMapStatic = Clazz_defineMethod (c$, "readFileAsMapStatic", 
+ function (bis, bdata, name) {
 var pt = (name == null ? -1 : name.indexOf ("|"));
 name = (pt >= 0 ? name.substring (pt + 1) : null);
-var bytes = null;
 try {
+var isZip = false;
 if (JU.Rdr.isPngZipStream (bis)) {
 var isImage = "_IMAGE_".equals (name);
-if (name == null || isImage) {
-bytes = JU.ZipTools.getPngImageBytes (bis);
-bdata.put ((isImage ? "_DATA_" : "_IMAGE_"),  new JU.BArray (bytes));
-}if (!isImage) this.cacheZipContents (bis, name, bdata, true);
+if (name == null || isImage) bdata.put ((isImage ? "_DATA_" : "_IMAGE_"),  new JU.BArray (JU.ZipTools.getPngImageBytes (bis)));
+isZip = !isImage;
 } else if (JU.Rdr.isZipS (bis)) {
-this.cacheZipContents (bis, name, bdata, true);
+isZip = true;
+} else if (JU.Rdr.isTar (bis)) {
+JU.ZipTools.cacheTarContentsStatic (bis, name, bdata);
 } else if (name == null) {
-bytes = JU.Rdr.getLimitedStreamBytes (JU.Rdr.getUnzippedInputStream (this, bis), -1);
-bdata.put ("_DATA_",  new JU.BArray (bytes));
+bdata.put ("_DATA_",  new JU.BArray (JU.Rdr.getLimitedStreamBytes (bis, -1)));
 } else {
 throw  new java.io.IOException ("ZIP file " + name + " not found");
-}if (bytes != null) bdata.put ("_LEN_", Integer.$valueOf (bytes.length));
+}if (isZip) JU.ZipTools.cacheZipContentsStatic (bis, name, bdata, true);
 bdata.put ("$_BINARY_$", Boolean.TRUE);
 } catch (e) {
 if (Clazz_exceptionOf (e, java.io.IOException)) {
@@ -1135,32 +1168,76 @@ throw e;
 }
 }
 }, "java.io.BufferedInputStream,java.util.Map,~S");
+c$.cacheTarContentsStatic = Clazz_defineMethod (c$, "cacheTarContentsStatic", 
+ function (bis, fileName, cache) {
+var listing =  new JU.SB ();
+var n = 0;
+if (fileName != null && fileName.endsWith ("/.")) fileName = fileName.substring (0, fileName.length - 1);
+var isPath = (fileName != null && fileName.endsWith ("/"));
+var justOne = (fileName != null && !isPath);
+try {
+if (JU.ZipTools.b512 == null) JU.ZipTools.b512 =  Clazz_newByteArray (512, 0);
+while (bis.read (JU.ZipTools.b512, 0, 512) > 0) {
+var bytes = JU.ZipTools.getTarFile (bis, fileName == null ? "." : fileName, -1, listing, cache, justOne);
+if (bytes != null) {
+n += bytes.length;
+if (justOne) break;
+}}
+bis.close ();
+} catch (e) {
+if (Clazz_exceptionOf (e, Exception)) {
+try {
+bis.close ();
+} catch (e1) {
+if (Clazz_exceptionOf (e1, java.io.IOException)) {
+} else {
+throw e1;
+}
+}
+return null;
+} else {
+throw e;
+}
+}
+if (n == 0 || fileName == null) return null;
+System.out.println ("ZipTools cached " + n + " bytes from " + fileName);
+return listing.toString ();
+}, "java.io.BufferedInputStream,~S,java.util.Map");
 Clazz_overrideMethod (c$, "cacheZipContents", 
 function (bis, fileName, cache, asByteArray) {
+return JU.ZipTools.cacheZipContentsStatic (bis, fileName, cache, asByteArray);
+}, "java.io.BufferedInputStream,~S,java.util.Map,~B");
+c$.cacheZipContentsStatic = Clazz_defineMethod (c$, "cacheZipContentsStatic", 
+ function (bis, fileName, cache, asByteArray) {
 var zis = JU.ZipTools.newZIS (bis);
 var ze;
 var listing =  new JU.SB ();
 var n = 0;
-var oneFile = (asByteArray && fileName != null);
+if (fileName != null && fileName.endsWith ("/.")) fileName = fileName.substring (0, fileName.length - 1);
+var isPath = (fileName != null && fileName.endsWith ("/"));
+var oneFile = (fileName != null && !isPath && asByteArray);
 var pt = (oneFile ? fileName.indexOf ("|") : -1);
-var file0 = (pt >= 0 ? fileName : null);
+var zipEntryRoot = (pt >= 0 ? fileName : null);
 if (pt >= 0) fileName = fileName.substring (0, pt);
+var prefix = (fileName == null || isPath ? "" : fileName + "|");
 try {
 while ((ze = zis.getNextEntry ()) != null) {
+if (ze.isDirectory ()) continue;
 var name = ze.getName ();
 if (fileName != null) {
 if (oneFile) {
 if (!name.equalsIgnoreCase (fileName)) continue;
 } else {
+if (isPath && !name.startsWith (fileName)) continue;
 listing.append (name).appendC ('\n');
 }}var nBytes = ze.getSize ();
 var bytes = JU.Rdr.getLimitedStreamBytes (zis, nBytes);
-if (file0 != null) {
-this.readFileAsMap (JU.Rdr.getBIS (bytes), cache, file0);
+if (zipEntryRoot != null) {
+JU.ZipTools.readFileAsMapStatic (JU.Rdr.getBIS (bytes), cache, zipEntryRoot);
 return null;
 }n += bytes.length;
 var o = (asByteArray ?  new JU.BArray (bytes) : bytes);
-cache.put ((oneFile ? "_DATA_" : (fileName == null ? "" : fileName + "|") + name), o);
+cache.put ((oneFile ? "_DATA_" : prefix + name), o);
 if (oneFile) break;
 }
 zis.close ();
@@ -1204,6 +1281,8 @@ c$.deActivatePngZipB = Clazz_defineMethod (c$, "deActivatePngZipB",
 if (JU.Rdr.isPngZipB (bytes)) bytes[51] = 32;
 return bytes;
 }, "~A");
+Clazz_defineStatics (c$,
+"b512", null);
 });
 Clazz_declarePackage ("JU");
 Clazz_declareInterface (JU, "Checksum");
@@ -1275,7 +1354,7 @@ if (this.closed) {
 throw  new java.io.IOException ("Stream closed");
 }return this.read (this.byte1, 0, 1) == -1 ? -1 : this.byte1[0] & 0xff;
 });
-Clazz_overrideMethod (c$, "read", 
+Clazz_defineMethod (c$, "read", 
 function (b, off, len) {
 return this.readInf (b, off, len);
 }, "~A,~N,~N");
@@ -3850,7 +3929,7 @@ Clazz_defineStatics (c$,
 "END", 8,
 "BADCODE", 9);
 Clazz_declarePackage ("J.io");
-Clazz_load (null, "J.io.JmolUtil", ["java.io.BufferedInputStream", "$.BufferedReader", "java.net.URL", "java.util.Hashtable", "JU.AU", "$.Lst", "$.OC", "$.PT", "$.Rdr", "J.adapter.smarter.AtomSetCollection", "J.api.Interface", "JU.Logger", "JV.FileManager"], function () {
+Clazz_load (null, "J.io.JmolUtil", ["java.io.BufferedInputStream", "$.BufferedReader", "java.net.URL", "java.util.Hashtable", "JU.AU", "$.Lst", "$.OC", "$.PT", "$.Rdr", "J.adapter.smarter.AtomSetCollection", "J.api.Interface", "JU.Logger", "JV.FileManager", "$.Viewer"], function () {
 c$ = Clazz_declareType (J.io, "JmolUtil");
 Clazz_makeConstructor (c$, 
 function () {
@@ -3867,10 +3946,10 @@ var isBMP = fullPathName.toUpperCase ().endsWith ("BMP");
 if (forceSync || fullPathName.indexOf ("|") > 0 || isBMP) {
 var ret = vwr.fm.getFileAsBytes (fullPathName, null);
 if (!JU.AU.isAB (ret)) return "" + ret;
-if (vwr.isJS) info =  Clazz_newArray (-1, [echoName, fullPathNameOrBytes, ret]);
+if (JV.Viewer.isJS) info =  Clazz_newArray (-1, [echoName, fullPathNameOrBytes, ret]);
  else image = apiPlatform.createImage (ret);
 } else if (JU.OC.urlTypeIndex (fullPathName) >= 0) {
-if (vwr.isJS) info =  Clazz_newArray (-1, [echoName, fullPathNameOrBytes, null]);
+if (JV.Viewer.isJS) info =  Clazz_newArray (-1, [echoName, fullPathNameOrBytes, null]);
  else try {
 image = apiPlatform.createImage ( new java.net.URL (Clazz_castNullAs ("java.net.URL"), fullPathName, null));
 } catch (e) {
@@ -3882,7 +3961,7 @@ throw e;
 }
 } else {
 createImage = true;
-}} else if (vwr.isJS) {
+}} else if (JV.Viewer.isJS) {
 info =  Clazz_newArray (-1, [echoName, JU.Rdr.guessMimeTypeForBytes (fullPathNameOrBytes), fullPathNameOrBytes]);
 } else {
 createImage = true;
@@ -3898,7 +3977,7 @@ var doCombine = (subFilePtr == 1);
 htParams.put ("zipSet", fileName);
 var subFileList = htParams.get ("subFileList");
 if (subFileList == null) subFileList = this.getSpartanSubfiles (zipDirectory);
-var subFileName = (subFileList == null || subFilePtr >= subFileList.length ? null : subFileList[subFilePtr]);
+var subFileName = (subFileList == null || subFilePtr >= subFileList.length ? htParams.get ("SubFileName") : subFileList[subFilePtr]);
 if (subFileName != null && (subFileName.startsWith ("/") || subFileName.startsWith ("\\"))) subFileName = subFileName.substring (1);
 var selectedFile = 0;
 if (subFileName == null && htParams.containsKey ("modelNumber")) {
@@ -3916,12 +3995,13 @@ var exceptFiles = (manifest.indexOf ("EXCEPT_FILES") >= 0);
 if (selectAll || subFileName != null) haveManifest = false;
 if (useFileManifest && haveManifest) {
 var path = JV.FileManager.getManifestScriptPath (manifest);
-if (path != null) return "NOTE: file recognized as a script file: " + fileName + path + "\n";
-}var vCollections =  new JU.Lst ();
+if (path != null) {
+return "NOTE: file recognized as a script file: " + fileName + path + "\n";
+}}var vCollections =  new JU.Lst ();
 var htCollections = (haveManifest ?  new java.util.Hashtable () : null);
 var nFiles = 0;
 try {
-var spartanData = (this.isSpartanZip (zipDirectory) ? vwr.fm.getJmb ().getSpartanData (is, zipDirectory) : null);
+var spartanData = (this.isSpartanZip (zipDirectory) ? vwr.fm.spartanUtil ().getData (is, zipDirectory) : null);
 var zpt = vwr.getJzt ();
 var ret;
 if (spartanData != null) {
@@ -3975,7 +4055,7 @@ return bis;
 var sData;
 if (JU.Rdr.isCompoundDocumentB (bytes)) {
 var jd = J.api.Interface.getInterface ("JU.CompoundDocument", vwr, "file");
-jd.setStream (zpt, JU.Rdr.getBIS (bytes), true);
+jd.setDocStream (zpt, JU.Rdr.getBIS (bytes));
 sData = jd.getAllDataFiles ("Molecule", "Input").toString ();
 } else {
 sData = JU.Rdr.fixUTF (bytes);

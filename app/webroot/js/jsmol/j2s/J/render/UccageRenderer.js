@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.render");
-Clazz.load (["J.render.CageRenderer", "JU.P3"], "J.render.UccageRenderer", ["JU.DF", "$.PT", "JU.BoxInfo", "$.C", "$.SimpleUnitCell"], function () {
+Clazz.load (["J.render.CageRenderer", "JU.P3"], "J.render.UccageRenderer", ["JU.DF", "$.PT", "$.T4", "JU.BoxInfo", "$.C", "$.SimpleUnitCell"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.verticesT = null;
 this.fset0 = null;
@@ -52,11 +52,13 @@ this.offset.setT (this.unitcell.getCartesianOffset ());
 this.offsetT.setT (this.unitcell.getFractionalOrigin ());
 this.unitcell.toCartesian (this.offsetT, true);
 this.offset.sub (this.offsetT);
+var hiddenLines = this.vwr.getBoolean (603979856);
 var fset = this.unitcell.getUnitCellMultiplier ();
 var haveMultiple = (fset != null && fset.distanceSquared (this.fset0) != 0);
 if (!haveMultiple) fset = this.fset0;
-JU.SimpleUnitCell.ijkToPoint3f (Clazz.floatToInt (fset.x), this.cell0, 0);
-JU.SimpleUnitCell.ijkToPoint3f (Clazz.floatToInt (fset.y), this.cell1, 1);
+var t3w = (Clazz.instanceOf (fset, JU.T4) ? Clazz.floatToInt ((fset).w) : 0);
+JU.SimpleUnitCell.ijkToPoint3f (Clazz.floatToInt (fset.x), this.cell0, 0, t3w);
+JU.SimpleUnitCell.ijkToPoint3f (Clazz.floatToInt (fset.y), this.cell1, 1, t3w);
 var firstLine;
 var allow0;
 var allow1;
@@ -67,8 +69,9 @@ this.cell1.scale (-1 / fset.z);
 var axes = this.vwr.shm.getShape (34);
 if (axes != null && this.vwr.areAxesTainted ()) axes.reinitShape ();
 var axisPoints = (axes == null || this.vwr.getObjectMad10 (1) == 0 || axes.axisXY.z != 0 || axes.fixedOrigin != null || axes.fixedOriginUC.lengthSquared () > 0 ? null : axes.axisPoints);
-var drawAllLines = (this.vwr.getObjectMad10 (1) == 0 || this.vwr.getFloat (570425346) < 2 || axisPoints == null);
+var drawAllLines = (this.isExport || this.vwr.getObjectMad10 (1) == 0 || this.vwr.getFloat (570425346) < 2 || axisPoints == null);
 var aPoints = axisPoints;
+var faces = (hiddenLines ? JU.BoxInfo.facePoints : null);
 if (fset.z == 0) {
 this.offsetT.setT (this.cell0);
 this.unitcell.toCartesian (this.offsetT, true);
@@ -83,7 +86,7 @@ var v = JU.P3.new3 (pts[i].x * (this.cell1.x - this.cell0.x), pts[i].y * (this.c
 this.unitcell.toCartesian (v, true);
 this.verticesT[i].add2 (v, this.offsetT);
 }
-this.renderCage (mad10, this.verticesT, aPoints, firstLine, allow0, allow1, 1);
+this.renderCage (mad10, this.verticesT, faces, aPoints, firstLine, allow0, allow1, 1);
 } else for (var x = Clazz.floatToInt (this.cell0.x); x < this.cell1.x; x++) {
 for (var y = Clazz.floatToInt (this.cell0.y); y < this.cell1.y; y++) {
 for (var z = Clazz.floatToInt (this.cell0.z); z < this.cell1.z; z++) {
@@ -101,7 +104,7 @@ firstLine = (drawAllLines ? 0 : 3);
 allow1 = 0xFF;
 for (var i = 8; --i >= 0; ) this.verticesT[i].add2 (vertices[i], this.offsetT);
 
-this.renderCage (mad10, this.verticesT, aPoints, firstLine, allow0, allow1, scale);
+this.renderCage (mad10, this.verticesT, faces, aPoints, firstLine, allow0, allow1, scale);
 }
 }
 }
@@ -111,7 +114,7 @@ Clazz.defineMethod (c$, "renderInfo",
  function () {
 if (this.isExport || !this.vwr.getBoolean (603979828) || this.unitcell.isSimple () || this.vwr.isPreviewOnly || !this.vwr.gdata.setC (this.vwr.cm.colixBackgroundContrast) || this.vwr.gdata.getTextPosition () != 0) return;
 this.vwr.gdata.setFontFid (this.vwr.gdata.getFontFidFS ("Monospaced", 14 * this.imageFontScaling));
-this.xpos = Clazz.doubleToInt (Math.floor (5 * this.imageFontScaling));
+this.xpos = Clazz.doubleToInt (Math.floor (10 * this.imageFontScaling));
 this.ypos = this.lineheight = Clazz.doubleToInt (Math.floor (15 * this.imageFontScaling));
 var sgName = (this.isPolymer ? "polymer" : this.isSlab ? "slab" : this.unitcell.getSpaceGroupName ());
 if (sgName != null) {

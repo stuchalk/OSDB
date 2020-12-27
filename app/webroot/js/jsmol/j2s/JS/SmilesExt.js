@@ -91,9 +91,12 @@ throw ex;
 }var b;
 if (bsMatch3D == null) {
 var isSmarts = ((flags & 2) == 2);
+var isOK = true;
 try {
 if (smiles == null) {
-b = this.sm.getSubstructureSetArray (pattern, this.e.vwr.ms.at, this.e.vwr.ms.ac, bsSelected, null, flags);
+b = this.e.vwr.getSubstructureSetArray (pattern, bsSelected, flags);
+} else if (pattern.equals ("chirality")) {
+return this.e.vwr.calculateChiralityForSmiles (smiles);
 } else {
 var map = this.sm.find (pattern, smiles, (isSmarts ? 2 : 1) | (firstMatchOnly ? 8 : 0));
 if (!asOneBitset) return (!firstMatchOnly ? map : map.length == 0 ?  Clazz.newIntArray (0, 0) : map[0]);

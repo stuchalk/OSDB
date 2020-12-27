@@ -38,9 +38,9 @@ this.setUnitCell ();
 });
 Clazz.defineMethod (c$, "setUnitCell", 
  function () {
-this.addPrimitiveLatticeVector (0, this.unitCellData, 0);
-this.addPrimitiveLatticeVector (1, this.unitCellData, 3);
-this.addPrimitiveLatticeVector (2, this.unitCellData, 6);
+this.addExplicitLatticeVector (0, this.unitCellData, 0);
+this.addExplicitLatticeVector (1, this.unitCellData, 3);
+this.addExplicitLatticeVector (2, this.unitCellData, 6);
 });
 Clazz.defineMethod (c$, "setSymmetry", 
  function () {

@@ -1,10 +1,10 @@
 Clazz.declarePackage ("JU");
-Clazz.load (["java.lang.Enum"], "JU.Edge", null, function () {
+Clazz.load (["java.lang.Enum", "JU.SimpleEdge"], "JU.Edge", null, function () {
 c$ = Clazz.decorateAsClass (function () {
 this.index = -1;
 this.order = 0;
 Clazz.instantialize (this, arguments);
-}, JU, "Edge");
+}, JU, "Edge", null, JU.SimpleEdge);
 c$.getArgbHbondType = Clazz.defineMethod (c$, "getArgbHbondType", 
 function (order) {
 var argbIndex = ((order & 30720) >> 11);
@@ -73,7 +73,7 @@ return (order >> (11)) & 0xF;
 c$.getAtropismNode = Clazz.defineMethod (c$, "getAtropismNode", 
 function (order, a1, isFirst) {
 var i1 = (order >> (11 + (isFirst ? 2 : 0))) & 3;
-return a1.getEdges ()[i1 - 1].getOtherAtomNode (a1);
+return a1.getEdges ()[i1 - 1].getOtherNode (a1);
 }, "~N,JU.Node,~B");
 c$.isAtropism = Clazz.defineMethod (c$, "isAtropism", 
 function (order) {
@@ -138,6 +138,13 @@ throw e;
 }
 return order;
 }, "~S");
+Clazz.defineMethod (c$, "setCIPChirality", 
+function (c) {
+}, "~N");
+Clazz.defineMethod (c$, "getCIPChirality", 
+function (doCalculate) {
+return "";
+}, "~B");
 Clazz.pu$h(self.c$);
 c$ = Clazz.decorateAsClass (function () {
 this.code = 0;
@@ -173,17 +180,19 @@ Clazz.defineEnumConstant (c$, "SINGLE", 0, [1, "1", "single"]);
 Clazz.defineEnumConstant (c$, "DOUBLE", 1, [2, "2", "double"]);
 Clazz.defineEnumConstant (c$, "TRIPLE", 2, [3, "3", "triple"]);
 Clazz.defineEnumConstant (c$, "QUADRUPLE", 3, [4, "4", "quadruple"]);
-Clazz.defineEnumConstant (c$, "AROMATIC", 4, [515, "1.5", "aromatic"]);
-Clazz.defineEnumConstant (c$, "STRUT", 5, [32768, "1", "struts"]);
-Clazz.defineEnumConstant (c$, "H_REGULAR", 6, [2048, "1", "hbond"]);
-Clazz.defineEnumConstant (c$, "PARTIAL01", 7, [33, "0.5", "partial"]);
-Clazz.defineEnumConstant (c$, "PARTIAL12", 8, [66, "1.5", "partialDouble"]);
-Clazz.defineEnumConstant (c$, "PARTIAL23", 9, [97, "2.5", "partialTriple"]);
-Clazz.defineEnumConstant (c$, "PARTIAL32", 10, [100, "2.5", "partialTriple2"]);
-Clazz.defineEnumConstant (c$, "AROMATIC_SINGLE", 11, [513, "1", "aromaticSingle"]);
-Clazz.defineEnumConstant (c$, "AROMATIC_DOUBLE", 12, [514, "2", "aromaticDouble"]);
-Clazz.defineEnumConstant (c$, "ATROPISOMER", 13, [65537, "1", "atropisomer"]);
-Clazz.defineEnumConstant (c$, "UNSPECIFIED", 14, [17, "1", "unspecified"]);
+Clazz.defineEnumConstant (c$, "QUINTUPLE", 4, [5, "5", "quintuple"]);
+Clazz.defineEnumConstant (c$, "sextuple", 5, [6, "6", "sextuple"]);
+Clazz.defineEnumConstant (c$, "AROMATIC", 6, [515, "1.5", "aromatic"]);
+Clazz.defineEnumConstant (c$, "STRUT", 7, [32768, "1", "struts"]);
+Clazz.defineEnumConstant (c$, "H_REGULAR", 8, [2048, "1", "hbond"]);
+Clazz.defineEnumConstant (c$, "PARTIAL01", 9, [33, "0.5", "partial"]);
+Clazz.defineEnumConstant (c$, "PARTIAL12", 10, [66, "1.5", "partialDouble"]);
+Clazz.defineEnumConstant (c$, "PARTIAL23", 11, [97, "2.5", "partialTriple"]);
+Clazz.defineEnumConstant (c$, "PARTIAL32", 12, [100, "2.5", "partialTriple2"]);
+Clazz.defineEnumConstant (c$, "AROMATIC_SINGLE", 13, [513, "1", "aromaticSingle"]);
+Clazz.defineEnumConstant (c$, "AROMATIC_DOUBLE", 14, [514, "2", "aromaticDouble"]);
+Clazz.defineEnumConstant (c$, "ATROPISOMER", 15, [65537, "1", "atropisomer"]);
+Clazz.defineEnumConstant (c$, "UNSPECIFIED", 16, [17, "1", "unspecified"]);
 c$ = Clazz.p0p ();
 Clazz.defineStatics (c$,
 "BOND_RENDER_SINGLE", 0x10000,
@@ -208,6 +217,8 @@ Clazz.defineStatics (c$,
 "BOND_COVALENT_DOUBLE", 2,
 "BOND_COVALENT_TRIPLE", 3,
 "BOND_COVALENT_QUADRUPLE", 4,
+"BOND_COVALENT_QUINTUPLE", 5,
+"BOND_COVALENT_sextuple", 6,
 "BOND_ORDER_UNSPECIFIED", 0x11,
 "BOND_ORDER_ANY", 0x0FFFF,
 "BOND_ORDER_NULL", 0x1FFFF,

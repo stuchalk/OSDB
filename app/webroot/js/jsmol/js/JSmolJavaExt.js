@@ -7,6 +7,11 @@
 // (local scope) Clazz_xxx, allowing them to be further compressed using
 // Google Closure Compiler in that same ANT task.
 
+// BH 10/16/2017 6:51:20 AM fixing range error for MSIE in prepareCallback setting arguments.length < 0
+// BH 10/13/2017 7:03:28 AM fix for String.initialize(bytes) applying bytes as arguments
+// BH 9/18/2017 10:15:18 PM adding Integer.compare()
+// BH 4/7/2017 10:48:50 AM adds Math.signum(f)
+// BH 10/15/2016 9:28:13 AM adds Float.floatToIntBits(f)
 // BH 3/9/2016 6:25:08 PM at least allow Error() by itself to work as before (inchi.js uses this)
 // BH 12/21/2015 1:31:41 PM fixing String.instantialize for generic typed array
 // BH 9/19/2015 11:05:45 PM Float.isInfinite(), Float.isNaN(), Double.isInfinite(), Double.isNaN() all not implemented
@@ -79,6 +84,8 @@
 Math.rint = Math.round;
 
 Math.log10||(Math.log10=function(a){return Math.log(a)/2.302585092994046});
+
+Math.signum||(Math.signum=function(d){return(d==0.0||isNaN(d))?d:d < 0 ? -1 : 1});
 
 if(Clazz._supportsNativeObject){
 	// Number and Array are special -- do not override prototype.toString -- "length - 2" here
@@ -176,6 +183,11 @@ Integer.MIN_VALUE=Integer.prototype.MIN_VALUE=-0x80000000;
 Integer.MAX_VALUE=Integer.prototype.MAX_VALUE=0x7fffffff;
 Integer.TYPE=Integer.prototype.TYPE=Integer;
 
+
+Integer.compare = Clazz.defineMethod(Integer,"compare",
+function(i,j) {
+  return (i < j ? -1 : i > j ? 1 : 0);
+},"Number,Number");
 
 Clazz.defineMethod(Integer,"bitCount",
 function(i) {
@@ -562,6 +574,14 @@ return"class java.lang.Float";
 return Clazz._floatToString(this.valueOf());
 };
 
+Clazz._a32 = null;
+
+Float.floatToIntBits = function(f) {
+var a = Clazz._a32 || (Clazz._a32 = new Float32Array(1));
+a[0] = f;
+return new Int32Array(a.buffer)[0]; 
+}
+
 Clazz.overrideConstructor(Float, function(v){
  v == null && (v = 0);
  if (typeof v != "number") 
@@ -570,8 +590,8 @@ Clazz.overrideConstructor(Float, function(v){
 });
 
 Float.serialVersionUID=Float.prototype.serialVersionUID=-2671257302660747028;
-Float.MIN_VALUE=Float.prototype.MIN_VALUE=3.4028235e+38;
-Float.MAX_VALUE=Float.prototype.MAX_VALUE=1.4e-45;
+Float.MIN_VALUE=Float.prototype.MIN_VALUE=1.4e-45;
+Float.MAX_VALUE=Float.prototype.MAX_VALUE=3.4028235e+38;
 Float.NEGATIVE_INFINITY=Number.NEGATIVE_INFINITY;
 Float.POSITIVE_INFINITY=Number.POSITIVE_INFINITY;
 Float.NaN=Number.NaN;
@@ -801,8 +821,19 @@ return Encoding.ASCII;
 }
 };
 
+Encoding.guessEncodingArray=function(a){
+if(a[0]==0xEF&&a[1]==0xBB&&a[2]==0xBF){
+return Encoding.UTF8;
+}else if(a[0]==0xFF&&a[1]==0xFE){
+return Encoding.UTF16;
+}else{
+return Encoding.ASCII;
+}
+};
+
 Encoding.readUTF8=function(str){
-var encoding=this.guessEncoding(str);
+if (typeof str != "string") return Encoding.readUTF8Array(str);
+var encoding=Encoding.guessEncoding(str);
 var startIdx=0;
 if(encoding==Encoding.UTF8){
 startIdx=3;
@@ -826,6 +857,35 @@ i++;
 var c2=str.charCodeAt(i)&0x3f;
 i++;
 var c3=str.charCodeAt(i)&0x3f;
+var c=(c1<<12)+(c2<<6)+c3;
+arrs[arrs.length]=String.fromCharCode(c);
+}
+}
+return arrs.join('');
+};
+
+Encoding.readUTF8Array=function(a){
+var encoding=Encoding.guessEncodingArray(a);
+var startIdx=0;
+if(encoding==Encoding.UTF8){
+startIdx=3;
+}else if(encoding==Encoding.UTF16){
+startIdx=2;
+}
+var arrs=new Array();
+for(var i=startIdx;i<a.length;i++){
+var charCode=a[i];
+if(charCode<0x80){
+arrs[arrs.length]=String.fromCharCode(charCode);
+}else if(charCode>0xc0&&charCode<0xe0){
+var c1=charCode&0x1f;
+var c2=a[++i]&0x3f;
+var c=(c1<<6)+c2;
+arrs[arrs.length]=String.fromCharCode(c);
+}else if(charCode>=0xe0){
+var c1=charCode&0x0f;
+var c2=a[++i]&0x3f;
+var c3=a[++i]&0x3f;
 var c=(c1<<12)+(c2<<6)+c3;
 arrs[arrs.length]=String.fromCharCode(c);
 }
@@ -1209,7 +1269,7 @@ arrs[ii]=c;
 }
 ii++;
 }
-return arrs;
+return Clazz.newByteArray(arrs);
 };
 
 /*
@@ -1368,7 +1428,7 @@ case 0:
 case 1:
 	var x=arguments[0];
   if (x.BYTES_PER_ELEMENT || x instanceof Array){
-		return (x.length == 0 ? "" : typeof x[0]=="number" ? Encoding.readUTF8(String.fromCharCode.apply(null, x)) : x.join(''));
+		return (x.length == 0 ? "" : typeof x[0]=="number" ? Encoding.readUTF8Array(x) : x.join(''));
   }
 	if(typeof x=="string"||x instanceof String){
 		return new String(x);
@@ -1425,15 +1485,8 @@ case 4:
 		var arr=new Array(length);
 		for(var i=0;i<length;i++){
 			arr[i]=bytes[offset+i];
-			if(typeof arr[i]=="number"){
-				arr[i]=String.fromCharCode(arr[i]&0xff);
-			}
 		}
-		var cs=y.toLowerCase();
-		if(cs=="utf-8"||cs=="utf8"){
-			return Encoding.readUTF8(arr.join(''));
-		}
-		return arr.join('');
+		return Encoding.readUTF8Array(arr);
 	}
 	var count=arguments[3];
 	var offset=arguments[2];

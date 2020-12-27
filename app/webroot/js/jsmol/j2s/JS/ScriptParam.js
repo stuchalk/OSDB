@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JS");
-Clazz.load (["JS.ScriptError"], "JS.ScriptParam", ["java.lang.Float", "java.util.Hashtable", "JU.BS", "$.CU", "$.Lst", "$.Measure", "$.P3", "$.P4", "$.PT", "$.Quat", "$.SB", "$.V3", "JM.TickInfo", "JS.SV", "$.T", "JU.BSUtil", "$.Edge", "$.Escape", "$.Logger"], function () {
+Clazz.load (["JS.ScriptError"], "JS.ScriptParam", ["java.lang.Float", "java.util.Hashtable", "JU.BS", "$.CU", "$.Lst", "$.Measure", "$.P3", "$.P4", "$.PT", "$.Quat", "$.SB", "$.V3", "JM.TickInfo", "JS.SV", "$.T", "JU.BSUtil", "$.Edge", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.contextVariables = null;
 this.thisContext = null;
@@ -11,6 +11,9 @@ this.slen = 0;
 this.fractionalPoint = null;
 this.coordinatesAreFractional = false;
 this.isBondSet = false;
+this.pt1 = null;
+this.pt2 = null;
+this.pt3 = null;
 Clazz.instantialize (this, arguments);
 }, JS, "ScriptParam", JS.ScriptError);
 Clazz.defineMethod (c$, "getToken", 
@@ -143,7 +146,7 @@ bs.and (ret[1]);
 }return (bs.cardinality () == 1 ? this.vwr.ms.at[bs.nextSetBit (0)] : this.vwr.ms.getAtomSetCenter (bs));
 case 1073742332:
 case 8:
-return this.getPoint3f (i, true);
+return this.getPoint3f (i, true, true);
 }
 this.invArg ();
 return null;
@@ -190,10 +193,12 @@ function (i) {
 var vTemp =  new JU.V3 ();
 var vTemp2 =  new JU.V3 ();
 var plane = null;
+var norm = null;
 if (this.tokAt (i) == 134217750) i++;
 var isNegated = (this.tokAt (i) == 268435616);
 if (isNegated) i++;
-if (i < this.slen) switch (this.getToken (i).tok) {
+if (i < this.slen) {
+switch (this.getToken (i).tok) {
 case 9:
 plane = JU.P4.newPt (this.theToken.value);
 break;
@@ -228,35 +233,61 @@ plane = this.getPoint4f (i);
 break;
 }case 10:
 case 1073742325:
-var pt1 = this.atomCenterOrCoordinateParameter (i, null);
+this.pt1 = this.atomCenterOrCoordinateParameter (i, null);
 if (this.getToken (++this.iToken).tok == 268435504) ++this.iToken;
-var pt2 = this.atomCenterOrCoordinateParameter (this.iToken, null);
+this.pt2 = this.atomCenterOrCoordinateParameter (this.iToken, null);
 if (this.getToken (++this.iToken).tok == 268435504) ++this.iToken;
 if (this.isFloatParameter (this.iToken)) {
 var frac = this.floatParameter (this.iToken);
 plane =  new JU.P4 ();
-vTemp.sub2 (pt2, pt1);
+vTemp.sub2 (this.pt2, this.pt1);
 vTemp.scale (frac * 2);
-JU.Measure.getBisectingPlane (pt1, vTemp, vTemp2, vTemp, plane);
+JU.Measure.getBisectingPlane (this.pt1, vTemp, vTemp2, vTemp, plane);
 } else {
-var pt3 = this.atomCenterOrCoordinateParameter (this.iToken, null);
+this.pt3 = this.atomCenterOrCoordinateParameter (this.iToken, null);
 i = this.iToken;
-var norm =  new JU.V3 ();
-var w = JU.Measure.getNormalThroughPoints (pt1, pt2, pt3, norm, vTemp);
+norm =  new JU.V3 ();
+}break;
+default:
+if (this.isArrayParameter (i)) {
+var list = this.getPointOrCenterVector (this.getToken (i));
+if (list.size () != 3) this.invArg ();
+this.pt1 = list.get (0);
+this.pt2 = list.get (1);
+this.pt3 = list.get (2);
+norm =  new JU.V3 ();
+}}
+if (norm != null) {
+var w = JU.Measure.getNormalThroughPoints (this.pt1, this.pt2, this.pt3, norm, vTemp);
 plane =  new JU.P4 ();
 plane.set4 (norm.x, norm.y, norm.z, w);
 }if (!this.chk && JU.Logger.debugging) JU.Logger.debug (" defined plane: " + plane);
-break;
-}
-if (plane == null) this.errorMore (38, "{a b c d}", "\"xy\" \"xz\" \"yz\" \"x=...\" \"y=...\" \"z=...\"", "$xxxxx");
+}if (plane == null) this.errorMore (38, "{a b c d}", "\"xy\" \"xz\" \"yz\" \"x=...\" \"y=...\" \"z=...\"", "$xxxxx");
 if (isNegated) {
 plane.scale4 (-1);
 }return plane;
 }, "~N");
+Clazz.defineMethod (c$, "getPointOrCenterVector", 
+function (t) {
+var data =  new JU.Lst ();
+var pt;
+var bs;
+var pts = (t).getList ();
+if (pts == null) this.invArg ();
+for (var j = 0; j < pts.size (); j++) {
+if ((pt = JS.SV.ptValue (pts.get (j))) != null) {
+data.addLast (pt);
+} else if ((bs = JS.SV.getBitSet (pts.get (j), true)) != null) {
+data.addLast (bs.cardinality () == 1 ? JU.P3.newP (this.vwr.ms.at[bs.nextSetBit (0)]) : this.vwr.ms.getAtomSetCenter (bs));
+} else {
+this.invArg ();
+}}
+return data;
+}, "JS.T");
 Clazz.defineMethod (c$, "hklParameter", 
 function (i) {
 if (!this.chk && this.vwr.getCurrentUnitCell () == null) this.error (33);
-var pt = this.getPointOrPlane (i, false, true, false, true, 3, 3);
+var pt = this.getPointOrPlane (i, false, true, false, true, 3, 3, true);
 var p = this.getHklPlane (pt);
 if (p == null) this.error (3);
 if (!this.chk && JU.Logger.debugging) JU.Logger.debug ("defined plane: " + p);
@@ -264,44 +295,50 @@ return p;
 }, "~N");
 Clazz.defineMethod (c$, "getHklPlane", 
 function (pt) {
-var pt1 = JU.P3.new3 (pt.x == 0 ? 1 : 1 / pt.x, 0, 0);
-var pt2 = JU.P3.new3 (0, pt.y == 0 ? 1 : 1 / pt.y, 0);
-var pt3 = JU.P3.new3 (0, 0, pt.z == 0 ? 1 : 1 / pt.z);
+this.pt1 = JU.P3.new3 (pt.x == 0 ? 1 : 1 / pt.x, 0, 0);
+this.pt2 = JU.P3.new3 (0, pt.y == 0 ? 1 : 1 / pt.y, 0);
+this.pt3 = JU.P3.new3 (0, 0, pt.z == 0 ? 1 : 1 / pt.z);
 if (pt.x == 0 && pt.y == 0 && pt.z == 0) {
 return null;
 } else if (pt.x == 0 && pt.y == 0) {
-pt1.set (1, 0, pt3.z);
-pt2.set (0, 1, pt3.z);
+this.pt1.set (1, 0, this.pt3.z);
+this.pt2.set (0, 1, this.pt3.z);
 } else if (pt.y == 0 && pt.z == 0) {
-pt2.set (pt1.x, 0, 1);
-pt3.set (pt1.x, 1, 0);
+this.pt2.set (this.pt1.x, 0, 1);
+this.pt3.set (this.pt1.x, 1, 0);
 } else if (pt.z == 0 && pt.x == 0) {
-pt3.set (0, pt2.y, 1);
-pt1.set (1, pt2.y, 0);
+this.pt3.set (0, this.pt2.y, 1);
+this.pt1.set (1, this.pt2.y, 0);
 } else if (pt.x == 0) {
-pt1.set (1, pt2.y, 0);
+this.pt1.set (1, this.pt2.y, 0);
 } else if (pt.y == 0) {
-pt2.set (0, 1, pt3.z);
+this.pt2.set (0, 1, this.pt3.z);
 } else if (pt.z == 0) {
-pt3.set (pt1.x, 0, 1);
-}this.vwr.toCartesian (pt1, false);
-this.vwr.toCartesian (pt2, false);
-this.vwr.toCartesian (pt3, false);
-return JU.Measure.getPlaneThroughPoints (pt1, pt2, pt3,  new JU.V3 (),  new JU.V3 (),  new JU.P4 ());
+this.pt3.set (this.pt1.x, 0, 1);
+}this.vwr.toCartesian (this.pt1, false);
+this.vwr.toCartesian (this.pt2, false);
+this.vwr.toCartesian (this.pt3, false);
+return JU.Measure.getPlaneThroughPoints (this.pt1, this.pt2, this.pt3,  new JU.V3 (),  new JU.V3 (),  new JU.P4 ());
 }, "JU.P3");
 Clazz.defineMethod (c$, "getPointOrPlane", 
-function (index, integerOnly, allowFractional, doConvert, implicitFractional, minDim, maxDim) {
+function (index, integerOnly, allowFractional, doConvert, implicitFractional, minDim, maxDim, throwE) {
 var coord =  Clazz.newFloatArray (6, 0);
+var code555 =  Clazz.newIntArray (6, 0);
+var useCell555P4 = false;
 var n = 0;
+var isOK = true;
+try {
 this.coordinatesAreFractional = implicitFractional;
 if (this.tokAt (index) == 8) {
 if (minDim <= 3 && maxDim >= 3) return this.getToken (index).value;
-this.invArg ();
+isOK = false;
+return null;
 }if (this.tokAt (index) == 9) {
 if (minDim <= 4 && maxDim >= 4) return this.getToken (index).value;
-this.invArg ();
+isOK = false;
+return null;
 }var multiplier = 1;
-out : for (var i = index; i < this.st.length; i++) {
+out : for (var i = index; i < this.slen; i++) {
 switch (this.getToken (i).tok) {
 case 1073742332:
 case 268435504:
@@ -314,23 +351,31 @@ case 268435616:
 multiplier = -1;
 break;
 case 1073742363:
-if (n == 6) this.invArg ();
-coord[n++] = this.theToken.intValue;
+if (n == 6) {
+isOK = false;
+return null;
+}coord[n++] = this.theToken.intValue;
 multiplier = -1;
 break;
 case 2:
 case 1073742362:
 if (n == 6) this.invArg ();
+if (implicitFractional && this.theToken.intValue > 999999999) useCell555P4 = true;
+code555[n] = this.theToken.intValue;
 coord[n++] = this.theToken.intValue * multiplier;
 multiplier = 1;
 break;
 case 268435632:
 case 1073742358:
-if (!allowFractional) this.invArg ();
-if (this.theTok == 268435632) this.getToken (++i);
+if (!allowFractional) {
+isOK = false;
+return null;
+}if (this.theTok == 268435632) this.getToken (++i);
 n--;
-if (n < 0 || integerOnly) this.invArg ();
-if (Clazz.instanceOf (this.theToken.value, Integer) || this.theTok == 2) {
+if (n < 0 || integerOnly) {
+isOK = false;
+return null;
+}if (Clazz.instanceOf (this.theToken.value, Integer) || this.theTok == 2) {
 coord[n++] /= (this.theToken.intValue == 2147483647 ? (this.theToken.value).intValue () : this.theToken.intValue);
 } else if (Clazz.instanceOf (this.theToken.value, Float)) {
 coord[n++] /= (this.theToken.value).floatValue ();
@@ -342,36 +387,52 @@ coord[n++] = NaN;
 break;
 case 3:
 case 1073742359:
-if (integerOnly) this.invArg ();
-if (n == 6) this.invArg ();
-coord[n++] = (this.theToken.value).floatValue ();
+if (integerOnly) {
+isOK = false;
+return null;
+}if (n == 6) {
+isOK = false;
+return null;
+}coord[n++] = (this.theToken.value).floatValue ();
 break;
 default:
-this.invArg ();
+isOK = false;
+return null;
 }
 }
-if (n < minDim || n > maxDim) this.invArg ();
-if (n == 3) {
-var pt = JU.P3.new3 (coord[0], coord[1], coord[2]);
+if (n < minDim || n > maxDim) {
+isOK = false;
+return null;
+}if (n == 3) {
+if (useCell555P4) {
+return JU.P4.new4 (coord[0], coord[1], coord[2], (code555[0] % 1000) * 1000 + (code555[1] % 1000) + 1000000);
+}var pt = JU.P3.new3 (coord[0], coord[1], coord[2]);
 if (this.coordinatesAreFractional && doConvert) {
 this.fractionalPoint = JU.P3.newP (pt);
 if (!this.chk) this.vwr.toCartesian (pt, false);
 }return pt;
 }if (n == 4) {
-if (this.coordinatesAreFractional) this.invArg ();
-var plane = JU.P4.new4 (coord[0], coord[1], coord[2], coord[3]);
+if (this.coordinatesAreFractional) {
+isOK = false;
+return null;
+}var plane = JU.P4.new4 (coord[0], coord[1], coord[2], coord[3]);
 return plane;
 }return coord;
-}, "~N,~B,~B,~B,~B,~N,~N");
+} finally {
+if (!isOK && throwE) this.invArg ();
+}
+}, "~N,~B,~B,~B,~B,~N,~N,~B");
 Clazz.defineMethod (c$, "isPoint3f", 
 function (i) {
+var itok = this.tokAt (i);
+if (itok == 0) return false;
 var isOK;
-if ((isOK = (this.tokAt (i) == 8)) || this.tokAt (i) == 9 || this.isFloatParameter (i + 1) && this.isFloatParameter (i + 2) && this.isFloatParameter (i + 3) && this.isFloatParameter (i + 4)) return isOK;
+if ((isOK = (itok == 8)) || itok == 9 || this.isFloatParameter (i + 1) && this.isFloatParameter (i + 2) && this.isFloatParameter (i + 3) && this.isFloatParameter (i + 4)) return isOK;
 this.ignoreError = true;
 var t = this.iToken;
 isOK = true;
 try {
-this.getPoint3f (i, true);
+if (this.getPoint3f (i, true, false) == null) isOK = false;
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 isOK = false;
@@ -384,12 +445,12 @@ this.iToken = t;
 return isOK;
 }, "~N");
 Clazz.defineMethod (c$, "getPoint3f", 
-function (i, allowFractional) {
-return this.getPointOrPlane (i, false, allowFractional, true, false, 3, 3);
-}, "~N,~B");
+function (i, allowFractional, throwE) {
+return this.getPointOrPlane (i, false, allowFractional, true, false, 3, 3, throwE);
+}, "~N,~B,~B");
 Clazz.defineMethod (c$, "getPoint4f", 
 function (i) {
-return this.getPointOrPlane (i, false, false, false, false, 4, 4);
+return this.getPointOrPlane (i, false, false, false, false, 4, 4, true);
 }, "~N");
 Clazz.defineMethod (c$, "xypParameter", 
 function (index) {
@@ -430,8 +491,7 @@ return pt;
 }, "~N");
 Clazz.defineMethod (c$, "optParameterAsString", 
 function (i) {
-if (i >= this.slen) return "";
-return this.paramAsStr (i);
+return (i >= this.slen ? "" : this.paramAsStr (i));
 }, "~N");
 Clazz.defineMethod (c$, "intParameter", 
 function (index) {
@@ -513,6 +573,10 @@ return points;
 }, "~N,~N,~B");
 Clazz.defineMethod (c$, "listParameter", 
 function (i, nMin, nMax) {
+return this.listParameter4 (i, nMin, nMax, false);
+}, "~N,~N,~N");
+Clazz.defineMethod (c$, "listParameter4", 
+function (i, nMin, nMax, allowString) {
 var v =  new JU.Lst ();
 var tok = this.tokAt (i);
 if (tok == 1073742195) tok = this.tokAt (++i);
@@ -525,9 +589,12 @@ tok = this.tokAt (i);
 if (haveBrace && tok == 1073742338 || haveSquare && tok == 268435521) break;
 switch (tok) {
 case 268435504:
+case 268435616:
 case 1073742332:
 case 1073742338:
+break;
 case 4:
+if (allowString) v.addLast (this.stringParameter (i));
 break;
 case 9:
 var pt4 = this.getPoint4f (i);
@@ -554,7 +621,7 @@ i += (n == nMax && haveSquare && this.tokAt (i + 1) == 1073742338 ? 2 : 1);
 if (haveBrace && this.tokAt (i++) != 1073742338 || haveSquare && this.tokAt (i++) != 268435521 || n < nMin || n > nMax) this.invArg ();
 this.iToken = i - 1;
 return v;
-}, "~N,~N,~N");
+}, "~N,~N,~N,~B");
 Clazz.defineMethod (c$, "floatParameterSet", 
 function (i, nMin, nMax) {
 var v = null;
@@ -597,19 +664,19 @@ return true;
 return false;
 }, "~N");
 Clazz.defineMethod (c$, "getQuaternionParameter", 
-function (i) {
+function (i, bsAtoms, divideByCurrent) {
 switch (this.tokAt (i)) {
 case 7:
 var sv = (this.getToken (i)).getList ();
 var p4 = null;
 if (sv.size () == 0 || (p4 = JS.SV.pt4Value (sv.get (0))) == null) this.invArg ();
 return JU.Quat.newP4 (p4);
-case 1073741863:
-return (this.chk ? null : JU.Quat.newP4 (JU.Escape.uP (this.vwr.getOrientationText (1073741863, null))));
+case 1073741864:
+return (this.chk ? null : this.vwr.getOrientationText (1073741864, (divideByCurrent ? "best" : ""), bsAtoms));
 default:
 return JU.Quat.newP4 (this.getPoint4f (i));
 }
-}, "~N");
+}, "~N,JU.BS,~B");
 Clazz.defineMethod (c$, "checkLast", 
 function (i) {
 return this.checkLength (i + 1) - 1;
@@ -750,7 +817,7 @@ return (i < 0 ? 2147483647 : i);
 }, "~S");
 c$.getPartialBondOrderFromFloatEncodedInt = Clazz.defineMethod (c$, "getPartialBondOrderFromFloatEncodedInt", 
 function (bondOrderInteger) {
-return (((Clazz.doubleToInt (bondOrderInteger / 1000000)) % 6) << 5) + ((bondOrderInteger % 1000000) & 0x1F);
+return (((Clazz.doubleToInt (bondOrderInteger / 1000000)) % 7) << 5) + ((bondOrderInteger % 1000000) & 0x1F);
 }, "~N");
 c$.getBondOrderFromString = Clazz.defineMethod (c$, "getBondOrderFromString", 
 function (s) {
@@ -763,7 +830,7 @@ return JS.ScriptParam.getPartialBondOrderFromFloatEncodedInt (JS.ScriptParam.get
 Clazz.defineMethod (c$, "isColorParam", 
 function (i) {
 var tok = this.tokAt (i);
-return (tok == 570425378 || tok == 1073742195 || tok == 268435520 || tok == 7 || tok == 8 || this.isPoint3f (i) || (tok == 4 || JS.T.tokAttr (tok, 1073741824)) && JU.CU.getArgbFromString (this.st[i].value) != 0);
+return tok != 0 && (tok == 570425378 || tok == 1073742195 || tok == 268435520 || tok == 7 || tok == 8 || this.isPoint3f (i) || (tok == 4 || JS.T.tokAttr (tok, 1073741824)) && JU.CU.getArgbFromString (this.st[i].value) != 0);
 }, "~N");
 Clazz.defineMethod (c$, "getArgbParam", 
 function (index) {
@@ -797,7 +864,7 @@ case 8:
 pt = this.theToken.value;
 break;
 case 1073742332:
-pt = this.getPoint3f (index, false);
+pt = this.getPoint3f (index, false, true);
 break;
 case 1073742333:
 if (allowNone) return 0;
@@ -883,7 +950,7 @@ tickInfo =  new JM.TickInfo (null);
 tickInfo.type = str;
 this.iToken = index;
 return tickInfo;
-}tickInfo =  new JM.TickInfo (this.getPointOrPlane (index, false, true, false, false, 3, 3));
+}tickInfo =  new JM.TickInfo (this.getPointOrPlane (index, false, true, false, false, 3, 3, true));
 if (this.coordinatesAreFractional || this.tokAt (this.iToken + 1) == 1814695966) {
 tickInfo.scale = JU.P3.new3 (NaN, NaN, NaN);
 allowScale = false;
@@ -896,7 +963,7 @@ if (this.isFloatParameter (this.iToken + 2)) {
 var f = this.floatParameter (this.iToken + 2);
 tickInfo.scale = JU.P3.new3 (f, f, f);
 } else {
-tickInfo.scale = this.getPoint3f (this.iToken + 2, true);
+tickInfo.scale = this.getPoint3f (this.iToken + 2, true, true);
 }}if (allowFirst) if (this.tokAt (this.iToken + 1) == 1073741942) tickInfo.first = this.floatParameter (this.iToken + 2);
 return tickInfo;
 }, "~N,~B,~B,~B");

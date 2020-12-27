@@ -180,18 +180,6 @@ this.modifiers |= 2;
 }if ((this.modifiers & 8192) != 0) {
 this.modifiers |= 32;
 }});
-Clazz.defineMethod (c$, "isControlDown", 
-function () {
-return ((this.modifiers & 2) != 0);
-});
-Clazz.overrideMethod (c$, "isShiftDown", 
-function () {
-return ((this.modifiers & 1) != 0);
-});
-Clazz.overrideMethod (c$, "isAltDown", 
-function () {
-return ((this.modifiers & 8) != 0);
-});
 Clazz.defineStatics (c$,
 "MOUSE_FIRST", 500,
 "MOUSE_LAST", 507,

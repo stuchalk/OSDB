@@ -39,9 +39,9 @@ throw e;
 }
 }
 }, "java.io.InputStream");
-c$.getBufferedReaderForData = Clazz.defineMethod (c$, "getBufferedReaderForData", 
-function (data) {
-return (data == null ? null :  new java.io.BufferedReader ( new java.io.StringReader (Clazz.instanceOf (data, String) ? data :  String.instantialize (data))));
+c$.getBufferedReaderForStringOrBytes = Clazz.defineMethod (c$, "getBufferedReaderForStringOrBytes", 
+function (stringOrBytes) {
+return (stringOrBytes == null ? null :  new java.io.BufferedReader ( new java.io.StringReader (Clazz.instanceOf (stringOrBytes, String) ? stringOrBytes :  String.instantialize (stringOrBytes))));
 }, "~O");
 c$.getBufferedReaderFromName = Clazz.defineMethod (c$, "getBufferedReaderFromName", 
 function (name, startCode) {
@@ -150,12 +150,12 @@ c$.getSimulationReader = Clazz.defineMethod (c$, "getSimulationReader",
  function (name) {
 var data = JSV.common.JSVFileManager.cacheGet (name);
 if (data == null) JSV.common.JSVFileManager.cachePut (name, data = JSV.common.JSVFileManager.getNMRSimulationJCampDX (name.substring ("http://SIMULATION/".length)));
-return JSV.common.JSVFileManager.getBufferedReaderForData (data);
+return JSV.common.JSVFileManager.getBufferedReaderForStringOrBytes (data);
 }, "~S");
 c$.isAB = Clazz.defineMethod (c$, "isAB", 
 function (x) {
 {
-return Clazz.isAI(x);
+return Clazz.isAB(x);
 }}, "~O");
 c$.isZipFile = Clazz.defineMethod (c$, "isZipFile", 
 function (is) {
@@ -526,7 +526,7 @@ Clazz.defineStatics (c$,
 c$.htCorrelationCache = c$.prototype.htCorrelationCache =  new java.util.Hashtable ();
 Clazz.defineStatics (c$,
 "nciResolver", "https://cactus.nci.nih.gov/chemical/structure/%FILE/file?format=sdf&get3d=True",
-"nmrdbServerH1", "http://www.nmrdb.org/tools/jmol/predict.php?POST?molfile=",
-"nmrdbServerC13", "http://www.nmrdb.org/service/jsmol13c?POST?molfile=",
+"nmrdbServerH1", "https://www.nmrdb.org/tools/jmol/predict.php?POST?molfile=",
+"nmrdbServerC13", "https://www.nmrdb.org/service/jsmol13c?POST?molfile=",
 "stringCount", 0);
 });

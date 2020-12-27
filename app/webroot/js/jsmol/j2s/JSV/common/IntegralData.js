@@ -83,8 +83,13 @@ if (Double.isNaN (x1)) {
 this.haveRegions = false;
 this.clear ();
 return null;
+}if (Double.isNaN (x2)) {
+return this.splitIntegral (x1);
 }if (x1 == x2) return null;
-var y1 = this.getYValueAt (x1);
+if (x1 < x2) {
+this.clear (x1, x2);
+return null;
+}var y1 = this.getYValueAt (x1);
 var y2 = this.getYValueAt (x2);
 this.haveRegions = true;
 var $in =  new JSV.common.Integral ().setInt (x1, y1, this.spec, Math.abs (y2 - y1) * 100 * this.normalizationFactor, x2, y2);
@@ -93,6 +98,16 @@ this.addLast ($in);
 java.util.Collections.sort (this, JSV.common.IntegralData.c);
 return $in;
 }, "~N,~N");
+Clazz.defineMethod (c$, "splitIntegral", 
+ function (x) {
+var i = this.find (x);
+if (i < 0) return null;
+var integral = this.removeItemAt (i);
+var x0 = integral.getXVal ();
+var x2 = integral.getXVal2 ();
+this.addIntegralRegion (x0, x);
+return this.addIntegralRegion (x, x2);
+}, "~N");
 Clazz.overrideMethod (c$, "setSpecShift", 
 function (dx) {
 JSV.common.Coordinate.shiftX (this.xyCoords, dx);
@@ -137,7 +152,6 @@ Clazz.defineMethod (c$, "calculateIntegral",
 function () {
 var specXyCoords = this.spec.getXYCoords ();
 this.xyCoords =  new Array (specXyCoords.length);
-var minYForIntegral = -1.7976931348623157E308;
 this.integralTotal = 0;
 this.checkRange ();
 var minY = 1E100;
@@ -145,16 +159,21 @@ for (var i = 0; i < specXyCoords.length; i++) {
 var y = specXyCoords[i].getYVal ();
 if (y < minY && y >= 0) minY = y;
 }
+var minI = 1E100;
+var maxI = -1.0E100;
 for (var i = 0; i < specXyCoords.length; i++) {
 var y = specXyCoords[i].getYVal ();
-if (y > minYForIntegral) this.integralTotal += (y - minY);
+this.integralTotal += (y - minY);
+if (this.integralTotal < minI) minI = this.integralTotal;
+if (this.integralTotal > maxI) maxI = this.integralTotal;
 }
+this.integralTotal = maxI - minI;
 this.intRange = (this.percentRange / 100) / this.integralTotal;
 this.offset = (this.percentOffset / 100);
 var integral = 0;
 for (var i = specXyCoords.length; --i >= 0; ) {
 var y = specXyCoords[i].getYVal ();
-if (y > minYForIntegral) integral += (y - minY);
+integral += (y - minY);
 this.xyCoords[i] =  new JSV.common.Coordinate ().set (specXyCoords[i].getXVal (), integral * this.intRange + this.offset);
 }
 return this.xyCoords;
@@ -165,9 +184,9 @@ this.percentOffset = Math.max (5, this.percentOffset);
 this.percentRange = Math.max (10, this.percentRange);
 });
 c$.getIntegrationRatiosFromString = Clazz.defineMethod (c$, "getIntegrationRatiosFromString", 
-function (spec, value) {
+function (spec, key_values) {
 var ratios =  new JU.Lst ();
-var allParamTokens =  new java.util.StringTokenizer (value, ",");
+var allParamTokens =  new java.util.StringTokenizer (key_values, ",");
 while (allParamTokens.hasMoreTokens ()) {
 var token = allParamTokens.nextToken ();
 var eachParam =  new java.util.StringTokenizer (token, ":");
@@ -203,6 +222,10 @@ m.setValue (factor * m.getValue ());
 }
 this.normalizationFactor = (isReset ? 1 : this.normalizationFactor * factor);
 }, "~N,~B");
+Clazz.defineMethod (c$, "remove", 
+function (i) {
+return this.removeItemAt (i);
+}, "~N");
 Clazz.defineMethod (c$, "getBitSet", 
 function () {
 var bs = JU.BS.newN (this.xyCoords.length);
@@ -290,7 +313,7 @@ Clazz.superCall (this, JSV.common.IntegralData, "getInfo", [info]);
 }, "java.util.Map");
 Clazz.defineMethod (c$, "setMinimumIntegral", 
 function (val) {
-for (var i = this.size (); --i >= 0; ) if (this.get (i).getValue () < val) this.remove (i);
+for (var i = this.size (); --i >= 0; ) if (this.get (i).getValue () < val) this.removeItemAt (i);
 
 }, "~N");
 Clazz.pu$h(self.c$);
@@ -299,7 +322,7 @@ c$.getMode = Clazz.defineMethod (c$, "getMode",
 function (a) {
 for (var mode, $mode = 0, $$mode = JSV.common.IntegralData.IntMode.values (); $mode < $$mode.length && ((mode = $$mode[$mode]) || true); $mode++) if (a.startsWith (mode.name ())) return mode;
 
-return JSV.common.IntegralData.IntMode.ON;
+return JSV.common.IntegralData.IntMode.NA;
 }, "~S");
 Clazz.defineEnumConstant (c$, "OFF", 0, []);
 Clazz.defineEnumConstant (c$, "ON", 1, []);
@@ -309,6 +332,8 @@ Clazz.defineEnumConstant (c$, "LIST", 4, []);
 Clazz.defineEnumConstant (c$, "MARK", 5, []);
 Clazz.defineEnumConstant (c$, "MIN", 6, []);
 Clazz.defineEnumConstant (c$, "UPDATE", 7, []);
+Clazz.defineEnumConstant (c$, "CLEAR", 8, []);
+Clazz.defineEnumConstant (c$, "NA", 9, []);
 c$ = Clazz.p0p ();
 Clazz.defineStatics (c$,
 "DEFAULT_OFFSET", 30,

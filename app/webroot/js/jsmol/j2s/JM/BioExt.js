@@ -69,7 +69,7 @@ fullInfo.put ("models", modelVector);
 Clazz.defineMethod (c$, "calculateStraightnessAll", 
 function () {
 var qtype = this.vwr.getQuaternionFrame ();
-var mStep = this.vwr.getInt (553648146);
+var mStep = this.vwr.getInt (553648144);
 for (var i = this.ms.mc; --i >= 0; ) if (this.ms.am[i].isBioModel) {
 var m = this.ms.am[i];
 var ptTemp =  new JU.P3 ();
@@ -304,7 +304,7 @@ function (m, vwr, type, ctype, isDraw, bsSelected, out, tokens, pdbCONECT, bsWri
 var bothEnds = false;
 var qtype = (ctype != 'R' ? 'r' : type.length > 13 && type.indexOf ("ramachandran ") >= 0 ? type.charAt (13) : 'R');
 if (qtype == 'r') qtype = vwr.getQuaternionFrame ();
-var mStep = vwr.getInt (553648146);
+var mStep = vwr.getInt (553648144);
 var derivType = (type.indexOf ("diff") < 0 ? 0 : type.indexOf ("2") < 0 ? 1 : 2);
 if (!isDraw) {
 out.append ("REMARK   6 Jmol PDB-encoded data: " + type + ";");
@@ -500,7 +500,7 @@ if (JU.Logger.debugging) JU.Logger.debug (script);
 vwr.eval.runScript (script);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
-if (!vwr.isJS) e.printStackTrace ();
+if (!JV.Viewer.isJS) e.printStackTrace ();
 System.out.println (e);
 } else {
 throw e;

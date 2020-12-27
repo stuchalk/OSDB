@@ -116,7 +116,7 @@ if (ignore[i]) continue;
 bsOK.set (this.vibrationNumber - 1);
 this.asc.cloneLastAtomSet ();
 }
-this.fillFrequencyData (iAtom0, ac, ac, ignore, false, 0, 0, null, 2);
+this.fillFrequencyData (iAtom0, ac, ac, ignore, false, 0, 0, null, 2, null);
 }
 var info =  new Array (this.vibrationNumber);
 if (this.line.indexOf ("DESCRIPTION") < 0) this.discardLinesUntilContains ("DESCRIPTION");
@@ -133,7 +133,7 @@ for (var i = this.vibrationNumber - 1; --i >= 0; ) if (info[i] == null) info[i] 
 for (var i = 0, n = n0; i < this.vibrationNumber; i++) {
 if (!bsOK.get (i)) continue;
 this.asc.iSet = n++;
-this.asc.setAtomSetFrequency (null, info[i][2], info[i][0], null);
+this.asc.setAtomSetFrequency (this.vibrationNumber, null, info[i][2], info[i][0], null);
 }
 });
 });

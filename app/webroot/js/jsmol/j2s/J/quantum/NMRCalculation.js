@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.quantum");
-Clazz.load (["J.api.JmolNMRInterface", "java.util.Hashtable"], "J.quantum.NMRCalculation", ["java.lang.Double", "$.Float", "$.NullPointerException", "JU.BS", "$.Lst", "$.PT", "$.V3", "JU.Escape", "$.Logger", "$.Tensor", "JV.FileManager"], function () {
+Clazz.load (["J.api.JmolNMRInterface", "java.util.Hashtable"], "J.quantum.NMRCalculation", ["java.lang.Double", "$.Float", "$.IllegalArgumentException", "$.NullPointerException", "JU.BS", "$.Lst", "$.Measure", "$.PT", "$.V3", "J.quantum.NMRNoeMatrix", "JU.Escape", "$.Logger", "$.Tensor", "JV.FileManager"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.isotopeData = null;
@@ -92,11 +92,14 @@ function (a1, a2, type, isc) {
 return this.getIsoOrAnisoHz (true, a1, a2, type, isc);
 }, "JM.Atom,JM.Atom,~S,JU.Tensor");
 Clazz.overrideMethod (c$, "getIsoOrAnisoHz", 
-function (isIso, a1, a2, type, isc) {
+function (isIso, a1, a2, units, isc) {
 if (isc == null) {
-type = this.getISCtype (a1, type);
-if (type == null || a1.mi != a2.mi) return 0;
-var bs =  new JU.BS ();
+var type = this.getISCtype (a1, units);
+if (type == null || a1.mi != a2.mi) {
+if (!units.equals ("hz")) return 0;
+var data = J.quantum.NMRCalculation.calc2or3JorNOE (this.vwr,  Clazz.newArray (-1, [a1, null, null, a2]), null, 3);
+return (data == null ? NaN : data[1]);
+}var bs =  new JU.BS ();
 bs.set (a1.i);
 bs.set (a2.i);
 var list = this.getInteractionTensorList (type, bs);
@@ -299,6 +302,238 @@ continue;
 }
 return htMin;
 }, "JM.MeasurementData");
+c$.calcJKarplus = Clazz.defineMethod (c$, "calcJKarplus", 
+function (theta) {
+var j0 = 8.5;
+var j180 = 9.5;
+var jconst = 0.28;
+var cos = Math.cos (theta);
+var jab = 0;
+if (theta >= -90.0 && theta < 90.0) {
+jab = j0 * cos * cos - jconst;
+} else {
+jab = j180 * cos * cos - jconst;
+}return jab;
+}, "~N");
+c$.getInitialJValue = Clazz.defineMethod (c$, "getInitialJValue", 
+ function (nNonH, theta) {
+var p = J.quantum.NMRCalculation.pAltona[nNonH];
+var cos = Math.cos (theta);
+return p[1] * cos * cos + p[2] * cos + p[3];
+}, "~N,~N");
+c$.getIncrementalJValue = Clazz.defineMethod (c$, "getIncrementalJValue", 
+ function (nNonH, element, sA_cA, v21, v23, theta, f) {
+if (nNonH < 0 || nNonH > 5) return 0;
+var de = J.quantum.NMRCalculation.deltaElectro.get (element);
+if (de == null) return 0;
+var e = de.doubleValue ();
+var sign = J.quantum.NMRCalculation.getSubSign (sA_cA, v21, v23, f);
+var p = J.quantum.NMRCalculation.pAltona[nNonH];
+var cos = Math.cos (sign * theta + p[6] * Math.abs (e));
+return e * (p[4] + p[5] * cos * cos);
+}, "~N,~S,JU.V3,JU.V3,JU.V3,~N,~N");
+c$.getSubSign = Clazz.defineMethod (c$, "getSubSign", 
+ function (sA_cA, v21, v23, f) {
+var cross =  new JU.V3 ();
+cross.cross (v23, v21);
+return (cross.dot (sA_cA) > 0 ? f : -f);
+}, "JU.V3,JU.V3,JU.V3,~N");
+c$.calc3JHHOnly = Clazz.defineMethod (c$, "calc3JHHOnly", 
+ function (subElements, subVectors, v21, v34, v23, theta, is23Double) {
+var nNonH = 0;
+for (var i = 0, n = (is23Double ? 2 : 3); i < n; i++) {
+if (!subElements[0][i].equals ("H")) {
+nNonH++;
+}if (!subElements[1][i].equals ("H")) {
+nNonH++;
+}}
+var jvalue = J.quantum.NMRCalculation.getInitialJValue (nNonH, theta);
+for (var i = 0, n = (is23Double ? 2 : 3); i < n; i++) {
+var element = subElements[0][i];
+if (!element.equals ("H")) {
+jvalue += J.quantum.NMRCalculation.getIncrementalJValue (nNonH, element, subVectors[0][i], v21, v23, theta, 1);
+}element = subElements[1][i];
+if (!element.equals ("H")) {
+jvalue += J.quantum.NMRCalculation.getIncrementalJValue (nNonH, element, subVectors[1][i], v34, v23, theta, -1);
+}}
+if (is23Double) {
+if (Math.abs (theta) < 1.5707963267948966) jvalue *= 0.75;
+ else jvalue *= 1.33;
+}return jvalue;
+}, "~A,~A,JU.V3,JU.V3,JU.V3,~N,~B");
+c$.calc3JCH = Clazz.defineMethod (c$, "calc3JCH", 
+function (CHequation, theta, is23Double) {
+if (CHequation == null) CHequation = "was";
+if (!JU.PT.isOneOf (CHequation, ";was;tva;ayd;")) throw  new IllegalArgumentException ("Equation must be one of was, tva, or ayd");
+if (CHequation.equals ("was")) {
+var A = 3.56;
+var C = 4.26;
+var j = 3.56 * Math.cos (2 * theta) - Math.cos (theta) + 4.26;
+return j;
+} else if (CHequation.equals ("tva")) {
+var j = 4.5 - 0.87 * Math.cos (theta) + Math.cos (2.0 * theta);
+return j;
+} else if (CHequation.equals ("ayd")) {
+var j = 5.8 * Math.pow (Math.cos (theta), 2) - 1.6 * Math.cos (theta) + 0.28 * Math.sin (2.0 * theta) - 0.02 * Math.sin (theta) + 0.52;
+return j;
+} else {
+return 0.0;
+}}, "~S,~N,~B");
+c$.calcNOE = Clazz.defineMethod (c$, "calcNOE", 
+function (viewer, atom1, atom2) {
+return J.quantum.NMRCalculation.calc2or3JorNOE (viewer,  Clazz.newArray (-1, [atom1, null, null, atom2]), null, 7);
+}, "JV.Viewer,JM.Atom,JM.Atom");
+c$.calc2or3JorNOE = Clazz.defineMethod (c$, "calc2or3JorNOE", 
+function (viewer, atoms, CHEquation, mode) {
+if (CHEquation == null || CHEquation.equals ("none")) mode &= -5;
+var elements =  new Array (4);
+mode = J.quantum.NMRCalculation.getCalcType (atoms, elements, mode);
+switch (mode) {
+default:
+case 0:
+return null;
+case 8:
+return J.quantum.NMRCalculation.calcNOEImpl (viewer, atoms[0], atoms[3]);
+case 1:
+return J.quantum.NMRCalculation.calc2JHH (atoms[0], atoms[1], atoms[3]);
+case 4:
+case 2:
+break;
+}
+var subElements =  Clazz.newArray (2, 3, null);
+var subVectors =  Clazz.newArray (2, 3, null);
+var v23 = JU.V3.newVsub (atoms[2], atoms[1]);
+var v21 = JU.V3.newVsub (atoms[0], atoms[1]);
+var v34 = JU.V3.newVsub (atoms[3], atoms[2]);
+var subs =  new JU.Lst ();
+var bonds = atoms[1].bonds;
+var is23Double = false;
+for (var pt = 0, i = Math.min (bonds.length, 4); --i >= 0; ) {
+var sub = bonds[i].getOtherAtom (atoms[1]);
+if (sub === atoms[2]) {
+is23Double = (bonds[i].order == 2);
+continue;
+}subElements[0][pt] = sub.getElementSymbol ();
+subVectors[0][pt] = JU.V3.newVsub (sub, atoms[1]);
+pt++;
+}
+subs.clear ();
+bonds = atoms[2].bonds;
+for (var pt = 0, i = Math.min (bonds.length, 4); --i >= 0; ) {
+var sub = bonds[i].getOtherAtom (atoms[2]);
+if (sub === atoms[1]) continue;
+subElements[1][pt] = sub.getElementSymbol ();
+subVectors[1][pt] = JU.V3.newVsub (sub, atoms[2]);
+pt++;
+}
+var theta = JU.Measure.computeTorsion (atoms[0], atoms[1], atoms[2], atoms[3], false);
+var jvalue = NaN;
+if (is23Double || subElements[0][2] != null && subElements[1][2] != null) {
+switch (mode) {
+case 2:
+jvalue = J.quantum.NMRCalculation.calc3JHHOnly (subElements, subVectors, v21, v34, v23, theta, is23Double);
+break;
+case 4:
+if (is23Double) return null;
+jvalue = J.quantum.NMRCalculation.calc3JCH (CHEquation, theta, is23Double);
+break;
+}
+} else {
+jvalue = J.quantum.NMRCalculation.calcJKarplus (theta);
+}return  Clazz.newDoubleArray (-1, [theta, jvalue, atoms[1].i, atoms[2].i]);
+}, "JV.Viewer,~A,~S,~N");
+c$.getCalcType = Clazz.defineMethod (c$, "getCalcType", 
+function (atoms, elementsToFill, mode) {
+var atom1 = atoms[0];
+var atom4 = atoms[3];
+var bonds1 = atom1.bonds;
+var bonds4 = atom4.bonds;
+if (bonds1 == null || bonds4 == null || atom1.isCovalentlyBonded (atom4)) return 0;
+var allowNOE = ((mode & 8) == 8);
+var allow3JHH = ((mode & 2) == 2);
+var allow2JHH = ((mode & 1) == 1);
+var allow3JCH = ((mode & 4) == 4);
+var isGeminal = false;
+var atom2 = atoms[1];
+var atom3 = atoms[2];
+if (atom2 == null) {
+for (var i = 0; i < bonds1.length; i++) {
+atom2 = bonds1[i].getOtherAtom (atom1);
+if (atom2.isCovalentlyBonded (atom4)) {
+isGeminal = true;
+break;
+}for (var j = 0; j < bonds4.length; j++) {
+atom3 = bonds4[j].getOtherAtom (atom4);
+if (atom2.isCovalentlyBonded (atom3)) break;
+atom3 = null;
+}
+}
+atoms[1] = atom2;
+atoms[2] = atom3;
+} else if (atom2.isCovalentlyBonded (atom4)) {
+isGeminal = true;
+}var e1 = atom4.getElementSymbol ();
+var e2 = (atom2 == null ? null : atom2.getElementSymbol ());
+var e3 = (atom3 == null ? null : atom3.getElementSymbol ());
+var e4 = atom1.getElementSymbol ();
+var isHH = e1.equals ("H") && e4.equals ("H");
+if (isGeminal) {
+mode = (allow2JHH && isHH && e2.equals ("C") ? 1 : 0);
+} else if (atom3 == null) {
+mode = (allowNOE && isHH ? 8 : 0);
+} else if (allow3JHH && isHH) {
+mode = 2;
+} else if (allow3JCH && e2.equals ("C") && e3.equals ("C") && (e1.equals ("H") && e4.equals ("C") || e1.equals ("C") && e4.equals ("H"))) {
+mode = 4;
+} else {
+mode = 0;
+}if (mode != 0 && elementsToFill != null) {
+elementsToFill[0] = e1;
+elementsToFill[1] = e2;
+elementsToFill[2] = e3;
+elementsToFill[3] = e4;
+}return mode;
+}, "~A,~A,~N");
+c$.calc2JHH = Clazz.defineMethod (c$, "calc2JHH", 
+ function (h1, c, h2) {
+var val = NaN;
+switch (c.getCovalentBondCount ()) {
+case 3:
+val = 1.5;
+break;
+case 4:
+val = 12.0;
+break;
+default:
+return null;
+}
+var angle = JU.Measure.computeAngle (h1, c, h2,  new JU.V3 (),  new JU.V3 (), false);
+return  Clazz.newDoubleArray (-1, [angle, val, c.i]);
+}, "JM.Atom,JM.Atom,JM.Atom");
+c$.calcNOEImpl = Clazz.defineMethod (c$, "calcNOEImpl", 
+ function (viewer, atom1, atom2) {
+try {
+var noeMatrix = viewer.ms.getInfo (atom1.mi, "noeMatrix");
+var dist = 0;
+var noe = NaN;
+if (noeMatrix == null) {
+noeMatrix = J.quantum.NMRNoeMatrix.createMatrix (viewer, viewer.getModelUndeletedAtomsBitSet (atom1.mi), viewer.ms.getInfo (atom1.mi, "noeLabels"), viewer.ms.getInfo (atom1.mi, "noeParams"));
+}dist = noeMatrix.getJmolDistance (atom1.i, atom2.i);
+noe = noeMatrix.getJmolNoe (atom1.i, atom2.i);
+return (Double.isNaN (noe) ? null :  Clazz.newDoubleArray (-1, [dist, noe]));
+} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+e.printStackTrace ();
+return null;
+} else {
+throw e;
+}
+}
+}, "JV.Viewer,JM.Atom,JM.Atom");
+Clazz.overrideMethod (c$, "getNOEorJHH", 
+function (atoms, mode) {
+return J.quantum.NMRCalculation.calc2or3JorNOE (this.vwr, atoms, null, mode);
+}, "~A,~N");
 Clazz.defineStatics (c$,
 "MAGNETOGYRIC_RATIO", 1,
 "QUADRUPOLE_MOMENT", 2,
@@ -308,5 +543,68 @@ Clazz.defineStatics (c$,
 "DIPOLAR_FACTOR", 1054.5717253362893,
 "J_FACTOR", 0.0167840302932219,
 "Q_FACTOR", 2.349647144641375E8,
+"MODE_CALC_INVALID", 0,
+"MODE_CALC_2JHH", 1,
+"MODE_CALC_3JHH", 2,
+"MODE_CALC_JHH", 3,
+"MODE_CALC_3JCH", 4,
+"MODE_CALC_J", 7,
+"MODE_CALC_NOE", 8,
+"MODE_CALC_ALL", 0xF,
 "resource", "nmr_data.txt");
+c$.deltaElectro = c$.prototype.deltaElectro =  new java.util.Hashtable ();
+{
+var enegH = 2.20;
+J.quantum.NMRCalculation.deltaElectro.put ("C",  new Double (2.60 - enegH));
+J.quantum.NMRCalculation.deltaElectro.put ("O",  new Double (3.50 - enegH));
+J.quantum.NMRCalculation.deltaElectro.put ("N",  new Double (3.05 - enegH));
+J.quantum.NMRCalculation.deltaElectro.put ("F",  new Double (3.90 - enegH));
+J.quantum.NMRCalculation.deltaElectro.put ("Cl",  new Double (3.15 - enegH));
+J.quantum.NMRCalculation.deltaElectro.put ("Br",  new Double (2.95 - enegH));
+J.quantum.NMRCalculation.deltaElectro.put ("I",  new Double (2.65 - enegH));
+J.quantum.NMRCalculation.deltaElectro.put ("S",  new Double (2.58 - enegH));
+J.quantum.NMRCalculation.deltaElectro.put ("Si",  new Double (1.90 - enegH));
+}Clazz.defineStatics (c$,
+"pAltona",  Clazz.newDoubleArray (5, 8, 0));
+{
+for (var nNonH = 0; nNonH < 5; nNonH++) {
+var p = J.quantum.NMRCalculation.pAltona[nNonH];
+switch (nNonH) {
+case 0:
+case 1:
+case 2:
+p[1] = 13.7;
+p[2] = -0.73;
+p[3] = 0;
+p[4] = 0.56;
+p[5] = -2.47;
+p[6] = 16.9;
+p[7] = 0.14;
+break;
+case 3:
+p[1] = 13.22;
+p[2] = -0.99;
+p[3] = 0;
+p[4] = 0.87;
+p[5] = -2.46;
+p[6] = 19.9;
+p[7] = 0;
+break;
+case 4:
+p[1] = 13.24;
+p[2] = -0.91;
+p[3] = 0;
+p[4] = 0.53;
+p[5] = -2.41;
+p[6] = 15.5;
+p[7] = 0.19;
+break;
+}
+p[6] = p[6] * 3.141592653589793 / 180.0;
+}
+}Clazz.defineStatics (c$,
+"JCH3_NONE", "none",
+"JCH3_WASYLISHEN_SCHAEFER", "was",
+"JCH3_TVAROSKA_TARAVEL", "tva",
+"JCH3_AYDIN_GUETHER", "ayd");
 });

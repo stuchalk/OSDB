@@ -1,4 +1,5 @@
 Clazz.declarePackage ("JSV.common");
+Clazz.load (null, "JSV.common.RepaintManager", ["JSV.common.JSViewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.repaintPending = false;
 this.vwr = null;
@@ -13,16 +14,18 @@ function () {
 if (this.repaintPending) {
 return false;
 }this.repaintPending = true;
-this.vwr.pd ().taintedAll = true;
 var applet = this.vwr.html5Applet;
-{
-if (typeof Jmol != "undefined" && Jmol._repaint && applet)
-Jmol._repaint(applet, false);
-this.repaintDone();
+var jmol = (JSV.common.JSViewer.isJS && !JSV.common.JSViewer.isSwingJS ? JSV.common.JSViewer.jmolObject : null);
+if (jmol == null) {
+this.vwr.selectedPanel.repaint ();
+} else {
+jmol.repaint (applet, false);
+this.repaintDone ();
 }return true;
 });
 Clazz.defineMethod (c$, "repaintDone", 
 function () {
 this.repaintPending = false;
 this.notify ();
+});
 });

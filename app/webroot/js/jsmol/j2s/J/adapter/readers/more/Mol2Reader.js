@@ -35,6 +35,7 @@ this.rd ();
 this.line += " 0 0 0 0 0 0";
 this.ac = this.parseIntStr (this.line);
 var bondCount = this.parseInt ();
+if (bondCount == 0) this.asc.setNoAutoBond ();
 var resCount = this.parseInt ();
 this.rd ();
 this.rd ();

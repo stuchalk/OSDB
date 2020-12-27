@@ -8,12 +8,30 @@ Clazz.instantialize (this, arguments);
 }, J.adapter.readers.quantum, "GamessReader", J.adapter.readers.quantum.MOReader);
 Clazz.defineMethod (c$, "readEnergy", 
 function () {
-var tokens = JU.PT.getTokens (this.line.substring (this.line.indexOf ("ENERGY")));
-if (tokens.length < 3) return;
-var strEnergy = tokens[2];
+var searchTerm = "ENERGY";
+var energyToken = 2;
+var energyType = "ENERGY";
+if (this.line.indexOf ("E(MP2)") > 0) {
+searchTerm = "E(MP2)=";
+energyType = "MP2";
+energyToken = 1;
+} else if (this.line.indexOf ("E(CCSD)") > 0) {
+searchTerm = "E(CCSD)";
+energyType = "CCSD";
+energyToken = 2;
+} else if (this.line.indexOf ("E(   CCSD(T))") > 0) {
+searchTerm = "E(   CCSD(T))";
+energyType = "CCSD(T)";
+energyToken = 3;
+}var tokens = JU.PT.getTokens (this.line.substring (this.line.indexOf (searchTerm)));
+if (tokens.length < energyToken + 1) return;
+var strEnergy = tokens[energyToken];
 var e = this.parseFloatStr (strEnergy);
-if (!Float.isNaN (e)) this.asc.setAtomSetEnergy (strEnergy, e);
-});
+if (!Float.isNaN (e)) {
+this.asc.setAtomSetEnergy (strEnergy, e);
+this.asc.setCurrentModelInfo ("EnergyType", energyType);
+if (!energyType.equals ("ENERGY")) this.appendLoadNote ("GamessReader Energy type " + energyType);
+}});
 Clazz.defineMethod (c$, "readGaussianBasis", 
 function (initiator, terminator) {
 var gdata =  new JU.Lst ();
@@ -80,7 +98,7 @@ JU.Logger.error ("slater for atom " + i + " atomType " + atomType + " was not fo
 return;
 }for (var j = 0; j < slaters.size (); j++) {
 slater = slaters.get (j);
-this.shells.addLast ( Clazz.newIntArray (-1, [i, slater[0], slater[1], slater[2]]));
+this.shells.addLast ( Clazz.newIntArray (-1, [i + 1, slater[0], slater[1] + 1, slater[2]]));
 }
 }
 }if (this.debugging) {
@@ -122,12 +140,12 @@ this.asc.cloneLastAtomSet ();
 } else {
 haveFreq = true;
 iAtom0 -= ac;
-}this.asc.setAtomSetFrequency (null, null, "" + frequencies[i], null);
+}this.asc.setAtomSetFrequency (this.vibrationNumber, null, null, "" + frequencies[i], null);
 if (red_masses != null) this.asc.setAtomSetModelProperty ("ReducedMass", red_masses[red_masses.length - frequencyCount + i] + " AMU");
 if (intensities != null) this.asc.setAtomSetModelProperty ("IRIntensity", intensities[intensities.length - frequencyCount + i] + " D^2/AMU-Angstrom^2");
 }
 this.discardLinesUntilBlank ();
-this.fillFrequencyData (iAtom0, ac, ac, ignore, false, 20, 12, null, 0);
+this.fillFrequencyData (iAtom0, ac, ac, ignore, false, 20, 12, null, 0, null);
 this.readLines (13);
 }
 });

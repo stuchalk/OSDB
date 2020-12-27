@@ -17,7 +17,7 @@ var n;
 if (decimalDigits < 0) {
 decimalDigits = -decimalDigits;
 if (decimalDigits > JU.DF.formattingStrings.length) decimalDigits = JU.DF.formattingStrings.length;
-if (value == 0) return JU.DF.formattingStrings[decimalDigits] + "E+0";
+if (value == 0) return JU.DF.formattingStrings[decimalDigits - 1] + "E+0";
 n = 0;
 var d;
 if (Math.abs (value) < 1) {
@@ -29,7 +29,16 @@ d = value * 1e10;
 }var s = ("" + d).toUpperCase ();
 var i = s.indexOf ("E");
 n = JU.PT.parseInt (s.substring (i + 1)) + n;
-return (i < 0 ? "" + value : JU.DF.formatDecimal (JU.PT.parseFloat (s.substring (0, i)), decimalDigits - 1) + "E" + (n >= 0 ? "+" : "") + n);
+var sf;
+if (i < 0) {
+sf = "" + value;
+} else {
+var f = JU.PT.parseFloat (s.substring (0, i));
+if (f == 10 || f == -10) {
+f /= 10;
+n += (n < 0 ? 1 : -1);
+}sf = JU.DF.formatDecimal (f, decimalDigits - 1);
+}return sf + "E" + (n >= 0 ? "+" : "") + n;
 }if (decimalDigits >= JU.DF.formattingStrings.length) decimalDigits = JU.DF.formattingStrings.length - 1;
 var s1 = ("" + value).toUpperCase ();
 var pt = s1.indexOf (".");
@@ -53,7 +62,9 @@ pt = s1.indexOf (".");
 var pt2 = decimalDigits + pt + 1;
 if (pt2 < len && s1.charAt (pt2) >= '5') {
 return JU.DF.formatDecimal (value + (isNeg ? -1 : 1) * JU.DF.formatAdds[decimalDigits], decimalDigits);
-}var sb = JU.SB.newS (s1.substring (0, (decimalDigits == 0 ? pt : ++pt)));
+}var s0 = s1.substring (0, (decimalDigits == 0 ? pt : ++pt));
+var sb = JU.SB.newS (s0);
+if (isNeg && s0.equals ("0.") && decimalDigits + 2 <= len && s1.substring (2, 2 + decimalDigits).equals ("0000000000000000000000000000000000000000".substring (0, decimalDigits))) isNeg = false;
 for (var i = 0; i < decimalDigits; i++, pt++) {
 if (pt < len) sb.appendC (s1.charAt (pt));
  else sb.appendC ('0');

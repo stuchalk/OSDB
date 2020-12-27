@@ -9,7 +9,6 @@ this.faceMap = null;
 this.v3temp = null;
 this.scrTemp = null;
 this.dotScale = 0;
-this.testRadiusAdjust = 0;
 Clazz.instantialize (this, arguments);
 }, J.renderspecial, "DotsRenderer", J.render.ShapeRenderer);
 Clazz.prepareFields (c$, function () {
@@ -32,18 +31,21 @@ function (dots) {
 if (!this.iShowSolid && !this.g3d.setC (4)) return;
 var sppa = Clazz.floatToInt (this.vwr.getScalePixelsPerAngstrom (true));
 this.screenLevel = (this.iShowSolid || sppa > 20 ? 3 : sppa > 10 ? 2 : sppa > 5 ? 1 : 0);
-if (!this.iShowSolid) this.screenLevel += this.vwr.getInt (553648143) - 3;
+if (!this.iShowSolid) this.screenLevel += this.vwr.getInt (553648141) - 3;
 this.screenLevel = Math.max (Math.min (this.screenLevel, J.shapespecial.Dots.MAX_LEVEL), 0);
 this.screenDotCount = JU.Geodesic.getVertexCount (this.screenLevel);
-this.dotScale = this.vwr.getInt (553648144);
+this.dotScale = this.vwr.getInt (553648142);
 var maps = dots.ec.getDotsConvexMaps ();
 for (var i = dots.ec.getDotsConvexMax (); --i >= 0; ) {
 var atom = this.ms.at[i];
 var map = maps[i];
 if (map == null || !this.isVisibleForMe (atom) || !this.g3d.isInDisplayRange (atom.sX, atom.sY)) continue;
 try {
-var radius = dots.ec.getAppropriateRadius (i) + this.testRadiusAdjust;
-var nPoints = 0;
+var radius = dots.ec.getAppropriateRadius (i);
+if (this.iShowSolid && this.exportType == 1) {
+this.g3d.drawAtom (atom, radius);
+continue;
+}var nPoints = 0;
 var j = 0;
 var iDot = Math.min (map.size (), this.screenDotCount);
 while (--iDot >= 0) {

@@ -1,12 +1,10 @@
 Clazz.declarePackage ("J.jvxl.data");
-Clazz.load (null, "J.jvxl.data.JvxlCoder", ["java.lang.Float", "JU.BS", "$.Lst", "$.P3", "$.PT", "$.SB", "J.api.Interface", "J.jvxl.data.VolumeData", "JU.BSUtil", "$.C", "$.Escape", "$.Logger"], function () {
+Clazz.load (null, "J.jvxl.data.JvxlCoder", ["java.lang.Float", "JU.BS", "$.Lst", "$.P3", "$.PT", "$.SB", "J.api.Interface", "J.jvxl.data.VolumeData", "JU.BSUtil", "$.C", "$.Escape", "$.Logger", "JV.Viewer"], function () {
 c$ = Clazz.declareType (J.jvxl.data, "JvxlCoder");
-c$.jvxlGetFileVwr = Clazz.defineMethod (c$, "jvxlGetFileVwr", 
-function (vwr, jvxlData, meshData, title, msg, includeHeader, nSurfaces, state, comment) {
-if (!J.jvxl.data.JvxlCoder.haveXMLUtil) {
-if (vwr.isJS) J.api.Interface.getInterface ("JU.XmlUtil", vwr, "show");
-J.jvxl.data.JvxlCoder.haveXMLUtil = true;
-}var data =  new JU.SB ();
+c$.jvxlGetFile = Clazz.defineMethod (c$, "jvxlGetFile", 
+function (jvxlData, meshData, title, msg, includeHeader, nSurfaces, state, comment) {
+J.jvxl.data.JvxlCoder.checkHaveXMLUtil ();
+var data =  new JU.SB ();
 if ("TRAILERONLY".equals (msg)) {
 JU.XmlUtil.closeTag (data, "jvxlSurfaceSet");
 JU.XmlUtil.closeTag (data, "jvxl");
@@ -16,7 +14,7 @@ var isHeaderOnly = ("HEADERONLY".equals (msg));
 if (includeHeader) {
 JU.XmlUtil.openDocument (data);
 JU.XmlUtil.openTagAttr (data, "jvxl",  Clazz.newArray (-1, ["version", "2.3", "jmolVersion", jvxlData.version, "xmlns", "http://jmol.org/jvxl_schema", "xmlns:cml", "http://www.xml-cml.org/schema"]));
-if (jvxlData.jvxlFileTitle != null) JU.XmlUtil.appendCdata (data, "jvxlFileTitle", null, "\n" + jvxlData.jvxlFileTitle);
+JU.XmlUtil.appendCdata (data, "jvxlFileTitle", null, jvxlData.jvxlFileTitle == null ? "\n" : "\n" + jvxlData.jvxlFileTitle);
 if (jvxlData.moleculeXml != null) data.append (jvxlData.moleculeXml);
 var volumeDataXml = (vertexDataOnly ? null : jvxlData.jvxlVolumeDataXml);
 if (volumeDataXml == null) volumeDataXml = ( new J.jvxl.data.VolumeData ()).setVolumetricXml ();
@@ -67,7 +65,13 @@ if (includeHeader) {
 JU.XmlUtil.closeTag (data, "jvxlSurfaceSet");
 JU.XmlUtil.closeTag (data, "jvxl");
 }return J.jvxl.data.JvxlCoder.jvxlSetCompressionRatio (data, jvxlData, len);
-}, "JV.Viewer,J.jvxl.data.JvxlData,J.jvxl.data.MeshData,~A,~S,~B,~N,~S,~S");
+}, "J.jvxl.data.JvxlData,J.jvxl.data.MeshData,~A,~S,~B,~N,~S,~S");
+c$.checkHaveXMLUtil = Clazz.defineMethod (c$, "checkHaveXMLUtil", 
+ function () {
+if (!J.jvxl.data.JvxlCoder.haveXMLUtil) {
+if (JV.Viewer.isJS) J.api.Interface.getInterface ("JU.XmlUtil", null, "show");
+J.jvxl.data.JvxlCoder.haveXMLUtil = true;
+}});
 c$.appendEncodedBitSetTag = Clazz.defineMethod (c$, "appendEncodedBitSetTag", 
  function (sb, name, bs, count, attribs) {
 if (count < 0) count = JU.BSUtil.cardinalityOf (bs);
@@ -111,6 +115,7 @@ return J.jvxl.data.JvxlCoder.jvxlGetInfoData (jvxlData, jvxlData.vertexDataOnly)
 c$.jvxlGetInfoData = Clazz.defineMethod (c$, "jvxlGetInfoData", 
 function (jvxlData, vertexDataOnly) {
 if (jvxlData.jvxlSurfaceData == null) return "";
+J.jvxl.data.JvxlCoder.checkHaveXMLUtil ();
 var attribs =  new JU.Lst ();
 var nSurfaceInts = jvxlData.nSurfaceInts;
 var bytesUncompressedEdgeData = (vertexDataOnly ? 0 : jvxlData.jvxlEdgeData.length - 1);

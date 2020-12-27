@@ -1,8 +1,15 @@
+//Udo Borkowski 6/13/2016 12:39:12 AM "matches"
+//BH 12/25/2016 7:28:07 AM fix for find() not updating this.leftBound
+//BH fix for String not having .length() or .subSequence()
+//BH fix for not reinitializing correctly
+//BH note that start(groupIndex) is not implemented for groupIndex > 0
+
 Clazz.declarePackage("java.util.regex");
 Clazz.load(["java.util.regex.MatchResult"],"java.util.regex.Matcher",["java.lang.IllegalArgumentException","$.IndexOutOfBoundsException","$.NullPointerException","$.StringBuffer"],function(){
 c$=Clazz.decorateAsClass(function(){
 this.pat=null;
 this.string=null;
+this.strString=null;
 this.leftBound=-1;
 this.rightBound=-1;
 this.appendPos=0;
@@ -12,6 +19,91 @@ this.replacementParts=null;
 this.results=null;
 Clazz.instantialize(this,arguments);
 },java.util.regex,"Matcher",null,java.util.regex.MatchResult);
+
+Clazz.defineMethod(c$,"reset",
+function(newSequence){
+if(newSequence==null){
+throw new NullPointerException("Empty new sequence!");
+}this.string=newSequence;
+this.strString = null;
+return this.reset();
+},"CharSequence");
+
+Clazz.defineMethod(c$,"reset",
+function(){
+this.leftBound=0;
+this.rightBound=this.string.length();
+this.appendPos=0;
+this.replacement=null;
+{
+var flags=""+(this.pat.regexp.ignoreCase?"i":"")
++(this.pat.regexp.global?"g":"")
++(this.pat.regexp.multiline?"m":"");
+this.pat.regexp=new RegExp(this.pat.regexp.source,flags);
+}return this;
+});
+
+Clazz.defineMethod(c$,"find",
+function(startIndex){
+return this.findFrom(startIndex);
+},"~N");
+
+Clazz.defineMethod(c$,"find",
+function(){
+// 'find next'
+return this.findImpl();
+});
+
+Clazz.defineMethod(c$,"findFrom",
+function(startIndex){
+// BH for SAEM
+var stringLength=this.string.length();
+if(startIndex<0||startIndex>stringLength)throw new IndexOutOfBoundsException("Out of bound "+startIndex);
+this.leftBound = startIndex;
+this.rightBound = stringLength;
+return this.findImpl();
+},"~N");
+
+Clazz.defineMethod(c$,"findImpl",
+function(){
+// BH for SAEM
+if (this.strString == null)
+  this.strString = this.string.toString();
+var s = (this.rightBound == this.strString.length ? this.strString : this.string.subSequence(0,this.rightBound));
+this.pat.regexp.lastIndex = this.leftBound;
+this.results=this.pat.regexp.exec(s);
+this.leftBound = this.pat.regexp.lastIndex;
+return(this.results!=null);
+});
+
+Clazz.defineMethod(c$,"start",
+function(){
+return this.start(0);
+});
+
+Clazz.defineMethod(c$,"start",
+function(groupIndex){
+return this.startImpl(groupIndex);
+},"~N");
+
+Clazz.defineMethod(c$,"startImpl",
+function(groupIndex){
+// BH SAEM
+// NOTE: TODO groupIndex is not implemented!
+return this.pat.regexp.lastIndex - this.results[0].length;
+},"~N");
+
+Clazz.defineMethod(c$,"end",
+function(){
+return this.end(0);
+});
+
+Clazz.defineMethod(c$,"end",
+function(groupIndex){
+  return this.pat.regexp.lastIndex;
+},"~N");
+
+
 Clazz.defineMethod(c$,"appendReplacement",
 function(sb,replacement){
 this.processedRepl=this.processReplacement(replacement);
@@ -82,26 +174,8 @@ if(this.replacementParts!=null&&replacementPos!=res.length()){
 this.replacementParts[this.replacementParts.length]=res.subSequence(replacementPos,res.length());
 }return res.toString();
 }},$fz.isPrivate=true,$fz),"~S");
-Clazz.defineMethod(c$,"reset",
-function(newSequence){
-if(newSequence==null){
-throw new NullPointerException("Empty new sequence!");
-}this.string=newSequence;
-return this.reset();
-},"CharSequence");
-Clazz.defineMethod(c$,"reset",
-function(){
-this.leftBound=0;
-this.rightBound=this.string.length();
-this.appendPos=0;
-this.replacement=null;
-{
-var flags=""+(this.pat.regexp.ignoreCase?"i":"")
-+(this.pat.regexp.global?"g":"")
-+(this.pat.regexp.multiline?"m":"");
-this.pat.regexp=new RegExp(this.pat.regexp.source,flags);
-}return this;
-});
+
+
 Clazz.defineMethod(c$,"region",
 function(leftBound,rightBound){
 if(leftBound>rightBound||leftBound<0||rightBound<0||leftBound>this.string.length()||rightBound>this.string.length()){
@@ -120,7 +194,7 @@ return sb.append(this.string.subSequence(this.appendPos,this.string.length()));
 Clazz.defineMethod(c$,"replaceFirst",
 function(replacement){
 this.reset();
-if(this.find()){
+if(this.findImpl()){
 var sb=new StringBuffer();
 this.appendReplacement(sb,replacement);
 return this.appendTail(sb).toString();
@@ -130,7 +204,7 @@ Clazz.defineMethod(c$,"replaceAll",
 function(replacement){
 var sb=new StringBuffer();
 this.reset();
-while(this.find()){
+while(this.findImpl()){
 this.appendReplacement(sb,replacement);
 }
 return this.appendTail(sb).toString();
@@ -149,41 +223,27 @@ Clazz.defineMethod(c$,"group",
 function(){
 return this.group(0);
 });
-Clazz.defineMethod(c$,"find",
-function(startIndex){
-var stringLength=this.string.length();
-if(startIndex<0||startIndex>stringLength)throw new IndexOutOfBoundsException("Out of bound "+startIndex);
-startIndex=this.findAt(startIndex);
-return false;
-},"~N");
+
 Clazz.defineMethod(c$,"findAt",
 ($fz=function(startIndex){
+// BH  what is this? 
 return-1;
 },$fz.isPrivate=true,$fz),"~N");
-Clazz.defineMethod(c$,"find",
-function(){
-{
-this.results=this.pat.regexp.exec(this.string.subSequence(this.leftBound,this.rightBound));
-}return(this.results!=null);
-});
-Clazz.defineMethod(c$,"start",
-function(groupIndex){
-var beginningIndex=0;
-{
-beginningIndex=this.pat.regexp.lastIndex;
-}beginningIndex-=this.results[0].length;
-return beginningIndex;
-},"~N");
-Clazz.defineMethod(c$,"end",
-function(groupIndex){
-{
-return this.pat.regexp.lastIndex;
-}return-1;
-},"~N");
+
 Clazz.defineMethod(c$,"matches",
 function(){
-return this.find();
+// UB: the find must match the complete input and not modify the RE object
+var old_lastIndex = this.pat.regexp.lastIndex;
+try {
+this.findImpl();
+var r = this.results;
+return r && r.length > 0 && r[0].length === r.input.length;
+} finally {
+// Restore the old state of the RE object
+this.pat.regexp.lastIndex = old_lastIndex;
+}
 });
+
 c$.quoteReplacement=Clazz.defineMethod(c$,"quoteReplacement",
 function(string){
 if(string.indexOf('\\') < 0 && string.indexOf ('$')<0)return string;
@@ -210,17 +270,9 @@ Clazz.defineMethod(c$,"lookingAt",
 function(){
 return false;
 });
-Clazz.defineMethod(c$,"start",
-function(){
-return this.start(0);
-});
 Clazz.overrideMethod(c$,"groupCount",
 function(){
 return this.results==null?0:this.results.length;
-});
-Clazz.defineMethod(c$,"end",
-function(){
-return this.end(0);
 });
 Clazz.defineMethod(c$,"toMatchResult",
 function(){
@@ -269,12 +321,14 @@ return this;
 Clazz.makeConstructor(c$,
 function(pat,cs){
 this.pat=pat;
+if (typeof cs.length == "number")
+ cs = new StringBuffer(cs);
 this.string=cs;
 this.leftBound=0;
-this.rightBound=this.string.toString().length;
+this.rightBound=this.string.length();
 },"java.util.regex.Pattern,CharSequence");
 c$.$Matcher$1$=function(){
-Clazz.pu$h(self.c$);
+Clazz.pu$h(c$);
 c$=Clazz.decorateAsClass(function(){
 Clazz.prepareCallback(this,arguments);
 this.grN=0;

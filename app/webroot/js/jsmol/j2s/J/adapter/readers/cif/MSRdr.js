@@ -176,7 +176,7 @@ var pt;
 for (var i = 0; i < this.modDim; i++) {
 pt = this.getMod ("W_" + (i + 1));
 if (pt == null) {
-JU.Logger.info ("Not enough cell wave vectors for d=" + this.modDim);
+this.cr.appendLoadNote ("NOTE!: Not enough cell wave vectors for d=" + this.modDim);
 return;
 }this.fixDouble (pt);
 this.cr.appendLoadNote ("W_" + (i + 1) + " = " + JU.Escape.e (pt));
@@ -293,7 +293,9 @@ if (this.qlist100 == null) {
 this.qlist100 =  Clazz.newDoubleArray (this.modDim, 0);
 this.qlist100[0] = 1;
 }return this.qlist100;
-}return this.getMod ("F_" + fn + "_coefs_");
+}var p = this.getMod ("F_coefs_" + fn);
+if (p == null) p = this.getMod ("F_" + fn + "_coefs_");
+return p;
 }, "~S");
 Clazz.overrideMethod (c$, "getModType", 
 function (key) {

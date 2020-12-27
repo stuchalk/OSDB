@@ -50,8 +50,8 @@ var haveWarned = false;
 for (var i = bsAmino.nextSetBit (0); i >= 0; i = bsAmino.nextSetBit (i + 1)) {
 var ap = this.bioPolymers[i];
 if (!haveWarned && (ap.monomers[0]).getExplicitNH () != null) {
-if (dsspIgnoreHydrogens) sb.append (J.i18n.GT.o (J.i18n.GT._ ("NOTE: Backbone amide hydrogen positions are present and will be ignored. Their positions will be approximated, as in standard DSSP analysis.\nUse {0} to not use this approximation.\n\n"), "SET dsspCalculateHydrogenAlways FALSE"));
- else sb.append (J.i18n.GT.o (J.i18n.GT._ ("NOTE: Backbone amide hydrogen positions are present and will be used. Results may differ significantly from standard DSSP analysis.\nUse {0} to ignore these hydrogen positions.\n\n"), "SET dsspCalculateHydrogenAlways TRUE"));
+if (dsspIgnoreHydrogens) sb.append (J.i18n.GT.o (J.i18n.GT.$ ("NOTE: Backbone amide hydrogen positions are present and will be ignored. Their positions will be approximated, as in standard DSSP analysis.\nUse {0} to not use this approximation.\n\n"), "SET dsspCalculateHydrogenAlways FALSE"));
+ else sb.append (J.i18n.GT.o (J.i18n.GT.$ ("NOTE: Backbone amide hydrogen positions are present and will be used. Results may differ significantly from standard DSSP analysis.\nUse {0} to ignore these hydrogen positions.\n\n"), "SET dsspCalculateHydrogenAlways TRUE"));
 haveWarned = true;
 }ap.recalculateLeadMidpointsAndWingVectors ();
 var n = ap.monomerCount;

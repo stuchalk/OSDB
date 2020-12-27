@@ -2,10 +2,11 @@ Clazz.declarePackage ("J.adapter.readers.xtal");
 Clazz.load (["J.adapter.smarter.AtomSetCollectionReader", "JU.Lst"], "J.adapter.readers.xtal.VaspOutcarReader", ["java.lang.Double", "JU.DF", "$.PT"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.atomNames = null;
+this.haveIonNames = false;
 this.ac = 0;
 this.inputOnly = false;
 this.mDsimulation = false;
-this.isVersion5 = false;
+this.vaspVersion = 0;
 this.elementNames = null;
 this.gibbsEnergy = null;
 this.gibbsEntropy = null;
@@ -20,15 +21,17 @@ this.elementNames =  new JU.Lst ();
 });
 Clazz.overrideMethod (c$, "initializeReader", 
 function () {
+this.isPrimitive = true;
 this.setSpaceGroupName ("P1");
 this.setFractionalCoordinates (true);
 this.inputOnly = this.checkFilterKey ("INPUT");
 });
 Clazz.overrideMethod (c$, "checkLine", 
 function () {
-if (this.line.contains (" vasp.5")) {
-this.isVersion5 = true;
-} else if (this.line.toUpperCase ().contains ("TITEL")) {
+if (this.vaspVersion == 0 && this.line.contains (" vasp.")) {
+this.readVersion ();
+if (this.vaspVersion > 0) this.appendLoadNote ("VASP version " + this.vaspVersion + " " + this.line);
+} else if (this.line.toUpperCase ().startsWith (" POTCAR:")) {
 this.readElementNames ();
 } else if (this.line.contains ("ions per type")) {
 this.readAtomCountAndSetNames ();
@@ -36,7 +39,7 @@ this.readAtomCountAndSetNames ();
 this.mDsimulation = true;
 } else if (this.line.contains ("direct lattice vectors")) {
 this.readUnitCellVectors ();
-} else if (this.line.contains ("position of ions in fractional coordinates")) {
+} else if (this.ac > 0 && this.line.contains ("position of ions in fractional coordinates")) {
 this.readInitialCoordinates ();
 if (this.inputOnly) this.continuing = false;
 } else if (this.line.contains ("POSITION")) {
@@ -50,13 +53,22 @@ this.readMdyn ();
 this.readFrequency ();
 }return true;
 });
+Clazz.defineMethod (c$, "readVersion", 
+ function () {
+var tokens = JU.PT.split (this.line, ".");
+this.vaspVersion = JU.PT.parseInt (tokens[1]);
+});
 Clazz.overrideMethod (c$, "finalizeSubclassReader", 
 function () {
 this.setSymmetry ();
 });
 Clazz.defineMethod (c$, "readElementNames", 
  function () {
-this.elementNames.addLast (this.getTokens ()[3]);
+this.line = JU.PT.rep (this.line, " _ ", "_");
+var tokens = this.getTokens ();
+var pt = tokens[1].indexOf (":");
+var name = (pt >= 0 ? tokens[1].substring (0, pt) : tokens[2]);
+this.elementNames.addLast (name);
 });
 Clazz.defineMethod (c$, "readAtomCountAndSetNames", 
  function () {
@@ -67,7 +79,7 @@ for (var i = 0; i < tokens.length; i++) this.ac += (numofElement[i] = this.parse
 
 this.atomNames =  new Array (this.ac);
 var nElements = this.elementNames.size ();
-for (var pt = 0, i = 0; i < nElements; i++) for (var j = 0; j < numofElement[i]; j++) this.atomNames[pt++] = this.elementNames.get (i);
+for (var pt = 0, i = 0; i < nElements; i++) for (var j = 0; j < numofElement[i] && pt < this.ac; j++) this.atomNames[pt++] = this.elementNames.get (i);
 
 
 });
@@ -78,7 +90,7 @@ this.setSymmetry ();
 this.asc.newAtomSet ();
 this.setAtomSetInfo ();
 }var f =  Clazz.newFloatArray (3, 0);
-for (var i = 0; i < 3; i++) this.addPrimitiveLatticeVector (i, this.fillFloatArray (this.fixMinus (this.rd ()), 0, f), 0);
+for (var i = 0; i < 3; i++) this.addExplicitLatticeVector (i, this.fillFloatArray (this.fixMinus (this.rd ()), 0, f), 0);
 
 });
 Clazz.defineMethod (c$, "fixMinus", 
@@ -156,7 +168,7 @@ Clazz.defineMethod (c$, "readFrequency",
  function () {
 var pt = this.asc.iSet;
 this.asc.baseSymmetryAtomCount = this.ac;
-if (this.isVersion5) {
+if (this.vaspVersion >= 5) {
 this.readLines (3);
 } else {
 this.discardLinesUntilContains ("Eigenvectors after division by SQRT(mass)");
@@ -168,9 +180,9 @@ var iAtom0 = this.asc.ac;
 this.cloneLastAtomSet (this.ac, null);
 if (!ignore[0]) {
 this.asc.iSet = ++pt;
-this.asc.setAtomSetFrequency (null, null, this.line.substring (this.line.indexOf ("2PiTHz") + 6, this.line.indexOf ("c") - 1).trim (), null);
+this.asc.setAtomSetFrequency (this.vibrationNumber, null, null, this.line.substring (this.line.indexOf ("2PiTHz") + 6, this.line.indexOf ("c") - 1).trim (), null);
 }this.rd ();
-this.fillFrequencyData (iAtom0, this.ac, this.ac, ignore, true, 35, 12, null, 0);
+this.fillFrequencyData (iAtom0, this.ac, this.ac, ignore, true, 35, 12, null, 0, null);
 this.rd ();
 }
 });

@@ -231,7 +231,7 @@ function plotClickCallback(event, pos, item) {
 	if (!item)return
 	var model = item.datapoint[2]
 	var label = item.datapoint[3]
-	var script = ' model 1.'+model+';font echo 16; set echo top left;echo ' + label
+	var script = ' animation off;model 1.'+model+';font echo 16; set echo top left;echo ' + label
 
 	// It's important to use jmolScriptWait here, otherwise Jmol 
 	// will impose a 100 ms wait of its own in processing the script queue.
@@ -287,7 +287,7 @@ function showTooltip(x, y, contents, pos) {
 
 <table><tr><td bgcolor=lightblue align=center>
 <div id="imagediv" class="printonly"></div>
-<div id="appletdiv" style="width:450;height:470;text-align:center">
+<div id="appletdiv" style="width:450px;height:470px;text-align:center">
 <script type="text/javascript">
 
   Jmol.Info.j2sPath = "j2s"
@@ -298,13 +298,17 @@ function showTooltip(x, y, contents, pos) {
 
 </script>
 </div>
-animation
+
+animation:
  <a href='javascript:jmolScript("model first")'>first</a> 
  <a href='javascript:jmolScript("model prev")'>previous</a> 
  <a href='javascript:jmolScript("animation mode palindrome 1 1;animation play")'>on</a> 
  <a href='javascript:jmolScript("animation off")'>off</a> 
  <a href='javascript:jmolScript("model next")'>next</a> 
- <a href='javascript:jmolScript("model last")'>last</a> 
+ <a href='javascript:jmolScript("model last")'>last</a>
+&nbsp;&nbsp;&nbsp;&nbsp; view: 
+ <a href='javascript:jmolScript("spacefill 100%")'>Van der Waals</a> 
+ <a href='javascript:jmolScript("spacefill 23%")'>Ball and Stick</a> 
 <br>
 </td>
 <td bgcolor=lightblue align=center>

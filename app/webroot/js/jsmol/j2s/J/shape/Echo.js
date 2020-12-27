@@ -80,6 +80,10 @@ this.currentObject.setMovableYPercent (Clazz.floatToInt (pt.y));
 if (this.currentObject != null) {
 this.currentObject.setXYZ (value, true);
 }return;
+}if ("offset" === propertyName) {
+if (this.currentObject != null) {
+this.currentObject.pymolOffset = value;
+}return;
 }if ("target" === propertyName) {
 this.thisID = null;
 var target = (value).intern ().toLowerCase ();

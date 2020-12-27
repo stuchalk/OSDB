@@ -78,7 +78,7 @@ ptSlater[pt++] = this.htFuncMap.get (key).intValue ();
 var n = this.slaters.size ();
 ptSlater[pt++] = n;
 this.htFuncMap.put (key, Integer.$valueOf (n));
-this.addSlater (this.createSlaterData (iAtom, atoms[iAtom].elementSymbol, code), n);
+this.addSlater (this.createSlaterData (iAtom + 1, atoms[iAtom].elementSymbol, code), n);
 }}
 this.discardLinesUntilContains (":-");
 this.rd ();

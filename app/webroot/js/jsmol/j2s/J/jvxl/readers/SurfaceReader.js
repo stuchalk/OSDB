@@ -151,13 +151,18 @@ this.volumeData.setMappingPlane (null);
 } else {
 if (!this.readVolumeData (false)) return false;
 this.generateSurfaceData ();
-}if (this.jvxlFileHeaderBuffer != null) {
+}if (this.jvxlFileHeaderBuffer == null) {
+this.jvxlData.jvxlFileTitle = "";
+} else {
 var s = this.jvxlFileHeaderBuffer.toString ();
 var i = s.indexOf ('\n', s.indexOf ('\n', s.indexOf ('\n') + 1) + 1) + 1;
 this.jvxlData.jvxlFileTitle = s.substring (0, i);
 }if (this.params.contactPair == null) this.setBBoxAll ();
-if (!this.params.isSilent) JU.Logger.info ("boundbox corners " + JU.Escape.eP (this.xyzMin) + " " + JU.Escape.eP (this.xyzMax));
-this.jvxlData.boundingBox =  Clazz.newArray (-1, [this.xyzMin, this.xyzMax]);
+this.jvxlData.isValid = (this.xyzMin.x != 3.4028235E38);
+if (!this.params.isSilent) {
+if (!this.jvxlData.isValid) JU.Logger.error ("no isosurface points were found!");
+ else JU.Logger.info ("boundbox corners " + JU.Escape.eP (this.xyzMin) + " " + JU.Escape.eP (this.xyzMax));
+}this.jvxlData.boundingBox =  Clazz.newArray (-1, [this.xyzMin, this.xyzMax]);
 this.jvxlData.dataMin = this.dataMin;
 this.jvxlData.dataMax = this.dataMax;
 this.jvxlData.cutoff = (this.isJvxl ? this.jvxlCutoff : this.params.cutoff);

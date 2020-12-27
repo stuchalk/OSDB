@@ -21,7 +21,7 @@ var JmolInfo = {
 	color: "black",
 	use: "HTML5",
   addSelectionOptions: true,
-	serverURL: "http://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
+	serverURL: "https://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
   disableJ2SLoadMonitor: true,
   disableInitialConsole: true,
   jarPath: "java",
@@ -46,12 +46,18 @@ var JMEInfo = {
 //Jmol.setGrabberOptions([[":", "PubChem"]])
 Jmol.setGrabberOptions([["$", "NCI"]])
         
+        
+function showSmiles(from3d) {
+  $("#jsmolsmiles").html(jmol._getSmiles("/opensmiles/"));
+  $("#jsmesmiles").html(jme._getSmiles());
+}
+
 </script>
 </head>
 <body>
 <table width=1000 cellpadding=10>
 <tr><td>
-Test of Jmol/JME interface -- switch back and forth between 2D and 3D, changing the model as desired. Status: working; 3D->2D loses stereochemistry.
+Test of Jmol/JME interface -- switch back and forth between 2D and 3D, changing the model as desired. 
 Requires <a href=../jsmol/js/JSmolJME.js>JSmolJME.js</a>. Code on page:
 <pre>
 <code>
@@ -62,9 +68,9 @@ jme = Jmol.getJMEApplet("jme", JMEInfo, jmol);
 </td>
 <td><div id="jmediv" style="position:relative;width:350px;height:300px;"></div></td>
 <td>
-<input type="button" onclick="Jmol.show2d(jmol, false)" value="&#8594" />
+<input type="button" onclick="Jmol.show2d(jmol, false);showSmiles(false)" value="&#8594" />
 <br>  
-<input type="button" onclick="Jmol.show2d(jmol, true)" value="&#8592" />
+<input type="button" onclick="Jmol.show2d(jmol, true);showSmiles(true)" value="&#8592" />
 </td>
 <td>
 
@@ -73,12 +79,17 @@ jme = Jmol.getJMEApplet("jme", JMEInfo, jmol);
 <a href="javascript:Jmol.showInfo(jmol, false)">no info</a>
 <br>
 <script>
-
-
 jmol = Jmol.getApplet(jmol, JmolInfo)
 jme = Jmol.getJMEApplet(jme, JMEInfo, jmol);
+Jmol.jmolButton(jmol, "calculate chirality;label %[chirality];background label yellow","show R/S")
+
 </script>
 </td>
-</tr></table>
+</tr>
+</table>
+<br>
+JSME SMILES: <span id="jsmesmiles"></span>
+<br>
+JSmol OpenSMILES: <span id="jsmolsmiles"></span>
 </body>
 </html>

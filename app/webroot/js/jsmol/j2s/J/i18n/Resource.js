@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.i18n");
-Clazz.load (null, "J.i18n.Resource", ["java.util.Hashtable", "JU.PT", "J.api.Interface", "JU.Logger", "JV.Viewer"], function () {
+Clazz.load (null, "J.i18n.Resource", ["java.util.Hashtable", "JU.PT", "$.Rdr", "J.translation.PO", "JU.Logger", "JV.FileManager", "$.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.resource = null;
 this.resourceMap = null;
@@ -17,10 +17,20 @@ if (vwr != null && vwr.isApplet) {
 var fname = JV.Viewer.appletIdiomaBase + "/" + name + ".po";
 JU.Logger.info ("Loading language resource " + fname);
 poData = vwr.getFileAsString3 (fname, false, "gt");
-return J.i18n.Resource.getResourceFromPO (poData);
-}className += name + ".Messages_" + name;
-var o = J.api.Interface.getInterface (className, vwr, "gt");
-return (o == null ? null :  new J.i18n.Resource (o, className));
+} else {
+try {
+var br = JV.FileManager.getBufferedReaderForResource (vwr,  new J.translation.PO (), "J/translation/", (className.indexOf ("Applet") >= 0 ? "JmolApplet/" : "Jmol/") + name + ".po");
+var data =  new Array (1);
+JU.Rdr.readAllAsString (br, 2147483647, false, data, 0);
+poData = data[0];
+} catch (e) {
+if (Clazz.exceptionOf (e, java.io.IOException)) {
+return null;
+} else {
+throw e;
+}
+}
+}return J.i18n.Resource.getResourceFromPO (poData);
 }, "JV.Viewer,~S,~S");
 Clazz.defineMethod (c$, "getString", 
 function (string) {

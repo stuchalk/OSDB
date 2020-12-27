@@ -6,9 +6,14 @@ function (v) {
 {
 return this.add1(v);
 }}, "~O");
+Clazz.defineMethod (c$, "removeItemAt", 
+function (location) {
+{
+return this._removeItemAt(location);
+}}, "~N");
 Clazz.defineMethod (c$, "removeObj", 
 function (v) {
 {
-return this.removeObject(v);
+return this._removeObject(v);
 }}, "~O");
 });

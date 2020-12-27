@@ -44,7 +44,7 @@ JU.Logger.warn ("cannot read line with FHI-aims lattice vector: " + this.line);
 } else if (this.nLatticeVectors == 3) {
 JU.Logger.warn ("more than 3 FHI-aims lattice vectors found with line: " + this.line);
 } else {
-this.addPrimitiveLatticeVector (this.nLatticeVectors++,  Clazz.newFloatArray (-1, [this.parseFloatStr (tokens[1]), this.parseFloatStr (tokens[2]), this.parseFloatStr (tokens[3])]), 0);
+this.addExplicitLatticeVector (this.nLatticeVectors++,  Clazz.newFloatArray (-1, [this.parseFloatStr (tokens[1]), this.parseFloatStr (tokens[2]), this.parseFloatStr (tokens[3])]), 0);
 this.setFractionalCoordinates (this.nLatticeVectors == 3);
 }}, "~A");
 Clazz.defineMethod (c$, "readAtom", 

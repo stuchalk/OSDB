@@ -21,12 +21,13 @@ this.returnChar ();
 return this.getValue (false);
 }, "~S,~B");
 Clazz.defineMethod (c$, "parse", 
-function (str) {
+function (str, asHashTable) {
 this.index = 0;
+this.asHashTable = asHashTable;
 this.str = str;
 this.len = str.length;
 return this.getValue (false);
-}, "~S");
+}, "~S,~B");
 Clazz.defineMethod (c$, "next", 
  function () {
 return (this.index < this.len ? this.str.charAt (this.index++) : '\0');
@@ -70,7 +71,7 @@ if (isKey && c != ':') c = String.fromCharCode ( 0);
 break;
 }
 if (isKey && c.charCodeAt (0) == 0) throw  new JU.JSONException ("invalid key");
-var string = this.str.substring (i, this.index);
+var string = this.str.substring (i, this.index).trim ();
 if (!isKey) {
 if (string.equals ("true")) {
 return Boolean.TRUE;
@@ -188,7 +189,7 @@ var l =  new JU.Lst ();
 switch (this.getChar ()) {
 case ']':
 return l;
-case 0:
+case '\0':
 throw  new JU.JSONException ("invalid array");
 }
 this.returnChar ();

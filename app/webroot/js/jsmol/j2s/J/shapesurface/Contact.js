@@ -1,6 +1,7 @@
 Clazz.declarePackage ("J.shapesurface");
-Clazz.load (["J.shapesurface.Isosurface", "JU.P3", "$.V3", "J.atomdata.RadiusData", "J.c.VDW"], "J.shapesurface.Contact", ["java.lang.Boolean", "$.Double", "$.Float", "java.util.Hashtable", "JU.BS", "$.CU", "$.Lst", "$.Measure", "J.atomdata.AtomData", "J.c.HB", "J.jvxl.data.MeshData", "$.VolumeData", "JS.T", "JU.BSUtil", "$.ContactPair", "$.Escape", "$.Logger", "$.TempArray"], function () {
+Clazz.load (["J.shapesurface.Isosurface", "JU.P3", "$.V3", "J.atomdata.RadiusData", "J.c.VDW"], "J.shapesurface.Contact", ["java.lang.Boolean", "$.Double", "$.Float", "java.util.Hashtable", "JU.BS", "$.CU", "$.Lst", "$.Measure", "J.atomdata.AtomData", "J.c.HB", "J.jvxl.data.JvxlCoder", "$.MeshData", "$.VolumeData", "JS.T", "JU.BSUtil", "$.BoxInfo", "$.ContactPair", "$.Escape", "$.Logger", "$.TempArray"], function () {
 c$ = Clazz.decorateAsClass (function () {
+this.displayType = 0;
 this.atoms = null;
 this.ac = 0;
 this.minData = 0;
@@ -24,10 +25,28 @@ function () {
 Clazz.superCall (this, J.shapesurface.Contact, "initShape", []);
 this.myType = "contact";
 });
+Clazz.overrideMethod (c$, "getProperty", 
+function (property, index) {
+return this.getPropC (property, index);
+}, "~S,~N");
+Clazz.defineMethod (c$, "getPropC", 
+function (property, index) {
+var thisMesh = this.thisMesh;
+if (index >= 0 && (index >= this.meshCount || (thisMesh = this.isomeshes[index]) == null)) return null;
+if (property === "jvxlFileInfo") {
+thisMesh.setJvxlColorMap (false);
+if (this.displayType == 134217750) {
+J.jvxl.data.JvxlCoder.jvxlCreateColorData (this.jvxlData, thisMesh.vvs);
+var minmax = thisMesh.getDataMinMax ();
+this.jvxlData.mappedDataMin = minmax[0];
+this.jvxlData.mappedDataMax = minmax[1];
+}return J.jvxl.data.JvxlCoder.jvxlGetInfo (this.jvxlData);
+}return this.getPropI (property, index);
+}, "~S,~N");
 Clazz.overrideMethod (c$, "setProperty", 
 function (propertyName, value, bs) {
 if ("set" === propertyName) {
-this.setContacts (value, !this.vwr.getTestFlag (4));
+this.setContacts (value, !this.vwr.getBoolean (603979965));
 return;
 }if ("init" === propertyName) {
 this.translucentLevel = 0;
@@ -194,6 +213,7 @@ var resolution = this.sg.params.resolution;
 var nContacts = pairs.size ();
 var volume = 0;
 if (displayType == 1073741961 && resolution == 3.4028235E38) resolution = (nContacts > 1000 ? 3 : 10);
+var box =  new JU.BoxInfo ();
 for (var i = nContacts; --i >= 0; ) {
 var cp = pairs.get (i);
 var oldScore = cp.score;
@@ -226,8 +246,16 @@ JU.Logger.setLogLevel (4);
 JU.Logger.info ("contact..." + i);
 JU.Logger.setLogLevel (0);
 }if (colorByType) this.setColorByScore ((cp.contactType == 1613238294 ? 4 : cp.score), nV);
+for (var j = this.thisMesh.vc; --j >= 0; ) box.addBoundBoxPoint (this.thisMesh.vs[j]);
+
 }
 JU.Logger.setLogLevel (logLevel);
+if (this.jvxlData.boundingBox == null) {
+System.out.println ("???");
+} else {
+this.jvxlData.boundingBox[0] = box.bbCorner0;
+this.jvxlData.boundingBox[1] = box.bbCorner1;
+}this.displayType = displayType;
 return volume;
 }, "JU.Lst,~N,~N,~A,~O,~B,~B");
 Clazz.defineMethod (c$, "setColorByScore", 
@@ -312,7 +340,7 @@ default:
 }
 }
 }
-for (var i = bsBad.length (); --i >= 0; ) if (bsBad.get (i)) list.remove (i);
+for (var i = bsBad.length (); --i >= 0; ) if (bsBad.get (i)) list.removeItemAt (i);
 
 if (JU.Logger.debugging) for (var i = 0; i < list.size (); i++) JU.Logger.debug (list.get (i).toString ());
 
@@ -325,7 +353,7 @@ if (atomA.mi != atomB.mi) return false;
 if (atomA.isCovalentlyBonded (atomB)) return true;
 var bondsOther = atomB.bonds;
 var bonds = atomA.bonds;
-for (var i = 0; i < bondsOther.length; i++) {
+if (bondsOther != null && bonds != null) for (var i = 0; i < bondsOther.length; i++) {
 var atom2 = bondsOther[i].getOtherAtom (atomB);
 if (atomA.isCovalentlyBonded (atom2)) return true;
 for (var j = 0; j < bonds.length; j++) if (bonds[j].getOtherAtom (atomA).isCovalentlyBonded (atom2)) return true;
@@ -411,7 +439,9 @@ this.setPropI ("sasurface", Float.$valueOf (0), null);
 this.setPropI ("map", Boolean.TRUE, null);
 params.volumeData = volumeData;
 this.setPropI ("sasurface", Float.$valueOf (0), null);
-if (displayType != 4106) iSlab0 = -100;
+if (displayType == 134217750) {
+iSlab0 = -100;
+}break;
 }
 if (iSlab0 != iSlab1) this.thisMesh.getMeshSlicer ().slabPolygons (JU.TempArray.getSlabWithinRange (iSlab0, iSlab1), false);
 if (displayType != 2097180) this.thisMesh.setMerged (true);

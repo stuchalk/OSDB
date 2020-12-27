@@ -3,7 +3,7 @@ Clazz.load (["J.export._VrmlExporter"], "J.export._X3dExporter", ["JU.Lst", "$.P
 c$ = Clazz.declareType (J["export"], "_X3dExporter", J["export"]._VrmlExporter);
 Clazz.makeConstructor (c$, 
 function () {
-Clazz.superConstructor (this, J["export"]._X3dExporter, []);
+Clazz.superConstructor (this, J["export"]._X3dExporter);
 this.useTable =  new J["export"].UseTable ("USE='");
 });
 Clazz.overrideMethod (c$, "outputHeader", 
@@ -25,29 +25,48 @@ this.output ("<Background skyColor='" + this.rgbFractionalFromColix (this.backgr
 var angle = this.getViewpoint ();
 this.output ("<Viewpoint fieldOfView='" + angle);
 this.output ("' position='");
+this.cameraPosition.z *= this.exportScale;
 this.output (this.cameraPosition);
 this.output ("' orientation='");
 this.output (this.tempP1);
 this.output (" " + -this.viewpoint.angle + "'\n jump='true' description='v1'/>\n");
-this.output ("\n  <!-- ");
+this.output ("\n  <!-- \n");
 this.output (this.getJmolPerspective ());
 this.output ("\n  -->\n\n");
-this.output ("<Transform translation='");
-this.tempP1.setT (this.center);
-this.tempP1.scale (-1);
-this.output (this.tempP1);
-this.output ("'>\n");
+this.commentChar = null;
+this.outputInitialTransform ();
 });
+Clazz.overrideMethod (c$, "outputAttrPt", 
+function (attr, pt) {
+this.output (" " + attr + "='" + pt.x + " " + pt.y + " " + pt.z + "'");
+}, "~S,JU.T3");
+Clazz.overrideMethod (c$, "pushMatrix", 
+function () {
+this.output ("<Transform ");
+});
+Clazz.overrideMethod (c$, "popMatrix", 
+function () {
+this.output ("</Transform>\n");
+});
+Clazz.overrideMethod (c$, "outputAttr", 
+function (attr, x, y, z) {
+this.output (" " + attr + "='" + J["export"].___Exporter.round (x) + " " + J["export"].___Exporter.round (y) + " " + J["export"].___Exporter.round (z) + "'");
+}, "~S,~N,~N,~N");
+Clazz.overrideMethod (c$, "outputRotation", 
+function (a) {
+this.output (" rotation='" + a.x + " " + a.y + " " + a.z + " " + a.angle + "'");
+}, "JU.A4");
 Clazz.overrideMethod (c$, "outputFooter", 
 function () {
 this.useTable = null;
-this.output ("</Transform>\n");
+this.popMatrix ();
+this.popMatrix ();
 this.output ("</Scene>\n");
 this.output ("</X3D>\n");
 });
 Clazz.overrideMethod (c$, "outputAppearance", 
 function (colix, isText) {
-var def = this.useTable.getDef ((isText ? "T" : "") + colix);
+var def = this.getDef ((isText ? "T" : "") + colix);
 this.output ("<Appearance ");
 if (def.charAt (0) == '_') {
 var color = this.rgbFractionalFromColix (colix);
@@ -57,33 +76,94 @@ if (isText) this.output ("0 0 0' specularColor='0 0 0' ambientIntensity='0.0' sh
 } else this.output (def + ">");
 this.output ("</Appearance>");
 }, "~N,~B");
-Clazz.defineMethod (c$, "outputTransRot", 
-function (pt1, pt2, x, y, z) {
+Clazz.overrideMethod (c$, "outputChildShapeStart", 
+function () {
+this.outputShapeStart ();
+});
+Clazz.overrideMethod (c$, "outputShapeStart", 
+function () {
+this.output ("<Shape>");
+this.outputFaceSetStart ();
+});
+Clazz.overrideMethod (c$, "outputChildStart", 
+function () {
+});
+Clazz.overrideMethod (c$, "outputChildClose", 
+function () {
+});
+Clazz.overrideMethod (c$, "outputDefChildFaceSet", 
+function (child) {
+if (child != null) this.output ("DEF='" + child + "'");
+}, "~S");
+Clazz.overrideMethod (c$, "outputFaceSetStart", 
+function () {
+this.output ("<IndexedFaceSet ");
+});
+Clazz.overrideMethod (c$, "outputFaceSetClose", 
+function () {
+this.output ("</IndexedFaceSet>\n");
+});
+Clazz.overrideMethod (c$, "outputUseChildClose", 
+function (child) {
+this.output (child + "/>");
+}, "~S");
+Clazz.overrideMethod (c$, "outputChildShapeClose", 
+function () {
+this.outputShapeClose ();
+});
+Clazz.overrideMethod (c$, "outputShapeClose", 
+function () {
+this.output ("</Shape>\n");
+});
+Clazz.overrideMethod (c$, "outputCloseTag", 
+function () {
+this.output (">\n");
+});
+Clazz.overrideMethod (c$, "outputTriangle", 
+function (pt1, pt2, pt3, colix) {
+this.output ("<Shape>\n");
+this.output ("<IndexedFaceSet solid='false' ");
+this.output ("coordIndex='0 1 2 -1'>");
+this.output ("<Coordinate point='");
+this.output (pt1);
 this.output (" ");
-this.outputTransRot (pt1, pt2, x, y, z, "='", "'");
-}, "JU.P3,JU.P3,~N,~N,~N");
+this.output (pt2);
+this.output (" ");
+this.output (pt3);
+this.output ("'/>");
+this.output ("</IndexedFaceSet>\n");
+this.outputAppearance (colix, false);
+this.output ("\n</Shape>\n");
+}, "JU.T3,JU.T3,JU.T3,~N");
 Clazz.overrideMethod (c$, "outputCircle", 
 function (pt1, pt2, radius, colix, doFill) {
 if (doFill) {
-this.output ("<Transform translation='");
+this.pushMatrix ();
+this.output ("translation='");
 this.tempV1.ave (this.tempP3, pt1);
 this.output (this.tempV1);
-this.output ("'><Billboard axisOfRotation='0 0 0'><Transform rotation='1 0 0 1.5708'>");
-this.outputCylinderChildScaled (pt1, this.tempP3, colix, 2, radius);
-this.output ("</Transform></Billboard>");
-this.output ("</Transform>\n");
+this.output ("'><Billboard axisOfRotation='0 0 0'>");
+this.pushMatrix ();
+this.output ("rotation='1 0 0 1.5708'");
+var height = pt1.distance (pt2);
+this.outputAttr ("scale", radius, height, radius);
+this.output (">");
+this.outputCylinderChildScaled (colix, 2);
+this.popMatrix ();
+this.output ("</Billboard>");
+this.popMatrix ();
 return;
-}var child = this.useTable.getDef ("C" + colix + "_" + radius);
-this.output ("<Transform");
+}var child = this.getDef ("C" + colix + "_" + radius);
+this.pushMatrix ();
 this.outputTransRot (this.tempP3, pt1, 0, 0, 1);
 this.tempP3.set (1, 1, 1);
 this.tempP3.scale (radius);
-this.output (" scale='");
-this.output (this.tempP3);
-this.output ("'>\n<Billboard ");
+this.outputAttr ("scale", this.tempP3.x, this.tempP3.y, this.tempP3.z);
+this.output (">\n<Billboard ");
 if (child.charAt (0) == '_') {
 this.output ("DEF='" + child + "'");
-this.output (" axisOfRotation='0 0 0'><Transform>");
+this.output (" axisOfRotation='0 0 0'>");
+this.pushMatrix ();
 this.output ("<Shape><Extrusion beginCap='false' convex='false' endCap='false' creaseAngle='1.57'");
 this.output (" crossSection='");
 var rpd = 0.017453292;
@@ -99,105 +179,16 @@ this.output (J["export"].___Exporter.round (Math.sin (i * rpd)) + " 0 ");
 }
 this.output ("'/>");
 this.outputAppearance (colix, false);
-this.output ("</Shape></Transform>");
+this.output ("</Shape>");
+this.popMatrix ();
 } else {
 this.output (child + ">");
 }this.output ("</Billboard>\n");
-this.output ("</Transform>\n");
+this.popMatrix ();
 }, "JU.P3,JU.P3,~N,~N,~B");
-Clazz.overrideMethod (c$, "outputCone", 
-function (ptBase, ptTip, radius, colix) {
-radius = this.scale (radius);
-var height = this.scale (ptBase.distance (ptTip));
-this.output ("<Transform");
-this.outputTransRot (ptBase, ptTip, 0, 1, 0);
-this.output (">\n<Shape ");
-var cone = "o" + Clazz.floatToInt (height * 100) + "_" + Clazz.floatToInt (radius * 100);
-var child = this.useTable.getDef ("c" + cone + "_" + colix);
-if (child.charAt (0) == '_') {
-this.output ("DEF='" + child + "'>");
-cone = this.useTable.getDef (cone);
-this.output ("<Cone ");
-if (cone.charAt (0) == '_') {
-this.output ("DEF='" + cone + "' height='" + J["export"].___Exporter.round (height) + "' bottomRadius='" + J["export"].___Exporter.round (radius) + "'/>");
-} else {
-this.output (cone + "/>");
-}this.outputAppearance (colix, false);
-} else {
-this.output (child + ">");
-}this.output ("</Shape>\n");
-this.output ("</Transform>\n");
-}, "JU.P3,JU.P3,~N,~N");
-Clazz.overrideMethod (c$, "outputCylinder", 
-function (ptCenter, pt1, pt2, colix, endcaps, radius, ptX, ptY, checkRadius) {
-this.output ("<Transform");
-if (ptX == null) {
-this.outputTransRot (pt1, pt2, 0, 1, 0);
-} else {
-this.output (" translation='");
-this.output (ptCenter);
-this.output ("'");
-this.outputQuaternionFrame (ptCenter, ptY, pt1, ptX, 2, "='", "'");
-pt1.set (0, 0, -1);
-pt2.set (0, 0, 1);
-}this.output (">\n");
-this.outputCylinderChildScaled (pt1, pt2, colix, endcaps, radius);
-this.output ("\n</Transform>\n");
-if (endcaps == 3) {
-this.outputSphere (pt1, radius * 1.01, colix, true);
-this.outputSphere (pt2, radius * 1.01, colix, true);
-}return true;
-}, "JU.P3,JU.P3,JU.P3,~N,~N,~N,JU.P3,JU.P3,~B");
-Clazz.overrideMethod (c$, "outputCylinderChildScaled", 
-function (pt1, pt2, colix, endcaps, radius) {
-var length = this.scale (pt1.distance (pt2));
-radius = this.scale (radius);
-var child = this.useTable.getDef ("C" + colix + "_" + Clazz.floatToInt (length * 100) + "_" + radius + "_" + endcaps);
-this.output ("<Shape ");
-if (child.charAt (0) == '_') {
-this.output ("DEF='" + child + "'>");
-this.output ("<Cylinder ");
-var cyl = this.useTable.getDef ("c" + J["export"].___Exporter.round (length) + "_" + endcaps + "_" + radius);
-if (cyl.charAt (0) == '_') {
-this.output ("DEF='" + cyl + "' height='" + J["export"].___Exporter.round (length) + "' radius='" + radius + "'" + (endcaps == 2 ? "" : " top='false' bottom='false'") + "/>");
-} else {
-this.output (cyl + "/>");
-}this.outputAppearance (colix, false);
-} else {
-this.output (child + ">");
-}this.output ("</Shape>");
-}, "JU.P3,JU.P3,~N,~N,~N");
-Clazz.overrideMethod (c$, "outputEllipsoid", 
-function (center, points, colix) {
-this.output ("<Transform translation='");
-this.output (center);
-this.output ("'");
-this.outputQuaternionFrame (center, points[1], points[3], points[5], 1, "='", "'");
-this.output (">");
-this.tempP3.set (0, 0, 0);
-this.outputSphereChildUnscaled (this.tempP3, 1.0, colix);
-this.output ("</Transform>\n");
-}, "JU.P3,~A,~N");
-Clazz.overrideMethod (c$, "outputSphereChildUnscaled", 
-function (center, radius, colix) {
-this.output ("<Transform translation='");
-this.output (center);
-this.output ("'>\n<Shape ");
-var child = this.useTable.getDef ("S" + colix + "_" + Clazz.floatToInt (radius * 100));
-if (child.charAt (0) == '_') {
-this.output ("DEF='" + child + "'>");
-this.output ("<Sphere radius='" + radius + "'/>");
-this.outputAppearance (colix, false);
-} else {
-this.output (child + ">");
-}this.output ("</Shape>\n");
-this.output ("</Transform>\n");
-}, "JU.T3,~N,~N");
-Clazz.overrideMethod (c$, "outputSurface", 
-function (vertices, normals, colixes, indices, polygonColixes, nVertices, nPolygons, nFaces, bsPolygons, faceVertexMax, colix, colorList, htColixes, offset) {
-this.output ("<Shape>\n");
-this.outputAppearance (colix, false);
-this.output ("<IndexedFaceSet \n");
+Clazz.overrideMethod (c$, "outputGeometry", 
+function (vertices, normals, colixes, indices, polygonColixes, nVertices, nPolygons, bsPolygons, faceVertexMax, colorList, htColixes, offset) {
+this.output (" creaseAngle='0.5'\n");
 if (polygonColixes != null) this.output (" colorPerVertex='false'\n");
 this.output ("coordIndex='\n");
 var map =  Clazz.newIntArray (nVertices, 0);
@@ -229,50 +220,11 @@ this.output ("'/>\n");
 this.output ("<Color color='\n");
 this.outputColors (colorList);
 this.output ("'/>\n");
-}this.output ("</IndexedFaceSet>\n");
-this.output ("</Shape>\n");
-}, "~A,~A,~A,~A,~A,~N,~N,~N,JU.BS,~N,~N,JU.Lst,java.util.Map,JU.P3");
-Clazz.overrideMethod (c$, "outputTriangle", 
-function (pt1, pt2, pt3, colix) {
-this.output ("<Shape>\n");
-this.output ("<IndexedFaceSet solid='false' ");
-this.output ("coordIndex='0 1 2 -1'>");
-this.output ("<Coordinate point='");
-this.output (pt1);
-this.output (" ");
-this.output (pt2);
-this.output (" ");
-this.output (pt3);
-this.output ("'/>");
-this.output ("</IndexedFaceSet>\n");
-this.outputAppearance (colix, false);
-this.output ("\n</Shape>\n");
-}, "JU.T3,JU.T3,JU.T3,~N");
+}}, "~A,~A,~A,~A,~A,~N,~N,JU.BS,~N,JU.Lst,java.util.Map,JU.P3");
 Clazz.overrideMethod (c$, "outputTextPixel", 
 function (pt, argb) {
 }, "JU.P3,~N");
 Clazz.overrideMethod (c$, "plotText", 
 function (x, y, z, colix, text, font3d) {
-this.output ("<Transform translation='");
-this.output (this.setFont (x, y, z, colix, text, font3d));
-this.output ("'>");
-this.output ("<Billboard ");
-if (this.fontChild.charAt (0) == '_') {
-this.output ("DEF='" + this.fontChild + "' axisOfRotation='0 0 0'>" + "<Transform translation='0.0 0.0 0.0'>" + "<Shape>");
-this.outputAppearance (colix, true);
-this.output ("<Text string=" + JU.PT.esc (text) + ">");
-this.output ("<FontStyle ");
-var fontstyle = this.useTable.getDef ("F" + this.fontFace + this.fontStyle);
-if (fontstyle.charAt (0) == '_') {
-this.output ("DEF='" + fontstyle + "' size='" + this.fontSize + "' family='" + this.fontFace + "' style='" + this.fontStyle + "'/>");
-} else {
-this.output (fontstyle + "/>");
-}this.output ("</Text>");
-this.output ("</Shape>");
-this.output ("</Transform>");
-} else {
-this.output (this.fontChild + ">");
-}this.output ("</Billboard>\n");
-this.output ("</Transform>\n");
-}, "~N,~N,~N,~N,~S,javajs.awt.Font");
+}, "~N,~N,~N,~N,~S,JU.Font");
 });

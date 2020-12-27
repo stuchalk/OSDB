@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.io");
-Clazz.load (null, "J.io.JmolUtil", ["java.io.BufferedInputStream", "$.BufferedReader", "java.net.URL", "java.util.Hashtable", "JU.AU", "$.Lst", "$.OC", "$.PT", "$.Rdr", "J.adapter.smarter.AtomSetCollection", "J.api.Interface", "JU.Logger", "JV.FileManager"], function () {
+Clazz.load (null, "J.io.JmolUtil", ["java.io.BufferedInputStream", "$.BufferedReader", "java.net.URL", "java.util.Hashtable", "JU.AU", "$.Lst", "$.OC", "$.PT", "$.Rdr", "J.adapter.smarter.AtomSetCollection", "J.api.Interface", "JU.Logger", "JV.FileManager", "$.Viewer"], function () {
 c$ = Clazz.declareType (J.io, "JmolUtil");
 Clazz.makeConstructor (c$, 
 function () {
@@ -16,10 +16,10 @@ var isBMP = fullPathName.toUpperCase ().endsWith ("BMP");
 if (forceSync || fullPathName.indexOf ("|") > 0 || isBMP) {
 var ret = vwr.fm.getFileAsBytes (fullPathName, null);
 if (!JU.AU.isAB (ret)) return "" + ret;
-if (vwr.isJS) info =  Clazz.newArray (-1, [echoName, fullPathNameOrBytes, ret]);
+if (JV.Viewer.isJS) info =  Clazz.newArray (-1, [echoName, fullPathNameOrBytes, ret]);
  else image = apiPlatform.createImage (ret);
 } else if (JU.OC.urlTypeIndex (fullPathName) >= 0) {
-if (vwr.isJS) info =  Clazz.newArray (-1, [echoName, fullPathNameOrBytes, null]);
+if (JV.Viewer.isJS) info =  Clazz.newArray (-1, [echoName, fullPathNameOrBytes, null]);
  else try {
 image = apiPlatform.createImage ( new java.net.URL (Clazz.castNullAs ("java.net.URL"), fullPathName, null));
 } catch (e) {
@@ -31,7 +31,7 @@ throw e;
 }
 } else {
 createImage = true;
-}} else if (vwr.isJS) {
+}} else if (JV.Viewer.isJS) {
 info =  Clazz.newArray (-1, [echoName, JU.Rdr.guessMimeTypeForBytes (fullPathNameOrBytes), fullPathNameOrBytes]);
 } else {
 createImage = true;
@@ -47,7 +47,7 @@ var doCombine = (subFilePtr == 1);
 htParams.put ("zipSet", fileName);
 var subFileList = htParams.get ("subFileList");
 if (subFileList == null) subFileList = this.getSpartanSubfiles (zipDirectory);
-var subFileName = (subFileList == null || subFilePtr >= subFileList.length ? null : subFileList[subFilePtr]);
+var subFileName = (subFileList == null || subFilePtr >= subFileList.length ? htParams.get ("SubFileName") : subFileList[subFilePtr]);
 if (subFileName != null && (subFileName.startsWith ("/") || subFileName.startsWith ("\\"))) subFileName = subFileName.substring (1);
 var selectedFile = 0;
 if (subFileName == null && htParams.containsKey ("modelNumber")) {
@@ -65,12 +65,13 @@ var exceptFiles = (manifest.indexOf ("EXCEPT_FILES") >= 0);
 if (selectAll || subFileName != null) haveManifest = false;
 if (useFileManifest && haveManifest) {
 var path = JV.FileManager.getManifestScriptPath (manifest);
-if (path != null) return "NOTE: file recognized as a script file: " + fileName + path + "\n";
-}var vCollections =  new JU.Lst ();
+if (path != null) {
+return "NOTE: file recognized as a script file: " + fileName + path + "\n";
+}}var vCollections =  new JU.Lst ();
 var htCollections = (haveManifest ?  new java.util.Hashtable () : null);
 var nFiles = 0;
 try {
-var spartanData = (this.isSpartanZip (zipDirectory) ? vwr.fm.getJmb ().getSpartanData (is, zipDirectory) : null);
+var spartanData = (this.isSpartanZip (zipDirectory) ? vwr.fm.spartanUtil ().getData (is, zipDirectory) : null);
 var zpt = vwr.getJzt ();
 var ret;
 if (spartanData != null) {
@@ -124,7 +125,7 @@ return bis;
 var sData;
 if (JU.Rdr.isCompoundDocumentB (bytes)) {
 var jd = J.api.Interface.getInterface ("JU.CompoundDocument", vwr, "file");
-jd.setStream (zpt, JU.Rdr.getBIS (bytes), true);
+jd.setDocStream (zpt, JU.Rdr.getBIS (bytes));
 sData = jd.getAllDataFiles ("Molecule", "Input").toString ();
 } else {
 sData = JU.Rdr.fixUTF (bytes);

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JV");
-Clazz.load (null, "JV.ColorManager", ["java.lang.Float", "JU.AU", "J.c.PAL", "JU.C", "$.ColorEncoder", "$.Elements", "$.Logger", "JV.JC"], function () {
+Clazz.load (null, "JV.ColorManager", ["java.lang.Character", "$.Float", "JU.AU", "J.c.PAL", "JU.C", "$.ColorEncoder", "$.Elements", "$.Logger", "JV.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.ce = null;
 this.vwr = null;
@@ -63,7 +63,7 @@ var lo;
 var hi;
 switch (pid) {
 case 84:
-return (this.colorData == null || atom.i >= this.colorData.length ? 12 : this.ce.getColorIndex (this.colorData[atom.i]));
+return (this.colorData == null || atom.i >= this.colorData.length || Float.isNaN (this.colorData[atom.i]) ? 12 : this.ce.getColorIndex (this.colorData[atom.i]));
 case 0:
 case 1:
 id = atom.getAtomicAndIsotopeNumber ();
@@ -93,6 +93,10 @@ return this.ce.getColorIndexFromPalette (atom.group.getGroupParameter (111149057
 case 70:
 hi = this.vwr.ms.getSurfaceDistanceMax ();
 return this.ce.getColorIndexFromPalette (atom.getSurfaceDistance100 (), 0, hi, 7, false);
+case 24:
+id = atom.group.groupID;
+if (id >= 42) id = 24 + "PGCATU".indexOf (Character.toUpperCase (atom.group.group1)) - 1;
+return this.ce.getColorIndexFromPalette (id, 0, 0, 17, false);
 case 8:
 return this.ce.getColorIndexFromPalette (atom.group.groupID, 0, 0, 5, false);
 case 9:

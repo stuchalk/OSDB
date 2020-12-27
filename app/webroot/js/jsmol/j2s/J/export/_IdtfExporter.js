@@ -85,7 +85,7 @@ var fName = this.fileName.substring (this.fileName.lastIndexOf ("/") + 1);
 fName = fName.substring (fName.lastIndexOf ("\\") + 1);
 var name = fName + ".";
 name = name.substring (0, name.indexOf ("."));
-return "% Created by: Jmol " + JV.Viewer.getJmolVersion () + "\n% Creation date: " + this.getExportDate () + "\n% File created: " + this.fileName + " (" + this.out.getByteCount () + " bytes)\n\n" + "\n\\documentclass[12pt,letter]{article}" + "\n\\usepackage{hyperref}" + "\n\\usepackage{media9}" + "\n\\usepackage{verbatim}" + "\n\\pagestyle{empty}" + "\n\\begin{document}" + "\n    \\begin{center}" + "\n        \\addmediapath{./} % here you can set the path where is been saved the u3d file" + "\n        \\includemedia[" + "\n            label=" + name + "," + "\n            width=0.9\\textwidth," + "\n            height=0.9\\textheight," + "\n            activate=pageopen," + "\n            deactivate=pageclose," + "\n            3Dtoolbar=false," + "\n            3Dnavpane=false," + "\n            3Dmenu," + "\n            3Droo=" + this.cameraDistance + "," + "\n            3Dcoo= 0.0 0.0 0.0," + "\n            3Dc2c=0.0 0.0 1.0," + "\n            3Daac=" + this.aperatureAngle + "," + "\n            3Droll=0.0," + "\n            3Dbg=" + this.rgbFractionalFromColix (this.backgroundColix) + ", % to set the background color for 3D vwr; white = 1 1 1; so, you need to do the proportion: '255:1=[RGB]:x'" + "\n            transparent=false," + "\n            3Dlights=Headlamp," + "\n            3Drender=Solid," + "\n            3Dpartsattrs=restore," + "\n        ]{}{" + name + ".u3d}" + "\n%  \\\\" + "\n%\\movieref[3Dcalculate]{" + name + "}{Click here!}" + "\n\\end{center}" + "\n\\end{document}" + "\n\\begin{comment}" + this.vwr.getWrappedStateScript () + "\n\\end{comment}";
+return "% Created by: Jmol " + JV.Viewer.getJmolVersion () + "\n% Creation date: " + this.getExportDate () + "\n% File created: " + this.fileName + " (" + this.getByteCount () + " bytes)\n\n" + "\n\\documentclass[12pt,letter]{article}" + "\n\\usepackage{hyperref}" + "\n\\usepackage{media9}" + "\n\\usepackage{verbatim}" + "\n\\pagestyle{empty}" + "\n\\begin{document}" + "\n    \\begin{center}" + "\n        \\addmediapath{./} % here you can set the path where is been saved the u3d file" + "\n        \\includemedia[" + "\n            label=" + name + "," + "\n            width=0.9\\textwidth," + "\n            height=0.9\\textheight," + "\n            activate=pageopen," + "\n            deactivate=pageclose," + "\n            3Dtoolbar=false," + "\n            3Dnavpane=false," + "\n            3Dmenu," + "\n            3Droo=" + this.cameraDistance + "," + "\n            3Dcoo= 0.0 0.0 0.0," + "\n            3Dc2c=0.0 0.0 1.0," + "\n            3Daac=" + this.apertureAngle + "," + "\n            3Droll=0.0," + "\n            3Dbg=" + this.rgbFractionalFromColix (this.backgroundColix) + ", % to set the background color for 3D vwr; white = 1 1 1; so, you need to do the proportion: '255:1=[RGB]:x'" + "\n            transparent=false," + "\n            3Dlights=Headlamp," + "\n            3Drender=Solid," + "\n            3Dpartsattrs=restore," + "\n        ]{}{" + name + ".u3d}" + "\n%  \\\\" + "\n%\\movieref[3Dcalculate]{" + name + "}{Click here!}" + "\n\\end{center}" + "\n\\end{document}" + "\n\\begin{comment}" + this.vwr.getWrappedStateScript () + "\n\\end{comment}";
 });
 Clazz.defineMethod (c$, "getParentItem", 
  function (name, m) {
@@ -213,9 +213,9 @@ sb.append ("RESOURCE_LIST \"MODEL\" {\n").append ("RESOURCE_COUNT 1\n").append (
 var vertexCount = JU.Geodesic.getVertexCount (2);
 var f = JU.Geodesic.getFaceVertexes (2);
 var nFaces = Clazz.doubleToInt (f.length / 3);
-var faces = JU.AU.newInt2 (nFaces);
-var fpt = -1;
-for (var i = 0; i < nFaces; i++) faces[i] =  Clazz.newIntArray (-1, [f[++fpt], f[++fpt], f[++fpt]]);
+var faces =  Clazz.newIntArray (nFaces, 3, 0);
+for (var i = 0, p = 0; i < nFaces; i++) for (var j = 0; j < 3; j++) faces[i][j] = f[p++];
+
 
 var vertexes =  new Array (vertexCount);
 for (var i = 0; i < vertexCount; i++) vertexes[i] = JU.Geodesic.getVertexVector (i);
@@ -390,7 +390,7 @@ if (faceVertexMax == 4 && face.length == 4) {
 this.sbTemp.append (" " + map[face[0]] + " " + map[face[2]] + " " + map[face[3]]);
 }}, "~A,~A,~N");
 Clazz.overrideMethod (c$, "outputSurface", 
-function (vertices, normals, colixes, indices, polygonColixes, nVertices, nPolygons, nFaces, bsPolygons, faceVertexMax, colix, colorList, htColixes, offset) {
+function (vertices, normals, colixes, indices, polygonColixes, nVertices, nPolygons, nTriangles, bsPolygons, faceVertexMax, colix, colorList, htColixes, offset) {
 this.addColix (colix, polygonColixes != null || colixes != null);
 if (polygonColixes != null) {
 return;
@@ -431,7 +431,7 @@ var c = colorList.get (i).shortValue ();
 sbColors.append (this.rgbFractionalFromColix (c)).append (" ").append (J["export"].___Exporter.translucencyFractionalFromColix (c)).append (" ");
 }
 }var key = "mesh" + (++this.iObj);
-this.addMeshData (key, nFaces, nCoord, nNormals, nColors, sbFaceCoordIndices, sbFaceNormalIndices, sbColorIndexes, sbCoords, sbNormals, sbColors);
+this.addMeshData (key, nTriangles, nCoord, nNormals, nColors, sbFaceCoordIndices, sbFaceNormalIndices, sbColorIndexes, sbCoords, sbNormals, sbColors);
 var v =  new JU.Lst ();
 this.htNodes.put (key, v);
 this.addShader (key, colix);
@@ -501,7 +501,7 @@ Clazz.overrideMethod (c$, "outputSphere",
 function (center, radius, colix, checkRadius) {
 this.setSphereMatrix (center, radius, radius, radius, null, this.sphereMatrix);
 this.outputEllipsoid (center, this.sphereMatrix, colix);
-}, "JU.T3,~N,~N,~B");
+}, "JU.P3,~N,~N,~B");
 Clazz.overrideMethod (c$, "outputTextPixel", 
 function (pt, argb) {
 var colix = JU.C.getColix (argb);

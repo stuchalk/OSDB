@@ -1,5 +1,6 @@
 // JmolApi.js -- Jmol user functions  Bob Hanson hansonr@stolaf.edu
 
+// BH 1/19/2017 8:05:05 AM <br>
 // BH 4/1/2016 12:59:45 PM fix applet_or_identifier reference in Jmol.getChemicalInfo
 // BH 5/29/2014 8:14:06 AM added default command for command input box
 // BH 3/10/2014 10:35:25 AM adds Jmol.saveImage(applet)
@@ -269,7 +270,7 @@
 
 
 	Jmol.jmolBr = function() {
-		return Jmol._documentWrite("<br />");
+		return Jmol._documentWrite("<br>");
 	}
 
 	Jmol.jmolButton = function(appletOrId, script, label, id, title) {
@@ -422,6 +423,10 @@
 		}
 	}  
 
+	Jmol.resetView = function(applet, appletNot) {
+    Jmol.View.resetView(applet, appletNot);
+	}
+
 	Jmol.updateView = function(applet, param1, param2) {
 		applet._updateView(param1, param2);
 	}
@@ -433,22 +438,26 @@
 		return Jmol._getNCIInfo(appletOrIdentifier, what, fCallback);
 	}
 
-	Jmol.saveImage = function(app) {
+	Jmol.saveImage = function(app, type, fname) {
 		// see: https://svgopen.org/2010/papers/62-From_SVG_to_Canvas_and_Back/index.html
 		// From SVG to Canvas and Back
 		// Samuli Kaipiainen University of Helsinki, Department of Computer Science samuli.kaipiainen@cs.helsinki.fi
 		// Matti Paksula University of Helsinki, Department of Computer Science matti.paksula@cs.helsinki.fi
+		type = (type || "png").toLowerCase();
+		fname || (fname = app.id + "." + type.toLowerCase());
+		if (fname.indexOf(".") < 0) fname += "." + type;
 		switch (app._viewType) {
 		case "Jmol":
-			app._script("write PNGJ \"" + app._id + ".png\"");
-			break;
+			return app._script("write PNGJ \"" + fname + "\"");
 		case "JSV":
-			app._script("write PDF");
+			if (type == "PDF")
+				return app._script("write PDF");
 			break;
 		case "JME":
-			app._script("print");
-			break;
+			return app._script("print");			
 		}
+		Jmol._saveFile(fname,app._canvas.toDataURL("image/png"));
 	}
+		
 		
 })(Jmol);

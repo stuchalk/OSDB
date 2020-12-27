@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.readers.more");
-Clazz.load (["J.adapter.readers.molxyz.MolReader", "J.api.JmolJDXMOLReader", "JU.Lst"], "J.adapter.readers.more.JcampdxReader", ["java.lang.Float", "JU.BS", "$.PT", "$.Rdr", "J.adapter.smarter.SmarterJmolAdapter", "J.api.Interface", "JU.BSUtil", "$.Logger", "JV.JC"], function () {
+Clazz.load (["J.adapter.readers.molxyz.MolReader", "J.api.JmolJDXMOLReader", "JU.Lst"], "J.adapter.readers.more.JcampdxReader", ["java.lang.Float", "JU.BS", "$.PT", "$.Rdr", "J.adapter.smarter.SmarterJmolAdapter", "J.api.Interface", "JU.Logger", "JV.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.selectedModel = 0;
 this.mpr = null;
@@ -199,14 +199,14 @@ n = this.asc.atomSetCount;
 for (var i = n; --i >= 0; ) {
 var id = this.asc.getAtomSetAuxiliaryInfoValue (i, "modelID");
 if (havePeaks && !bsModels.get (i) && id.indexOf (".") >= 0) {
-this.removeAtomSet (i);
+this.asc.removeAtomSet (i);
 n--;
 }}
 if (this.selectedModel == -2147483648) {
 if (this.allTypes != null) this.appendLoadNote (this.allTypes);
 } else {
 if (this.selectedModel == 0) this.selectedModel = n - 1;
-for (var i = this.asc.atomSetCount; --i >= 0; ) if (i + 1 != this.selectedModel) this.removeAtomSet (i);
+for (var i = this.asc.atomSetCount; --i >= 0; ) if (i + 1 != this.selectedModel) this.asc.removeAtomSet (i);
 
 if (n > 0) this.appendLoadNote (this.asc.getAtomSetAuxiliaryInfoValue (0, "name"));
 }for (var i = this.asc.atomSetCount; --i >= 0; ) this.asc.setAtomSetNumber (i, i + 1);
@@ -252,36 +252,4 @@ return true;
 Clazz.overrideMethod (c$, "setSpectrumPeaks", 
 function (nH, piUnitsX, piUnitsY) {
 }, "~N,~S,~S");
-Clazz.defineMethod (c$, "removeAtomSet", 
- function (imodel) {
-if (this.asc.bsAtoms == null) this.asc.bsAtoms = JU.BSUtil.newBitSet2 (0, this.asc.ac);
-var i0 = this.asc.atomSetAtomIndexes[imodel];
-var nAtoms = this.asc.atomSetAtomCounts[imodel];
-var i1 = i0 + nAtoms;
-this.asc.bsAtoms.clearBits (i0, i1);
-for (var i = i1; i < this.asc.ac; i++) this.asc.atoms[i].atomSetIndex--;
-
-for (var i = imodel + 1; i < this.asc.atomSetCount; i++) {
-this.asc.atomSetAuxiliaryInfo[i - 1] = this.asc.atomSetAuxiliaryInfo[i];
-this.asc.atomSetAtomIndexes[i - 1] = this.asc.atomSetAtomIndexes[i];
-this.asc.atomSetBondCounts[i - 1] = this.asc.atomSetBondCounts[i];
-this.asc.atomSetAtomCounts[i - 1] = this.asc.atomSetAtomCounts[i];
-this.asc.atomSetNumbers[i - 1] = this.asc.atomSetNumbers[i];
-}
-for (var i = 0; i < this.asc.bondCount; i++) this.asc.bonds[i].atomSetIndex = this.asc.atoms[this.asc.bonds[i].atomIndex1].atomSetIndex;
-
-this.asc.atomSetAuxiliaryInfo[--this.asc.atomSetCount] = null;
-var n = 0;
-for (var i = 0; i < this.asc.structureCount; i++) {
-var s = this.asc.structures[i];
-if (s.modelStartEnd[0] == imodel && s.modelStartEnd[1] == imodel) {
-this.asc.structures[i] = null;
-n++;
-}}
-if (n > 0) {
-var ss =  new Array (this.asc.structureCount - n);
-for (var i = 0, pt = 0; i < this.asc.structureCount; i++) if (this.asc.structures[i] != null) ss[pt++] = this.asc.structures[i];
-
-this.asc.structures = ss;
-}}, "~N");
 });

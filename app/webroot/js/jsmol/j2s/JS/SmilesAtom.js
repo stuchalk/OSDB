@@ -1,6 +1,7 @@
 Clazz.declarePackage ("JS");
-Clazz.load (["JU.P3", "JU.Node"], "JS.SmilesAtom", ["java.lang.Float", "JU.AU", "JU.Elements", "$.Logger"], function () {
+Clazz.load (["JU.P3", "JU.Node"], "JS.SmilesAtom", ["java.lang.Float", "JU.AU", "JU.Elements", "$.Logger", "JV.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
+this.patternIndex = -1;
 this.pattern = null;
 this.primitiveType = 0;
 this.isAND = false;
@@ -10,6 +11,7 @@ this.index = 0;
 this.referance = null;
 this.residueName = null;
 this.residueChar = null;
+this.insCode = '\0';
 this.isBioAtom = false;
 this.isBioResidue = false;
 this.isBioAtomWild = false;
@@ -58,6 +60,7 @@ this.atomClass = NaN;
 this.symbol = null;
 this.isTopoAtom = false;
 this.missingHydrogenCount = 0;
+this.cipChirality = 0;
 Clazz.instantialize (this, arguments);
 }, JS, "SmilesAtom", JU.P3, JU.Node);
 Clazz.prepareFields (c$, function () {
@@ -122,14 +125,15 @@ this.index = index;
 return this;
 }, "~N");
 Clazz.defineMethod (c$, "setTopoAtom", 
-function (iComponent, ptAtom, symbol, charge) {
+function (iComponent, ptAtom, symbol, charge, patternIndex) {
 this.component = iComponent;
 this.index = ptAtom;
+this.patternIndex = patternIndex;
 this.setSymbol (symbol);
 this.charge = charge;
 this.isTopoAtom = true;
 return this;
-}, "~N,~N,~S,~N");
+}, "~N,~N,~S,~N,~N");
 Clazz.defineMethod (c$, "setHydrogenCount", 
 function () {
 this.missingHydrogenCount = this.explicitHydrogenCount;
@@ -247,7 +251,7 @@ return this.matchingIndex;
 });
 Clazz.defineMethod (c$, "getMatchingAtom", 
 function () {
-return this.matchingNode;
+return this.matchingNode == null ? this : this.matchingNode;
 });
 Clazz.defineMethod (c$, "setMatchingAtom", 
 function (jmolAtom, index) {
@@ -467,6 +471,10 @@ Clazz.overrideMethod (c$, "getBioStructureTypeName",
 function () {
 return null;
 });
+Clazz.overrideMethod (c$, "getInsertionCode", 
+function () {
+return this.insCode;
+});
 Clazz.overrideMethod (c$, "getResno", 
 function () {
 return this.residueNumber;
@@ -527,6 +535,38 @@ function (property) {
 if (property === "property_atomclass") return this.atomClass;
 return NaN;
 }, "~S");
+Clazz.overrideMethod (c$, "getMass", 
+function () {
+return this.atomicMass;
+});
+Clazz.overrideMethod (c$, "getCIPChirality", 
+function (doCalculate) {
+return JV.JC.getCIPChiralityName (this.cipChirality & -225);
+}, "~B");
+Clazz.overrideMethod (c$, "setCIPChirality", 
+function (c) {
+this.cipChirality = c;
+}, "~N");
+Clazz.overrideMethod (c$, "getCIPChiralityCode", 
+function () {
+return this.cipChirality;
+});
+Clazz.overrideMethod (c$, "getXYZ", 
+function () {
+return this;
+});
+Clazz.defineMethod (c$, "getStereo", 
+function () {
+return this.stereo;
+});
+Clazz.defineMethod (c$, "getPatternIndex", 
+function () {
+return this.patternIndex;
+});
+Clazz.overrideMethod (c$, "modelIsRawPDB", 
+function () {
+return false;
+});
 Clazz.defineStatics (c$,
 "UNBRACKETED_SET", "B, C, N, O, P, S, F, Cl, Br, I, *,");
 });

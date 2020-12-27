@@ -38,7 +38,7 @@ calc = this.calculations[1] =  new JU.Lst ();
 var angleCalc =  new JM.FF.UFFAngleCalc ().set (this);
 for (var i = this.minAngles.length; --i >= 0; ) angleCalc.setData (calc, this.minAngles[i].data);
 
-calc = this.calculations[3] =  new JU.Lst ();
+calc = this.calculations[2] =  new JU.Lst ();
 var torsionCalc =  new JM.FF.UFFTorsionCalc ().set (this);
 for (var i = this.minTorsions.length; --i >= 0; ) torsionCalc.setData (calc, this.minTorsions[i].data);
 
@@ -81,7 +81,7 @@ case 0:
 return this.bondCalc.compute (dataIn);
 case 1:
 return this.angleCalc.compute (dataIn);
-case 3:
+case 2:
 return this.torsionCalc.compute (dataIn);
 case 4:
 return this.oopCalc.compute (dataIn);

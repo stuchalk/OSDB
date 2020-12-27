@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.readers.quantum");
-Clazz.load (["J.adapter.readers.quantum.MOReader", "java.util.Hashtable"], "J.adapter.readers.quantum.NWChemReader", ["java.lang.Character", "$.Float", "JU.AU", "$.Lst", "$.PT", "J.adapter.readers.quantum.BasisFunctionReader", "J.adapter.smarter.SmarterJmolAdapter", "J.api.JmolAdapter", "JU.Elements", "$.Logger"], function () {
+Clazz.load (["J.adapter.readers.quantum.MOReader", "java.util.Hashtable"], "J.adapter.readers.quantum.NWChemReader", ["java.lang.Character", "$.Float", "JU.AU", "$.BS", "$.Lst", "$.PT", "J.adapter.readers.quantum.BasisFunctionReader", "J.adapter.smarter.SmarterJmolAdapter", "J.api.JmolAdapter", "JU.Elements", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.taskNumber = 1;
 this.equivalentAtomSets = 0;
@@ -53,19 +53,17 @@ return true;
 this.readSymmetry ();
 return true;
 }if (this.line.indexOf ("Output coordinates in ") >= 0) {
+var thisLine = this.line;
+if (!this.htMOs.isEmpty ()) this.checkMOs ();
 if (!this.doGetModel (++this.modelNumber, null)) return this.checkLastModel ();
 this.equivalentAtomSets++;
-this.readAtoms ();
+this.readAtoms (thisLine);
 return true;
 }if (this.line.indexOf ("Vibrational analysis") >= 0) {
 this.readFrequencies ();
 return true;
 }if (!this.doProcessLines) return true;
-if (this.line.indexOf ("ENERGY GRADIENTS") >= 0) {
-this.equivalentAtomSets++;
-this.readGradients ();
-return true;
-}if (this.line.startsWith ("  Mulliken analysis of the total density")) {
+if (this.line.startsWith ("  Mulliken analysis of the total density")) {
 if (this.equivalentAtomSets != 0) this.readPartialCharges ();
 return true;
 }if (this.line.contains ("Basis \"ao basis\"") && this.doReadMolecularOrbitals) {
@@ -146,8 +144,8 @@ for (var i = this.asc.iSet; --n >= 0 && i >= 0; --i) if (namedSets == null || !n
 
 }, "~S,JU.BS,~N");
 Clazz.defineMethod (c$, "readAtoms", 
- function () {
-var scale = (this.line.indexOf ("angstroms") < 0 ? 0.5291772 : 1);
+ function (thisLine) {
+var scale = (thisLine.indexOf ("angstroms") < 0 ? 0.5291772 : 1);
 this.readLines (3);
 var tokens;
 this.haveEnergy = false;
@@ -166,28 +164,11 @@ this.setEnergy (this.energyKey, this.energyValue);
 this.asc.setAtomSetModelProperty ("Step", "converged");
 } else if (this.inInput) {
 this.asc.setAtomSetName ("Input");
-}});
-Clazz.defineMethod (c$, "readGradients", 
- function () {
-this.readLines (3);
-var tokens;
-this.asc.newAtomSet ();
-if (this.equivalentAtomSets > 1) {
-var p = this.asc.getAtomSetAuxiliaryInfoValue (this.asc.iSet - 1, "modelProperties");
-if (p != null) this.asc.setCurrentModelInfo ("modelProperties", p.clone ());
-}this.asc.setAtomSetModelProperty ("vector", "gradient");
-this.asc.setAtomSetModelProperty (".PATH", "Task " + this.taskNumber + J.adapter.smarter.SmarterJmolAdapter.PATH_SEPARATOR + "Gradients");
-while (this.rd () != null && this.line.length > 0) {
-tokens = this.getTokens ();
-if (tokens.length < 8) break;
-var atom = this.setAtomCoordScaled (null, tokens, 2, 0.5291772);
-atom.atomName = this.fixTag (tokens[1]);
-this.asc.addVibrationVector (atom.index, -this.parseFloatStr (tokens[5]), -this.parseFloatStr (tokens[6]), -this.parseFloatStr (tokens[7]));
-}
-});
+}}, "~S");
 Clazz.defineMethod (c$, "readFrequencies", 
  function () {
 var firstFrequencyAtomSetIndex = this.asc.atomSetCount;
+var firstVibrationNumber = this.vibrationNumber;
 var path = "Task " + this.taskNumber + J.adapter.smarter.SmarterJmolAdapter.PATH_SEPARATOR + "Frequencies";
 this.discardLinesUntilContains ("Atom information");
 this.readLines (2);
@@ -200,6 +181,7 @@ this.setAtomCoordScaled (null, tokens, 2, 0.5291772).atomName = this.fixTag (tok
 this.discardLinesUntilContains ("(Projected Frequencies expressed in cm-1)");
 this.readLines (3);
 var firstTime = true;
+var bsIgnore =  new JU.BS ();
 while (this.rd () != null && this.line.indexOf ("P.Frequency") >= 0) {
 tokens = JU.PT.getTokensAt (this.line, 12);
 var frequencyCount = tokens.length;
@@ -209,30 +191,33 @@ if (firstTime) iAtom0 -= ac;
 var ignore =  Clazz.newBooleanArray (frequencyCount, false);
 for (var i = 0; i < frequencyCount; ++i) {
 ignore[i] = (tokens[i].equals ("0.00") || !this.doGetVibration (++this.vibrationNumber));
-if (ignore[i]) continue;
-if (!firstTime) this.asc.cloneLastAtomSet ();
+if (ignore[i]) {
+bsIgnore.set (this.vibrationNumber);
+continue;
+}if (!firstTime) this.asc.cloneLastAtomSet ();
 firstTime = false;
-this.asc.setAtomSetFrequency (path, null, tokens[i], null);
+this.asc.setAtomSetFrequency (this.vibrationNumber, path, null, tokens[i], null);
 }
 this.readLines (1);
-this.fillFrequencyData (iAtom0, ac, ac, ignore, false, 0, 0, null, 0);
+this.fillFrequencyData (iAtom0, ac, ac, ignore, false, 0, 0, null, 0, null);
 this.readLines (3);
 }
 try {
-this.discardLinesUntilContains ("Projected Infra Red Intensities");
+this.discardLinesUntilContains ("Infra Red Intensities");
 this.readLines (2);
-for (var i = this.vibrationNumber, idx = firstFrequencyAtomSetIndex; --i >= 0; ) {
+var idx = firstFrequencyAtomSetIndex;
+for (var i = firstVibrationNumber; i < this.vibrationNumber; ++i) {
 if (this.rd () == null) return;
-if (!this.doGetVibration (i + 1)) continue;
+if (bsIgnore.get (i)) continue;
 tokens = this.getTokens ();
 var iset = this.asc.iSet;
 this.asc.iSet = idx++;
-this.asc.setAtomSetFrequency (null, null, tokens[i], null);
-this.asc.setAtomSetModelProperty ("IRIntensity", tokens[5] + " KM/mol");
+this.asc.setAtomSetModelProperty ("IRIntensity", tokens[3] + " au");
 this.asc.iSet = iset;
 }
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
+System.out.println ("nwchem infra red issue" + e);
 } else {
 throw e;
 }
@@ -268,11 +253,11 @@ this.shellCount = 0;
 this.nBasisFunctions = 0;
 var isD6F10 = (this.line.indexOf ("cartesian") >= 0);
 if (isD6F10) {
-this.getDFMap (J.adapter.readers.quantum.NWChemReader.$DC_LIST, 4, "DXX   DYY   DZZ   DXY   DXZ   DYZ", 3);
-this.getDFMap (J.adapter.readers.quantum.NWChemReader.$FC_LIST, 6, "XXX   YYY   ZZZ   XYY   XXY   XXZ   XZZ   YZZ   YYZ   XYZ", 3);
+this.getDFMap ("DC", J.adapter.readers.quantum.NWChemReader.$DC_LIST, 4, "DXX   DYY   DZZ   DXY   DXZ   DYZ", 3);
+this.getDFMap ("FC", J.adapter.readers.quantum.NWChemReader.$FC_LIST, 6, "XXX   YYY   ZZZ   XYY   XXY   XXZ   XZZ   YZZ   YYZ   XYZ", 3);
 } else {
-this.getDFMap (J.adapter.readers.quantum.NWChemReader.$DS_LIST, 3, "d0    d1+   d1-   d2+   d2-", 2);
-this.getDFMap (J.adapter.readers.quantum.NWChemReader.$FS_LIST, 5, "f0    f1+   f1-   f2+   f2-   f3+   f3-", 2);
+this.getDFMap ("DS", J.adapter.readers.quantum.NWChemReader.$DS_LIST, 3, "d0    d1+   d1-   d2+   d2-", 2);
+this.getDFMap ("FS", J.adapter.readers.quantum.NWChemReader.$FS_LIST, 5, "f0    f1+   f1-   f2+   f2-   f3+   f3-", 2);
 }this.shells =  new JU.Lst ();
 var atomInfo =  new java.util.Hashtable ();
 var atomSym = null;
@@ -328,9 +313,9 @@ this.nBasisFunctions += nF;
 break;
 }
 var slater =  Clazz.newIntArray (4, 0);
-slater[0] = i;
+slater[0] = i + 1;
 slater[1] = (isD6F10 ? J.adapter.readers.quantum.BasisFunctionReader.getQuantumShellTagID (type) : J.adapter.readers.quantum.BasisFunctionReader.getQuantumShellTagIDSpherical (type));
-slater[2] = this.gaussianCount;
+slater[2] = this.gaussianCount + 1;
 slater[3] = nGaussians;
 this.shells.addLast (slater);
 for (var ifunc = 0; ifunc < nGaussians; ifunc++) gdata.addLast (shellData.get (ifunc)[1]);
@@ -397,7 +382,6 @@ if (pt == 5 || pt == 6) coefs[this.parseIntStr (tokens[pt]) - 1] = this.parseFlo
 }
 this.energyUnits = "a.u.";
 this.setMOData (true);
-this.shells = null;
 this.htMOs.clear ();
 });
 Clazz.overrideMethod (c$, "rd", 
@@ -405,7 +389,12 @@ function () {
 this.RL ();
 if (!this.purging && this.line != null && this.line.startsWith ("--")) {
 this.purging = true;
-this.discardLinesUntilStartsWith ("*");
+if (this.rd ().indexOf ("EAF") == 0) {
+this.rd ();
+this.discardLinesUntilStartsWith ("--");
+this.purging = false;
+return this.rd ();
+};this.discardLinesUntilStartsWith ("*");
 this.rd ();
 this.purging = false;
 this.RL ();

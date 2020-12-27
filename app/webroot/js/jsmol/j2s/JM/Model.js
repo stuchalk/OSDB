@@ -45,6 +45,7 @@ this.jmolData = null;
 this.jmolFrameType = null;
 this.pdbID = null;
 this.bsCheck = null;
+this.hasChirality = false;
 Clazz.instantialize (this, arguments);
 }, JM, "Model");
 Clazz.prepareFields (c$, function () {
@@ -135,6 +136,11 @@ if (chain.chainID == chainID) return chain;
 }
 return null;
 }, "~N");
+Clazz.defineMethod (c$, "resetDSSR", 
+function (totally) {
+this.dssrCache = null;
+if (totally) this.auxiliaryInfo.remove ("dssr");
+}, "~B");
 Clazz.defineMethod (c$, "fixIndices", 
 function (modelIndex, nAtomsDeleted, bsDeleted) {
 this.fixIndicesM (modelIndex, nAtomsDeleted, bsDeleted);

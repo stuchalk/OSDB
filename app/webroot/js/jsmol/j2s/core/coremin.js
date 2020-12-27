@@ -65,7 +65,7 @@
 var $t$;
 //var c$;
 Clazz_declarePackage ("JM");
-Clazz_load (null, "JM.Minimizer", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.Lst", "J.i18n.GT", "JM.MinAngle", "$.MinAtom", "$.MinBond", "$.MinTorsion", "$.MinimizationThread", "JM.FF.ForceFieldMMFF", "$.ForceFieldUFF", "JU.BSUtil", "$.Escape", "$.Logger"], function () {
+Clazz_load (null, "JM.Minimizer", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.Lst", "J.i18n.GT", "JM.MMConstraint", "$.MinAngle", "$.MinAtom", "$.MinBond", "$.MinTorsion", "$.MinimizationThread", "JM.FF.ForceFieldMMFF", "$.ForceFieldUFF", "JU.BSUtil", "$.Escape", "$.Logger"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.vwr = null;
 this.atoms = null;
@@ -141,23 +141,26 @@ return (this.pFF == null ? "" : this.pFF.getLogData ());
 }return null;
 }, "~S,~N");
 Clazz_defineMethod (c$, "addConstraint", 
- function (c) {
-if (c == null) return;
-var atoms = c[0];
-var nAtoms = atoms[0];
+ function (o) {
+if (o == null) return;
+var indexes = o[0];
+var nAtoms = indexes[0];
 if (nAtoms == 0) {
 this.constraints = null;
 return;
-}if (this.constraints == null) {
+}var value = (o[1]).doubleValue ();
+if (this.constraints == null) {
 this.constraints =  new JU.Lst ();
 this.constraintMap =  new java.util.Hashtable ();
-}if (atoms[1] > atoms[nAtoms]) {
-JU.AU.swapInt (atoms, 1, nAtoms);
-if (nAtoms == 4) JU.AU.swapInt (atoms, 2, 3);
-}var id = JU.Escape.eAI (atoms);
-var c1 = this.constraintMap.get (id);
-if (c1 != null) {
-c1[2] = c[2];
+}if (indexes[1] > indexes[nAtoms]) {
+JU.AU.swapInt (indexes, 1, nAtoms);
+if (nAtoms == 4) JU.AU.swapInt (indexes, 2, 3);
+}var id = JU.Escape.eAI (indexes);
+var c = this.constraintMap.get (id);
+if (c == null) {
+c =  new JM.MMConstraint (indexes, value);
+} else {
+c.value = value;
 return;
 }this.constraintMap.put (id, c);
 this.constraints.addLast (c);
@@ -205,11 +208,11 @@ if (this.$minimizationOn) return false;
 var pFF0 = this.pFF;
 this.getForceField (ff);
 if (this.pFF == null) {
-JU.Logger.error (J.i18n.GT.o (J.i18n.GT._ ("Could not get class for force field {0}"), ff));
+JU.Logger.error (J.i18n.GT.o (J.i18n.GT.$ ("Could not get class for force field {0}"), ff));
 return false;
 }JU.Logger.info ("minimize: initializing " + this.pFF.name + " (steps = " + steps + " criterion = " + crit + ") ...");
 if (bsSelected.nextSetBit (0) < 0) {
-JU.Logger.error (J.i18n.GT._ ("No atoms selected -- nothing to do!"));
+JU.Logger.error (J.i18n.GT.$ ("No atoms selected -- nothing to do!"));
 return false;
 }this.atoms = this.vwr.ms.at;
 this.bsAtoms = JU.BSUtil.copy (bsSelected);
@@ -230,20 +233,9 @@ JU.BSUtil.andNot (this.bsTaint, bsFixed);
 this.vwr.ms.setTaintedAtoms (this.bsTaint, 2);
 }if (bsFixed != null) this.bsFixed = bsFixed;
 this.setAtomPositions ();
-if (this.constraints != null) {
-for (var i = this.constraints.size (); --i >= 0; ) {
-var constraint = this.constraints.get (i);
-var aList = constraint[0];
-var minList = constraint[1];
-var nAtoms = aList[0] = Math.abs (aList[0]);
-for (var j = 1; j <= nAtoms; j++) {
-if (steps <= 0 || !this.bsAtoms.get (aList[j])) {
-aList[0] = -nAtoms;
-break;
-}minList[j - 1] = this.atomMap[aList[j]];
-}
-}
-}this.pFF.setConstraints (this);
+if (this.constraints != null) for (var i = this.constraints.size (); --i >= 0; ) this.constraints.get (i).set (steps, this.bsAtoms, this.atomMap);
+
+this.pFF.setConstraints (this);
 if (steps <= 0) this.getEnergyOnly ();
  else if (this.isSilent || !this.vwr.useMinimizationThread ()) this.minimizeWithoutThread ();
  else this.setMinimizationOn (true);
@@ -270,7 +262,7 @@ bsElements.set (atomicNo);
 this.minAtoms[pt] =  new JM.MinAtom (pt, atom,  Clazz_newDoubleArray (-1, [atom.x, atom.y, atom.z]), this.ac);
 this.minAtoms[pt].sType = atom.getAtomName ();
 }
-JU.Logger.info (J.i18n.GT.i (J.i18n.GT._ ("{0} atoms will be minimized."), this.ac));
+JU.Logger.info (J.i18n.GT.i (J.i18n.GT.$ ("{0} atoms will be minimized."), this.ac));
 JU.Logger.info ("minimize: getting bonds...");
 this.bonds = this.vwr.ms.bo;
 this.rawBondCount = this.vwr.ms.bondCount;
@@ -284,7 +276,7 @@ return this.setModel (bsElements);
 Clazz_defineMethod (c$, "setModel", 
  function (bsElements) {
 if (!this.pFF.setModel (bsElements, this.elemnoMax)) {
-JU.Logger.error (J.i18n.GT.o (J.i18n.GT._ ("could not setup force field {0}"), this.ff));
+JU.Logger.error (J.i18n.GT.o (J.i18n.GT.$ ("could not setup force field {0}"), this.ff));
 if (this.ff.equals ("MMFF")) {
 this.getForceField ("UFF");
 return this.setModel (bsElements);
@@ -488,6 +480,9 @@ Clazz_defineMethod (c$, "endMinimization",
 function () {
 this.updateAtomXYZ ();
 this.setMinimizationOn (false);
+if (this.pFF == null) {
+System.out.println ("pFF was null");
+} else {
 var failed = this.pFF.detectExplosion ();
 if (failed) this.restoreCoordinates ();
 this.vwr.setIntProperty ("_minimizationStep", this.pFF.getCurrentStep ());
@@ -495,7 +490,7 @@ this.reportEnergy ();
 this.vwr.setStringProperty ("_minimizationStatus", (failed ? "failed" : "done"));
 this.vwr.notifyMinimizationStatus ();
 this.vwr.refresh (3, "Minimizer:done" + (failed ? " EXPLODED" : "OK"));
-JU.Logger.info ("minimizer: endMinimization");
+}JU.Logger.info ("minimizer: endMinimization");
 });
 Clazz_defineMethod (c$, "saveCoordinates", 
  function () {
@@ -545,12 +540,12 @@ if (this.isSilent) JU.Logger.info (msg);
  else this.vwr.scriptEcho (msg);
 }, "~S,~B");
 Clazz_defineMethod (c$, "calculatePartialCharges", 
-function (bonds, bondCount, atoms, bsAtoms) {
+function (ms, bsAtoms, bsReport) {
 var ff =  new JM.FF.ForceFieldMMFF (this);
-ff.setArrays (atoms, bsAtoms, bonds, bondCount, true, true);
+ff.setArrays (ms.at, bsAtoms, ms.bo, ms.bondCount, true, true);
 this.vwr.setAtomProperty (bsAtoms, 1086326785, 0, 0, null, null, ff.getAtomTypeDescriptions ());
-this.vwr.setAtomProperty (bsAtoms, 1111492619, 0, 0, null, ff.getPartialCharges (), null);
-}, "~A,~N,~A,JU.BS");
+this.vwr.setAtomProperty (bsReport == null ? bsAtoms : bsReport, 1111492619, 0, 0, null, ff.getPartialCharges (), null);
+}, "JM.ModelSet,JU.BS,JU.BS");
 });
 Clazz_declarePackage ("JM");
 c$ = Clazz_decorateAsClass (function () {
@@ -1072,7 +1067,7 @@ if (this.calc.loggingEnabled) this.calc.appendLogData (this.calc.getAtomList ("S
 this.dE = 0;
 this.calc.setPreliminary (stepMax > 0);
 this.e0 = this.energyFull (false, false);
-s = JU.PT.sprintf (" Initial " + this.name + " E = %10.3f " + this.minimizer.units + " criterion = %8.6f max steps = " + stepMax, "ff",  Clazz_newArray (-1, [Float.$valueOf (this.toUserUnits (this.e0)), Float.$valueOf (this.toUserUnits (criterion))]));
+s = JU.PT.sprintf (" Initial " + this.name + " E = %10.3f " + this.minimizer.units + "/mol criterion = %8.6f max steps = " + stepMax, "ff",  Clazz_newArray (-1, [Float.$valueOf (this.toUserUnits (this.e0)), Float.$valueOf (this.toUserUnits (criterion))]));
 this.minimizer.report (s, false);
 this.calc.appendLogData (s);
 }, "~N,~N");
@@ -1097,14 +1092,14 @@ var e1 = this.energyFull (false, false);
 this.dE = e1 - this.e0;
 var done = JM.Util.isNear3 (e1, this.e0, this.criterion);
 if (done || this.currentStep % 10 == 0 || this.stepMax <= this.currentStep) {
-var s = JU.PT.sprintf (this.name + " Step %-4d E = %10.6f    dE = %8.6f ", "Fi",  Clazz_newArray (-1, [ Clazz_newFloatArray (-1, [e1, (this.dE), this.criterion]), Integer.$valueOf (this.currentStep)]));
+var s = JU.PT.sprintf (this.name + " Step %-4d E = %10.6f    dE = %8.6f ", "Fi",  Clazz_newArray (-1, [ Clazz_newFloatArray (-1, [this.toUserUnits (e1), this.toUserUnits (this.dE)]), Integer.$valueOf (this.currentStep)]));
 this.minimizer.report (s, false);
 this.calc.appendLogData (s);
 }this.e0 = e1;
 if (done || this.stepMax <= this.currentStep) {
 if (this.calc.loggingEnabled) this.calc.appendLogData (this.calc.getAtomList ("F I N A L  G E O M E T R Y"));
 if (done) {
-var s = JU.PT.formatStringF ("\n    " + this.name + " STEEPEST DESCENT HAS CONVERGED: E = %8.5f " + this.minimizer.units + " after " + this.currentStep + " steps", "f", this.toUserUnits (e1));
+var s = JU.PT.formatStringF ("\n    " + this.name + " STEEPEST DESCENT HAS CONVERGED: E = %8.5f " + this.minimizer.units + "/mol after " + this.currentStep + " steps", "f", this.toUserUnits (e1));
 this.calc.appendLogData (s);
 this.minimizer.report (s, true);
 JU.Logger.info (s);
@@ -2730,7 +2725,7 @@ break;
 }
 }, "~A");
 Clazz_declarePackage ("JM.FF");
-Clazz_load (["JU.AU", "$.SB", "$.V3d"], "JM.FF.Calculations", ["java.lang.Float", "JU.PT", "JM.Util"], function () {
+Clazz_load (["JU.AU", "$.SB", "$.V3d"], "JM.FF.Calculations", ["java.lang.Float", "JU.Lst", "$.PT", "JM.Util"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.parA = null;
 this.parB = null;
@@ -2747,7 +2742,8 @@ this.minBonds = null;
 this.minAngles = null;
 this.minTorsions = null;
 this.minPositions = null;
-this.constraints = null;
+this.constraintsByType = null;
+this.haveConstraints = false;
 this.isPreliminary = false;
 this.gradients = false;
 this.silent = false;
@@ -2782,10 +2778,6 @@ Clazz_defineMethod (c$, "getParameter",
 function (o) {
 return this.ffParams.get (o);
 }, "~O");
-Clazz_defineMethod (c$, "setConstraints", 
-function (constraints) {
-this.constraints = constraints;
-}, "JU.Lst");
 Clazz_makeConstructor (c$, 
 function (ff, minAtoms, minBonds, minAngles, minTorsions, minPositions, constraints) {
 this.ff = ff;
@@ -2798,8 +2790,24 @@ this.ac = minAtoms.length;
 this.bondCount = minBonds.length;
 this.angleCount = minAngles.length;
 this.torsionCount = minTorsions.length;
-this.constraints = constraints;
+this.setConstraints (constraints);
 }, "JM.FF.ForceField,~A,~A,~A,~A,~A,JU.Lst");
+Clazz_defineMethod (c$, "setConstraints", 
+function (constraints) {
+if (constraints == null || constraints.isEmpty ()) return;
+this.constraintsByType =  Clazz_newArray (-1, [null, null, null]);
+this.haveConstraints = true;
+var lists =  new Array (3);
+for (var i = 0, n = constraints.size (); i < n; i++) {
+var c = constraints.get (i);
+if (lists[c.type] == null) lists[c.type] =  new JU.Lst ();
+lists[c.type].addLast (c);
+}
+for (var type = 0; type <= 2; type++) {
+var list = lists[type];
+if (list != null) this.constraintsByType[type] = list.toArray ( new Array (list.size ()));
+}
+}, "JU.Lst");
 Clazz_defineMethod (c$, "addForce", 
 function (v, i, dE) {
 this.minAtoms[i].force[0] += v.x * dE;
@@ -2838,7 +2846,7 @@ if (pc2 != null) pc2.setData (calc2, i, j, 0);
 }
 }, "JU.Lst,JM.FF.Calculation,JU.Lst,JM.FF.Calculation");
 Clazz_defineMethod (c$, "calc", 
- function (iType, gradients) {
+ function (iType, gradients, canConstrain) {
 this.logging = this.loggingEnabled && !this.silent;
 this.gradients = gradients;
 var calcs = this.calculations[iType];
@@ -2849,54 +2857,53 @@ if (this.logging) this.appendLogData (this.getDebugHeader (iType));
 for (var ii = 0; ii < nCalc; ii++) energy += this.compute (iType, this.calculations[iType].get (ii));
 
 if (this.logging) this.appendLogData (this.getDebugFooter (iType, energy));
-if (this.constraints != null && iType <= 3) energy += this.constraintEnergy (iType);
+if (canConstrain && this.haveConstraints && this.constraintsByType[iType] != null) energy += this.constraintEnergy (iType);
 return energy;
-}, "~N,~B");
+}, "~N,~B,~B");
 Clazz_defineMethod (c$, "energyStrBnd", 
 function (gradients) {
 return 0.0;
 }, "~B");
 Clazz_defineMethod (c$, "energyBond", 
 function (gradients) {
-return this.calc (0, gradients);
+return this.calc (0, gradients, true);
 }, "~B");
 Clazz_defineMethod (c$, "energyAngle", 
 function (gradients) {
-return this.calc (1, gradients);
+return this.calc (1, gradients, true);
 }, "~B");
 Clazz_defineMethod (c$, "energyTorsion", 
 function (gradients) {
-return this.calc (3, gradients);
+return this.calc (2, gradients, true);
 }, "~B");
 Clazz_defineMethod (c$, "energyStretchBend", 
 function (gradients) {
-return this.calc (2, gradients);
+return this.calc (3, gradients, false);
 }, "~B");
 Clazz_defineMethod (c$, "energyOOP", 
 function (gradients) {
-return this.calc (4, gradients);
+return this.calc (4, gradients, false);
 }, "~B");
 Clazz_defineMethod (c$, "energyVDW", 
 function (gradients) {
-return this.calc (5, gradients);
+return this.calc (5, gradients, false);
 }, "~B");
 Clazz_defineMethod (c$, "energyES", 
 function (gradients) {
-return this.calc (6, gradients);
+return this.calc (6, gradients, false);
 }, "~B");
 Clazz_defineMethod (c$, "constraintEnergy", 
  function (iType) {
+var constraints = this.constraintsByType[iType];
 var value = 0;
 var k = 0;
 var energy = 0;
-for (var i = this.constraints.size (); --i >= 0; ) {
-var c = this.constraints.get (i);
-var nAtoms = (c[0])[0];
-if (nAtoms != iType + 2) continue;
-var minList = c[1];
-var targetValue = (c[2]).doubleValue ();
+for (var i = constraints.length; --i >= 0; ) {
+var c = constraints[i];
+var minList = c.minList;
+var targetValue = c.value;
 switch (iType) {
-case 3:
+case 2:
 this.id = minList[3];
 if (this.gradients) this.dd.setA (this.minAtoms[this.id].coord);
 case 1:
@@ -2908,10 +2915,11 @@ this.ia = minList[0];
 if (this.gradients) {
 this.db.setA (this.minAtoms[this.ib].coord);
 this.da.setA (this.minAtoms[this.ia].coord);
-}}
+}break;
+}
 k = 10000.0;
 switch (iType) {
-case 3:
+case 2:
 targetValue *= 0.017453292519943295;
 value = (this.gradients ? JM.Util.restorativeForceAndTorsionAngleRadians (this.da, this.db, this.dc, this.dd) : JM.Util.getTorsionAngleRadians (this.minAtoms[this.ia].coord, this.minAtoms[this.ib].coord, this.minAtoms[this.ic].coord, this.minAtoms[this.id].coord, this.v1, this.v2, this.v3));
 if (value < 0 && targetValue >= 1.5707963267948966) value += 6.283185307179586;
@@ -2936,7 +2944,7 @@ var delta = value - targetValue;
 if (this.gradients) {
 var dE = 2.0 * k * delta;
 switch (iType) {
-case 3:
+case 2:
 this.addForce (this.dd, this.id, dE);
 case 1:
 this.addForce (this.dc, this.ic, dE);
@@ -2948,16 +2956,17 @@ this.addForce (this.da, this.ia, dE);
 }, "~N,~N,~N,~N");
 Clazz_defineMethod (c$, "getConstraintList", 
 function () {
-if (this.constraints == null || this.constraints.size () == 0) return;
+if (this.constraintsByType == null) return;
 this.appendLogData ("C O N S T R A I N T S\n---------------------");
-for (var i = this.constraints.size (); --i >= 0; ) {
-var c = this.constraints.get (i);
-var indexes = c[0];
-var minList = c[1];
-var targetValue = (c[2]).doubleValue ();
-var iType = indexes[0] - 2;
-switch (iType) {
-case 3:
+for (var type = 0; type <= 2; type++) {
+var constraints = this.constraintsByType[type];
+if (constraints == null) continue;
+for (var i = 0, n = constraints.length; i < n; i++) {
+var c = constraints[i];
+var minList = c.minList;
+var targetValue = c.value;
+switch (c.type) {
+case 2:
 this.id = minList[3];
 case 1:
 this.ic = minList[2];
@@ -2965,16 +2974,17 @@ case 0:
 this.ib = minList[1];
 this.ia = minList[0];
 }
-switch (iType) {
+switch (c.type) {
 case 0:
 this.appendLogData (JU.PT.sprintf ("%3d %3d  %-5s %-5s  %12.6f", "ssFI",  Clazz_newArray (-1, [this.minAtoms[this.ia].atom.getAtomName (), this.minAtoms[this.ib].atom.getAtomName (),  Clazz_newFloatArray (-1, [targetValue]),  Clazz_newIntArray (-1, [this.minAtoms[this.ia].atom.getAtomNumber (), this.minAtoms[this.ib].atom.getAtomNumber ()])])));
 break;
 case 1:
 this.appendLogData (JU.PT.sprintf ("%3d %3d %3d  %-5s %-5s %-5s  %12.6f", "sssFI",  Clazz_newArray (-1, [this.minAtoms[this.ia].atom.getAtomName (), this.minAtoms[this.ib].atom.getAtomName (), this.minAtoms[this.ic].atom.getAtomName (),  Clazz_newFloatArray (-1, [targetValue]),  Clazz_newIntArray (-1, [this.minAtoms[this.ia].atom.getAtomNumber (), this.minAtoms[this.ib].atom.getAtomNumber (), this.minAtoms[this.ic].atom.getAtomNumber ()])])));
 break;
-case 3:
+case 2:
 this.appendLogData (JU.PT.sprintf ("%3d %3d %3d %3d  %-5s %-5s %-5s %-5s  %3d %8.3f     %8.3f     %8.3f     %8.3f", "ssssFI",  Clazz_newArray (-1, [this.minAtoms[this.ia].atom.getAtomName (), this.minAtoms[this.ib].atom.getAtomName (), this.minAtoms[this.ic].atom.getAtomName (), this.minAtoms[this.id].atom.getAtomName (),  Clazz_newFloatArray (-1, [targetValue]),  Clazz_newIntArray (-1, [this.minAtoms[this.ia].atom.getAtomNumber (), this.minAtoms[this.ib].atom.getAtomNumber (), this.minAtoms[this.ic].atom.getAtomNumber (), this.minAtoms[this.id].atom.getAtomNumber ()])])));
 break;
+}
 }
 }
 this.appendLogData ("---------------------\n");
@@ -3009,9 +3019,9 @@ case 0:
 return "\nB O N D   S T R E T C H I N G (" + this.bondCount + " bonds)\n\n" + "  ATOMS  ATOM TYPES   BOND    BOND       IDEAL      FORCE\n" + "  I   J   I     J     TYPE   LENGTH     LENGTH    CONSTANT      DELTA     ENERGY\n" + "--------------------------------------------------------------------------------";
 case 1:
 return "\nA N G L E   B E N D I N G (" + this.minAngles.length + " angles)\n\n" + "    ATOMS      ATOM TYPES        VALENCE    IDEAL        FORCE\n" + "  I   J   K   I     J     K       ANGLE     ANGLE      CONSTANT     ENERGY\n" + "--------------------------------------------------------------------------";
-case 2:
-return "\nS T R E T C H   B E N D I N G (" + (this.minAngles.length * 2) + " angles)\n\n" + "    ATOMS      ATOM TYPES        VALENCE    IDEAL        FORCE\n" + "  I   J   K   I     J     K       ANGLE     ANGLE      CONSTANT     ENERGY\n" + "--------------------------------------------------------------------------";
 case 3:
+return "\nS T R E T C H   B E N D I N G (" + (this.minAngles.length * 2) + " angles)\n\n" + "    ATOMS      ATOM TYPES        VALENCE    IDEAL        FORCE\n" + "  I   J   K   I     J     K       ANGLE     ANGLE      CONSTANT     ENERGY\n" + "--------------------------------------------------------------------------";
+case 2:
 return "\nT O R S I O N A L (" + this.minTorsions.length + " torsions)\n\n" + "      ATOMS           ATOM TYPES            n    COS          FORCE      TORSION\n" + "  I   J   K   L   I     J     K     L          (n phi0)      CONSTANT     ANGLE        ENERGY\n" + "---------------------------------------------------------------------------------------------";
 case 4:
 return "\nO U T - O F - P L A N E   B E N D I N G\n\n      ATOMS           ATOM TYPES             OOP        FORCE \n  I   J   K   L   I     J     K     L       ANGLE     CONSTANT      ENERGY\n--------------------------------------------------------------------------";
@@ -3033,9 +3043,9 @@ switch (iType) {
 case 0:
 return JU.PT.sprintf ("%3d %3d  %-5s %-5s  %4.2f%8.3f   %8.3f     %8.3f   %8.3f   %8.3f", "ssFI",  Clazz_newArray (-1, [this.minAtoms[c.ia].sType, this.minAtoms[c.ib].sType,  Clazz_newFloatArray (-1, [0, c.rab, c.dData[1], c.dData[0], c.delta, energy]),  Clazz_newIntArray (-1, [this.minAtoms[c.ia].atom.getAtomNumber (), this.minAtoms[c.ib].atom.getAtomNumber ()])]));
 case 1:
-case 2:
-return JU.PT.sprintf ("%3d %3d %3d  %-5s %-5s %-5s  %8.3f  %8.3f     %8.3f   %8.3f", "sssFI",  Clazz_newArray (-1, [this.minAtoms[c.ia].sType, this.minAtoms[c.ib].sType, this.minAtoms[c.ic].sType,  Clazz_newFloatArray (-1, [(c.theta * 57.29577951308232), c.dData[1], c.dData[0], energy]),  Clazz_newIntArray (-1, [this.minAtoms[c.ia].atom.getAtomNumber (), this.minAtoms[c.ib].atom.getAtomNumber (), this.minAtoms[c.ic].atom.getAtomNumber ()])]));
 case 3:
+return JU.PT.sprintf ("%3d %3d %3d  %-5s %-5s %-5s  %8.3f  %8.3f     %8.3f   %8.3f", "sssFI",  Clazz_newArray (-1, [this.minAtoms[c.ia].sType, this.minAtoms[c.ib].sType, this.minAtoms[c.ic].sType,  Clazz_newFloatArray (-1, [(c.theta * 57.29577951308232), c.dData[1], c.dData[0], energy]),  Clazz_newIntArray (-1, [this.minAtoms[c.ia].atom.getAtomNumber (), this.minAtoms[c.ib].atom.getAtomNumber (), this.minAtoms[c.ic].atom.getAtomNumber ()])]));
+case 2:
 return JU.PT.sprintf ("%3d %3d %3d %3d  %-5s %-5s %-5s %-5s  %3d %8.3f     %8.3f     %8.3f     %8.3f", "ssssFI",  Clazz_newArray (-1, [this.minAtoms[c.ia].sType, this.minAtoms[c.ib].sType, this.minAtoms[c.ic].sType, this.minAtoms[c.id].sType,  Clazz_newFloatArray (-1, [c.dData[1], c.dData[0], (c.theta * 57.29577951308232), energy]),  Clazz_newIntArray (-1, [this.minAtoms[c.ia].atom.getAtomNumber (), this.minAtoms[c.ib].atom.getAtomNumber (), this.minAtoms[c.ic].atom.getAtomNumber (), this.minAtoms[c.id].atom.getAtomNumber (), c.iData[4]])]));
 case 4:
 return JU.PT.sprintf ("%3d %3d %3d %3d  %-5s %-5s %-5s %-5s  %8.3f   %8.3f     %8.3f", "ssssFI",  Clazz_newArray (-1, [this.minAtoms[c.ia].sType, this.minAtoms[c.ib].sType, this.minAtoms[c.ic].sType, this.minAtoms[c.id].sType,  Clazz_newFloatArray (-1, [(c.theta * 57.29577951308232), c.dData[0], energy]),  Clazz_newIntArray (-1, [this.minAtoms[c.ia].atom.getAtomNumber (), this.minAtoms[c.ib].atom.getAtomNumber (), this.minAtoms[c.ic].atom.getAtomNumber (), this.minAtoms[c.id].atom.getAtomNumber ()])]));
@@ -3056,13 +3066,13 @@ break;
 case 1:
 s = "ANGLE BENDING";
 break;
-case 3:
+case 2:
 s = "TORSIONAL";
 break;
 case 4:
 s = "OUT-OF-PLANE BENDING";
 break;
-case 2:
+case 3:
 s = "STRETCH BENDING";
 break;
 case 5:
@@ -3146,8 +3156,8 @@ Clazz_defineStatics (c$,
 "KCAL_TO_KJ", 4.1868,
 "CALC_DISTANCE", 0,
 "CALC_ANGLE", 1,
-"CALC_STRETCH_BEND", 2,
-"CALC_TORSION", 3,
+"CALC_TORSION", 2,
+"CALC_STRETCH_BEND", 3,
 "CALC_OOP", 4,
 "CALC_VDW", 5,
 "CALC_ES", 6,
@@ -3196,11 +3206,11 @@ calc = this.calculations[1] =  new JU.Lst ();
 var angleCalc =  new JM.FF.MMFFAngleCalc ().set (this);
 for (var i = 0; i < this.angleCount; i++) angleCalc.setData (calc, this.minAngles[i]);
 
-calc = this.calculations[2] =  new JU.Lst ();
+calc = this.calculations[3] =  new JU.Lst ();
 var sbCalc =  new JM.FF.MMFFSBCalc ().set (this);
 for (var i = 0; i < this.angleCount; i++) sbCalc.setData (calc, this.minAngles[i]);
 
-calc = this.calculations[3] =  new JU.Lst ();
+calc = this.calculations[2] =  new JU.Lst ();
 var torsionCalc =  new JM.FF.MMFFTorsionCalc ().set (this);
 for (var i = 0; i < this.torsionCount; i++) torsionCalc.setData (calc, this.minTorsions[i]);
 
@@ -3252,9 +3262,9 @@ case 0:
 return this.bondCalc.compute (dataIn);
 case 1:
 return this.angleCalc.compute (dataIn);
-case 2:
-return this.sbCalc.compute (dataIn);
 case 3:
+return this.sbCalc.compute (dataIn);
+case 2:
 return this.torsionCalc.compute (dataIn);
 case 4:
 return this.oopCalc.compute (dataIn);
@@ -3274,7 +3284,7 @@ function (iType) {
 switch (iType) {
 case -1:
 return "MMFF94 Force Field -- T. A. Halgren, J. Comp. Chem. 5 & 6 490-519ff (1996).\n";
-case 3:
+case 2:
 return "\nT O R S I O N A L (" + this.minTorsions.length + " torsions)\n\n" + "      ATOMS           ATOM TYPES          TORSION\n" + "  I   J   K   L   I     J     K     L      ANGLE       V1       V2       V3     ENERGY\n" + "--------------------------------------------------------------------------------------\n";
 default:
 return this.getDebugHeader2 (iType);
@@ -3285,9 +3295,9 @@ function (iType, c) {
 var energy = this.ff.toUserUnits (c.energy);
 switch (iType) {
 case 1:
-case 2:
-return JU.PT.sprintf ("%11s  %-5s %-5s %-5s  %8.3f  %8.3f     %8.3f   %8.3f", "ssssFI",  Clazz_newArray (-1, [JM.MinObject.decodeKey (c.key), this.minAtoms[c.ia].sType, this.minAtoms[c.ib].sType, this.minAtoms[c.ic].sType,  Clazz_newFloatArray (-1, [(c.theta * 57.29577951308232), c.dData[1], c.dData[0], energy]),  Clazz_newIntArray (-1, [this.minAtoms[c.ia].atom.getAtomNumber (), this.minAtoms[c.ib].atom.getAtomNumber (), this.minAtoms[c.ic].atom.getAtomNumber ()])]));
 case 3:
+return JU.PT.sprintf ("%11s  %-5s %-5s %-5s  %8.3f  %8.3f     %8.3f   %8.3f", "ssssFI",  Clazz_newArray (-1, [JM.MinObject.decodeKey (c.key), this.minAtoms[c.ia].sType, this.minAtoms[c.ib].sType, this.minAtoms[c.ic].sType,  Clazz_newFloatArray (-1, [(c.theta * 57.29577951308232), c.dData[1], c.dData[0], energy]),  Clazz_newIntArray (-1, [this.minAtoms[c.ia].atom.getAtomNumber (), this.minAtoms[c.ib].atom.getAtomNumber (), this.minAtoms[c.ic].atom.getAtomNumber ()])]));
+case 2:
 return JU.PT.sprintf ("%15s  %-5s %-5s %-5s %-5s  %8.3f %8.3f %8.3f %8.3f %8.3f", "sssssF",  Clazz_newArray (-1, [JM.MinObject.decodeKey (c.key), this.minAtoms[c.ia].sType, this.minAtoms[c.ib].sType, this.minAtoms[c.ic].sType, this.minAtoms[c.id].sType,  Clazz_newFloatArray (-1, [(c.theta * 57.29577951308232), c.dData[0], c.dData[1], c.dData[2], energy])]));
 default:
 return this.getDebugLineC (iType, c);
@@ -3338,7 +3348,7 @@ calc = this.calculations[1] =  new JU.Lst ();
 var angleCalc =  new JM.FF.UFFAngleCalc ().set (this);
 for (var i = this.minAngles.length; --i >= 0; ) angleCalc.setData (calc, this.minAngles[i].data);
 
-calc = this.calculations[3] =  new JU.Lst ();
+calc = this.calculations[2] =  new JU.Lst ();
 var torsionCalc =  new JM.FF.UFFTorsionCalc ().set (this);
 for (var i = this.minTorsions.length; --i >= 0; ) torsionCalc.setData (calc, this.minTorsions[i].data);
 
@@ -3381,7 +3391,7 @@ case 0:
 return this.bondCalc.compute (dataIn);
 case 1:
 return this.angleCalc.compute (dataIn);
-case 3:
+case 2:
 return this.torsionCalc.compute (dataIn);
 case 4:
 return this.oopCalc.compute (dataIn);
@@ -3580,7 +3590,7 @@ this.calcs.setAngleVariables (this);
 var dr_ab = this.rab - r0_ab;
 this.delta = this.theta * 57.29577951308232 - t0;
 this.energy = k * dr_ab * this.delta;
-if (this.calcs.logging) this.calcs.appendLogData (this.calcs.getDebugLine (2, this));
+if (this.calcs.logging) this.calcs.appendLogData (this.calcs.getDebugLine (3, this));
 if (this.calcs.gradients) {
 this.dE = k * dr_ab;
 this.calcs.addForces (this, 3);
@@ -3615,7 +3625,7 @@ if (this.calcs.gradients) {
 var sinTheta = Math.sin (this.theta);
 this.dE = 0.5 * (-v1 * sinTheta + 4 * v2 * sinTheta * cosTheta + 3 * v3 * sinTheta * (1 - 4 * cosTheta2));
 this.calcs.addForces (this, 4);
-}if (this.calcs.logging) this.calcs.appendLogData (this.calcs.getDebugLine (3, this));
+}if (this.calcs.logging) this.calcs.appendLogData (this.calcs.getDebugLine (2, this));
 return this.energy;
 }, "~A");
 });
@@ -3953,7 +3963,7 @@ this.energy = V * (1.0 - cosNPhi0 * Math.cos (this.theta * n));
 if (this.calcs.gradients) {
 this.dE = V * n * cosNPhi0 * Math.sin (n * this.theta);
 this.calcs.addForces (this, 4);
-}if (this.calcs.logging) this.calcs.appendLogData (this.calcs.getDebugLine (3, this));
+}if (this.calcs.logging) this.calcs.appendLogData (this.calcs.getDebugLine (2, this));
 return this.energy;
 }, "~A");
 });
@@ -4051,6 +4061,38 @@ function (e) {
 if (this.minimizer.minimizationOn ()) JU.Logger.error (e.toString ());
 }, "Exception");
 });
+Clazz_declarePackage ("JM");
+c$ = Clazz_decorateAsClass (function () {
+this.indexes = null;
+this.value = 0;
+this.type = 0;
+this.minList = null;
+this.nAtoms = 0;
+Clazz_instantialize (this, arguments);
+}, JM, "MMConstraint");
+Clazz_prepareFields (c$, function () {
+this.minList =  Clazz_newIntArray (4, 0);
+});
+Clazz_makeConstructor (c$, 
+function (indexes, value) {
+this.value = value;
+this.indexes = indexes;
+}, "~A,~N");
+Clazz_defineMethod (c$, "set", 
+function (steps, bsAtoms, atomMap) {
+this.nAtoms = Math.abs (this.indexes[0]);
+this.type = this.nAtoms - 2;
+for (var j = 1; j <= this.nAtoms; j++) {
+if (steps <= 0 || !bsAtoms.get (this.indexes[j])) {
+this.indexes[0] = -this.nAtoms;
+break;
+}this.minList[j - 1] = atomMap[this.indexes[j]];
+}
+}, "~N,JU.BS,~A");
+Clazz_defineStatics (c$,
+"TYPE_DISTANCE", 0,
+"TYPE_ANGLE", 1,
+"TYPE_DIHEDRAL", 2);
 })(Clazz
 ,Clazz.getClassName
 ,Clazz.newLongArray

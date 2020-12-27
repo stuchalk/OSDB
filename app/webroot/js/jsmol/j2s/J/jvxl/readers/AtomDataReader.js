@@ -125,6 +125,7 @@ this.sg.fillAtomData (this.atomData, 1 | (getAllModels ? 16 : 0) | (getMolecules
 if (this.doUseIterator) this.atomData.bsSelected = null;
 this.ac = this.atomData.ac;
 this.modelIndex = this.atomData.firstModelIndex;
+if (modelInvRotation != null) this.atomData.transformXYZ (modelInvRotation, bsSelected);
 var needRadius = false;
 for (var i = 0; i < this.ac; i++) {
 if ((bsSelected == null || bsSelected.get (i)) && (!this.bsMyIgnored.get (i))) {
@@ -177,7 +178,6 @@ this.myAtomCount++;
 }
 }this.firstNearbyAtom = this.myAtomCount;
 if (!this.isQuiet) JU.Logger.info (this.myAtomCount + " atoms will be used in the surface calculation");
-if (modelInvRotation != null) this.atomData.transformXYZ (modelInvRotation, bsSelected);
 if (this.myAtomCount == 0) {
 this.setBBox (JU.P3.new3 (10, 10, 10), 0);
 this.setBBox (JU.P3.new3 (-10, -10, -10), 0);

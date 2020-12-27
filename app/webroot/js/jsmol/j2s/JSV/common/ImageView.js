@@ -157,15 +157,14 @@ var grayFactor = 255 / (this.maxZ - this.minZ);
 if (!forceNew && this.buf2d != null && grayFactor == this.grayFactorLast) return this.buf2d;
 this.grayFactorLast = grayFactor;
 var pt = this.imageWidth * this.imageHeight;
-var buf =  Clazz.newIntArray (pt, 0);
+var buf = (this.buf2d == null || this.buf2d.length != pt ?  Clazz.newIntArray (pt, 0) : this.buf2d);
 var totalGray = 0;
 for (var i = 0; i < nSpec; i++) {
 var points = subSpectra.get (i).xyCoords;
 if (points.length != xyCoords.length) return null;
-var f = subSpectra.get (i).getUserYFactor ();
 for (var j = 0; j < xyCoords.length; j++) {
 var y = points[j].getYVal ();
-var gray = 255 - JSV.common.Coordinate.intoRange (Clazz.doubleToInt ((y * f - this.minZ) * grayFactor), 0, 255);
+var gray = 255 - JSV.common.Coordinate.intoRange (Clazz.doubleToInt ((y - this.minZ) * grayFactor), 0, 255);
 buf[--pt] = gray;
 totalGray += gray;
 }
@@ -225,7 +224,7 @@ return this.maxX + (this.minX - this.maxX) * this.toImageX (this.fixX (xPixel)) 
 Clazz.overrideMethod (c$, "toY", 
 function (yPixel) {
 var isub = this.toSubspectrumIndex (yPixel);
-return this.maxY + (this.minY - this.maxY) * isub / (this.imageWidth - 1);
+return this.maxY + (this.minY - this.maxY) * isub / (this.imageHeight - 1);
 }, "~N");
 Clazz.overrideMethod (c$, "toPixelX", 
 function (x) {

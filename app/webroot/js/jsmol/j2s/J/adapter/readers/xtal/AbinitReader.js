@@ -78,7 +78,7 @@ Clazz.defineMethod (c$, "applySymmetry",
  function () {
 if (this.cellLattice == null) return;
 this.setSpaceGroupName ("P1");
-for (var i = 0; i < 3; i++) this.addPrimitiveLatticeVector (i, this.cellLattice, i * 3);
+for (var i = 0; i < 3; i++) this.addExplicitLatticeVector (i, this.cellLattice, i * 3);
 
 var atoms = this.asc.atoms;
 var i0 = this.asc.getAtomSetAtomIndex (this.asc.iSet);

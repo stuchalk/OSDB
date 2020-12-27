@@ -52,13 +52,13 @@ return "[" + this.xVal + ", " + this.yVal + "]";
 });
 c$.isYInRange = Clazz.defineMethod (c$, "isYInRange", 
 function (xyCoords, min, max) {
-return (JSV.common.Coordinate.getMinY (xyCoords, 0, xyCoords.length) >= min && JSV.common.Coordinate.getMaxY (xyCoords, 0, xyCoords.length) >= max);
+return (JSV.common.Coordinate.getMinY (xyCoords, 0, xyCoords.length - 1) >= min && JSV.common.Coordinate.getMaxY (xyCoords, 0, xyCoords.length - 1) >= max);
 }, "~A,~N,~N");
 c$.normalise = Clazz.defineMethod (c$, "normalise", 
 function (xyCoords, min, max) {
 var newXYCoords =  new Array (xyCoords.length);
-var minY = JSV.common.Coordinate.getMinY (xyCoords, 0, xyCoords.length);
-var maxY = JSV.common.Coordinate.getMaxY (xyCoords, 0, xyCoords.length);
+var minY = JSV.common.Coordinate.getMinY (xyCoords, 0, xyCoords.length - 1);
+var maxY = JSV.common.Coordinate.getMaxY (xyCoords, 0, xyCoords.length - 1);
 var factor = (maxY - minY) / (max - min);
 for (var i = 0; i < xyCoords.length; i++) newXYCoords[i] =  new JSV.common.Coordinate ().set (xyCoords[i].getXVal (), ((xyCoords[i].getYVal () - minY) / factor) - min);
 
@@ -138,7 +138,7 @@ lastX -= offset;
 c$.getMinX = Clazz.defineMethod (c$, "getMinX", 
 function (coords, start, end) {
 var min = 1.7976931348623157E308;
-for (var index = start; index < end; index++) {
+for (var index = start; index <= end; index++) {
 var tmp = coords[index].getXVal ();
 if (tmp < min) min = tmp;
 }
@@ -157,7 +157,7 @@ return min;
 c$.getMaxX = Clazz.defineMethod (c$, "getMaxX", 
 function (coords, start, end) {
 var max = -1.7976931348623157E308;
-for (var index = start; index < end; index++) {
+for (var index = start; index <= end; index++) {
 var tmp = coords[index].getXVal ();
 if (tmp > max) max = tmp;
 }
@@ -176,7 +176,7 @@ return max;
 c$.getMinY = Clazz.defineMethod (c$, "getMinY", 
 function (coords, start, end) {
 var min = 1.7976931348623157E308;
-for (var index = start; index < end; index++) {
+for (var index = start; index <= end; index++) {
 var tmp = coords[index].getYVal ();
 if (tmp < min) min = tmp;
 }
@@ -197,7 +197,7 @@ return min;
 c$.getMaxY = Clazz.defineMethod (c$, "getMaxY", 
 function (coords, start, end) {
 var max = -1.7976931348623157E308;
-for (var index = start; index < end; index++) {
+for (var index = start; index <= end; index++) {
 var tmp = coords[index].getYVal ();
 if (tmp > max) max = tmp;
 }

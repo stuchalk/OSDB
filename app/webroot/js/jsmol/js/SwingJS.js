@@ -397,7 +397,7 @@ if (typeof(SwingJS) == "undefined") {
 		this._containerWidth = sz[0];
 		this._containerHeight = sz[1];
 		if (this._is2D)
-			Jmol._repaint(this, true);
+			Jmol.repaint(this, true);
 	}
 
 	proto._cover = function (doCover) {

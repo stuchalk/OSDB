@@ -5,9 +5,8 @@ c$.getInterface = Clazz.defineMethod (c$, "getInterface",
 function (name, vwr, state) {
 try {
 var x = null;
-{
-x = Clazz._4Name (name, vwr && vwr.html5Applet, state);
-}return (x == null ? null : x.newInstance ());
+x = Clazz._4Name (name);
+return (x == null ? null : x.newInstance ());
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 JU.Logger.error ("Interface.java Error creating instance for " + name + ": \n" + e);

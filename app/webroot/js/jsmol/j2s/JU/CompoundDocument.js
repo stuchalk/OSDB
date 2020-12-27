@@ -4,6 +4,7 @@ c$ = Clazz.decorateAsClass (function () {
 this.header = null;
 this.directory = null;
 this.rootEntry = null;
+this.jzt = null;
 this.SAT = null;
 this.SSAT = null;
 this.sectorSize = 0;
@@ -22,8 +23,8 @@ function () {
 Clazz.superConstructor (this, JU.CompoundDocument);
 this.isBigEndian = true;
 });
-Clazz.overrideMethod (c$, "setStream", 
-function (jzt, bis, isBigEndian) {
+Clazz.defineMethod (c$, "setDocStream", 
+function (jzt, bis) {
 this.jzt = jzt;
 if (!this.isRandom) {
 this.stream =  new java.io.DataInputStream (bis);
@@ -32,7 +33,7 @@ if (!this.readHeader ()) return;
 this.getSectorAllocationTable ();
 this.getShortSectorAllocationTable ();
 this.getDirectoryTable ();
-}, "javajs.api.GenericZipTools,java.io.BufferedInputStream,~B");
+}, "javajs.api.GenericZipTools,java.io.BufferedInputStream");
 Clazz.defineMethod (c$, "getDirectory", 
 function () {
 return this.directory;

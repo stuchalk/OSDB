@@ -155,7 +155,7 @@ return this.viewer.processMouseEvent (e.id, e.x, e.y, e.modifiers, e.when);
 }, "java.awt.Event");
 Clazz.overrideMethod (c$, "getAppletInfo", 
 function () {
-return J.i18n.GT.o (J.i18n.GT._ ("Jmol Applet version {0} {1}.\n\nAn OpenScience project.\n\nSee http://www.jmol.org for more information"),  Clazz.newArray (-1, [JV.JC.version, JV.JC.date])) + "\nhtmlName = " + JU.PT.esc (this.htmlName) + "\nsyncId = " + JU.PT.esc (this.syncId) + "\ndocumentBase = " + JU.PT.esc (this.documentBase) + "\ncodeBase = " + JU.PT.esc (this.codeBase);
+return J.i18n.GT.o (J.i18n.GT.$ ("Jmol Applet version {0} {1}.\n\nAn OpenScience project.\n\nSee http://www.jmol.org for more information"),  Clazz.newArray (-1, [JV.JC.version, JV.JC.date])) + "\nhtmlName = " + JU.PT.esc (this.htmlName) + "\nsyncId = " + JU.PT.esc (this.syncId) + "\ndocumentBase = " + JU.PT.esc (this.documentBase) + "\ncodeBase = " + JU.PT.esc (this.codeBase);
 });
 Clazz.overrideMethod (c$, "script", 
 function (script) {
@@ -286,6 +286,7 @@ case J.c.CBK.IMAGE:
 case J.c.CBK.LOADSTRUCT:
 case J.c.CBK.SCRIPT:
 return !this.isJNLP;
+case J.c.CBK.AUDIO:
 case J.c.CBK.APPLETREADY:
 case J.c.CBK.ATOMMOVED:
 case J.c.CBK.CLICK:
@@ -299,15 +300,16 @@ return (this.b$.get (type) != null);
 }, "J.c.CBK");
 Clazz.defineMethod (c$, "notifyCallback", 
 function (type, data) {
-var callback = this.b$.get (type);
-var doCallback = (callback != null && (data == null || data[0] == null));
+var callback = (type == null ? null : this.b$.get (type));
+var doCallback = (type == null || callback != null && (data == null || data[0] == null));
 var toConsole = false;
 if (data != null) data[0] = this.htmlName;
 var strInfo = (data == null || data[1] == null ? null : data[1].toString ());
-switch (type) {
+if (type != null) switch (type) {
 case J.c.CBK.APPLETREADY:
 data[3] = this.appletObject;
 break;
+case J.c.CBK.AUDIO:
 case J.c.CBK.ERROR:
 case J.c.CBK.EVAL:
 case J.c.CBK.HOVER:
@@ -346,7 +348,7 @@ break;
 case J.c.CBK.LOADSTRUCT:
 var errorMsg = data[4];
 if (errorMsg != null) {
-errorMsg = (errorMsg.indexOf ("NOTE:") >= 0 ? "" : J.i18n.GT._ ("File Error:")) + errorMsg;
+errorMsg = (errorMsg.indexOf ("NOTE:") >= 0 ? "" : J.i18n.GT.$ ("File Error:")) + errorMsg;
 this.doShowStatus (errorMsg);
 this.notifyCallback (J.c.CBK.MESSAGE,  Clazz.newArray (-1, ["", errorMsg]));
 return;
@@ -537,6 +539,10 @@ if (!JU.GenericApplet.htRegistry.containsKey (appletName)) appletName = "jmolApp
 if (!appletName.equals (excludeName) && JU.GenericApplet.htRegistry.containsKey (appletName)) {
 apps.addLast (appletName);
 }}, "~S,~S,~S,JU.Lst");
+Clazz.overrideMethod (c$, "notifyAudioEnded", 
+function (htParams) {
+this.viewer.sm.notifyAudioStatus (htParams);
+}, "~O");
 Clazz.defineStatics (c$,
 "htRegistry", null,
 "SCRIPT_CHECK", 0,

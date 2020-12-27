@@ -12,10 +12,10 @@ function () {
 });
 Clazz.overrideMethod (c$, "translate", 
 function (s) {
-return J.i18n.GT._ (s);
+return J.i18n.GT.$ (s);
 }, "~S");
 Clazz.makeConstructor (c$, 
-function (vwr, langCode) {
+function (vr, langCode) {
 {
 }this.resources = null;
 this.resourceCount = 0;
@@ -61,12 +61,12 @@ if (la === la_co || "en_US".equals (la)) la = null;
 if (la_co === la_co_va) la_co = null;
 if ("en_US".equals (la_co)) return;
 if (J.i18n.GT.allowDebug && JU.Logger.debugging) JU.Logger.debug ("Instantiating gettext wrapper for " + this.language + " using files for language:" + la + " country:" + la_co + " variant:" + la_co_va);
-if (!J.i18n.GT.$ignoreApplicationBundle) this.addBundles (vwr, "Jmol", la_co_va, null, null);
-this.addBundles (vwr, "JmolApplet", la_co_va, null, null);
-if (!J.i18n.GT.$ignoreApplicationBundle) this.addBundles (vwr, "Jmol", null, la_co, null);
-this.addBundles (vwr, "JmolApplet", null, la_co, null);
-if (!J.i18n.GT.$ignoreApplicationBundle) this.addBundles (vwr, "Jmol", null, null, la);
-this.addBundles (vwr, "JmolApplet", null, null, la);
+if (!J.i18n.GT.$ignoreApplicationBundle) this.addBundles (vr, "Jmol", la_co_va, null, null);
+this.addBundles (vr, "JmolApplet", la_co_va, null, null);
+if (!J.i18n.GT.$ignoreApplicationBundle) this.addBundles (vr, "Jmol", null, la_co, null);
+this.addBundles (vr, "JmolApplet", null, la_co, null);
+if (!J.i18n.GT.$ignoreApplicationBundle) this.addBundles (vr, "Jmol", null, null, la);
+this.addBundles (vr, "JmolApplet", null, null, la);
 }, "JV.Viewer,~S");
 c$.getLanguageList = Clazz.defineMethod (c$, "getLanguageList", 
 function (gt) {
@@ -93,7 +93,7 @@ c$.getDoTranslate = Clazz.defineMethod (c$, "getDoTranslate",
 function () {
 return J.i18n.GT.getTextWrapper ().doTranslate;
 });
-c$._ = Clazz.defineMethod (c$, "_", 
+c$.$ = Clazz.defineMethod (c$, "$", 
 function (string) {
 return J.i18n.GT.getTextWrapper ().getString (string);
 }, "~S");

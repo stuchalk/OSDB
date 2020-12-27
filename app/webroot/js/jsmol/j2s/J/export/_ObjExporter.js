@@ -117,7 +117,7 @@ this.debugPrint ("  radius=" + radius);
 this.debugPrint ("  Not done owing to surfacesOnly");
 return;
 }this.outputEllipsoid1 (center, radius, radius, radius, null, colix);
-}, "JU.T3,~N,~N,~B");
+}, "JU.P3,~N,~N,~B");
 Clazz.overrideMethod (c$, "outputTextPixel", 
 function (pt, argb) {
 }, "JU.P3,~N");
@@ -130,7 +130,7 @@ return;
 Clazz.overrideMethod (c$, "outputHeader", 
 function () {
 this.debugPrint ("outputHeader");
-this.output ("# Created by Jmol " + JV.Viewer.getJmolVersion () + "\n");
+this.output ("#obj Created by Jmol " + JV.Viewer.getJmolVersion () + "\n");
 });
 Clazz.defineMethod (c$, "output", 
 function (pt) {

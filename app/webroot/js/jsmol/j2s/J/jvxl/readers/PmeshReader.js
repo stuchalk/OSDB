@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.jvxl.readers");
-Clazz.load (["J.jvxl.readers.PolygonFileReader"], "J.jvxl.readers.PmeshReader", ["JU.CU", "$.P3", "J.jvxl.data.JvxlCoder", "JU.Logger"], function () {
+Clazz.load (["J.jvxl.readers.PolygonFileReader"], "J.jvxl.readers.PmeshReader", ["JU.CU", "$.P3", "$.PT", "J.jvxl.data.JvxlCoder", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.isBinary = false;
 this.nPolygons = 0;
@@ -54,6 +54,7 @@ return true;
 }this.br.reset ();
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
+System.out.println (e);
 } else {
 throw e;
 }
@@ -107,8 +108,10 @@ return this.readVerticesPM ();
 Clazz.defineMethod (c$, "readVerticesPM", 
 function () {
 this.pmeshError = this.type + " ERROR: vertex count must be positive";
-if (!this.isBinary) this.nVertices = this.getInt ();
-if (this.onePerLine) this.iToken = 2147483647;
+if (!this.isBinary) {
+this.nVertices = this.getInt ();
+if (this.nVertices == -2147483648) this.nVertices = this.getInt ();
+}if (this.onePerLine) this.iToken = 2147483647;
 if (this.nVertices <= 0) {
 this.pmeshError += " (" + this.nVertices + ")";
 return false;
@@ -132,16 +135,17 @@ Clazz.defineMethod (c$, "readPolygonsPM",
 function () {
 this.pmeshError = this.type + " ERROR: polygon count must be zero or positive";
 if (!this.isBinary) this.nPolygons = this.getInt ();
-if (this.nPolygons < 0) {
-this.pmeshError += " (" + this.nPolygons + ")";
-return false;
-}if (this.onePerLine) this.iToken = 2147483647;
+if (this.onePerLine) this.iToken = 2147483647;
 var vertices =  Clazz.newIntArray (5, 0);
+if (this.nPolygons == -1) this.nPolygons = 2147483647;
+var nread = 0;
 for (var iPoly = 0; iPoly < this.nPolygons; iPoly++) {
 var intCount = (this.fixedCount == 0 ? this.getInt () : this.fixedCount);
+if (intCount == 0) break;
+nread++;
 var haveColor = (intCount < 0);
 if (haveColor) intCount = -intCount;
-var vertexCount = intCount - (this.isClosedFace ? 1 : 0);
+var vertexCount = intCount - (intCount > 3 && this.isClosedFace ? 1 : 0);
 if (vertexCount < 1 || vertexCount > 4) {
 this.pmeshError = this.type + " ERROR: bad polygon (must have 1-4 vertices) at #" + (iPoly + 1);
 return false;
@@ -158,10 +162,17 @@ if (vertexCount < 3) for (var i = vertexCount; i < 3; ++i) vertices[i] = vertice
 
 var color = 0;
 if (haveColor) {
+if (this.isBinary) {
+color = this.getInt ();
+} else {
 var c = this.nextToken ();
-color = this.parseIntStr (c);
+try {
+color = (c.startsWith ("0x") ? JU.PT.parseIntRadix (c.substring (2), 16) : this.parseIntStr (c));
+} catch (e) {
+color = -2147483648;
+}
 if (color == -2147483648) color = JU.CU.getArgbFromString (c);
-color |= 0xFF000000;
+}color |= 0xFF000000;
 }if (vertexCount == 4) {
 this.nTriangles += 2;
 this.addTriangleCheck (vertices[0], vertices[1], vertices[3], 5, 0, false, color);
@@ -171,6 +182,7 @@ this.nTriangles++;
 this.addTriangleCheck (vertices[0], vertices[1], vertices[2], 7, 0, false, color);
 }}
 if (this.isBinary) this.nBytes = this.binarydoc.getPosition ();
+this.nPolygons = nread;
 return true;
 });
 Clazz.defineMethod (c$, "nextToken", 

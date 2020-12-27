@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JU");
-Clazz.load (["J.api.JmolGraphicsInterface", "JU.Normix"], "JU.GData", ["javajs.awt.Font", "JU.AU", "$.P3", "$.V3", "JU.C", "$.Shader"], function () {
+Clazz.load (["J.api.JmolGraphicsInterface", "JU.Normix"], "JU.GData", ["JU.AU", "$.P3", "$.V3", "JU.C", "$.Font", "$.Shader"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.apiPlatform = null;
 this.translucentCoverOnly = false;
@@ -57,7 +57,7 @@ Clazz.defineMethod (c$, "initialize",
 function (vwr, apiPlatform) {
 this.vwr = vwr;
 this.apiPlatform = apiPlatform;
-}, "JV.Viewer,javajs.api.GenericPlatform");
+}, "JV.Viewer,J.api.GenericPlatform");
 Clazz.defineMethod (c$, "setDepth", 
 function (depthValue) {
 this.depth = depthValue < 0 ? 0 : depthValue;
@@ -246,11 +246,11 @@ return code;
 }, "~N");
 Clazz.defineMethod (c$, "getFont3D", 
 function (fontSize) {
-return javajs.awt.Font.createFont3D (0, 0, fontSize, fontSize, this.apiPlatform, this.graphicsForMetrics);
+return JU.Font.createFont3D (0, 0, fontSize, fontSize, this.apiPlatform, this.graphicsForMetrics);
 }, "~N");
 Clazz.defineMethod (c$, "getFont3DFS", 
 function (fontFace, fontSize) {
-return javajs.awt.Font.createFont3D (javajs.awt.Font.getFontFaceID (fontFace), 0, fontSize, fontSize, this.apiPlatform, this.graphicsForMetrics);
+return JU.Font.createFont3D (JU.Font.getFontFaceID (fontFace), 0, fontSize, fontSize, this.apiPlatform, this.graphicsForMetrics);
 }, "~S,~N");
 Clazz.defineMethod (c$, "getFontFidFS", 
 function (fontFace, fontSize) {
@@ -258,15 +258,15 @@ return this.getFont3DFSS (fontFace, "Bold", fontSize).fid;
 }, "~S,~N");
 Clazz.defineMethod (c$, "getFont3DFSS", 
 function (fontFace, fontStyle, fontSize) {
-var iStyle = javajs.awt.Font.getFontStyleID (fontStyle);
+var iStyle = JU.Font.getFontStyleID (fontStyle);
 if (iStyle < 0) iStyle = 0;
-return javajs.awt.Font.createFont3D (javajs.awt.Font.getFontFaceID (fontFace), iStyle, fontSize, fontSize, this.apiPlatform, this.graphicsForMetrics);
+return JU.Font.createFont3D (JU.Font.getFontFaceID (fontFace), iStyle, fontSize, fontSize, this.apiPlatform, this.graphicsForMetrics);
 }, "~S,~S,~N");
 Clazz.defineMethod (c$, "getFont3DScaled", 
 function (font, scale) {
 var newScale = font.fontSizeNominal * scale;
-return (newScale == font.fontSize ? font : javajs.awt.Font.createFont3D (font.idFontFace, font.idFontStyle, newScale, font.fontSizeNominal, this.apiPlatform, this.graphicsForMetrics));
-}, "javajs.awt.Font,~N");
+return (newScale == font.fontSize ? font : JU.Font.createFont3D (font.idFontFace, font.idFontStyle, newScale, font.fontSizeNominal, this.apiPlatform, this.graphicsForMetrics));
+}, "JU.Font,~N");
 Clazz.defineMethod (c$, "getFontFid", 
 function (fontSize) {
 return this.getFont3D (fontSize).fid;
@@ -366,13 +366,13 @@ function (x, y, z, image, jmolRenderer, bgcolix, width, height) {
 }, "~N,~N,~N,~O,J.api.JmolRendererInterface,~N,~N,~N");
 Clazz.defineMethod (c$, "plotText", 
 function (x, y, z, colorArgbOrGray, bgColor, text, font3d, jmolRenderer) {
-}, "~N,~N,~N,~N,~N,~S,javajs.awt.Font,J.api.JmolRendererInterface");
+}, "~N,~N,~N,~N,~N,~S,JU.Font,J.api.JmolRendererInterface");
 Clazz.defineMethod (c$, "renderBackground", 
 function (jmolRenderer) {
 }, "J.api.JmolRendererInterface");
 Clazz.defineMethod (c$, "setFont", 
 function (font3d) {
-}, "javajs.awt.Font");
+}, "JU.Font");
 Clazz.defineMethod (c$, "setFontFid", 
 function (fid) {
 }, "~N");
@@ -468,10 +468,11 @@ return this.currentFont;
 });
 Clazz.defineStatics (c$,
 "ENDCAPS_NONE", 0,
-"ENDCAPS_OPEN", 1,
+"ENDCAPS_HIDDEN", 1,
 "ENDCAPS_FLAT", 2,
 "ENDCAPS_SPHERICAL", 3,
-"ENDCAPS_OPENEND", 4,
+"ENDCAPS_OPEN_TO_SPHERICAL", 4,
+"ENDCAPS_FLAT_TO_SPHERICAL", 5,
 "EXPORT_RAYTRACER", 2,
 "EXPORT_CARTESIAN", 1,
 "EXPORT_NOT", 0,

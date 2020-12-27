@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shape");
-Clazz.load (["J.shape.AtomShape", "java.util.Hashtable", "JU.P3"], "J.shape.Labels", ["javajs.awt.Font", "JU.AU", "$.BS", "$.Lst", "$.PT", "J.c.PAL", "JM.LabelToken", "$.Text", "JS.SV", "JU.BSUtil", "$.C", "JV.JC"], function () {
+Clazz.load (["J.shape.AtomShape", "java.util.Hashtable", "JU.P3"], "J.shape.Labels", ["JU.AU", "$.BS", "$.Lst", "$.PT", "J.c.PAL", "JM.LabelToken", "$.Text", "JS.SV", "JU.BSUtil", "$.C", "$.Font", "JV.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.strings = null;
 this.formats = null;
@@ -25,6 +25,7 @@ this.isScaled = false;
 this.scalePixelsPerMicron = 0;
 this.ptTemp = null;
 this.pickedAtom = -1;
+this.lastPicked = -1;
 this.pickedOffset = 0;
 this.pickedX = 0;
 this.pickedY = 0;
@@ -77,6 +78,7 @@ text.setScalePixelsPerMicron (scalePixelsPerMicron);
 }}
 return;
 }if ("label" === propertyName) {
+var isPicked = (this.isPickingMode () && bsSelected.cardinality () == 1 && bsSelected.nextSetBit (0) == this.lastPicked);
 this.setScaling ();
 var tokens = null;
 var nbs = this.checkStringLength (bsSelected.length ());
@@ -88,21 +90,23 @@ var n = list.size ();
 tokens =  Clazz.newArray (-1, [null]);
 for (var pt = 0, i = bsSelected.nextSetBit (0); i >= 0 && i < nbs; i = bsSelected.nextSetBit (i + 1)) {
 if (pt >= n) {
-this.setLabel (J.shape.Labels.nullToken, "", i, true);
+this.setLabel (J.shape.Labels.nullToken, "", i, !isPicked);
 continue;
 }tokens[0] = null;
-this.setLabel (tokens, JS.SV.sValue (list.get (pt++)), i, true);
+this.setLabel (tokens, JS.SV.sValue (list.get (pt++)), i, !isPicked);
 }
 } else {
 var strLabel = value;
 tokens = (strLabel == null || strLabel.length == 0 ? J.shape.Labels.nullToken :  Clazz.newArray (-1, [null]));
-for (var i = bsSelected.nextSetBit (0); i >= 0 && i < this.ac; i = bsSelected.nextSetBit (i + 1)) this.setLabel (tokens, strLabel, i, true);
+for (var i = bsSelected.nextSetBit (0); i >= 0 && i < this.ac; i = bsSelected.nextSetBit (i + 1)) this.setLabel (tokens, strLabel, i, !isPicked);
 
 }return;
 }if (propertyName.startsWith ("label:")) {
 this.setScaling ();
 this.checkStringLength (this.ac);
-this.setLabel ( Clazz.newArray (-1, [null]), propertyName.substring (6), (value).intValue (), false);
+var label = propertyName.substring (6);
+if (label.length == 0) label = null;
+this.setLabel ( Clazz.newArray (-1, [null]), label, (value).intValue (), false);
 return;
 }if ("clearBoxes" === propertyName) {
 this.labelBoxes = null;
@@ -139,6 +143,7 @@ return;
 }if ("offset" === propertyName) {
 if (!(Clazz.instanceOf (value, Integer))) {
 if (!this.setDefaults) {
+this.checkColixLength (-1, this.ac);
 for (var i = bsSelected.nextSetBit (0); i >= 0 && i < this.ac; i = bsSelected.nextSetBit (i + 1)) this.setPymolOffset (i, value);
 
 }return;
@@ -226,6 +231,10 @@ JU.BSUtil.deleteBits (this.bsFontSet, bsSelected);
 JU.BSUtil.deleteBits (this.bsBgColixSet, bsSelected);
 }this.setPropAS (propertyName, value, bsSelected);
 }, "~S,~O,JU.BS");
+Clazz.defineMethod (c$, "isPickingMode", 
+ function () {
+return (this.vwr.getPickingMode () == 2 && this.labelBoxes != null);
+});
 Clazz.defineMethod (c$, "checkStringLength", 
  function (n) {
 n = Math.min (this.ac, n);
@@ -246,6 +255,7 @@ Clazz.defineMethod (c$, "setPymolLabels",
  function (labels, bsSelected) {
 this.setScaling ();
 var n = this.checkStringLength (this.ac);
+this.checkColixLength (-1, n);
 for (var i = bsSelected.nextSetBit (0); i >= 0 && i < n; i = bsSelected.nextSetBit (i + 1)) this.setPymolLabel (i, labels.get (Integer.$valueOf (i)), null);
 
 }, "java.util.Map,JU.BS");
@@ -256,7 +266,7 @@ if (text == null) {
 if (this.strings == null || i >= this.strings.length || this.strings[i] == null) return;
 var fid = (this.bsFontSet != null && this.bsFontSet.get (i) ? this.fids[i] : -1);
 if (fid < 0) this.setFont (i, fid = this.defaultFontId);
-text = JM.Text.newLabel (this.vwr, javajs.awt.Font.getFont3D (fid), this.strings[i], this.getColix2 (i, this.atoms[i], false), this.getColix2 (i, this.atoms[i], true), 0, this.scalePixelsPerMicron);
+text = JM.Text.newLabel (this.vwr, JU.Font.getFont3D (fid), this.strings[i], this.getColix2 (i, this.atoms[i], false), this.getColix2 (i, this.atoms[i], true), 0, this.scalePixelsPerMicron);
 this.setPymolLabel (i, text, this.formats[i]);
 }text.pymolOffset = value;
 }, "~N,~A");
@@ -411,23 +421,33 @@ var label = this.strings[i];
 if (label != null && this.ms.at.length > i && !this.ms.isAtomHidden (i)) this.ms.at[i].setClickable (this.vf);
 }
 });
+Clazz.overrideMethod (c$, "checkObjectClicked", 
+function (x, y, modifiers, bsVisible, drawPicking) {
+if (!this.isPickingMode ()) return null;
+var iAtom = this.findNearestLabel (x, y);
+if (iAtom < 0) return null;
+var map =  new java.util.Hashtable ();
+map.put ("type", "label");
+map.put ("atomIndex", Integer.$valueOf (iAtom));
+this.lastPicked = iAtom;
+return map;
+}, "~N,~N,~N,JU.BS,~B");
 Clazz.overrideMethod (c$, "checkObjectDragged", 
 function (prevX, prevY, x, y, dragAction, bsVisible) {
-if (this.vwr.getPickingMode () != 2 || this.labelBoxes == null) return false;
+if (!this.isPickingMode ()) return false;
 if (prevX == -2147483648) {
 var iAtom = this.findNearestLabel (x, y);
 if (iAtom >= 0) {
 this.pickedAtom = iAtom;
+this.lastPicked = this.pickedAtom;
 this.vwr.acm.setDragAtomIndex (iAtom);
 this.pickedX = x;
 this.pickedY = y;
 this.pickedOffset = (this.offsets == null || this.pickedAtom >= this.offsets.length ? JV.JC.LABEL_DEFAULT_OFFSET : this.offsets[this.pickedAtom]);
 return true;
 }return false;
-}if (prevX == 2147483647) {
-this.pickedAtom = -1;
-return false;
-}if (this.pickedAtom < 0) return false;
+}if (prevX == 2147483647) this.pickedAtom = -1;
+if (this.pickedAtom < 0) return false;
 this.move2D (this.pickedAtom, x, y);
 return true;
 }, "~N,~N,~N,~N,~N,JU.BS");

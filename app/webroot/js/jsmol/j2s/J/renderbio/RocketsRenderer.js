@@ -26,7 +26,7 @@ this.isRockets = isRockets;
 if (this.wireframeOnly) {
 this.renderStrands ();
 } else if (this.wingVectors != null && !this.isCarbohydrate && !(isRockets && this.isNucleic)) {
-var val = !this.vwr.getBoolean (603979900);
+var val = !this.vwr.getBoolean (603979902);
 if (!this.isNucleic && this.renderArrowHeads != val) {
 bioShape.falsifyMesh ();
 this.renderArrowHeads = val;
