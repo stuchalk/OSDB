@@ -43,6 +43,7 @@ class File extends AppModel
         $Point = ClassRegistry::init('Datapoint');
         $Prop = ClassRegistry::init('Property');
         $Proptype = ClassRegistry::init('Propertytype');
+        $Ref = ClassRegistry::init('Reference');
         $Rep = ClassRegistry::init('Report');
         $Samp = ClassRegistry::init('Sample');
         $Series = ClassRegistry::init('Dataseries');
@@ -53,6 +54,7 @@ class File extends AppModel
         $Sys = ClassRegistry::init('System');
         $Tech = ClassRegistry::init('Technique');
         $Unit = ClassRegistry::init('Unit');
+        $Cref = ClassRegistry::init('Crossref');
 
         $data['name']=$data['File']['file']['name'];
         $data['size']=$data['File']['file']['size'];
@@ -136,6 +138,30 @@ class File extends AppModel
                 $yunitid=$Unit->field('id',['symbol'=>""]);
                 $level="processed";$processed="absorbance";
             }
+        } elseif($jarray['DATATYPE']=="UV/VIS SPECTRUM") {
+            $tech="UVVis";
+            $techprop="UVVis Spectrophotometry";
+            $techstr="UV/Vis";
+            $techid="UVVISSAMPLE";
+            $techcode="UVVIS";
+            if(stristr(strtolower($jarray['XUNITS']),"nm")) {
+                $xunit="nm";
+                $xlabel="Wavelength";
+                $xpropid=$Prop->field('id',['name'=>"Wavelength"]);
+                $xunitid=$Unit->field('id',['symbol'=>$xunit]);
+            }
+            if(strtolower($jarray['YUNITS'])=="logarithm epsilon") {
+                $ylabel="Log (&epsilon;)";
+                $ypropid=$Prop->field('id',['name'=>"Molar absorption coefficient"]);
+                $yunitid=$Unit->field('id',['symbol'=>""]);
+                $level="processed";$processed="log epsilon";
+            }
+            if(strtolower($jarray['YUNITS'])=="absorbance") {
+                $ylabel="Absorbance";
+                $ypropid=$Prop->field('id',['name'=>"absorbance"]);
+                $yunitid=$Unit->field('id',['symbol'=>""]);
+                $level="processed";$processed="absorbance";
+            }
         }
         $tec=$Tech->find('first',['conditions'=>['matchstr'=>$techcode]]);
         $tecid=$tec['Technique']['id']; // id of technique in table
@@ -188,8 +214,8 @@ class File extends AppModel
             $sysid=$system['id'];
             // Add substances_systems entries
             $SubSys->add(['substance_id'=>$sid1,'system_id'=>$sysid]);
-            if($sid2!="") {
-                $SubSys->add(['substance_id'=>$sid2,'system_id'=>$sysid]);
+            if($sid2!="") { // This is the solvent
+                $SubSys->add(['substance_id'=>$sid2,'system_id'=>$sysid,'solvent'=>1]);
             }
         }
 
@@ -198,8 +224,11 @@ class File extends AppModel
         $rpt['analyte_id']=$analid;
         $rpt['technique_id']=$tecid;
         $rpt['title']=$names[$sid1]." (".$techstr.")";
-        $rpt['description']=$tech." spectrum of ".$names[$sid1];
+        $rpt['description']=$techstr." spectrum of ".$names[$sid1];
         $rpt['author']=$jarray['ORIGIN'];
+        if(isset($jarray['SOURCEREFERENCE'])) {
+            $rpt['file_code']=$jarray['SOURCEREFERENCE'];
+        }
         if(AuthComponent::user('id')) {
             $fullname=AuthComponent::user('fullname');
         } else {
@@ -254,9 +283,53 @@ class File extends AppModel
         //debug($file);
 
         // Add a Reference
+        $refid=null;
+        if(isset($jarray['COMMENTS']['reference'])) {
+            $ref=$jarray['COMMENTS']['reference'];
+            $ref=$Cref->openurl($ref);
+            if(!empty($ref['doi'])) {
+                $resp=$Ref->find('first',['conditions'=>['doi'=>$ref['doi']]]);
+                if($resp) {
+                    $refid=$resp['Reference']['id'];
+                } else {
+                    $new=$Ref->add($ref);
+                    $refid=$new['id'];
+                }
+            } else {
+                $con=['year'=>$ref['year'],'startpage'=>$ref['startpage']];
+                if(isset($ref['authors'])) {
+                    $con['authors']=$ref['authors'];
+                } elseif(isset($ref['editor'])) {
+                    $con['authors']=$ref['editor'];
+                }
+                if(isset($ref['journal'])) {
+                    $con['journal']=$ref['journal'];
+                } elseif(isset($ref['booktitle'])) {
+                    $con['journal']=$ref['booktitle'];
+                } elseif(isset($ref['book title'])) {
+                    $con['journal']=$ref['book title'];
+                }
+                if(isset($ref['volume'])) {
+                    $con['volume']=$ref['volume'];
+                }
+                if(isset($ref['publisher'])) {
+                    $con['publisher']=$ref['publisher'];
+                }
+                if(isset($ref['location'])) {
+                    $con['publisher'].=", ".$ref['location'];
+                }
+                $resp=$Ref->find('first',['conditions'=>$con]);
+                if($resp) {
+                    $refid=$resp['Reference']['id'];
+                } else {
+                    $new=$Ref->add($ref);
+                    $refid=$new['id'];
+                }
+            }
+        }
 
         // Add Dataset
-        $set=['report_id'=>$rptid,'file_id'=>$filid,'propertytype_id'=>$proid];
+        $set=['report_id'=>$rptid,'file_id'=>$filid,'propertytype_id'=>$proid,'reference_id'=>$refid];
         $set['setType']="property value";
         $set['property']=$techprop;
         if(isset($jarray['XYDATA'])) {
@@ -442,6 +515,9 @@ class File extends AppModel
             $metaarray=['filename:text'=>$data['name'],'filetype:text'=>'jcamp','version:text'=>$jarray['JCAMPDX'],
                 'date:text'=>$jarray['DATETIME'],'owner:text'=>$jarray['OWNER'],'asdfType:text'=>$darray['asdftype'],
                 'fileComments:json'=>json_encode($jarray['COMMENTS']),'conversionErrors:json'=>json_encode($jarray['ERRORS'])];
+            if(isset($jarray['SOURCEREFERENCE'])) {
+                $metaarray['sourceReference:text']=$jarray['SOURCEREFERENCE'];
+            }
             foreach($metaarray as $key=>$val) {
                 list($field,$format)=explode(":",$key);
                 $Meta->add(['annotation_id'=>$annid,'field'=>$field,'value'=>$val,'format'=>$format]);
@@ -472,7 +548,7 @@ class File extends AppModel
             $point=$Point->add($dpt);
             $dptid=$point['id'];
 
-            //debug($point);
+            //debug($point);debug($darray);exit;
 
             // Split out the x and y values into separate arrays
             $x=$y=[];
@@ -509,11 +585,27 @@ class File extends AppModel
         $Sub = ClassRegistry::init('Substance');
         $Idn = ClassRegistry::init('Identifier');
 
+        // See if the chemical is already in the DB (in identifiers)
+        $hits=$Idn->find('list',['fields'=>['value','substance_id'],'conditions'=>['value'=>$name],'recursive'=>1]);
+        if(!empty($hits)) {
+            foreach($hits as $hname=>$id) {
+                if(strtolower($hname)==strtolower($name)) {
+                    return $id;
+                } else {
+                    debug($name);debug($hits);exit;
+                    throw new NotFoundException('Something went wrong searching ' . $name);
+                }
+            }
+        }
+
         $nih=$Chm->check($name,"",$debug);
-        debug($nih);
+        if(isset($nih['IUPACName'])) {
+            $name=$nih['IUPACName'];
+        }
+        //debug($nih);
         preg_match('/[a-z]/i', $name, $match, PREG_OFFSET_CAPTURE);
         $first=strtoupper($name[$match[0][1]]); // Gets the first alphanumeric char in name
-        $sub=$Sub->add(['name'=>ucfirst(strtolower($name)),'formula'=>$nih['MolecularFormula'],'molweight'=>$nih['MolecularWeight'],'first'=>$first]);
+        $sub=$Sub->add(['name'=>$name,'formula'=>$nih['MolecularFormula'],'molweight'=>$nih['MolecularWeight'],'first'=>$first]);
         $sid=$sub['id'];
         $iarray=['CID'=>'pubchemId','CanonicalSMILES'=>'smiles','InChI'=>'inchi','InChIKey'=>'inchikey','IUPACName'=>'iupacname'];
         foreach($iarray as $field=>$type) {
@@ -524,8 +616,10 @@ class File extends AppModel
         }
         // Get synonyms
         $syns=$Chm->synonyms($nih['CID']);
-        foreach($syns as $syn) {
-            $Idn->add(['substance_id'=>$sid,'type'=>'name','value'=>$syn]);
+        if(!empty($syns)) {
+            foreach($syns as $syn) {
+                $Idn->add(['substance_id'=>$sid,'type'=>'name','value'=>$syn]);
+            }
         }
         // Get Wikidata code
         if($nih['InChIKey']!="") {

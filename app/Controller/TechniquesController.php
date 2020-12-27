@@ -19,7 +19,7 @@ class TechniquesController extends AppController
     /**
      * View a particular technique
      * Endpoint /osdb.info/techniques/view/{id}[/format]
-     * @param integer $id
+     * @param mixed $id
      * @param string $format
      */
     public function view($id,$format="")
@@ -29,7 +29,7 @@ class TechniquesController extends AppController
 
         // Search for collection by name if id is not a number
         if(!is_numeric($id)) {
-            // Get the report id is one exists for this chemical and technique
+            // Get the report id if one exists for this chemical and technique
             $error = "";
             // Get the collection id if there is one
             $techs = $this->Technique->find('list', ['fields' => ['matchstr'], 'recursive' => -1]);

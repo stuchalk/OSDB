@@ -2,11 +2,11 @@
 
 /**
  * Class FilesController
- * This is aliased as 'spectra' for the access
+ * This is aliased as 'spectra' for access
  */
 class FilesController extends AppController {
 
-    public $uses = ['File','Collection','Publication','Identifier','Report'];
+    public $uses = ['File','Collection','Identifier','Report','Technique'];
 
     /**
      * beforeFilter function
@@ -14,7 +14,7 @@ class FilesController extends AppController {
     public function beforeFilter()
     {
         parent::beforeFilter();
-        $this->Auth->allow('index','totalfiles','upload','add','view');
+        $this->Auth->allow('index','totalfiles','upload','add','view','stats');
     }
 
     /**
@@ -22,22 +22,28 @@ class FilesController extends AppController {
      */
     public function index()
     {
-        $data=$this->File->find('list',['fields'=>['id','filename','publication_id'],'order'=>['id','publication_id']]);
+        $data=$this->File->find('list',['fields'=>['id','filename'],'order'=>['id']]);
         $this->set('data',$data);
-        $pubs=$this->Publication->find('list',['fields'=>['id','title']]);
-        $this->set('pubs',$pubs);
     }
 
     /**
      * Add a file
+     * @param string $curl
      */
-    public function add()
+    public function add($curl="no")
     {
-        if($this->request->is('post'))
-        {
+        if($this->request->is('post')) {
             $data=$this->request->data;
+            if($curl=="yes") {
+                debug($data);
+            }
+            if(empty($data['File']['file'][0]['name'])) {
+                $this->Flash->error('No file uploaded');
+                $this->redirect($this->referer());
+            }
             // Data has array of arrays for file to accomodate multiple file uploads
             $files=$data['File']['file'];
+            $url=$data['File']['url'];
             foreach($files as $file) {
                 if($data['File']['substance_id']=='') {
                     $chm=$data['File']['substance'];
@@ -47,14 +53,22 @@ class FilesController extends AppController {
                 $data['File']['file']=$file;
                 // Convert file
                 $id=$this->File->convert($data);
+                // Add URL if present
+                if(!empty($url)) {
+                    $this->Report->id=$id;
+                    $this->Report->saveField('url',$url);
+                }
                 // Add splash
                 $rep=$this->Report->find('first',['conditions'=>['Report.id'=>$id]]);
                 if($rep['Report']['technique_id']=='03') {
                     $this->Identifier->getSplashId($id);
                 }
             }
-            // Redirect to view
-            $this->redirect('/spectra/view/' . $id);
+            // Redirect to view or echo out if using curl
+            if($curl=="yes") {
+                echo 'https://sds.coas.unf.edu/osdb/substances/view/'.$data['File']['substance_id'];exit;
+            }
+            $this->redirect('/substances/view/'.$data['File']['substance_id']);
         } else {
             $this->upload();
         }
@@ -117,4 +131,17 @@ class FilesController extends AppController {
         $this->File->getchem($chem,$debug);
     }
 
+    /**
+     * generate stats on the types of spectra in the OSDB
+     */
+    public function stats()
+    {
+        $techs=$this->Technique->find('all');
+        $stats=[];
+        foreach($techs as $tech) {
+            $t=$tech['Technique'];
+            $stats[$t['type']]=$this->File->find('count',['conditions'=>['technique_id'=>$t['id']]]);
+        }
+        if(isset($this->request->params['requested'])) { return $stats; }
+    }
 }
