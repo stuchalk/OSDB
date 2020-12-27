@@ -38,14 +38,21 @@ class Identifier extends AppModel
     {
         // Uses Wikidata SPARQL REST call to get wikidata code via InChIKey (P235), SMILES (P233), or CID (P662) search
         if ($type=='inchikey') {
-            $sparql="PREFIX wdt: <http://www.wikidata.org/prop/direct/> select ?c where { ?c wdt:P235 \"".$value."\"}";
+            $sparql="select distinct ?c where { ?c wdt:P235 '".$value."' .}";
         } elseif ($type=='smiles') {
-            $sparql="PREFIX wdt: <http://www.wikidata.org/prop/direct/> select ?c where { ?c wdt:P233 \"".$value."\"}";
+            $sparql="select distinct ?c where { ?c wdt:P233 '".$value."' .}";
         } elseif ($type=='pubchemid') {
-            $sparql="PREFIX wdt: <http://www.wikidata.org/prop/direct/> select ?c where { ?c wdt:P662 \"".$value."\"}";
+            $sparql="select distinct ?c where { ?c wdt:P662 '".$value."' .}";
         }
-        $url = "https://query.wikidata.org/sparql?query=".urlencode($sparql)."&format=json";
-        $json = file_get_contents($url);
+        $url = "https://query.wikidata.org/sparql?query=".str_replace(' ', '%20', $sparql)."&format=json";
+        $context = stream_context_create(
+            [
+                "http" => [
+                    "header" => "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 11.1; rv:84.0) Gecko/20100101 Firefox/84.0"
+                ]
+            ]
+        );
+        $json = file_get_contents($url,0, $context);  // stream needed otherwise wikidata says forbidden...
         $data = json_decode($json, true);
         if (!empty($data['results']['bindings'][0]['c'])) {
             $wid = str_replace("http://www.wikidata.org/entity/", "", $data['results']['bindings'][0]['c']['value']);

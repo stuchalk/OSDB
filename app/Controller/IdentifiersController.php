@@ -86,33 +86,31 @@ class IdentifiersController extends AppController
 
     /**
      * Add Wikidata code to substance
-     * @param $name
+     * @param $sid
      */
-    public function wikidata($name)
+    public function wikidata($sid=null)
     {
-        $sub=$this->Identifier->find('first',['fields'=>['id','substance_id'],'conditions'=>['value'=>$name]]);
-        if(!empty($sub)) {
-            $sid=$sub['Identifier']['substance_id'];
+        if(!is_null($sid)) {
             $resp=$this->Identifier->find('first',['fields'=>['id','value'],'conditions'=>['substance_id'=>$sid,'type'=>'inchikey']]);
             $key=$resp['Identifier']['value'];
-            $data=$this->Identifier->getWikidataId($sub['Identifier']['substance_id'],'inchikey',$key);
+            $data=$this->Identifier->getWikidataId($sid,'inchikey',$key);
             if(!$data) {
                 $resp=$this->Identifier->find('first',['fields'=>['id','value'],'conditions'=>['substance_id'=>$sid,'type'=>'smiles']]);
                 if(isset($resp['Identifier']['value'])) {
                     $key=$resp['Identifier']['value'];
-                    $data=$this->Identifier->getWikidataId($sub['Identifier']['substance_id'],'smiles',$key);
+                    $data=$this->Identifier->getWikidataId($sid,'smiles',$key);
                 }
-            }if(!$data) {
+            }
+            if(!$data) {
                 $resp=$this->Identifier->find('first',['fields'=>['id','value'],'conditions'=>['substance_id'=>$sid,'type'=>'pubchemid']]);
                 if(isset($resp['Identifier']['value'])) {
                     $key=$resp['Identifier']['value'];
-                    $data=$this->Identifier->getWikidataId($sub['Identifier']['substance_id'],'pubchemid',$key);
+                    $data=$this->Identifier->getWikidataId($sid,'pubchemid',$key);
                 }
             }
-            $this->redirect('/substances/view/'.$sid);
-        } else {
-            exit;
         }
+        $this->redirect('/substances/view/'.$sid);
+
     }
 
     /**
