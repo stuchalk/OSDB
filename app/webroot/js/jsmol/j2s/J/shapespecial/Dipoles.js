@@ -486,7 +486,7 @@ function () {
 if (this.dipoleCount == 0) return "";
 var s =  new JU.SB ();
 var thisModel = -1;
-var modelCount = this.vwr.ms.mc;
+var modelCount = this.ms.mc;
 for (var i = 0; i < this.dipoleCount; i++) {
 var dipole = this.dipoles[i];
 if (dipole.isValid) {

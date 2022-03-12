@@ -4,7 +4,8 @@ c$ = Clazz.declareType (J.c, "CBK", Enum);
 c$.getCallback = Clazz.defineMethod (c$, "getCallback", 
 function (name) {
 name = name.toUpperCase ();
-name = name.substring (0, Math.max (name.indexOf ("CALLBACK"), 0));
+var pt = name.indexOf ("CALLBACK");
+if (pt > 0) name = name.substring (0, pt);
 for (var item, $item = 0, $$item = J.c.CBK.values (); $item < $$item.length && ((item = $$item[$item]) || true); $item++) if (item.name ().equalsIgnoreCase (name)) return item;
 
 return null;
@@ -34,10 +35,12 @@ Clazz.defineEnumConstant (c$, "LOADSTRUCT", 11, []);
 Clazz.defineEnumConstant (c$, "MEASURE", 12, []);
 Clazz.defineEnumConstant (c$, "MESSAGE", 13, []);
 Clazz.defineEnumConstant (c$, "MINIMIZATION", 14, []);
-Clazz.defineEnumConstant (c$, "SERVICE", 15, []);
+Clazz.defineEnumConstant (c$, "MODELKIT", 15, []);
 Clazz.defineEnumConstant (c$, "PICK", 16, []);
 Clazz.defineEnumConstant (c$, "RESIZE", 17, []);
 Clazz.defineEnumConstant (c$, "SCRIPT", 18, []);
-Clazz.defineEnumConstant (c$, "SYNC", 19, []);
-Clazz.defineEnumConstant (c$, "STRUCTUREMODIFIED", 20, []);
+Clazz.defineEnumConstant (c$, "SELECT", 19, []);
+Clazz.defineEnumConstant (c$, "SERVICE", 20, []);
+Clazz.defineEnumConstant (c$, "STRUCTUREMODIFIED", 21, []);
+Clazz.defineEnumConstant (c$, "SYNC", 22, []);
 });

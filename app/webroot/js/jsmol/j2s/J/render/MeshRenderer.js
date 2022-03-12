@@ -317,13 +317,22 @@ return;
 }} else {
 this.pt1f.ave (vA, vB);
 this.tm.transformPtScr (this.pt1f, this.pt1i);
+if (this.width < 0) {
+this.diameter = -1;
+} else {
 var mad = Clazz.doubleToInt (Math.floor (Math.abs (this.width) * 1000));
 this.diameter = Clazz.floatToInt (this.vwr.tm.scaleToScreen (this.pt1i.z, mad));
-}if (this.diameter == 0) this.diameter = 1;
+}}if (this.diameter == 0) this.diameter = 1;
 this.tm.transformPt3f (vA, this.pt1f);
 this.tm.transformPt3f (vB, this.pt2f);
+if (this.diameter == -1) {
+this.g3d.drawLineAB (this.pt1f, this.pt2f);
+} else if (this.diameter < 0) {
+var idash = -this.diameter;
+this.g3d.drawDashedLineBits (idash << 1, idash, this.pt1f, this.pt2f);
+} else {
 this.g3d.fillCylinderBits (endCap, this.diameter, this.pt1f, this.pt2f);
-}, "~N,~N,~B,JU.T3,JU.T3,JU.P3i,JU.P3i");
+}}, "~N,~N,~B,JU.T3,JU.T3,JU.P3i,JU.P3i");
 Clazz.defineMethod (c$, "exportSurface", 
 function (colix) {
 this.mesh.normals = this.mesh.getNormals (this.vertices, null);

@@ -434,7 +434,7 @@ return 0;
 }, "~S,~N");
 Clazz.defineMethod (c$, "angstromsToPixels", 
 function (distance) {
-return Clazz.doubleToInt (Math.floor (this.scalePixelsPerAngstrom * distance));
+return this.scalePixelsPerAngstrom * distance;
 }, "~N");
 Clazz.defineMethod (c$, "translateXYBy", 
 function (xDelta, yDelta) {
@@ -1478,8 +1478,26 @@ if (this.frameOffsets == null || modelIndex < 0 || modelIndex >= this.frameOffse
  else this.frameOffset.setT (this.frameOffsets[modelIndex]);
 }, "~N");
 Clazz.defineMethod (c$, "setSelectedTranslation", 
-function (bsAtoms, xyz, xy) {
-this.bsSelectedAtoms = bsAtoms;
+function (bsAtoms, xyz, xy, x) {
+if (!this.perspectiveDepth) {
+var v =  new JU.V3 ();
+switch (xyz) {
+case 'X':
+case 'x':
+v.set (x, 0, 0);
+break;
+case 'Y':
+case 'y':
+v.set (0, x, 0);
+break;
+case 'Z':
+case 'z':
+v.set (0, 0, x);
+break;
+}
+this.vwr.moveAtoms (null, null, this.matrixRotate, v, this.internalRotationCenter, false, bsAtoms, true);
+return;
+}this.bsSelectedAtoms = bsAtoms;
 switch (xyz) {
 case 'X':
 case 'x':
@@ -1494,7 +1512,7 @@ case 'z':
 this.ptOffset.z += xy;
 break;
 }
-}, "JU.BS,~S,~N");
+}, "JU.BS,~S,~N,~N");
 Clazz.defineMethod (c$, "setNavFps", 
 function (navFps) {
 this.navFps = navFps;

@@ -182,7 +182,7 @@ this.push (this.getObjects (this.getMark ()));
 break;
 case 76:
 var val =  String.instantialize (this.readStringAsBytes ());
-if (val != null && val.endsWith ("L")) {
+if (val.endsWith ("L")) {
 val = val.substring (0, val.length - 1);
 }this.push (Long.$valueOf (val));
 break;

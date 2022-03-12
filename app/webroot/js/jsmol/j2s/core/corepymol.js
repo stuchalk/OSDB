@@ -250,7 +250,7 @@ this.push (this.getObjects (this.getMark ()));
 break;
 case 76:
 var val =  String.instantialize (this.readStringAsBytes ());
-if (val != null && val.endsWith ("L")) {
+if (val.endsWith ("L")) {
 val = val.substring (0, val.length - 1);
 }this.push (Long.$valueOf (val));
 break;
@@ -3158,7 +3158,7 @@ this.desiredModelNumber = pymolState;
 }var n = names.size ();
 for (var j = 0; j < this.stateCount; j++) {
 if (!this.doGetModel (++this.nModels, null)) continue;
-this.model (this.nModels);
+this.model (this.nModels, null);
 this.pymolScene.currentAtomSetIndex = this.asc.iSet;
 if (this.isTrajectory) {
 this.trajectoryStep =  new Array (this.totalAtomCount);

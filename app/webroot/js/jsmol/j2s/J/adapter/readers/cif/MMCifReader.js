@@ -380,10 +380,10 @@ return true;
 });
 Clazz.defineMethod (c$, "addStructure", 
  function (structure) {
-structure.startChainID = this.vwr.getChainID (structure.startChainStr = this.getField (1), true);
+structure.startChainID = this.vwr.getChainID (this.getField (1), true);
 structure.startSequenceNumber = this.parseIntStr (this.getField (2));
 structure.startInsertionCode = this.getField (3).charAt (0);
-structure.endChainID = this.vwr.getChainID (structure.endChainStr = this.getField (4), true);
+structure.endChainID = this.vwr.getChainID (this.getField (4), true);
 structure.endSequenceNumber = this.parseIntStr (this.getField (5));
 structure.endInsertionCode = this.getField (6).charAt (0);
 this.asc.addStructure (structure);

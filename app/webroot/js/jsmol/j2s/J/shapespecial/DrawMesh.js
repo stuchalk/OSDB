@@ -17,6 +17,8 @@ this.noHead = false;
 this.isBarb = false;
 this.scale = 1;
 this.isScaleSet = false;
+this.fontID = -1;
+this.titleColor = null;
 Clazz.instantialize (this, arguments);
 }, J.shapespecial, "DrawMesh", J.shape.Mesh);
 Clazz.makeConstructor (c$, 

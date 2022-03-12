@@ -30,7 +30,7 @@ t.atomX = this.pt0i.x;
 t.atomY = this.pt0i.y;
 t.atomZ = this.pt0i.z;
 if (t.zSlab == -2147483648) t.zSlab = 1;
-}if (J.render.TextRenderer.render (t, this.g3d, this.sppm, this.imageFontScaling, false, null, this.xy) && t.valign == 1 && t.align == 12) this.vwr.noFrankEcho = false;
+}if (J.render.TextRenderer.render (t, this.g3d, this.sppm, this.imageFontScaling, false, null, this.xy, false, 0, 0, false) && t.valign == 1 && t.align == 12) this.vwr.noFrankEcho = false;
 if (JU.C.renderPass2 (t.bgcolix) || JU.C.renderPass2 (t.colix)) haveTranslucent = true;
 }
 if (!this.isExport) {
@@ -43,7 +43,7 @@ this.renderFrameTitle (frameTitle);
 });
 Clazz.defineMethod (c$, "renderFrameTitle", 
  function (frameTitle) {
-this.vwr.gdata.setFontFid (this.vwr.gdata.getFontFidFS ("arial", Clazz.floatToInt (24 * this.imageFontScaling)));
+this.vwr.gdata.setFontBold ("arial", Clazz.floatToInt (24 * this.imageFontScaling));
 var y = Clazz.doubleToInt (Math.floor (this.vwr.getScreenHeight () * (this.g3d.isAntialiased () ? 2 : 1) - 10 * this.imageFontScaling));
 var x = Clazz.doubleToInt (Math.floor (5 * this.imageFontScaling));
 this.g3d.drawStringNoSlab (frameTitle, null, x, y, 0, 0);

@@ -16,7 +16,6 @@ this.entities = null;
 this.groupCount = 0;
 this.ac0 = 0;
 this.bsStructures = null;
-this.lastGroup = 0;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.cif, "MMTFReader", J.adapter.readers.cif.MMCifReader);
 Clazz.overrideMethod (c$, "addHeader", 
@@ -70,7 +69,7 @@ Clazz.defineMethod (c$, "applySymmetryAndSetTrajectory",
 function () {
 this.ac0 = this.ac;
 Clazz.superCall (this, J.adapter.readers.cif.MMTFReader, "applySymmetryAndSetTrajectory", []);
-if (this.haveStructure) this.addStructureSymmetry ();
+this.addStructureSymmetry ();
 });
 Clazz.defineMethod (c$, "getMMTFAtoms", 
  function (doMulti) {
@@ -170,7 +169,7 @@ this.asc.addAtomWithMappedSerialNumber (a);
 this.asc.addAtom (a);
 }this.atomMap[iatom] = a;
 this.atomGroup[this.ac] = j;
-this.groupMap[j] = this.lastGroup = thisGroup;
+this.groupMap[j] = thisGroup;
 this.ac++;
 }
 if (!this.isCourseGrained) {
@@ -261,12 +260,14 @@ this.haveStructure = true;
 this.asc.addStructure ( new J.adapter.smarter.Structure (n, null, null, null, 0, 0, this.bsStructures));
 }});
 Clazz.defineMethod (c$, "addStructureSymmetry", 
- function () {
-if (this.asc.ac == 0) return;
+function () {
+if (this.asc.ac == 0 || !this.haveStructure || this.thisBiomolecule == null || this.ac0 == this.asc.ac) return;
 var atoms = this.asc.atoms;
 var bsAtoms = this.asc.bsAtoms;
-var ptGroup = this.lastGroup;
+var ptGroup = -1;
 var mygroup = -1;
+for (var i = this.bsStructures.length; --i >= 0; ) if (this.bsStructures[i] != null) this.bsStructures[i].clearAll ();
+
 for (var i = this.ac0, n = this.asc.ac; i < n; i++) {
 if (bsAtoms == null || bsAtoms.get (i)) {
 var a = atoms[i];
@@ -274,10 +275,10 @@ var igroup = this.atomGroup[a.atomSite];
 if (igroup != mygroup) {
 mygroup = igroup;
 ptGroup++;
-}var dssp = this.groupDSSP[igroup];
+var dssp = this.groupDSSP[igroup];
 if (dssp > 0) {
 this.bsStructures[dssp - 1].set (ptGroup);
-}}}
+}}}}
 });
 Clazz.defineMethod (c$, "decode", 
  function (key) {

@@ -21,8 +21,7 @@ while (true) {
 if (!vwr.ms.am[modelIndex].isBioModel) break;
 info = vwr.ms.getModelAuxiliaryInfo (modelIndex);
 if (info.containsKey ("dssr")) break;
-var bs = vwr.getModelUndeletedAtomsBitSet (modelIndex);
-bs.and (vwr.ms.getAtoms (2097166, null));
+var bs = vwr.restrictToModel (vwr.ms.getAtoms (2097166, null), modelIndex);
 if (bs.nextClearBit (0) < 0) {
 info = null;
 break;

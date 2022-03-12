@@ -151,7 +151,7 @@ this.energy = Double.$valueOf (Double.parseDouble (tokens[2]));
 this.setEnergy ();
 this.rd ();
 if (this.line.startsWith (" ********")) this.discardLinesUntilContains ("SYMMETRY ALLOWED");
- else if (this.line.startsWith (" TTTTTTTT")) this.discardLinesUntilContains (" ********");
+ else if (this.line.startsWith (" TTTTTTTT")) this.discardLinesUntilContains (" *******");
 return true;
 }if (this.line.startsWith (" MULLIKEN POPULATION ANALYSIS")) return this.readPartialCharges ();
 if (this.line.startsWith (" TOTAL ATOMIC CHARGES")) return this.readTotalAtomicCharges ();

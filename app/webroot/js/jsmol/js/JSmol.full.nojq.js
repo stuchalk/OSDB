@@ -471,7 +471,7 @@ Jmol = (function(document) {
 		}
 	};
 	var j = {
-		_version: "$Date: 2020-12-12 18:52:48 -0600 (Sat, 12 Dec 2020) $", // svn.keywords:lastUpdated
+		_version: "$Date: 2022-01-23 22:53:29 -0600 (Sun, 23 Jan 2022) $", // svn.keywords:lastUpdated
 		_alertNoBinary: true,
 		// this url is used to Google Analytics tracking of Jmol use. You may remove it or modify it if you wish. 
 		_allowedJmolSize: [25, 2048, 300],   // min, max, default (pixels)
@@ -550,7 +550,7 @@ Jmol = (function(document) {
 	j._isSafari = (!j._isChrome && navigator.userAgent.toLowerCase().indexOf("safari") >= 0);
 	j._isMsie = (window.ActiveXObject !== undefined);
   j._isEdge = (navigator.userAgent.indexOf("Edge/") >= 0);
-	j._useDataURI = !j._isSafari && !j._isMsie && !j._isEdge; // safari may be OK here -- untested
+	j._useDataURI = /*!j._isSafari && */ !j._isMsie && !j._isEdge; // safari may be OK here -- untested
 
   window.requestAnimationFrame || (window.requestAnimationFrame = window.setTimeout);
 	for(var i in Jmol) j[i] = Jmol[i]; // allows pre-definition
@@ -2685,14 +2685,14 @@ Jmol.Cache.put = function(filename, data) {
   Jmol.Cache.fileCache[filename] = data;
 }
 
-	Jmol.Cache.setDragDrop = function(me) {
-		Jmol.$appEvent(me, "appletdiv", "dragover", function(e) {
+	Jmol.Cache.setDragDrop = function(me, divname) {
+		Jmol.$appEvent(me, divname, "dragover", function(e) {
 			e = e.originalEvent;
 			e.stopPropagation();
 			e.preventDefault();
 			e.dataTransfer.dropEffect = 'copy';
 		});
-		Jmol.$appEvent(me, "appletdiv", "drop", function(e) {
+		Jmol.$appEvent(me, divname, "drop", function(e) {
 			var oe = e.originalEvent;
 			oe.stopPropagation();
 			oe.preventDefault();
@@ -2718,6 +2718,11 @@ Jmol.Cache.put = function(filename, data) {
 				if (evt.target.readyState == FileReader.DONE) {
 					var cacheName = "cache://DROP_" + file.name;
 					var bytes = Clazz.newByteArray(-1, evt.target.result);
+					if (divname == "console_input") {
+						var s = String.instantialize(bytes);
+						Jmol.$(me,divname).val(s.indexOf('\0') < 0 ? s : bytes.length + " bytes");
+						return;
+					}
 					if (!cacheName.endsWith(".spt"))
 						me._appletPanel.cacheFileByName("cache://DROP_*",false);
 					if (me._viewType == "JSV" || cacheName.endsWith(".jdx")) // shared by Jmol and JSV
@@ -2740,6 +2745,7 @@ Jmol._debugCode = false;
 // author: Bob Hanson, hansonr@stolaf.edu	4/16/2012
 // author: Takanori Nakane biochem_fan 6/12/2012
 
+// BH 2021.04.09 fix _cover(false) script in getAppletHtml() to be img onerror
 // BH 12/17/2015 4:43:05 PM adding Jmol._requestRepaint to allow for MSIE9 not having 3imationFrame
 // BH 12/13/2015 11:44:39 AM using requestAnimationFrame instead of setTimeout (fixes Chrome slowness)
 // BH 10/12/2015 1:15:39 PM fix for set echo image in JavaScript
@@ -2940,7 +2946,7 @@ Jmol._debugCode = false;
 				t = "";
 			} else {
 				this._deferApplet = true;
-				t += '<script type="text/javascript">' + id + '._cover(false)</script>';
+				t += '<img width=0 height=0 src=. onerror=' + id + '._cover(false) >';
 			}
 			t += Jmol._getWrapper(this, false);
 			if (Info.addSelectionOptions)
@@ -3259,6 +3265,7 @@ Jmol._canvasCache = {};
 })(Jmol);
 // JmolApplet.js -- Jmol._Applet and Jmol._Image
 
+// BH 2022.01.23 updated _availableParams callbacks
 // BH 1/28/2018 7:15:09 AM adding _notifyAudioEnded
 // BH 2/14/2016 12:31:02 PM fixed local reader not disappearing after script call
 // BH 2/14/2016 12:30:41 PM Info.appletLoadingImage: "j2s/img/JSmol_spinner.gif", // can be set to "none" or some other image
@@ -3289,10 +3296,11 @@ Jmol._canvasCache = {};
 		this._isJava = true;
 		this._syncKeyword = "Select:";
 		this._availableParams = ";progressbar;progresscolor;boxbgcolor;boxfgcolor;allowjavascript;boxmessage;\
-									;messagecallback;pickcallback;animframecallback;appletreadycallback;atommovedcallback;\
-									;echocallback;evalcallback;hovercallback;language;loadstructcallback;measurecallback;\
-									;minimizationcallback;resizecallback;scriptcallback;statusform;statustext;statustextarea;\
-									;synccallback;usecommandthread;syncid;appletid;startupscript;menufile;";
+			;animframecallback;appletreadycallback;atommovedcallback;audiocallback;\
+			;clickcallback;dragdropcallback;echocallback;errorcallback;evalcallback;hovercallback;\
+			;imagecallback;loadstructcallback;measurecallback;messagecallback;minimizationcallback;modelkitcallback;pickcallback;\
+			;resizecallback;scriptcallback;selectcallback;servicecallback;structuremodifiedcallback;synccallback;\
+			;statusform;statustext;statustextarea;usecommandthread;syncid;appletid;startupscript;language;menufile;";
 		if (checkOnly)
 			return this;
 		this._isSigned = Info.isSigned;
@@ -3606,7 +3614,7 @@ Jmol._canvasCache = {};
 			this._script('load "' + this._src + '"');
 		this._showInfo(true);
 		this._showInfo(false);
-		Jmol.Cache.setDragDrop(this);
+		Jmol.Cache.setDragDrop(this, "appletdiv");
 		this._readyFunction && this._readyFunction(this);
 		Jmol._setReady(this);
 		var app = this._2dapplet;
@@ -3693,11 +3701,15 @@ Jmol._canvasCache = {};
 		return true;
 	}
 
+	proto._setCallback = function(name, func) {
+		this._applet.setCallback(name, func);
+	}
+
 	proto._script = function(script) {
 		if (!this._ready)
 				return this._addScript(script);
 		Jmol._setConsoleDiv(this._console);
-    Jmol._hideLocalFileReader(this);
+		Jmol._hideLocalFileReader(this);
 		this._applet.script(script);
 	}
 
@@ -4827,6 +4839,10 @@ Jmol._canvasCache = {};
 
 
 ////////////////// scripting ///////////////////
+
+	Jmol.setCallback = function(applet, name, func) {
+		applet._setCallback(name, func);
+	}
 
 	Jmol.loadFile = function(applet, fileName, params){
 		applet._loadFile(fileName, params);
@@ -10604,6 +10620,6 @@ Sys.err.write = function (buf, offset, len) {
 })(Clazz, Jmol); // requires JSmolCore.js
 
 }; // called by external application 
-Jmol.___JmolDate="$Date: 2020-12-16 21:21:17 -0600 (Wed, 16 Dec 2020) $"
+Jmol.___JmolDate="$Date: 2022-03-11 11:09:21 -0600 (Fri, 11 Mar 2022) $"
 Jmol.___fullJmolProperties="src/org/jmol/viewer/Jmol.properties"
-Jmol.___JmolVersion="14.31.20"
+Jmol.___JmolVersion="14.32.33" 

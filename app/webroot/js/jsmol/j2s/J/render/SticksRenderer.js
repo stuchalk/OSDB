@@ -37,7 +37,6 @@ this.p1 = null;
 this.p2 = null;
 this.bsForPass2 = null;
 this.isPass2 = false;
-this.rTheta = 0;
 this.xAxis1 = 0;
 this.yAxis1 = 0;
 this.xAxis2 = 0;
@@ -197,13 +196,14 @@ this.asLineOnly = (this.width <= 1);
 if (this.asLineOnly && (this.isAntialiased)) {
 this.width = 3;
 this.asLineOnly = false;
-}}switch (mask) {
+}}var renderD = (!this.isExport || this.mad == 1 ? this.width : this.mad);
+switch (mask) {
 case -2:
 this.drawBond (0);
 this.getMultipleBondSettings (false);
 break;
 case -1:
-this.drawDashed (this.xA, this.yA, this.zA, this.xB, this.yB, this.zB, J.render.FontLineShapeRenderer.hDashes);
+J.render.FontLineShapeRenderer.drawDashedCylinder (this.g3d, this.xA, this.yA, this.zA, this.xB, this.yB, this.zB, J.render.FontLineShapeRenderer.hDashes, this.width, this.colixA, this.colixB, renderD, this.asLineOnly, this.s1);
 break;
 default:
 switch (this.bondOrder) {
@@ -261,11 +261,13 @@ return needTranslucent;
 Clazz.defineMethod (c$, "drawBond", 
  function (dottedMask) {
 var isDashed = (dottedMask & 1) != 0;
+var endcaps = ((this.colixA & 30720) == 16384 || (this.colixB & 30720) == 16384 ? 2 : this.endcaps);
 if (this.isCartesian && this.bondOrder == 1 && !isDashed) {
-this.g3d.drawBond (this.a, this.b, this.colixA, this.colixB, this.endcaps, this.mad, -1);
+this.g3d.drawBond (this.a, this.b, this.colixA, this.colixB, endcaps, this.mad, -1);
 return;
 }var isEndOn = (this.dx == 0 && this.dy == 0);
 if (isEndOn && this.asLineOnly && !this.isCartesian) return;
+var renderD = (!this.isExport || this.mad == 1 ? this.width : this.mad);
 var doFixedSpacing = (this.bondOrder > 1 && this.multipleBondSpacing > 0);
 var isPiBonded = doFixedSpacing && (this.vwr.getHybridizationAndAxes (this.a.i, this.z, this.x, "pz") != null || this.vwr.getHybridizationAndAxes (this.b.i, this.z, this.x, "pz") != null) && !Float.isNaN (this.x.x);
 if (isEndOn && !doFixedSpacing) {
@@ -273,13 +275,13 @@ var space = Clazz.doubleToInt (this.width / 8) + 3;
 var step = this.width + space;
 var y = this.yA - Clazz.doubleToInt ((this.bondOrder - 1) * step / 2);
 do {
-this.fillCylinder (this.colixA, this.colixB, this.endcaps, this.width, this.xA, y, this.zA, this.xB, y, this.zB);
+J.render.FontLineShapeRenderer.fillCylinder (this.g3d, this.colixA, this.colixB, endcaps, this.xA, y, this.zA, this.xB, y, this.zB, renderD, this.asLineOnly);
 y += step;
 } while (--this.bondOrder > 0);
 return;
 }if (this.bondOrder == 1) {
-if (isDashed) this.drawDashed (this.xA, this.yA, this.zA, this.xB, this.yB, this.zB, this.dashDots);
- else this.fillCylinder (this.colixA, this.colixB, this.endcaps, this.width, this.xA, this.yA, this.zA, this.xB, this.yB, this.zB);
+if (isDashed) J.render.FontLineShapeRenderer.drawDashedCylinder (this.g3d, this.xA, this.yA, this.zA, this.xB, this.yB, this.zB, this.dashDots, this.width, this.colixA, this.colixB, renderD, this.asLineOnly, this.s1);
+ else J.render.FontLineShapeRenderer.fillCylinder (this.g3d, this.colixA, this.colixB, endcaps, this.xA, this.yA, this.zA, this.xB, this.yB, this.zB, renderD, this.asLineOnly);
 return;
 }if (doFixedSpacing) {
 if (!isPiBonded) this.z.setT (JU.P3.getUnlikely ());
@@ -315,12 +317,12 @@ return;
 this.p2.sub2 (this.b, this.x);
 while (true) {
 if (this.isCartesian) {
-this.g3d.drawBond (this.p1, this.p2, this.colixA, this.colixB, this.endcaps, this.mad, -2);
+this.g3d.drawBond (this.p1, this.p2, this.colixA, this.colixB, endcaps, this.mad, -2);
 } else {
 this.tm.transformPtScr (this.p1, this.s1);
 this.tm.transformPtScr (this.p2, this.s2);
-if (isDashed) this.drawDashed (this.s1.x, this.s1.y, this.s1.z, this.s2.x, this.s2.y, this.s2.z, this.dashDots);
- else this.fillCylinder (this.colixA, this.colixB, this.endcaps, this.width, this.s1.x, this.s1.y, this.s1.z, this.s2.x, this.s2.y, this.s2.z);
+if (isDashed) J.render.FontLineShapeRenderer.drawDashedCylinder (this.g3d, this.s1.x, this.s1.y, this.s1.z, this.s2.x, this.s2.y, this.s2.z, this.dashDots, this.width, this.colixA, this.colixB, renderD, this.asLineOnly, this.s1);
+ else J.render.FontLineShapeRenderer.fillCylinder (this.g3d, this.colixA, this.colixB, endcaps, this.s1.x, this.s1.y, this.s1.z, this.s2.x, this.s2.y, this.s2.z, renderD, this.asLineOnly);
 }dottedMask >>= 1;
 isDashed = (dottedMask & 1) != 0;
 if (--this.bondOrder <= 0) break;
@@ -334,19 +336,19 @@ var dyB = this.dy * this.dy;
 this.mag2d = Math.round (Math.sqrt (dxB + dyB));
 this.resetAxisCoordinates ();
 if (this.isCartesian && this.bondOrder == 3) {
-this.fillCylinder (this.colixA, this.colixB, this.endcaps, this.width, this.xAxis1, this.yAxis1, this.zA, this.xAxis2, this.yAxis2, this.zB);
+J.render.FontLineShapeRenderer.fillCylinder (this.g3d, this.colixA, this.colixB, endcaps, this.xAxis1, this.yAxis1, this.zA, this.xAxis2, this.yAxis2, this.zB, renderD, this.asLineOnly);
 this.stepAxisCoordinates ();
 this.x.sub2 (this.b, this.a);
 this.x.scale (0.05);
 this.p1.sub2 (this.a, this.x);
 this.p2.add2 (this.b, this.x);
-this.g3d.drawBond (this.p1, this.p2, this.colixA, this.colixB, this.endcaps, this.mad, -2);
+this.g3d.drawBond (this.p1, this.p2, this.colixA, this.colixB, endcaps, this.mad, -2);
 this.stepAxisCoordinates ();
-this.fillCylinder (this.colixA, this.colixB, this.endcaps, this.width, this.xAxis1, this.yAxis1, this.zA, this.xAxis2, this.yAxis2, this.zB);
+J.render.FontLineShapeRenderer.fillCylinder (this.g3d, this.colixA, this.colixB, endcaps, this.xAxis1, this.yAxis1, this.zA, this.xAxis2, this.yAxis2, this.zB, renderD, this.asLineOnly);
 return;
 }while (true) {
-if ((dottedMask & 1) != 0) this.drawDashed (this.xAxis1, this.yAxis1, this.zA, this.xAxis2, this.yAxis2, this.zB, this.dashDots);
- else this.fillCylinder (this.colixA, this.colixB, this.endcaps, this.width, this.xAxis1, this.yAxis1, this.zA, this.xAxis2, this.yAxis2, this.zB);
+if ((dottedMask & 1) != 0) J.render.FontLineShapeRenderer.drawDashedCylinder (this.g3d, this.xAxis1, this.yAxis1, this.zA, this.xAxis2, this.yAxis2, this.zB, this.dashDots, this.width, this.colixA, this.colixB, renderD, this.asLineOnly, this.s1);
+ else J.render.FontLineShapeRenderer.fillCylinder (this.g3d, this.colixA, this.colixB, endcaps, this.xAxis1, this.yAxis1, this.zA, this.xAxis2, this.yAxis2, this.zB, renderD, this.asLineOnly);
 dottedMask >>= 1;
 if (--this.bondOrder <= 0) break;
 this.stepAxisCoordinates ();
@@ -386,7 +388,7 @@ return ((this.dx * dyAC - this.dy * dxAC) < 0 ? 2 : 1);
 });
 Clazz.defineMethod (c$, "drawBanana", 
  function (a, b, x, deg) {
-this.g3d.addRenderer (553648145);
+this.g3d.addRenderer (553648143);
 this.vectorT.sub2 (b, a);
 if (this.rot == null) {
 this.rot =  new JU.M3 ();

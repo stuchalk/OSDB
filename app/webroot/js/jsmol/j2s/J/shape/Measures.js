@@ -14,6 +14,7 @@ this.mPending = null;
 this.colix = 0;
 this.tickInfo = null;
 this.defaultTickInfo = null;
+this.font3d = null;
 this.htMin = null;
 this.tokAction = 0;
 Clazz.instantialize (this, arguments);
@@ -27,11 +28,10 @@ for (var i = this.measurements.size (); --i >= 0; ) {
 var m = this.measurements.get (i);
 if (m != null) m.ms = this.ms;
 }
-this.atoms = this.ms.at;
 });
 Clazz.overrideMethod (c$, "initShape", 
 function () {
-if (J.shape.Measures.font3d == null) J.shape.Measures.font3d = this.vwr.gdata.getFont3D (18);
+if (this.font3d == null) this.font3d = this.vwr.gdata.getFont3D (18);
 });
 Clazz.overrideMethod (c$, "setSize", 
 function (size, bsSelected) {
@@ -48,7 +48,7 @@ return;
 this.setColor (JU.C.getColixO (value));
 return;
 }if ("font" === propertyName) {
-J.shape.Measures.font3d = value;
+this.font3d = value;
 return;
 }if ("hideAll" === propertyName) {
 this.showHide ((value).booleanValue ());
@@ -156,7 +156,6 @@ return;
 this.clear ();
 return;
 }if ("deleteModelAtoms" === propertyName) {
-this.atoms = (value)[1];
 var modelIndex = ((value)[2])[0];
 var firstAtomDeleted = ((value)[2])[1];
 var nAtomsDeleted = ((value)[2])[2];
@@ -327,9 +326,10 @@ this.defineAll (iPt, m, true, false, false);
 if (isDelete) return;
 }var points =  new JU.Lst ();
 var nPoints = m.count;
+var atoms = this.ms.at;
 for (var i = 1; i <= nPoints; i++) {
 var atomIndex = m.getAtomIndex (i);
-points.addLast (atomIndex >= 0 ? this.vwr.ms.getAtoms (1094715393, Integer.$valueOf (this.atoms[atomIndex].getAtomNumber ())) : m.getAtom (i));
+points.addLast (atomIndex >= 0 ? this.ms.getAtoms (1094715393, Integer.$valueOf (atoms[atomIndex].getAtomNumber ())) : m.getAtom (i));
 }
 this.define (( new JM.MeasurementData ().init (null, this.vwr, points)).set (this.tokAction, this.htMin, this.radiusData, m.property, this.strFormat, null, this.tickInfo, this.mustBeConnected, this.mustNotBeConnected, this.intramolecular, true, 0, 0, null, NaN), (isDelete ? 12291 : 12290));
 }, "~N,JM.Measurement,~B,~B,~B");
@@ -483,13 +483,14 @@ if (tickInfo.scale != null) info.put ("tickScale", tickInfo.scale);
 if (tickInfo.tickLabelFormats != null) info.put ("tickLabelFormats", tickInfo.tickLabelFormats);
 if (!Float.isNaN (tickInfo.first)) info.put ("tickStart", Float.$valueOf (tickInfo.first));
 }var atomsInfo =  new JU.Lst ();
+var atoms = this.ms.at;
 for (var i = 1; i <= count; i++) {
 var atomInfo =  new java.util.Hashtable ();
 var atomIndex = m.getAtomIndex (i);
 atomInfo.put ("_ipt", Integer.$valueOf (atomIndex));
 atomInfo.put ("coord", JU.Escape.eP (m.getAtom (i)));
-atomInfo.put ("atomno", Integer.$valueOf (atomIndex < 0 ? -1 : this.atoms[atomIndex].getAtomNumber ()));
-atomInfo.put ("info", (atomIndex < 0 ? "<point>" : this.atoms[atomIndex].getInfo ()));
+atomInfo.put ("atomno", Integer.$valueOf (atomIndex < 0 ? -1 : atoms[atomIndex].getAtomNumber ()));
+atomInfo.put ("info", (atomIndex < 0 ? "<point>" : atoms[atomIndex].getInfo ()));
 atomsInfo.addLast (atomInfo);
 }
 info.put ("atoms", atomsInfo);
@@ -517,6 +518,4 @@ if (modelIndex >= 0 && !bsModels.get (modelIndex)) continue out;
 m.isVisible = true;
 }
 });
-Clazz.defineStatics (c$,
-"font3d", null);
 });

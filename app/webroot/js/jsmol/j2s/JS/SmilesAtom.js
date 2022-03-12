@@ -143,10 +143,10 @@ if (count < 0) {
 this.missingHydrogenCount = 0;
 return (count == -1);
 }if (this.elementNumber == 7 && this.isAromatic && this.bondCount == 2) {
-if (this.bonds[0].order == 1 && this.bonds[1].order == 1) count++;
+if (this.bonds[0].getBondType () == 1 && this.bonds[1].getBondType () == 1) count++;
 }for (var i = 0; i < this.bondCount; i++) {
 var bond = this.bonds[i];
-switch (bond.order) {
+switch (bond.getBondType ()) {
 case 81:
 if (this.elementNumber == 7) {
 JU.Logger.info ("Ambiguous bonding to aromatic N found -- MF may be in error");
@@ -164,7 +164,7 @@ break;
 case 1:
 case 3:
 case 4:
-count -= bond.order;
+count -= bond.getBondType ();
 break;
 }
 }
@@ -178,6 +178,8 @@ case 0:
 case -1:
 case -2:
 return -1;
+case 1:
+return 1;
 case 6:
 return (isAromatic ? 3 : 4);
 case 8:
@@ -193,8 +195,9 @@ case 17:
 case 35:
 case 53:
 return 1;
+default:
+return 0;
 }
-return -2;
 }, "~N,~B");
 Clazz.overrideMethod (c$, "getIndex", 
 function () {
@@ -343,7 +346,7 @@ if (this.bonds.length > this.bondCount) this.bonds = JU.AU.arrayCopyObject (this
 if (this.subAtoms != null && this.subAtoms.length > this.nSubAtoms) this.subAtoms = JU.AU.arrayCopyObject (this.subAtoms, this.subAtoms.length);
 for (var i = 0; i < this.bonds.length; i++) {
 var b = this.bonds[i];
-if (this.isBioAtom && b.order == 17) b.order = 112;
+if (this.isBioAtom && b.getBondType () == 17) b.order = 112;
 if (b.atom1.index > b.atom2.index) {
 b.switchAtoms ();
 }}
@@ -376,7 +379,7 @@ Clazz.overrideMethod (c$, "getImplicitHydrogenCount",
 function () {
 return this.implicitHydrogenCount;
 });
-Clazz.defineMethod (c$, "getExplicitHydrogenCount", 
+Clazz.overrideMethod (c$, "getExplicitHydrogenCount", 
 function () {
 return this.explicitHydrogenCount;
 });
@@ -441,7 +444,7 @@ Clazz.overrideMethod (c$, "getOffsetResidueAtom",
 function (name, offset) {
 if (this.isBioAtom) {
 if (offset == 0) return this.index;
-for (var k = 0; k < this.bonds.length; k++) if (this.bonds[k].getAtomIndex1 () == this.index && this.bonds[k].order == 96) return this.bonds[k].getOtherAtom (this).index;
+for (var k = 0; k < this.bonds.length; k++) if (this.bonds[k].getAtomIndex1 () == this.index && this.bonds[k].getBondType () == 96) return this.bonds[k].getOtherAtom (this).index;
 
 }return -1;
 }, "~S,~N");
@@ -488,14 +491,18 @@ function () {
 return "";
 });
 c$.getAtomLabel = Clazz.defineMethod (c$, "getAtomLabel", 
-function (atomicNumber, isotopeNumber, valence, charge, osclass, nH, isAromatic, stereo) {
+function (atomicNumber, isotopeNumber, valence, charge, osclass, nH, isAromatic, stereo, is2D) {
 var sym = JU.Elements.elementSymbolFromNumber (atomicNumber);
 if (isAromatic) {
 sym = sym.toLowerCase ();
 if (atomicNumber != 6) valence = 2147483647;
-}var count = (valence == 2147483647 || isotopeNumber != 0 || charge != 0 || !Float.isNaN (osclass) || stereo != null && stereo.length > 0 ? -1 : JS.SmilesAtom.getDefaultCount (atomicNumber, false));
-return (count == valence ? sym : "[" + (isotopeNumber <= 0 ? "" : "" + isotopeNumber) + sym + (stereo == null ? "" : stereo) + (nH > 1 ? "H" + nH : nH == 1 ? "H" : "") + (charge < 0 && charge != -2147483648 ? "" + charge : charge > 0 ? "+" + charge : "") + (Float.isNaN (osclass) ? "" : ":" + Clazz.floatToInt (osclass)) + "]");
-}, "~N,~N,~N,~N,~N,~N,~B,~S");
+}var simple = (valence != 2147483647 && isotopeNumber <= 0 && charge == 0 && Float.isNaN (osclass) && (stereo == null || stereo.length == 0));
+var norm = JS.SmilesAtom.getDefaultCount (atomicNumber, false);
+if (is2D && nH == 0) {
+if (simple && atomicNumber == 6) return sym;
+nH = norm - valence;
+}return (simple && norm == valence ? sym : "[" + (isotopeNumber <= 0 ? "" : "" + isotopeNumber) + sym + (stereo == null ? "" : stereo) + (nH > 1 ? "H" + nH : nH == 1 ? "H" : "") + (charge < 0 && charge != -2147483648 ? "" + charge : charge > 0 ? "+" + charge : "") + (Float.isNaN (osclass) ? "" : ":" + Clazz.floatToInt (osclass)) + "]");
+}, "~N,~N,~N,~N,~N,~N,~B,~S,~B");
 Clazz.overrideMethod (c$, "getBioSmilesType", 
 function () {
 return this.bioType;
@@ -528,7 +535,7 @@ if (this.isAromatic) s = s.toLowerCase ();
 var s2 = "";
 for (var i = 0; i < this.bondCount; i++) s2 += this.bonds[i].getOtherAtom (this).index + ", ";
 
-return "[" + s + '.' + this.index + (this.matchingIndex >= 0 ? "(" + this.matchingNode + ")" : "") + "]" + s2 + "(" + this.x + "," + this.y + "," + this.z + ")";
+return "[" + s + '.' + this.index + (this.matchingIndex >= 0 ? "(" + this.matchingNode + ")" : "") + "]->" + s2 + "(" + this.x + "," + this.y + "," + this.z + ")";
 });
 Clazz.overrideMethod (c$, "getFloatProperty", 
 function (property) {
@@ -567,6 +574,18 @@ Clazz.overrideMethod (c$, "modelIsRawPDB",
 function () {
 return false;
 });
+Clazz.defineMethod (c$, "definesStereo", 
+function () {
+return false;
+});
+Clazz.defineMethod (c$, "getStereoAtAt", 
+function (nodes) {
+return null;
+}, "~A");
+Clazz.defineMethod (c$, "isStereoOpposite", 
+function (iatom) {
+return null;
+}, "~N");
 Clazz.defineStatics (c$,
 "UNBRACKETED_SET", "B, C, N, O, P, S, F, Cl, Br, I, *,");
 });

@@ -133,6 +133,10 @@
 
 ////////////////// scripting ///////////////////
 
+	Jmol.setCallback = function(applet, name, func) {
+		applet._setCallback(name, func);
+	}
+
 	Jmol.loadFile = function(applet, fileName, params){
 		applet._loadFile(fileName, params);
 	}

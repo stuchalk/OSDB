@@ -46,7 +46,7 @@ this.jvxlData.mappedDataMax = minmax[1];
 Clazz.overrideMethod (c$, "setProperty", 
 function (propertyName, value, bs) {
 if ("set" === propertyName) {
-this.setContacts (value, !this.vwr.getBoolean (603979965));
+this.setContacts (value, true);
 return;
 }if ("init" === propertyName) {
 this.translucentLevel = 0;
@@ -84,8 +84,8 @@ colorDensity = false;
 break;
 }
 }var bs;
-this.ac = this.vwr.ms.ac;
-this.atoms = this.vwr.ms.at;
+this.ac = this.ms.ac;
+this.atoms = this.ms.at;
 var intramolecularMode = Clazz.floatToInt (parameters == null || parameters.length < 2 ? 0 : parameters[1]);
 var ptSize = (colorDensity && parameters != null && parameters[0] < 0 ? Math.abs (parameters[0]) : 0.15);
 if (JU.Logger.debugging) {

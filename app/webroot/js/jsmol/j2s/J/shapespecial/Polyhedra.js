@@ -319,6 +319,12 @@ p = this.findPoly (id, iatom, true);
 if (p == null) return false;
 data[1] = p.getInfo (this.vwr, "info");
 return true;
+}if (property === "syminfo") {
+p = this.findPoly (id, iatom, true);
+if (p == null) return false;
+p.getSymmetry (this.vwr, true);
+data[1] = p.getInfo (this.vwr, "info");
+return true;
 }if (property === "points") {
 p = this.findPoly (id, iatom, false);
 if (p == null) return false;
@@ -360,7 +366,7 @@ if (smiles == null) {
 bs.set (iatom);
 continue;
 }p.getSymmetry (this.vwr, false);
-var smiles0 = p.polySmiles;
+var smiles0 = sm.cleanSmiles (p.polySmiles);
 try {
 if (sm.areEqual (smiles, smiles0) > 0) bs.set (iatom);
 } catch (e) {
@@ -399,8 +405,8 @@ for (var i = p.nVertices; --i >= 0; ) {
 var d = vertices[i].distance (center);
 if (d > maxDistance) maxDistance = d;
 }
-var bsAtoms = JU.BSUtil.copy (this.vwr.getAtomsNearPt (maxDistance + offset, center));
-var atoms = this.vwr.ms.at;
+var bsAtoms = JU.BSUtil.copy (this.vwr.getAtomsNearPt (maxDistance + offset, center, null));
+var atoms = this.ms.at;
 for (var i = bsAtoms.nextSetBit (0); i >= 0; i = bsAtoms.nextSetBit (i + 1)) {
 for (var f = faces.length; --f >= 0; ) {
 System.out.println (JU.Measure.distanceToPlane (p.planes[f], atoms[i]));
@@ -475,15 +481,17 @@ this.polyhedronCount = newCount;
 Clazz.defineMethod (c$, "setVisible", 
  function (visible) {
 var bs = this.findPolyBS (this.centers);
+var atoms = this.ms.at;
 for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
 var p = this.polyhedrons[i];
 p.visible = visible;
-if (p.centralAtom != null) this.atoms[p.centralAtom.i].setShapeVisibility (this.vf, visible);
+if (p.centralAtom != null) atoms[p.centralAtom.i].setShapeVisibility (this.vf, visible);
 }
 }, "~B");
 Clazz.defineMethod (c$, "buildPolyhedra", 
  function () {
 var p = null;
+if (this.centers == null) return;
 if (this.thisID != null) {
 if (JU.PT.isWild (this.thisID)) return;
 if (this.center != null) {
@@ -492,15 +500,16 @@ p = this.validatePolyhedron (this.center, this.nPoints);
 }} else if (this.info != null && this.info.containsKey ("id")) {
 var o = this.info.get ("id");
 this.thisID = (Clazz.instanceOf (o, JS.SV) ? (o).asString () : o.toString ());
-p =  new J.shapespecial.Polyhedron ().setInfo (this.vwr, this.info, this.vwr.ms.at);
+p =  new J.shapespecial.Polyhedron ().setInfo (this.vwr, this.info, this.ms.at);
 }if (p != null) {
 this.addPolyhedron (p);
 return;
 }var useBondAlgorithm = (this.radius == 0 || this.bondedOnly);
 var buildMode = (this.info != null ? 6 : this.nPoints > 0 ? 2 : this.haveBitSetVertices ? 4 : this.useUnitCell ? 5 : useBondAlgorithm ? 1 : 3);
 var iter = (buildMode == 3 ? this.ms.getSelectedAtomIterator (null, false, false, false, false) : null);
+var atoms = this.ms.at;
 for (var i = this.centers.nextSetBit (0); i >= 0; i = this.centers.nextSetBit (i + 1)) {
-var atom = this.atoms[i];
+var atom = atoms[i];
 p = null;
 switch (buildMode) {
 case 4:
@@ -517,7 +526,7 @@ this.vwr.setIteratorForAtom (iter, i, this.radius);
 p = this.constructRadiusPolyhedron (atom, iter);
 break;
 case 6:
-p =  new J.shapespecial.Polyhedron ().setInfo (this.vwr, this.info, this.vwr.ms.at);
+p =  new J.shapespecial.Polyhedron ().setInfo (this.vwr, this.info, this.ms.at);
 break;
 case 2:
 p = this.validatePolyhedron (atom, this.nPoints);
@@ -530,9 +539,11 @@ if (iter != null) iter.release ();
 });
 Clazz.defineMethod (c$, "setPointsFromBitset", 
  function () {
-if (this.bsVertices != null) for (var i = this.bsVertices.nextSetBit (0); i >= 0 && this.nPoints < 250; i = this.bsVertices.nextSetBit (i + 1)) this.otherAtoms[this.nPoints++] = this.atoms[i];
+if (this.bsVertices != null) {
+var atoms = this.ms.at;
+for (var i = this.bsVertices.nextSetBit (0); i >= 0 && this.nPoints < 250; i = this.bsVertices.nextSetBit (i + 1)) this.otherAtoms[this.nPoints++] = atoms[i];
 
-});
+}});
 Clazz.defineMethod (c$, "addPolyhedron", 
  function (p) {
 if (this.polyhedronCount == this.polyhedrons.length) this.polyhedrons = JU.AU.doubleLength (this.polyhedrons);
@@ -560,12 +571,13 @@ return (otherAtomCount < 3 || this.nVertices > 0 && !this.bsVertexCount.get (oth
 }, "JM.Atom,~N");
 Clazz.defineMethod (c$, "constructUnitCellPolygon", 
  function (atom, useBondAlgorithm) {
-var unitcell = this.vwr.ms.getUnitCellForAtom (atom.i);
+var unitcell = this.ms.getUnitCellForAtom (atom.i);
 if (unitcell == null) return null;
 var bsAtoms = JU.BSUtil.copy (this.vwr.getModelUndeletedAtomsBitSet (atom.mi));
 if (this.bsVertices != null) bsAtoms.and (this.bsVertices);
 if (bsAtoms.isEmpty ()) return null;
-var iter = unitcell.getIterator (this.vwr, atom, this.atoms, bsAtoms, useBondAlgorithm ? 5 : this.radius);
+var atoms = this.ms.at;
+var iter = unitcell.getIterator (this.vwr, atom, bsAtoms, useBondAlgorithm ? 5 : this.radius);
 if (!useBondAlgorithm) return this.constructRadiusPolyhedron (atom, iter);
 var myBondingRadius = atom.getBondingRadius ();
 if (myBondingRadius == 0) return null;
@@ -574,11 +586,11 @@ var minBondDistance = (this.radiusMin == 0 ? this.vwr.getFloat (570425364) : thi
 var minBondDistance2 = minBondDistance * minBondDistance;
 var otherAtomCount = 0;
 outer : while (iter.hasNext ()) {
-var other = this.atoms[iter.next ()];
+var other = atoms[iter.next ()];
 var otherRadius = other.getBondingRadius ();
 var pt = iter.getPosition ();
 var distance2 = atom.distanceSquared (pt);
-if (!this.vwr.ms.isBondable (myBondingRadius, otherRadius, distance2, minBondDistance2, bondTolerance)) continue;
+if (!this.ms.isBondable (myBondingRadius, otherRadius, distance2, minBondDistance2, bondTolerance)) continue;
 for (var i = 0; i < otherAtomCount; i++) if (this.otherAtoms[i].distanceSquared (pt) < 0.01) continue outer;
 
 this.otherAtoms[otherAtomCount++] = pt;
@@ -592,7 +604,8 @@ this.bsVertices.clear (atom.i);
 if (this.bsVertices.cardinality () >= 250) return null;
 var otherAtomCount = 0;
 this.distanceRef = 0;
-for (var i = this.bsVertices.nextSetBit (0); i >= 0; i = this.bsVertices.nextSetBit (i + 1)) this.otherAtoms[otherAtomCount++] = this.atoms[i];
+var atoms = this.ms.at;
+for (var i = this.bsVertices.nextSetBit (0); i >= 0; i = this.bsVertices.nextSetBit (i + 1)) this.otherAtoms[otherAtomCount++] = atoms[i];
 
 return this.validatePolyhedron (atom, otherAtomCount);
 }, "JM.Atom");
@@ -602,8 +615,9 @@ var otherAtomCount = 0;
 this.distanceRef = this.radius;
 var r2 = this.radius * this.radius;
 var r2min = this.radiusMin * this.radiusMin;
+var atoms = this.ms.at;
 outer : while (iter.hasNext ()) {
-var other = this.atoms[iter.next ()];
+var other = atoms[iter.next ()];
 var pt = iter.getPosition ();
 if (pt == null) {
 pt = other;
@@ -927,7 +941,7 @@ if (p.id == null) {
 var ia = p.centralAtom.i;
 if (this.ms.at[ia].isDeleted ()) p.isValid = false;
 p.visibilityFlags = (p.visible && bsModels.get (p.modelIndex) && !this.ms.isAtomHidden (ia) && !this.ms.at[ia].isDeleted () ? this.vf : 0);
-this.atoms[ia].setShapeVisibility (this.vf, p.visibilityFlags != 0);
+this.ms.at[ia].setShapeVisibility (this.vf, p.visibilityFlags != 0);
 } else {
 p.visibilityFlags = (p.visible && (p.modelIndex < 0 || bsModels.get (p.modelIndex)) ? this.vf : 0);
 }}

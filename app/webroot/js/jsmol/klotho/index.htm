@@ -1,11 +1,15 @@
+<!DOCTYPE html>
 <html>
 <head>
 <title>Klotho Biochemicals in Jmol</title>
-<script src=Jmol.js></script>
-<script>
-/*
+<script src="../JSmol.min.js"></script>
 
-by Bob Hanson hansonr@stolaf.edu 7:55 AM 4/19/2009
+<script>
+
+klothodir = "../klotho/"
+
+/* 
+Original notes by Bob Hanson hansonr@stolaf.edu 7:55 AM 4/19/2009
 
 http://chemapps.stolaf.edu/klotho/index.htm, with klotho.js (from klotho.xls), 
 taps into the database at http://www.biocheminfo.org/klotho.
@@ -19,21 +23,20 @@ It uses several advanced Jmol features to carryout functions such as:
 
 you can load a specific file with
 
-  http://chemapps.stolaf.edu/klotho?q=COMPOUND_NAME
+  index.htm?q=COMPOUND_NAME
 
 for example:
 
-  http://chemapps.stolaf.edu/klotho?q=D-glucose
+  http://chemapps.stolaf.edu/jsmol/site/jsmol/klotho/index.htm?q=D-glucose
 
 or a search using
 
-  http://chemapps.stolaf.edu/klotho?q=glucose
+  index.htm?q=glucose
 
 */
 
-jmolAppletPath = (document.location.href.toLowerCase().indexOf("file") == 0 ? ".." : "http://chemapps.stolaf.edu/jmol/docs/examples-12")
-//alert(jmolAppletPath)
-klothoPath = "http://www.biocheminfo.org/klotho"
+
+// data
 
 theSearch = (document.location.href + "&q=").split("q=")[1].split("&")[0]
 Data = []
@@ -42,7 +45,7 @@ function dsort(a,b) {
  return (a[2] < b[2] ? -1 : a[2] > b[2] ? 1 : 0)
 }
 
-Info = [
+KlothoInfo = [
 	["all","all compounds"],
 	["amino","amino acids"],
 	["carb","carbohydrates and related compounds"],
@@ -52,11 +55,13 @@ Info = [
 	["nucl","nucleic acids"],
 	["peptide","small peptides"],
 	["steroid","steroids"]]
+
 InfoRef = {}
-function setInfoRef() {
- InfoRef[""] = ""
- for (var i =0; i < Info.length; i++)InfoRef[Info[i][0]] = Info[i][1]
-}setInfoRef()
+
+;(function(){
+ InfoRef[""] = "";
+ for (var i =0; i < KlothoInfo.length; i++)InfoRef[KlothoInfo[i][0]] = KlothoInfo[i][1]
+})()
 
 function addC(name, info) {
  if(name.indexOf("_dm") >= 0 
@@ -72,32 +77,79 @@ function addC(name, info) {
  if (name.indexOf("L-") >= 0) sortname = "L-" + sortname
  if (name.indexOf("-D-") >= 0) sortname = "D-zz-" + sortname
  if (name.indexOf("-L-") >= 0) sortname = "L-zz-" + sortname
- Data[Data.length] = [name,info,sortname]
+ Data.push([name,info,sortname])
  InfoRef[name] = (InfoRef[info] ? info : "")
 }
 
-function doInit() {
-  //document.getElementById("mol1").selectedIndex = 0;
-  document.getElementById("info1").selectedIndex = 0;
+</script>
+<script src=../klotho/klotho.js></script>
+
+<script>
+
+// JSmol set up
+
+var jmolApplet0;
+
+var s = document.location.search;
+
+jmolScript = function(script) { Jmol.script(jmolApplet0, script) }
+jmolScriptWait = function(script) { return Jmol.scriptWait(jmolApplet0, script) }
+jmolGetPropertyAsArray = function(data) { return Jmol.getPropertyAsArray(jmolApplet0, data) }
+jmolEvaluate = function(what) { return Jmol.evaluateVar(jmolApplet0, what) }
+
+jmol_isReady = function(applet) {
+	document.title = ("Klotho - Jmol " + Jmol.___JmolVersion)
+  if (theSearch)doSearch(theSearch)
+}		
+
+var Info = {
+	width: 600,
+	height: 600,
+	debug: false,
+	color: "0xFFFFFF",
+	addSelectionOptions: true,
+	use: "HTML5",   // JAVA HTML5 WEBGL are all options
+	j2sPath: "../j2s", // this needs to point to where the j2s directory is.
+	isSigned: true,
+	script: "set zoomlarge false;set antialiasDisplay;",
+	serverURL: "http://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
+	readyFunction: jmol_isReady,
+	disableJ2SLoadMonitor: true,
+  disableInitialConsole: true,
+  allowJavaScript: true
 }
 
-function appletLoaded(trigger) {
-  if (!trigger) {
-	setTimeout("appletLoaded(1)",50)
-	return
-  }
-  if (theSearch)doSearch(theSearch)
+$(document).ready(function() {
+  Jmol.setDocument(0);
+  
+  var html = Jmol.getAppletHtml("jmolApplet0", Info)
+    + "<br>"
+    + Jmol.jmolButton(jmolApplet0, "select *;spacefill off;wireframe 0.05","wireframe")
+    + Jmol.jmolButton(jmolApplet0, "select *;spacefill 20%;wireframe 0.15","ball and stick")
+    + Jmol.jmolButton(jmolApplet0, "select *;wireframe off;spacefill","spacefill")
+    + "<br>"
+    + Jmol.jmolButton(jmolApplet0, "write PNGJ \"?.jpg\"","save PNG+Jmol")
+    + Jmol.jmolButton(jmolApplet0, "console")
+  $("#appdiv").html(html);  
+
+})
+
+
+// Klotho content and Jmol interaction
+
+
+var lastPrompt=0;
+
+function doInit() {
+  document.getElementById("info1").selectedIndex = 0;
 }
 
 function setSelect(){
  Data = Data.sort(dsort)
  var s =  ""
- //var s = "<select style='width:300px' id=mol1 size=20 onchange=loadit(this)><option selected style='font-weight:bold;background-color:yellow' >SELECT A MOLECULE: </option>"
- //for (var i = 0; i < Data.length; i++) s+="<option>"+Data[i][0]+"</option>"
- //s +="</select>"
- s += "<br><select style='width:300px;font-weight:bold;background-color:yellow' id=info1 size=1 onchange=loadClass(this[this.selectedIndex].value)><option selected style='font-weight:bold;background-color:yellow' >SELECT A CLASS:</option>"
- Info[0][1] = "all  " + Data.length + " compounds"
- for (var i = 0; i < Info.length; i++) s+="<option value=" + Info[i][0] + ">"+Info[i][1]+"</option>"
+ s += "<br><select style='width:300px;font-weight:bold;background-color:yellow' id=info1 size=1 onchange=loadClass(this[this.selectedIndex].value)><option selected style='font-weight:bold;background-color:yellow' >SELECT A CLASS OF COMPOUND:</option>"
+ KlothoInfo[0][1] = "all  " + Data.length + " compounds"
+ for (var i = 0; i < KlothoInfo.length; i++) s+="<option value=" + KlothoInfo[i][0] + ">"+KlothoInfo[i][1]+"</option>"
  s += "</select>"
  document.write(s)
 }
@@ -128,12 +180,15 @@ function loadClass(what) {
  var s = "<select style='width:300px' id=mol2 size=20 onchange=loadit(this,1)><option selected style='font-weight:bold;background-color:yellow' > SELECT A COMPOUND: </option>"
  for (var i = 0; i < D.length; i++) s+="<option>"+D[i][0] + "</option>"
  s += "</select>"
- //document.getElementById("mol1").size = 5
  document.getElementById("searchdiv").innerHTML = s
 }
 
+ var aromaticScript = ";connect {* and not _H and not connected(4) and not (_N and connected(3))} {* and not _H and not connected(4) and not (_N and connected(3))} aromatic modify;calculate aromatic;"
+ var measureScript = ";set showmeasurements false;measure {_C} {_C} {_C} {_C} allconnected;"
+ var callbackScript = ';set loadStructCallback "loadCallback0";'// "javascript loadCallback();"
+ var chargeScript = ';set fontscaling;var s = {selected};select _N and connected(4);label + ; set labeloffset 4 4;font label 30; select _O and connected(_C) and connected(1, aromaticsingle);label - ;set labeloffset 4 4;font label 30;select @s'
+   
 function loadit(d,is2,index) {
- //var d = document.getElementById("mol")
  var what = (d ? d[d.selectedIndex].text : theFile)
  var da = document.getElementById("wikiref")
  da.innerHTML=""
@@ -144,25 +199,12 @@ function loadit(d,is2,index) {
  if (what.indexOf(" ") >= 0)return
  da.href="http://www.google.com/search?q=" + what
  da.innerHTML = "Google " + what
- db.href=klothoPath + "/html/" + what +".html"
- db.innerHTML = "Klotho"
+//alas! db.href=klothoPath + "/html/" + what +".html"
+//      db.innerHTML = "Klotho"
  dc.href=document.location.href.split("?")[0] + "?q=" + what
  dc.innerHTML = "new window"
- /*
- if (is2){
-  var i = 0;
-  var d = document.getElementById("mol2")
-  for (var i=1; i < d.length;i++) {
-  	d[i].style.backgroundColor =  (i == index ? "blue" : "white");
-  }
- d.selectedIndex = -1;
- }
- */
  theSearch=what
  isDamino = (what.indexOf("D-") == 0 && InfoRef[what] == "amino")
- var aromaticScript = "connect {* and not _H and not connected(4) and not (_N and connected(3))} {* and not _H and not connected(4) and not (_N and connected(3))} aromatic modify;calculate aromatic;"
- measureScript = "set showmeasurements false;measure {_C} {_C} {_C} {_C} allconnected;"
- var callbackScript = 'set loadStructCallback "loadCallback0";'// "javascript loadCallback();"
  resetScript = "reset;"
  if(what.indexOf("pyranose") >= 0 || what.indexOf("furanose") >= 0 || what.indexOf("osamine") >= 0) {
 	resetScript += '\
@@ -273,8 +315,7 @@ function loadit(d,is2,index) {
 	set minimizationCallback "showMinimization";\
 	'
 
- var script = defaultScript + callbackScript + ';load ' + what+'.pdb;' + echoScript +aromaticScript
- //alert(script)
+ var script = defaultScript + callbackScript + ';load ' + klothodir + 'klotho.zip|' + what+'.pdb;' + echoScript + aromaticScript + chargeScript
  jmolScript(script)
 }
 
@@ -301,7 +342,7 @@ function loadCallback(trigger) {
 	return
  }
  jmolScriptWait(measureScript)
- Measures = jmolGetPropertyAsArray("measurementInfo")
+ Measures = jmolGetPropertyAsArray("measurementInfo") || []
  jmolScript("measures delete;set showmeasurements true")
  setScripts()
  doNotes()
@@ -330,7 +371,7 @@ function setScripts() {
 	// check for ring
 	var s = 'within("branch",{atomno=' + c2.atomno + '},{atomno=' + c3.atomno+'}) and not {atomno=' + c3.atomno+'} and connected({atomno='+ c2.atomno+'})'
 	var x = jmolEvaluate(s)
-	if (x != "({})"){
+	if (x.length){
 		scriptToFischer=""
 		scriptFromFischer=""
 		scriptOrientFischer="reset"
@@ -429,32 +470,51 @@ function checkEnter(e) {
 	}
 }
 </script>
-<script src=klotho.js></script>
 </head>
 <body onload=doInit()>
 <h3>Klotho Biochemicals in Jmol</h3>
-<table><tr><td valign=top width=300>
+<table><tr><td valign=top width=400>
 <script>setSelect()</script>
-<br><input type=text size=20 id=searchtext onKeyPress=checkEnter(event) style='width:200px;background-color:yellow'><input type=button onclick=doSearch() value="search" style='width:100px'>
+<br><input type=text size=20 id=searchtext placeholder="enter text to search" onKeyPress=checkEnter(event) style='width:200px;background-color:yellow'><input type=button onclick=doSearch() value="search" style='width:100px'>
 <div id=searchdiv></div>
-source: <a target=_blank href=http://www.biocheminfo.org>www.biocheminfo.org</a> Klotho set
+<!-- source: <a target=_blank href=http://www.biocheminfo.org>www.biocheminfo.org</a> Klotho set -->
 <br>
 <br>
 <span id=aminenote style="display:none"><small><i>Note: Amines are not generally depicted correctly in this database. 
 A trivalent nitrogen atom adjacent to an sp2 center will generally become sp2 itself.</i></small></span>
+<textarea style='width:300px;height:300px;overflow:auto'> 
+
+jsmol/klotho/index.htm from the Jmol/JSmol distribution  
+
+Notes by Bob Hanson 10/11/2017
+
+part of the JMOL UNPLUGGED (TM) collection, 
+
+Jmol Unplugged (Jmol Desenchufado) is a joint project between
+Bob Hanson, St. Olaf College and the University of San Simon, 
+Cochabamba, Bolivia, providing internet-free browser-based access 
+to the best of 3D molecular visualization.
+
+Jmol Unplugged originated in October, 2017, 
+as a part of Fulbright Specialist Project FSP-P001203, 
+"3D Molecular Visualization for Chemistry"
+Edwin Escalara, UMSS
+   
+
+Klotho reference:
+   
+Wise, W. B., J. Holcomb, and T. Kazic, 2000. Klotho: a Tutorial and Manual. IBC technical report
+
+Klotho: Biochemical Compounds Declarative Database
+created by Toni Kazic, Andrej Bugrim, Francis Fabrizio, Brian Feng,
+Jason Holcomb, Fumio Sawa, Jakub Slomczynski, and William Wise
+although the site http://www.biocheminfo.org/klotho is no more, it lives on as 
+http://web.archive.org/web/20011205065732/http://www.ibc.wustl.edu:80/klotho/
+</textarea>
+
 
 </td><td valign=top>
-<script>
-jmolInitialize(jmolAppletPath,"JmolAppletSigned0.jar")
-jmolApplet(500, 'cd ' + klothoPath + '/pdb/;set antialiasdisplay;javascript "appletLoaded()"')
-jmolBr()
-jmolButton("select *;spacefill off;wireframe 0.05","wireframe")
-jmolButton("select *;spacefill 20%;wireframe 0.15","ball and stick")
-jmolButton("select *;wireframe off;spacefill","spacefill")
-jmolButton("write image \"?.jpg\"","save image")
-jmolButton("write state \"?.spt\"","save state")
-jmolButton("console")
-</script>
+<div id=appdiv></div>
 <br>
 <input type=button onclick="doFischer(0)" value="Fischer projection">
 <input type=button onclick="doFischer(1)" value="Reset">
@@ -463,7 +523,9 @@ jmolButton("console")
 <br>
 <a id=wikiref href="" target=_blank></a>
 <a id=klothoref href="" target=_blank></a>
+<a id=jmoldocs href="https://chemapps.stolaf.edu/jmol/docs" target=_blank></a>
 <a id=newwindow href="" target=_blank></a>
-</td></tr></table>
+</td>
+<td id></td></tr></table>
 </body>
 </html>

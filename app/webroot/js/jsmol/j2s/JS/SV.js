@@ -56,6 +56,16 @@ function (x) {
 switch (x == null ? 0 : x.tok) {
 case 10:
 return JS.SV.bsSelectToken (x).cardinality ();
+case 15:
+return (x.value).data.length;
+case 4:
+return (x.value).length;
+case 7:
+return x.intValue == 2147483647 ? (x).getList ().size () : JS.SV.sizeOf (JS.SV.selectItemTok (x, -2147483648));
+case 6:
+return (x.value).size ();
+case 14:
+return (x.value).getFullMap ().size ();
 case 1073742335:
 case 1073742334:
 return -1;
@@ -71,16 +81,6 @@ case 11:
 return -32;
 case 12:
 return -64;
-case 15:
-return (x.value).data.length;
-case 4:
-return (x.value).length;
-case 7:
-return x.intValue == 2147483647 ? (x).getList ().size () : JS.SV.sizeOf (JS.SV.selectItemTok (x, -2147483648));
-case 6:
-return (x.value).size ();
-case 14:
-return (x.value).getFullMap ().size ();
 default:
 return 0;
 }

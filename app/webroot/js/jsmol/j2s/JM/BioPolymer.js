@@ -180,7 +180,10 @@ this.leadPoints[0] = leadPoint = this.getLeadPoint (0);
 var previousVectorD = null;
 for (var i = 1; i < this.monomerCount; ++i) {
 leadPointPrev = leadPoint;
-this.leadPoints[i] = leadPoint = this.getLeadPoint (i);
+leadPoint = this.getLeadPoint (i);
+if (leadPoint == null) {
+return;
+}this.leadPoints[i] = leadPoint;
 var midpoint =  new JU.P3 ();
 midpoint.ave (leadPoint, leadPointPrev);
 this.leadMidpoints[i] = midpoint;
@@ -204,10 +207,13 @@ var previousVectorC = null;
 for (var i = 1; i < this.monomerCount; ++i) {
 vectorA.sub2 (this.leadMidpoints[i], this.leadPoints[i]);
 vectorB.sub2 (this.leadPoints[i], this.leadMidpoints[i + 1]);
+if (vectorB.length () == 0) {
+vectorC = previousVectorC;
+} else {
 vectorC.cross (vectorA, vectorB);
 vectorC.normalize ();
 if (previousVectorC != null && previousVectorC.angle (vectorC) > 1.5707963267948966) vectorC.scale (-1);
-previousVectorC = this.wingVectors[i] = JU.V3.newV (vectorC);
+}previousVectorC = this.wingVectors[i] = JU.V3.newV (vectorC);
 }
 }}this.wingVectors[0] = this.wingVectors[1];
 this.wingVectors[this.monomerCount] = this.wingVectors[this.monomerCount - 1];

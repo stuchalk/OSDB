@@ -281,6 +281,7 @@ break;
 case 10:
 this.sortIso = true;
 this.typeFactor = 0.01;
+break;
 case 4:
 this.sortIso = true;
 this.typeFactor = 0.01;

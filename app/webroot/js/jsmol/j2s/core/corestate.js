@@ -67,13 +67,15 @@ var $t$;
 Clazz_declarePackage ("JV");
 c$ = Clazz_declareType (JV, "JmolStateCreator");
 Clazz_declarePackage ("JV");
-Clazz_load (["JV.JmolStateCreator", "java.util.Hashtable"], "JV.StateCreator", ["java.lang.Float", "java.util.Arrays", "$.Date", "JU.BS", "$.P3", "$.PT", "$.SB", "J.c.PAL", "$.STR", "$.VDW", "JM.Atom", "$.AtomCollection", "$.Bond", "$.BondSet", "JS.T", "J.shape.Measures", "$.Shape", "JU.BSUtil", "$.C", "$.ColorEncoder", "$.Edge", "$.Escape", "$.Font", "$.Logger", "JV.GlobalSettings", "$.JC", "$.StateManager", "$.Viewer"], function () {
+Clazz_load (["JV.JmolStateCreator", "java.util.Hashtable"], "JV.StateCreator", ["java.lang.Float", "java.util.Arrays", "$.Date", "JU.BS", "$.Lst", "$.P3", "$.PT", "$.SB", "J.c.PAL", "$.STR", "$.VDW", "JM.Atom", "$.AtomCollection", "$.Bond", "$.BondSet", "JS.T", "J.shape.Shape", "JU.BSUtil", "$.C", "$.ColorEncoder", "$.Edge", "$.Escape", "$.Font", "$.Logger", "JV.GlobalSettings", "$.JC", "$.StateManager", "$.Viewer"], function () {
 c$ = Clazz_decorateAsClass (function () {
+this.undoWorking = false;
+this.actionStates = null;
+this.actionStatesRedo = null;
 this.vwr = null;
 this.temp = null;
 this.temp2 = null;
 this.temp3 = null;
-this.undoWorking = false;
 Clazz_instantialize (this, arguments);
 }, JV, "StateCreator", JV.JmolStateCreator);
 Clazz_prepareFields (c$, function () {
@@ -84,6 +86,8 @@ this.temp3 =  new java.util.Hashtable ();
 Clazz_makeConstructor (c$, 
 function () {
 Clazz_superConstructor (this, JV.StateCreator, []);
+this.actionStates =  new JU.Lst ();
+this.actionStatesRedo =  new JU.Lst ();
 });
 Clazz_overrideMethod (c$, "setViewer", 
 function (vwr) {
@@ -327,10 +331,14 @@ if (ms.tainted != null) {
 if (ms.tainted[2] != null) ms.tainted[2].andNot (bs);
 if (ms.tainted[3] != null) ms.tainted[3].andNot (bs);
 }m.loadScript =  new JU.SB ();
-this.getInlineData (commands, this.vwr.getModelExtract (bs, false, true, "MOL"), i > 0, null);
+this.getInlineData (commands, this.vwr.getModelExtract (bs, false, true, "MOL"), i > 0, null, null);
 } else {
 commands.appendSB (m.loadScript);
-}}
+var auxFiles = m.auxiliaryInfo.get ("auxFiles");
+if (auxFiles != null) {
+for (var j = 0; j < auxFiles.size (); j++) commands.append (";#FILE1=" + JU.PT.esc (auxFiles.get (j)) + ";");
+
+}}}
 var s = commands.toString ();
 if (s.indexOf ("data \"append ") < 0) {
 var i = s.indexOf ("load /*data*/");
@@ -341,10 +349,10 @@ if (i >= 0) s = s.substring (0, i) + "zap;" + s.substring (i);
 }cmds.append (s);
 }, "JU.SB");
 Clazz_overrideMethod (c$, "getInlineData", 
-function (loadScript, strModel, isAppend, loadFilter) {
-var tag = (isAppend ? "append" : "model") + " inline";
+function (loadScript, strModel, isAppend, appendToModelIndex, loadFilter) {
+var tag = (isAppend ? "append" + (appendToModelIndex != null && appendToModelIndex.intValue () != this.vwr.ms.mc - 1 ? " modelindex=" + appendToModelIndex : "") : "model") + " inline";
 loadScript.append ("load /*data*/ data \"").append (tag).append ("\"\n").append (strModel).append ("end \"").append (tag).append (loadFilter == null || loadFilter.length == 0 ? "" : " filter" + JU.PT.esc (loadFilter)).append ("\";");
-}, "JU.SB,~S,~B,~S");
+}, "JU.SB,~S,~B,Integer,~S");
 Clazz_defineMethod (c$, "getColorState", 
  function (cm, sfunc) {
 var s =  new JU.SB ();
@@ -500,7 +508,7 @@ var navigating = (tm.mode == 1);
 if (navigating) this.app (commands, "set navigationMode true");
 this.app (commands, this.vwr.ms.getBoundBoxCommand (false));
 this.app (commands, "center " + JU.Escape.eP (tm.fixedRotationCenter));
-commands.append (this.vwr.getOrientationText (1073742034, null, null).toString ());
+commands.append (this.vwr.getOrientation (1073742034, null, null).toString ());
 this.app (commands, moveToText);
 if (!navigating && !tm.zoomEnabled) this.app (commands, "zoom off");
 commands.append ("  slab ").appendI (tm.slabPercentSetting).append (";depth ").appendI (tm.depthPercentSetting).append (tm.slabEnabled && !navigating ? ";slab on" : "").append (";\n");
@@ -614,7 +622,7 @@ Clazz_defineMethod (c$, "getMeasurementState",
  function (shape) {
 var mList = shape.measurements;
 var measurementCount = shape.measurementCount;
-var font3d = J.shape.Measures.font3d;
+var font3d = shape.font3d;
 var ti = shape.defaultTickInfo;
 var commands =  new JU.SB ();
 this.app (commands, "measures delete");
@@ -726,7 +734,7 @@ break;
 case 33:
 if (!this.vwr.ms.haveUnitCells) return "";
 var st = s = this.getFontLineShapeState (shape);
-var iAtom = this.vwr.am.cai;
+var iAtom = this.vwr.am.getUnitCellAtomIndex ();
 if (iAtom >= 0) s += "  unitcell ({" + iAtom + "});\n";
 var uc = this.vwr.getCurrentUnitCell ();
 if (uc != null) {
@@ -767,9 +775,14 @@ break;
 case 35:
 this.clearTemp ();
 var h = shape;
-if (h.atomFormats != null) for (var i = this.vwr.ms.ac; --i >= 0; ) if (h.atomFormats[i] != null) JU.BSUtil.setMapBitSet (this.temp, i, i, "set hoverLabel " + JU.PT.esc (h.atomFormats[i]));
-
-s = "\n  hover " + JU.PT.esc ((h.labelFormat == null ? "" : h.labelFormat)) + ";\n" + this.getCommands (this.temp, null, "select");
+if (h.atomFormats != null) {
+var at = this.vwr.ms.at;
+for (var i = this.vwr.ms.ac; --i >= 0; ) {
+if (at[i] == null) h.atomFormats[i] = null;
+if (h.atomFormats[i] != null) {
+JU.BSUtil.setMapBitSet (this.temp, i, i, "set hoverLabel " + JU.PT.esc (h.atomFormats[i]));
+}}
+}s = "\n  hover " + JU.PT.esc ((h.labelFormat == null ? "" : h.labelFormat)) + ";\n" + this.getCommands (this.temp, null, "select");
 this.clearTemp ();
 break;
 case 5:
@@ -815,6 +828,7 @@ var colixes = balls.colixes;
 var pids = balls.paletteIDs;
 var r = 0;
 for (var i = 0; i < ac; i++) {
+if (atoms[i] == null) continue;
 if (shape.bsSizeSet != null && shape.bsSizeSet.get (i)) {
 if ((r = atoms[i].madAtom) < 0) JU.BSUtil.setMapBitSet (this.temp, i, i, "Spacefill on");
  else JU.BSUtil.setMapBitSet (this.temp, i, i, "Spacefill " + JU.PT.escF (r / 2000));
@@ -971,7 +985,7 @@ if (f == null) f = "";
 var s =  new JU.SB ();
 var pt = f.indexOf ("*");
 var isGeneric = (pt >= 0);
-var isStatic = (f.indexOf ("static_") == 0);
+var isStatic = JV.Viewer.isStaticFunction (f);
 var namesOnly = (f.equalsIgnoreCase ("names") || f.equalsIgnoreCase ("static_names"));
 if (namesOnly) f = "";
 if (isGeneric) f = f.substring (0, pt);
@@ -999,10 +1013,9 @@ return (tainted != null && tainted[type] != null && tainted[type].get (atomIndex
 }, "~A,~N,~N");
 Clazz_overrideMethod (c$, "getAtomicPropertyState", 
 function (taintWhat, bsSelected) {
-if (!this.vwr.g.preserveState) return "";
 var bs;
 var commands =  new JU.SB ();
-for (var type = 0; type < 17; type++) if (taintWhat < 0 || type == taintWhat) if ((bs = (bsSelected != null ? bsSelected : this.vwr.ms.getTaintedAtoms (type))) != null) this.getAtomicPropertyStateBuffer (commands, type, bs, null, null);
+for (var type = 0; type < 18; type++) if (taintWhat < 0 || type == taintWhat) if ((bs = (bsSelected != null ? bsSelected : this.vwr.ms.getTaintedAtoms (type))) != null) this.getAtomicPropertyStateBuffer (commands, type, bs, null, null);
 
 return commands.toString ();
 }, "~N,JU.BS");
@@ -1016,10 +1029,10 @@ var isDefault = (type == 2);
 var atoms = this.vwr.ms.at;
 var tainted = this.vwr.ms.tainted;
 if (bs != null) for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
-if (atoms[i].isDeleted ()) continue;
+if (atoms[i] == null || atoms[i].isDeleted ()) continue;
 s.appendI (i + 1).append (" ").append (atoms[i].getElementSymbol ()).append (" ").append (atoms[i].getInfo ().$replace (' ', '_')).append (" ");
 switch (type) {
-case 17:
+case 18:
 if (i < fData.length) s.appendF (fData[i]);
 break;
 case 13:
@@ -1049,6 +1062,9 @@ var v = atoms[i].getVibrationVector ();
 if (v == null) s.append ("0 0 0");
  else if (Float.isNaN (v.modScale)) s.appendF (v.x).append (" ").appendF (v.y).append (" ").appendF (v.z);
  else s.appendF (1.4E-45).append (" ").appendF (1.4E-45).append (" ").appendF (v.modScale);
+break;
+case 17:
+s.appendI (atoms[i].getAtomSite ());
 break;
 case 3:
 s.appendI (atoms[i].getAtomicAndIsotopeNumber ());
@@ -1088,30 +1104,34 @@ Clazz_overrideMethod (c$, "undoMoveAction",
 function (action, n) {
 switch (action) {
 case 4165:
-case 4139:
+case 4140:
 switch (n) {
+case 1275068425:
+return (action == 4165 ? this.actionStates : this.actionStatesRedo).size ();
 case -2:
-this.vwr.undoClear ();
+this.actionStates.clear ();
+this.actionStatesRedo.clear ();
 break;
 case -1:
-(action == 4165 ? this.vwr.actionStates : this.vwr.actionStatesRedo).clear ();
+(action == 4165 ? this.actionStates : this.actionStatesRedo).clear ();
 break;
 case 0:
 n = 2147483647;
 default:
-if (n > 100) n = (action == 4165 ? this.vwr.actionStates : this.vwr.actionStatesRedo).size ();
+if (n > 100) n = (action == 4165 ? this.actionStates : this.actionStatesRedo).size ();
 for (var i = 0; i < n; i++) this.undoMoveActionClear (0, action, true);
 
 }
 break;
 }
+return 0;
 }, "~N,~N");
 Clazz_overrideMethod (c$, "undoMoveActionClear", 
 function (taintedAtom, type, clearRedo) {
 if (!this.vwr.g.preserveState) return;
 var modelIndex = (taintedAtom >= 0 ? this.vwr.ms.at[taintedAtom].mi : this.vwr.ms.mc - 1);
 switch (type) {
-case 4139:
+case 4140:
 case 4165:
 this.vwr.stopMinimization ();
 var s = "";
@@ -1120,19 +1140,19 @@ var list2;
 switch (type) {
 default:
 case 4165:
-list1 = this.vwr.actionStates;
-list2 = this.vwr.actionStatesRedo;
+list1 = this.actionStates;
+list2 = this.actionStatesRedo;
 break;
-case 4139:
-list1 = this.vwr.actionStatesRedo;
-list2 = this.vwr.actionStates;
-if (this.vwr.actionStatesRedo.size () == 1) return;
+case 4140:
+list1 = this.actionStatesRedo;
+list2 = this.actionStates;
+if (this.actionStatesRedo.size () == 1) return;
 break;
 }
 if (list1.size () == 0 || this.undoWorking) return;
 this.undoWorking = true;
 list2.add (0, list1.removeItemAt (0));
-s = this.vwr.actionStatesRedo.get (0);
+s = this.actionStatesRedo.get (0);
 if (type == 4165 && list2.size () == 1) {
 var pt =  Clazz_newIntArray (-1, [1]);
 type = JU.PT.parseIntNext (s, pt);
@@ -1142,7 +1162,7 @@ this.undoMoveActionClear (taintedAtom, type, false);
 if (JU.Logger.debugging) this.vwr.log (s);
 this.vwr.evalStringQuiet (s);
 } else {
-this.vwr.actionStates.clear ();
+this.actionStates.clear ();
 }break;
 default:
 if (this.undoWorking && clearRedo) return;
@@ -1158,15 +1178,15 @@ sb.append (this.getAtomicPropertyState (-1, null));
 bs = this.vwr.getModelUndeletedAtomsBitSet (modelIndex);
 sb.append ("zap ");
 sb.append (JU.Escape.eBS (bs)).append (";");
-this.getInlineData (sb, this.vwr.getModelExtract (bs, false, true, "MOL"), true, null);
+this.getInlineData (sb, this.vwr.getModelExtract (bs, false, true, "MOL"), true, null, null);
 sb.append ("set refreshing false;").append (this.vwr.acm.getPickingState ()).append (this.vwr.tm.getMoveToText (0, false)).append ("set refreshing true;");
 }if (clearRedo) {
-this.vwr.actionStates.add (0, sb.toString ());
-this.vwr.actionStatesRedo.clear ();
+this.actionStates.add (0, sb.toString ());
+this.actionStatesRedo.clear ();
 } else {
-this.vwr.actionStatesRedo.add (1, sb.toString ());
-}if (this.vwr.actionStates.size () == 100) {
-this.vwr.actionStates.removeItemAt (99);
+this.actionStatesRedo.add (1, sb.toString ());
+}if (this.actionStates.size () == 100) {
+this.actionStates.removeItemAt (99);
 }}
 this.undoWorking = !clearRedo;
 }, "~N,~N,~B");

@@ -1,6 +1,6 @@
 Clazz.declarePackage ("JSV.app");
-Clazz.load (["JSV.app.JSVApp", "J.api.JSVInterface"], "JSV.app.JSVAppPro", null, function () {
-c$ = Clazz.declareType (JSV.app, "JSVAppPro", JSV.app.JSVApp, J.api.JSVInterface);
+Clazz.load (["JSV.api.ScriptInterface", "JSV.app.JSVApp", "J.api.JSVInterface"], "JSV.app.JSVAppPro", null, function () {
+c$ = Clazz.declareType (JSV.app, "JSVAppPro", JSV.app.JSVApp, [J.api.JSVInterface, JSV.api.ScriptInterface]);
 Clazz.overrideMethod (c$, "isSigned", 
 function () {
 return true;

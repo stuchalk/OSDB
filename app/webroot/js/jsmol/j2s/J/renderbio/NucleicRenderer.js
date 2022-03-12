@@ -47,10 +47,10 @@ this.vwr = renderer.vwr;
 var screens = renderer.controlPointScreens;
 var pts = renderer.controlPoints;
 this.cartoonBlocks = this.vwr.getBoolean (603979810);
-this.cartoonBaseEdges = this.vwr.getBoolean (603979816);
+this.cartoonBaseEdges = this.vwr.getBoolean (603979815);
 this.cartoonSteps = this.vwr.getBoolean (603979811);
-this.cartoonLadders = this.vwr.getBoolean (603979818);
-this.cartoonRibose = this.vwr.getBoolean (603979819);
+this.cartoonLadders = this.vwr.getBoolean (603979817);
+this.cartoonRibose = this.vwr.getBoolean (603979818);
 this.blockHeight = this.vwr.getFloat (570425347);
 var isTraceAlpha = this.vwr.getBoolean (603979966);
 var bsVisible = this.bsr.bsVisible;
@@ -146,10 +146,11 @@ var atomA = g.getLeadAtom ();
 var cA = JU.C.getColixInherited (this.colix, atomA.colixAtom);
 if (bps != null) {
 var checkPass2 = (!this.bsr.isExport && !this.vwr.gdata.isPass2);
+var atoms = this.vwr.ms.at;
 for (var j = bps.size (); --j >= 0; ) {
 var iAtom = bps.get (j).getPartnerAtom (g);
 if (iAtom > i) {
-var atomB = this.vwr.ms.at[iAtom];
+var atomB = atoms[iAtom];
 var cB = JU.C.getColixInherited (this.colix, atomB.colixAtom);
 if (!checkPass2 || this.bsr.setBioColix (cA) || this.bsr.setBioColix (cB)) this.bsr.drawSegmentAB (atomA, atomB, cA, cB, 1000);
 }}

@@ -394,7 +394,7 @@ this.rd ();
 this.discardLinesUntilStartsWith ("--");
 this.purging = false;
 return this.rd ();
-};this.discardLinesUntilStartsWith ("*");
+}this.discardLinesUntilStartsWith ("*");
 this.rd ();
 this.purging = false;
 this.RL ();

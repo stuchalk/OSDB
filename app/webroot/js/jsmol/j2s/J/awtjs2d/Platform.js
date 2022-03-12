@@ -277,6 +277,13 @@ Clazz.overrideMethod (c$, "getInChI",
 function () {
 return (J.awtjs2d.Platform.inchi == null ? (J.awtjs2d.Platform.inchi = J.api.Interface.getInterface ("J.inchi.InChIJS", this.vwr, "platform")) : J.awtjs2d.Platform.inchi);
 });
+Clazz.overrideMethod (c$, "confirm", 
+function (msg, msgNo) {
+var ok = false;
+if (ok) return 0;
+if (msgNo != null) ok = false;
+return (ok ? 1 : 2);
+}, "~S,~S");
 Clazz.defineStatics (c$,
 "inchi", null);
 });

@@ -29,7 +29,9 @@ JU.BSUtil.deleteBits (this.bsHighlight, bs);
 Clazz.overrideMethod (c$, "setModelVisibilityFlags", 
 function (bs) {
 var bsSelected = (this.vwr.getSelectionHalosEnabled () ? this.vwr.bsA () : null);
-for (var i = this.ac; --i >= 0; ) this.atoms[i].setShapeVisibility (this.vf, bsSelected != null && bsSelected.get (i) || this.mads != null && this.mads[i] != 0);
-
+var atoms = this.ms.at;
+for (var i = this.ms.ac; --i >= 0; ) {
+if (atoms[i] != null) atoms[i].setShapeVisibility (this.vf, bsSelected != null && bsSelected.get (i) || this.mads != null && this.mads[i] != 0);
+}
 }, "JU.BS");
 });

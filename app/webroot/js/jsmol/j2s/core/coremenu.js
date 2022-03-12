@@ -325,14 +325,6 @@ this.popupMenu = this.helper.menuCreatePopup (title, applet);
 this.thisPopup = this.popupMenu;
 this.htMenus.put (title, this.popupMenu);
 this.addMenuItems ("", title, this.popupMenu, bundle);
-try {
-this.jpiUpdateComputedMenus ();
-} catch (e) {
-if (Clazz_exceptionOf (e, NullPointerException)) {
-} else {
-throw e;
-}
-}
 }, "~S,J.popup.PopupResource,~O,~B,~B,~B");
 Clazz_defineMethod (c$, "addMenuItems", 
 function (parentId, key, menu, popupResourceBundle) {
@@ -369,8 +361,7 @@ continue;
 if (item.indexOf ("more") < 0) this.helper.menuAddButtonGroup (null);
 var subMenu = this.menuNewSubMenu (label, id + "." + item);
 this.menuAddSubMenu (menu, subMenu);
-if (item.indexOf ("Computed") < 0) this.addMenuItems (id, item, subMenu, popupResourceBundle);
-this.appCheckSpecialMenu (item, subMenu, label);
+this.addMenu (id, item, subMenu, label, popupResourceBundle);
 newItem = subMenu;
 } else if (item.endsWith ("Checkbox") || (isCB = (item.endsWith ("CB") || item.endsWith ("RD")))) {
 script = popupResourceBundle.getStructure (item);
@@ -391,6 +382,11 @@ if (!this.allowSignedFeatures) this.menuEnable (newItem, false);
 }this.appCheckItem (item, newItem);
 }
 }, "~S,~S,J.api.SC,J.popup.PopupResource");
+Clazz_defineMethod (c$, "addMenu", 
+function (id, item, subMenu, label, popupResourceBundle) {
+if (item.indexOf ("Computed") < 0) this.addMenuItems (id, item, subMenu, popupResourceBundle);
+this.appCheckSpecialMenu (item, subMenu, label);
+}, "~S,~S,J.api.SC,~S,J.popup.PopupResource");
 Clazz_defineMethod (c$, "updateSignedAppletItems", 
 function () {
 for (var i = this.SignedOnly.size (); --i >= 0; ) this.menuEnable (this.SignedOnly.get (i), this.allowSignedFeatures);
@@ -427,6 +423,7 @@ return this.menuCreateItem (menuItem, entry, "", null);
 }, "J.api.SC,~S");
 Clazz_defineMethod (c$, "menuSetLabel", 
 function (m, entry) {
+if (m == null) return;
 m.setText (entry);
 this.isTainted = true;
 }, "J.api.SC,~S");
@@ -645,9 +642,15 @@ function (num) {
 if (num <= 9223372036854251519) num += 524288;
 return (Clazz_doubleToInt (num / (1048576)));
 }, "~N");
+Clazz_overrideMethod (c$, "jpiDispose", 
+function () {
+this.popupMenu = this.thisPopup = null;
+this.helper.dispose (this.popupMenu);
+this.helper = null;
+});
 });
 Clazz_declarePackage ("J.popup");
-Clazz_load (["J.popup.GenericPopup", "java.util.Properties"], "J.popup.JmolGenericPopup", ["J.i18n.GT", "JV.Viewer"], function () {
+Clazz_load (["J.popup.GenericPopup", "java.util.Properties"], "J.popup.JmolGenericPopup", ["J.i18n.GT"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.frankPopup = null;
 this.nFrankList = 0;
@@ -668,7 +671,7 @@ J.i18n.GT.setDoTranslate (doTranslate);
 Clazz_defineMethod (c$, "initialize", 
 function (vwr, bundle, title) {
 this.vwr = vwr;
-this.initSwing (title, bundle, vwr.html5Applet, JV.Viewer.isJSNoAWT, vwr.getBooleanProperty ("_signedApplet"), JV.Viewer.isWebGL);
+this.initSwing (title, bundle, vwr.isJSNoAWT ? vwr.html5Applet : null, vwr.isJSNoAWT, vwr.getBooleanProperty ("_signedApplet"), vwr.isWebGL);
 }, "JV.Viewer,J.popup.PopupResource,~S");
 Clazz_overrideMethod (c$, "jpiShow", 
 function (x, y) {
@@ -684,10 +687,10 @@ Clazz_defineMethod (c$, "showFrankMenu",
 function () {
 return true;
 });
-Clazz_overrideMethod (c$, "jpiDispose", 
+Clazz_defineMethod (c$, "jpiDispose", 
 function () {
-this.helper.menuClearListeners (this.popupMenu);
-this.popupMenu = this.thisPopup = null;
+this.vwr = null;
+Clazz_superCall (this, J.popup.JmolGenericPopup, "jpiDispose", []);
 });
 Clazz_overrideMethod (c$, "jpiGetMenuAsObject", 
 function () {
@@ -719,11 +722,11 @@ this.thisPopup = this.popupMenu;
 });
 Clazz_overrideMethod (c$, "appRunScript", 
 function (script) {
-this.vwr.evalStringQuiet (script);
+this.vwr.evalStringGUI (script);
 }, "~S");
 });
 Clazz_declarePackage ("J.popup");
-Clazz_load (["J.popup.JmolGenericPopup", "JU.Lst"], "J.popup.JmolPopup", ["java.lang.Boolean", "java.util.Arrays", "$.Hashtable", "JU.PT", "J.i18n.GT", "JM.Group", "J.popup.MainPopupResourceBundle", "JU.Elements", "JV.Viewer"], function () {
+Clazz_load (["J.popup.JmolGenericPopup", "JU.Lst"], "J.popup.JmolPopup", ["java.lang.Boolean", "java.util.Arrays", "$.Hashtable", "JU.PT", "J.i18n.GT", "JM.Group", "J.popup.MainPopupResourceBundle", "JU.Elements"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.updateMode = 0;
 this.titleWidthMax = 20;
@@ -788,9 +791,9 @@ this.noZapped =  Clazz_newArray (-1, ["surfaceMenu", "measureMenu", "pickingMenu
 });
 Clazz_defineMethod (c$, "jpiDispose", 
 function () {
-Clazz_superCall (this, J.popup.JmolPopup, "jpiDispose", []);
 this.helper.menuClearListeners (this.frankPopup);
 this.frankPopup = null;
+Clazz_superCall (this, J.popup.JmolPopup, "jpiDispose", []);
 });
 Clazz_overrideMethod (c$, "getBundle", 
 function (menu) {
@@ -811,23 +814,34 @@ Clazz_overrideMethod (c$, "jpiUpdateComputedMenus",
 function () {
 if (this.updateMode == -1) return;
 this.isTainted = true;
-this.updateMode = 0;
 this.getViewerData ();
+this.updateMode = 0;
+this.updateMenus ();
+});
+Clazz_defineMethod (c$, "updateMenus", 
+function () {
 this.updateSelectMenu ();
+this.updateModelSetComputedMenu ();
+this.updateAboutSubmenu ();
+if (this.updateMode == 0) {
 this.updateFileMenu ();
 this.updateElementsComputedMenu (this.vwr.getElementsPresentBitSet (this.modelIndex));
 this.updateHeteroComputedMenu (this.vwr.ms.getHeteroList (this.modelIndex));
 this.updateSurfMoComputedMenu (this.modelInfo.get ("moData"));
 this.updateFileTypeDependentMenus ();
-this.updatePDBComputedMenus ();
+this.updatePDBResidueComputedMenus ();
 this.updateMode = 1;
 this.updateConfigurationComputedMenu ();
 this.updateSYMMETRYComputedMenus ();
 this.updateFRAMESbyModelComputedMenu ();
-this.updateModelSetComputedMenu ();
 this.updateLanguageSubmenu ();
-this.updateAboutSubmenu ();
-});
+} else {
+this.updateSpectraMenu ();
+this.updateFRAMESbyModelComputedMenu ();
+this.updateSceneComputedMenu ();
+for (var i = this.Special.size (); --i >= 0; ) this.updateSpecialMenuItem (this.Special.get (i));
+
+}});
 Clazz_overrideMethod (c$, "appCheckItem", 
 function (item, newMenu) {
 if (item.indexOf ("!PDB") >= 0) {
@@ -882,7 +896,7 @@ script = JU.PT.rep (script, "PdbId?", "=xxxx");
 Clazz_overrideMethod (c$, "appRestorePopupMenu", 
 function () {
 this.thisPopup = this.popupMenu;
-if (JV.Viewer.isJSNoAWT || this.nFrankList < 2) return;
+if (this.vwr.isJSNoAWT || this.nFrankList < 2) return;
 for (var i = this.nFrankList; --i > 0; ) {
 var f = this.frankList[i];
 this.helper.menuInsertSubMenu (f[0], f[1], (f[2]).intValue ());
@@ -910,7 +924,7 @@ if (id != null) for (var i = id.indexOf (".", 2) + 1; ; ) {
 var iNew = id.indexOf (".", i);
 if (iNew < 0) break;
 var menu = this.htMenus.get (id.substring (i, iNew));
-this.frankList[this.nFrankList++] =  Clazz_newArray (-1, [menu.getParent (), menu, Integer.$valueOf (JV.Viewer.isJSNoAWT ? 0 : this.menuGetListPosition (menu))]);
+this.frankList[this.nFrankList++] =  Clazz_newArray (-1, [menu.getParent (), menu, Integer.$valueOf (this.vwr.isJSNoAWT ? 0 : this.menuGetListPosition (menu))]);
 this.menuAddSubMenu (this.frankPopup, menu);
 i = iNew + 1;
 }
@@ -937,7 +951,7 @@ this.modelInfo = this.vwr.ms.getModelAuxiliaryInfo (this.modelIndex);
 if (this.modelInfo == null) this.modelInfo =  new java.util.Hashtable ();
 this.isPDB = this.checkBoolean ("isPDB");
 this.isMultiFrame = (this.modelCount > 1);
-this.hasSymmetry = this.modelInfo.containsKey ("hasSymmetry");
+this.hasSymmetry = !this.isPDB && this.modelInfo.containsKey ("hasSymmetry");
 this.isUnitCell = this.modelInfo.containsKey ("unitCellParams");
 this.fileHasUnitCell = (this.isPDB && this.isUnitCell || this.checkBoolean ("fileHasUnitCell"));
 this.isLastFrame = (this.modelIndex == this.modelCount - 1);
@@ -961,21 +975,15 @@ if (this.updateMode == -1) return;
 this.isTainted = true;
 this.getViewerData ();
 this.updateMode = 2;
-this.updateSelectMenu ();
-this.updateSpectraMenu ();
-this.updateFRAMESbyModelComputedMenu ();
-this.updateSceneComputedMenu ();
-this.updateModelSetComputedMenu ();
-this.updateAboutSubmenu ();
-for (var i = this.Special.size (); --i >= 0; ) this.updateSpecialMenuItem (this.Special.get (i));
-
+this.updateMenus ();
 });
 Clazz_defineMethod (c$, "updateFileMenu", 
- function () {
+function () {
 var menu = this.htMenus.get ("fileMenu");
 if (menu == null) return;
 var text = this.getMenuText ("writeFileTextVARIABLE");
 menu = this.htMenus.get ("writeFileTextVARIABLE");
+if (menu == null) return;
 var ignore = (this.modelSetFileName.equals ("zapped") || this.modelSetFileName.equals (""));
 if (ignore) {
 this.menuSetLabel (menu, "");
@@ -990,14 +998,14 @@ var str = this.menuText.getProperty (key);
 return (str == null ? key : str);
 }, "~S");
 Clazz_defineMethod (c$, "updateSelectMenu", 
- function () {
+function () {
 var menu = this.htMenus.get ("selectMenuText");
 if (menu == null) return;
 this.menuEnable (menu, this.ac != 0);
 this.menuSetLabel (menu, this.gti ("selectMenuText", this.vwr.slm.getSelectionCount ()));
 });
 Clazz_defineMethod (c$, "updateElementsComputedMenu", 
- function (elementsPresentBitSet) {
+function (elementsPresentBitSet) {
 var menu = this.htMenus.get ("elementsComputedMenu");
 if (menu == null) return;
 this.menuRemoveAll (menu, 0);
@@ -1021,13 +1029,13 @@ this.menuCreateItem (menu, entryName, "SELECT " + elementName, null);
 this.menuEnable (menu, true);
 }, "JU.BS");
 Clazz_defineMethod (c$, "updateSpectraMenu", 
- function () {
-var menuh = this.htMenus.get ("hnmrMenu");
-var menuc = this.htMenus.get ("cnmrMenu");
-if (menuh != null) this.menuRemoveAll (menuh, 0);
-if (menuc != null) this.menuRemoveAll (menuc, 0);
+function () {
 var menu = this.htMenus.get ("spectraMenu");
 if (menu == null) return;
+var menuh = this.htMenus.get ("hnmrMenu");
+if (menuh != null) this.menuRemoveAll (menuh, 0);
+var menuc = this.htMenus.get ("cnmrMenu");
+if (menuc != null) this.menuRemoveAll (menuc, 0);
 this.menuRemoveAll (menu, 0);
 var isOK =  new Boolean (this.setSpectraMenu (menuh, this.hnmrPeaks) | this.setSpectraMenu (menuc, this.cnmrPeaks)).valueOf ();
 if (isOK) {
@@ -1037,10 +1045,10 @@ if (menuc != null) this.menuAddSubMenu (menu, menuc);
 });
 Clazz_defineMethod (c$, "setSpectraMenu", 
  function (menu, peaks) {
-if (menu == null) return false;
-this.menuEnable (menu, false);
 var n = (peaks == null ? 0 : peaks.size ());
 if (n == 0) return false;
+if (menu == null) return false;
+this.menuEnable (menu, false);
 for (var i = 0; i < n; i++) {
 var peak = peaks.get (i);
 var title = JU.PT.getQuotedAttribute (peak, "title");
@@ -1051,7 +1059,7 @@ this.menuEnable (menu, true);
 return true;
 }, "J.api.SC,JU.Lst");
 Clazz_defineMethod (c$, "updateHeteroComputedMenu", 
- function (htHetero) {
+function (htHetero) {
 var menu = this.htMenus.get ("PDBheteroComputedMenu");
 if (menu == null) return;
 this.menuRemoveAll (menu, 0);
@@ -1069,7 +1077,7 @@ n++;
 this.menuEnable (menu, (n > 0));
 }, "java.util.Map");
 Clazz_defineMethod (c$, "updateSurfMoComputedMenu", 
- function (moData) {
+function (moData) {
 var menu = this.htMenus.get ("surfMoComputedMenuText");
 if (menu == null) return;
 this.menuRemoveAll (menu, 0);
@@ -1101,7 +1109,7 @@ this.menuCreateItem (subMenu, entryName, script, null);
 }
 }, "java.util.Map");
 Clazz_defineMethod (c$, "updateFileTypeDependentMenus", 
- function () {
+function () {
 for (var i = this.NotPDB.size (); --i >= 0; ) this.menuEnable (this.NotPDB.get (i), !this.isPDB);
 
 for (var i = this.PDBOnly.size (); --i >= 0; ) this.menuEnable (this.PDBOnly.get (i), this.isPDB);
@@ -1127,7 +1135,7 @@ for (var i = this.TemperatureOnly.size (); --i >= 0; ) this.menuEnable (this.Tem
 this.updateSignedAppletItems ();
 });
 Clazz_defineMethod (c$, "updateSceneComputedMenu", 
- function () {
+function () {
 var menu = this.htMenus.get ("sceneComputedMenu");
 if (menu == null) return;
 this.menuRemoveAll (menu, 0);
@@ -1138,21 +1146,25 @@ for (var i = 0; i < scenes.length; i++) this.menuCreateItem (menu, scenes[i], "r
 
 this.menuEnable (menu, true);
 });
-Clazz_defineMethod (c$, "updatePDBComputedMenus", 
- function () {
-var menu = this.htMenus.get ("PDBaaResiduesComputedMenu");
-if (menu == null) return;
-this.menuRemoveAll (menu, 0);
-this.menuEnable (menu, false);
-var menu1 = this.htMenus.get ("PDBnucleicResiduesComputedMenu");
-if (menu1 == null) return;
+Clazz_defineMethod (c$, "updatePDBResidueComputedMenus", 
+function () {
+var haveMenu = false;
+var menu3 = this.htMenus.get ("PDBaaResiduesComputedMenu");
+if (menu3 != null) {
+this.menuRemoveAll (menu3, 0);
+this.menuEnable (menu3, false);
+haveMenu = true;
+}var menu1 = this.htMenus.get ("PDBnucleicResiduesComputedMenu");
+if (menu1 != null) {
 this.menuRemoveAll (menu1, 0);
 this.menuEnable (menu1, false);
-var menu2 = this.htMenus.get ("PDBcarboResiduesComputedMenu");
-if (menu2 == null) return;
+haveMenu = true;
+}var menu2 = this.htMenus.get ("PDBcarboResiduesComputedMenu");
+if (menu2 != null) {
 this.menuRemoveAll (menu2, 0);
 this.menuEnable (menu2, false);
-if (this.modelSetInfo == null) return;
+haveMenu = true;
+}if (this.modelSetInfo == null || !haveMenu) return;
 var n = (this.modelIndex < 0 ? 0 : this.modelIndex + 1);
 var lists = (this.modelSetInfo.get ("group3Lists"));
 this.group3List = (lists == null ? null : lists[n]);
@@ -1160,20 +1172,23 @@ this.group3Counts = (lists == null ? null : (this.modelSetInfo.get ("group3Count
 if (this.group3List == null) return;
 var nItems = 0;
 var groupList = JM.Group.standardGroupList;
-for (var i = 1; i < 24; ++i) nItems += this.updateGroup3List (menu, groupList.substring (i * 6 - 4, i * 6 - 1).trim ());
+if (menu3 != null) {
+for (var i = 1; i < 24; ++i) nItems += this.updateGroup3List (menu3, groupList.substring (i * 6 - 4, i * 6 - 1).trim ());
 
-nItems += this.augmentGroup3List (menu, "p>", true);
-this.menuEnable (menu, (nItems > 0));
+nItems += this.augmentGroup3List (menu3, "p>", true);
+this.menuEnable (menu3, (nItems > 0));
 this.menuEnable (this.htMenus.get ("PDBproteinMenu"), (nItems > 0));
+}if (menu1 != null) {
 nItems = this.augmentGroup3List (menu1, "n>", false);
 this.menuEnable (menu1, nItems > 0);
 this.menuEnable (this.htMenus.get ("PDBnucleicMenu"), (nItems > 0));
 var dssr = (nItems > 0 && this.modelIndex >= 0 ? this.vwr.ms.getInfo (this.modelIndex, "dssr") : null);
 if (dssr != null) this.setSecStrucMenu (this.htMenus.get ("aaStructureMenu"), dssr);
+}if (menu2 != null) {
 nItems = this.augmentGroup3List (menu2, "c>", false);
 this.menuEnable (menu2, nItems > 0);
 this.menuEnable (this.htMenus.get ("PDBcarboMenu"), (nItems > 0));
-});
+}});
 Clazz_defineMethod (c$, "setSecStrucMenu", 
  function (menu, dssr) {
 var counts = dssr.get ("counts");
@@ -1218,12 +1233,12 @@ pt++;
 return nItems;
 }, "J.api.SC,~S,~B");
 Clazz_defineMethod (c$, "updateSYMMETRYComputedMenus", 
- function () {
+function () {
 this.updateSYMMETRYSelectComputedMenu ();
 this.updateSYMMETRYShowComputedMenu ();
 });
 Clazz_defineMethod (c$, "updateSYMMETRYShowComputedMenu", 
- function () {
+function () {
 var menu = this.htMenus.get ("SYMMETRYShowComputedMenu");
 if (menu == null) return;
 this.menuRemoveAll (menu, 0);
@@ -1253,7 +1268,7 @@ this.menuEnable (this.menuCreateItem (subMenu, entryName, "draw SYMOP " + (i + 1
 this.menuEnable (menu, true);
 });
 Clazz_defineMethod (c$, "updateSYMMETRYSelectComputedMenu", 
- function () {
+function () {
 var menu = this.htMenus.get ("SYMMETRYSelectComputedMenu");
 if (menu == null) return;
 this.menuRemoveAll (menu, 0);
@@ -1279,7 +1294,7 @@ this.menuEnable (this.menuCreateItem (subMenu, entryName, "SELECT symop=" + (i +
 this.menuEnable (menu, true);
 });
 Clazz_defineMethod (c$, "updateFRAMESbyModelComputedMenu", 
- function () {
+function () {
 var menu = this.htMenus.get ("FRAMESbyModelComputedMenu");
 if (menu == null) return;
 this.menuEnable (menu, (this.modelCount > 0));
@@ -1311,7 +1326,7 @@ this.menuCreateCheckboxItem (subMenu, entryName, "model " + script + " ##", null
 }
 });
 Clazz_defineMethod (c$, "updateConfigurationComputedMenu", 
- function () {
+function () {
 var menu = this.htMenus.get ("configurationComputedMenu");
 if (menu == null) return;
 this.menuEnable (menu, this.isMultiConfiguration);
@@ -1328,7 +1343,7 @@ this.menuCreateCheckboxItem (menu, entryName, script, null, (this.updateMode == 
 }
 });
 Clazz_defineMethod (c$, "updateModelSetComputedMenu", 
- function () {
+function () {
 var menu = this.htMenus.get ("modelSetMenu");
 if (menu == null) return;
 this.menuRemoveAll (menu, 0);
@@ -1383,12 +1398,12 @@ Clazz_defineMethod (c$, "gto",
 return J.i18n.GT.o (J.i18n.GT.$ (this.getMenuText (s)), o);
 }, "~S,~O");
 Clazz_defineMethod (c$, "updateAboutSubmenu", 
- function () {
+function () {
 if (this.isApplet) this.setText ("APPLETid", this.vwr.appletName);
 {
 }});
 Clazz_defineMethod (c$, "updateLanguageSubmenu", 
- function () {
+function () {
 var menu = this.htMenus.get ("languageComputedMenu");
 if (menu == null) return;
 this.menuRemoveAll (menu, 0);
@@ -1409,7 +1424,7 @@ this.menuCreateCheckboxItem (menu, menuLabel, "language = \"" + code + "\" ##" +
 }}
 });
 Clazz_defineMethod (c$, "updateSpecialMenuItem", 
- function (m) {
+function (m) {
 m.setText (this.getSpecialLabel (m.getName (), m.getText ()));
 }, "J.api.SC");
 Clazz_defineMethod (c$, "getSpecialLabel", 
@@ -1457,7 +1472,7 @@ var rld = J.i18n.GT.$ ("Reload {0}");
 var scl = J.i18n.GT.$ ("Scale {0}");
 var ang = J.i18n.GT.$ ("{0} \u00C5");
 var pxl = J.i18n.GT.$ ("{0} px");
-var words =  Clazz_newArray (-1, ["cnmrMenu", J.i18n.GT.$ ("13C-NMR"), "hnmrMenu", J.i18n.GT.$ ("1H-NMR"), "aboutMenu", J.i18n.GT.$ ("About..."), "negativeCharge", J.i18n.GT.$ ("Acidic Residues (-)"), "allModelsText", J.i18n.GT.$ ("All {0} models"), "allHetero", J.i18n.GT.$ ("All PDB \"HETATM\""), "Solvent", J.i18n.GT.$ ("All Solvent"), "Water", J.i18n.GT.$ ("All Water"), "selectAll", J.i18n.GT.$ ("All"), "allProtein", null, "allNucleic", null, "allCarbo", null, "altloc#PDB", J.i18n.GT.$ ("Alternative Location"), "amino#PDB", J.i18n.GT.$ ("Amino Acid"), "byAngstromMenu", J.i18n.GT.$ ("Angstrom Width"), "animModeMenu", J.i18n.GT.$ ("Animation Mode"), "FRAMESanimateMenu", J.i18n.GT.$ ("Animation"), "atPairs", J.i18n.GT.$ ("AT pairs"), "atomMenu", J.i18n.GT.$ ("Atoms"), "[color_atoms]Menu", null, "atomsText", J.i18n.GT.$ ("atoms: {0}"), "auPairs", J.i18n.GT.$ ("AU pairs"), "[color_axes]Menu", J.i18n.GT.$ ("Axes"), "showAxesCB", null, "[set_axes]Menu", null, "axisA", J.i18n.GT.$ ("Axis a"), "axisB", J.i18n.GT.$ ("Axis b"), "axisC", J.i18n.GT.$ ("Axis c"), "axisX", J.i18n.GT.$ ("Axis x"), "axisY", J.i18n.GT.$ ("Axis y"), "axisZ", J.i18n.GT.$ ("Axis z"), "back", J.i18n.GT.$ ("Back"), "proteinBackbone", J.i18n.GT.$ ("Backbone"), "nucleicBackbone", null, "backbone", null, "[color_backbone]Menu", null, "[color_background]Menu", J.i18n.GT.$ ("Background"), "renderBallAndStick", J.i18n.GT.$ ("Ball and Stick"), "nucleicBases", J.i18n.GT.$ ("Bases"), "positiveCharge", J.i18n.GT.$ ("Basic Residues (+)"), "best", J.i18n.GT.$ ("Best"), "biomoleculeText", J.i18n.GT.$ ("biomolecule {0} ({1} atoms)"), "biomoleculesMenuText", J.i18n.GT.$ ("Biomolecules"), "black", J.i18n.GT.$ ("Black"), "blue", J.i18n.GT.$ ("Blue"), "bondMenu", J.i18n.GT.$ ("Bonds"), "[color_bonds]Menu", null, "bondsText", J.i18n.GT.$ ("bonds: {0}"), "bottom", J.i18n.GT.$ ("Bottom"), "[color_boundbox]Menu", J.i18n.GT.$ ("Boundbox"), "[set_boundbox]Menu", null, "showBoundBoxCB", null, "PDBheteroComputedMenu", J.i18n.GT.$ ("By HETATM"), "PDBaaResiduesComputedMenu", J.i18n.GT.$ ("By Residue Name"), "PDBnucleicResiduesComputedMenu", null, "PDBcarboResiduesComputedMenu", null, "schemeMenu", J.i18n.GT.$ ("By Scheme"), "[color_]schemeMenu", null, "hbondCalc", J.i18n.GT.$ ("Calculate"), "SIGNEDJAVAcaptureRock", J.i18n.GT.$ ("Capture rock"), "SIGNEDJAVAcaptureSpin", J.i18n.GT.$ ("Capture spin"), "SIGNEDJAVAcaptureMenuSPECIAL", J.i18n.GT.$ ("Capture"), "PDBcarboMenu", J.i18n.GT.$ ("Carbohydrate"), "cartoonRockets", J.i18n.GT.$ ("Cartoon Rockets"), "PDBrenderCartoonsOnly", J.i18n.GT.$ ("Cartoon"), "cartoon", null, "[color_cartoon]sMenu", null, "pickCenter", J.i18n.GT.$ ("Center"), "labelCentered", J.i18n.GT.$ ("Centered"), "chain#PDB", J.i18n.GT.$ ("Chain"), "chainsText", J.i18n.GT.$ ("chains: {0}"), "colorChargeMenu", J.i18n.GT.$ ("Charge"), "measureAngle", J.i18n.GT.$ ("Click for angle measurement"), "measureDistance", J.i18n.GT.$ ("Click for distance measurement"), "measureTorsion", J.i18n.GT.$ ("Click for torsion (dihedral) measurement"), "PDBmeasureSequence", J.i18n.GT.$ ("Click two atoms to display a sequence in the console"), "modelSetCollectionText", J.i18n.GT.$ ("Collection of {0} models"), "colorMenu", J.i18n.GT.$ ("Color"), "computationMenu", J.i18n.GT.$ ("Computation"), "configurationMenuText", J.i18n.GT.$ ("Configurations ({0})"), "configurationComputedMenu", J.i18n.GT.$ ("Configurations"), "showConsole", J.i18n.GT.$ ("Console"), "renderCpkSpacefill", J.i18n.GT.$ ("CPK Spacefill"), "stereoCrossEyed", J.i18n.GT.$ ("Cross-eyed viewing"), "showState", J.i18n.GT.$ ("Current state"), "cyan", J.i18n.GT.$ ("Cyan"), "darkgray", J.i18n.GT.$ ("Dark Gray"), "measureDelete", J.i18n.GT.$ ("Delete measurements"), "SIGNEDJAVAcaptureOff", J.i18n.GT.$ ("Disable capturing"), "hideNotSelectedCB", J.i18n.GT.$ ("Display Selected Only"), "distanceAngstroms", J.i18n.GT.$ ("Distance units Angstroms"), "distanceNanometers", J.i18n.GT.$ ("Distance units nanometers"), "distancePicometers", J.i18n.GT.$ ("Distance units picometers"), "distanceHz", J.i18n.GT.$ ("Distance units hz (NMR J-coupling)"), "ssbondMenu", J.i18n.GT.$ ("Disulfide Bonds"), "[color_ssbonds]Menu", null, "DNA", J.i18n.GT.$ ("DNA"), "surfDots", J.i18n.GT.$ ("Dot Surface"), "dotted", J.i18n.GT.$ ("Dotted"), "measureOff", J.i18n.GT.$ ("Double-Click begins and ends all measurements"), "cpk", J.i18n.GT.$ ("Element (CPK)"), "elementsComputedMenu", J.i18n.GT.$ ("Element"), "SIGNEDJAVAcaptureEnd", J.i18n.GT.$ ("End capturing"), "exportMenu", J.i18n.GT.$ ("Export"), "extractMOL", J.i18n.GT.$ ("Extract MOL data"), "showFile", J.i18n.GT.$ ("File Contents"), "showFileHeader", J.i18n.GT.$ ("File Header"), "fileMenu", J.i18n.GT.$ ("File"), "formalcharge", J.i18n.GT.$ ("Formal Charge"), "front", J.i18n.GT.$ ("Front"), "gcPairs", J.i18n.GT.$ ("GC pairs"), "gold", J.i18n.GT.$ ("Gold"), "gray", J.i18n.GT.$ ("Gray"), "green", J.i18n.GT.$ ("Green"), "group#PDB", J.i18n.GT.$ ("Group"), "groupsText", J.i18n.GT.$ ("groups: {0}"), "PDBheteroMenu", J.i18n.GT.$ ("Hetero"), "off#axes", J.i18n.GT.$ ("Hide"), "showHistory", J.i18n.GT.$ ("History"), "hbondMenu", J.i18n.GT.$ ("Hydrogen Bonds"), "[color_hbonds]Menu", null, "pickIdent", J.i18n.GT.$ ("Identity"), "indigo", J.i18n.GT.$ ("Indigo"), "none", J.i18n.GT.$ ("Inherit"), "invertSelection", J.i18n.GT.$ ("Invert Selection"), "showIsosurface", J.i18n.GT.$ ("Isosurface JVXL data"), "help", J.i18n.GT.$ ("Jmol Script Commands"), "pickLabel", J.i18n.GT.$ ("Label"), "labelMenu", J.i18n.GT.$ ("Labels"), "[color_labels]Menu", null, "languageComputedMenu", J.i18n.GT.$ ("Language"), "left", J.i18n.GT.$ ("Left"), "Ligand", J.i18n.GT.$ ("Ligand"), "lightgray", J.i18n.GT.$ ("Light Gray"), "measureList", J.i18n.GT.$ ("List measurements"), "loadBiomoleculeText", J.i18n.GT.$ ("load biomolecule {0} ({1} atoms)"), "SIGNEDloadFileUnitCell", J.i18n.GT.$ ("Load full unit cell"), "loadMenu", J.i18n.GT.$ ("Load"), "loop", J.i18n.GT.$ ("Loop"), "labelLowerLeft", J.i18n.GT.$ ("Lower Left"), "labelLowerRight", J.i18n.GT.$ ("Lower Right"), "mainMenuText", J.i18n.GT.$ ("Main Menu"), "opaque", J.i18n.GT.$ ("Make Opaque"), "surfOpaque", null, "translucent", J.i18n.GT.$ ("Make Translucent"), "surfTranslucent", null, "maroon", J.i18n.GT.$ ("Maroon"), "measureMenu", J.i18n.GT.$ ("Measurements"), "showMeasure", null, "modelMenuText", J.i18n.GT.$ ("model {0}"), "hiddenModelSetText", J.i18n.GT.$ ("Model information"), "modelkit", J.i18n.GT.$ ("Model kit"), "showModel", J.i18n.GT.$ ("Model"), "FRAMESbyModelComputedMenu", J.i18n.GT.$ ("Model/Frame"), "modelKitMode", J.i18n.GT.$ ("modelKitMode"), "surf2MEP", J.i18n.GT.$ ("Molecular Electrostatic Potential (range -0.1 0.1)"), "surfMEP", J.i18n.GT.$ ("Molecular Electrostatic Potential (range ALL)"), "showMo", J.i18n.GT.$ ("Molecular orbital JVXL data"), "surfMoComputedMenuText", J.i18n.GT.$ ("Molecular Orbitals ({0})"), "surfMolecular", J.i18n.GT.$ ("Molecular Surface"), "molecule", J.i18n.GT.$ ("Molecule"), "monomer#PDB", J.i18n.GT.$ ("Monomer"), "mouse", J.i18n.GT.$ ("Mouse Manual"), "nextframe", J.i18n.GT.$ ("Next Frame"), "modelSetMenu", J.i18n.GT.$ ("No atoms loaded"), "exceptWater", J.i18n.GT.$ ("Nonaqueous HETATM") + " (hetero and not water)", "nonWaterSolvent", J.i18n.GT.$ ("Nonaqueous Solvent") + " (solvent and not water)", "PDBnoneOfTheAbove", J.i18n.GT.$ ("None of the above"), "selectNone", J.i18n.GT.$ ("None"), "stereoNone", null, "labelNone", null, "nonpolar", J.i18n.GT.$ ("Nonpolar Residues"), "PDBnucleicMenu", J.i18n.GT.$ ("Nucleic"), "atomNone", J.i18n.GT.$ ("Off"), "bondNone", null, "hbondNone", null, "ssbondNone", null, "structureNone", null, "vibrationOff", null, "vectorOff", null, "spinOff", null, "pickOff", null, "surfOff", null, "olive", J.i18n.GT.$ ("Olive"), "bondWireframe", J.i18n.GT.$ ("On"), "hbondWireframe", null, "ssbondWireframe", null, "vibrationOn", null, "vectorOn", null, "spinOn", null, "on", null, "SIGNEDloadPdb", J.i18n.GT.$ ("Open from PDB"), "SIGNEDloadFile", J.i18n.GT.$ ("Open local file"), "SIGNEDloadScript", J.i18n.GT.$ ("Open script"), "SIGNEDloadUrl", J.i18n.GT.$ ("Open URL"), "minimize", J.i18n.GT.$ ("Optimize structure"), "orange", J.i18n.GT.$ ("Orange"), "orchid", J.i18n.GT.$ ("Orchid"), "showOrient", J.i18n.GT.$ ("Orientation"), "palindrome", J.i18n.GT.$ ("Palindrome"), "partialcharge", J.i18n.GT.$ ("Partial Charge"), "pause", J.i18n.GT.$ ("Pause"), "perspectiveDepthCB", J.i18n.GT.$ ("Perspective Depth"), "byPixelMenu", J.i18n.GT.$ ("Pixel Width"), "onceThrough", J.i18n.GT.$ ("Play Once"), "play", J.i18n.GT.$ ("Play"), "polar", J.i18n.GT.$ ("Polar Residues"), "polymersText", J.i18n.GT.$ ("polymers: {0}"), "labelPositionMenu", J.i18n.GT.$ ("Position Label on Atom"), "prevframe", J.i18n.GT.$ ("Previous Frame"), "PDBproteinMenu", J.i18n.GT.$ ("Protein"), "colorrasmolCB", J.i18n.GT.$ ("RasMol Colors"), "red", J.i18n.GT.$ ("Red"), "stereoRedBlue", J.i18n.GT.$ ("Red+Blue glasses"), "stereoRedCyan", J.i18n.GT.$ ("Red+Cyan glasses"), "stereoRedGreen", J.i18n.GT.$ ("Red+Green glasses"), "SIGNEDJAVAcaptureOn", J.i18n.GT.$ ("Re-enable capturing"), "FILEUNITninePoly", J.i18n.GT.$ ("Reload + Polyhedra"), "reload", J.i18n.GT.$ ("Reload"), "restart", J.i18n.GT.$ ("Restart"), "resume", J.i18n.GT.$ ("Resume"), "playrev", J.i18n.GT.$ ("Reverse"), "rewind", J.i18n.GT.$ ("Rewind"), "ribbons", J.i18n.GT.$ ("Ribbons"), "[color_ribbon]sMenu", null, "right", J.i18n.GT.$ ("Right"), "RNA", J.i18n.GT.$ ("RNA"), "rockets", J.i18n.GT.$ ("Rockets"), "[color_rockets]Menu", null, "salmon", J.i18n.GT.$ ("Salmon"), "writeFileTextVARIABLE", J.i18n.GT.$ ("Save a copy of {0}"), "SIGNEDwriteJmol", J.i18n.GT.$ ("Save as PNG/JMOL (image+zip)"), "SIGNEDwriteIsosurface", J.i18n.GT.$ ("Save JVXL isosurface"), "writeHistory", J.i18n.GT.$ ("Save script with history"), "writeState", J.i18n.GT.$ ("Save script with state"), "saveMenu", J.i18n.GT.$ ("Save"), "sceneComputedMenu", J.i18n.GT.$ ("Scenes"), "renderSchemeMenu", J.i18n.GT.$ ("Scheme"), "aaStructureMenu", J.i18n.GT.$ ("Secondary Structure"), "structure#PDB", null, "selectMenuText", J.i18n.GT.$ ("Select ({0})"), "pickAtom", J.i18n.GT.$ ("Select atom"), "PDBpickChain", J.i18n.GT.$ ("Select chain"), "pickElement", J.i18n.GT.$ ("Select element"), "PDBpickGroup", J.i18n.GT.$ ("Select group"), "pickMolecule", J.i18n.GT.$ ("Select molecule"), "SYMMETRYpickSite", J.i18n.GT.$ ("Select site"), "showSelectionsCB", J.i18n.GT.$ ("Selection Halos"), "SIGNEDJAVAcaptureFpsSPECIAL", J.i18n.GT.$ ("Set capture replay rate"), "[set_spin_FPS]Menu", J.i18n.GT.$ ("Set FPS"), "FRAMESanimFpsMenu", null, "PDBhbondBackbone", J.i18n.GT.$ ("Set H-Bonds Backbone"), "PDBhbondSidechain", J.i18n.GT.$ ("Set H-Bonds Side Chain"), "pickingMenu", J.i18n.GT.$ ("Set picking"), "PDBssbondBackbone", J.i18n.GT.$ ("Set SS-Bonds Backbone"), "PDBssbondSidechain", J.i18n.GT.$ ("Set SS-Bonds Side Chain"), "[set_spin_X]Menu", J.i18n.GT.$ ("Set X Rate"), "[set_spin_Y]Menu", J.i18n.GT.$ ("Set Y Rate"), "[set_spin_Z]Menu", J.i18n.GT.$ ("Set Z Rate"), "shapely#PDB", J.i18n.GT.$ ("Shapely"), "showHydrogensCB", J.i18n.GT.$ ("Show Hydrogens"), "showMeasurementsCB", J.i18n.GT.$ ("Show Measurements"), "SYMMETRYpickSymmetry", J.i18n.GT.$ ("Show symmetry operation"), "showMenu", J.i18n.GT.$ ("Show"), "proteinSideChains", J.i18n.GT.$ ("Side Chains"), "slateblue", J.i18n.GT.$ ("Slate Blue"), "SYMMETRYShowComputedMenu", J.i18n.GT.$ ("Space Group"), "showSpacegroup", null, "spectraMenu", J.i18n.GT.$ ("Spectra"), "spinMenu", J.i18n.GT.$ ("Spin"), "pickSpin", null, "SIGNEDJAVAcaptureBegin", J.i18n.GT.$ ("Start capturing"), "stereoMenu", J.i18n.GT.$ ("Stereographic"), "renderSticks", J.i18n.GT.$ ("Sticks"), "stop", J.i18n.GT.$ ("Stop"), "strands", J.i18n.GT.$ ("Strands"), "[color_strands]Menu", null, "PDBstructureMenu", J.i18n.GT.$ ("Structures"), "colorPDBStructuresMenu", null, "renderMenu", J.i18n.GT.$ ("Style"), "[color_isosurface]Menu", J.i18n.GT.$ ("Surfaces"), "surfaceMenu", null, "SYMMETRYSelectComputedMenu", J.i18n.GT.$ ("Symmetry"), "SYMMETRYshowSymmetry", null, "FILEUNITMenu", null, "systemMenu", J.i18n.GT.$ ("System"), "relativeTemperature#BFACTORS", J.i18n.GT.$ ("Temperature (Relative)"), "fixedTemperature#BFACTORS", J.i18n.GT.$ ("Temperature (Fixed)"), "SIGNEDJAVAcaptureLoopingSPECIAL", J.i18n.GT.$ ("Toggle capture looping"), "top", JU.PT.split (J.i18n.GT.$ ("Top[as in \"view from the top, from above\" - (translators: remove this bracketed part]"), "[")[0], "PDBrenderTraceOnly", J.i18n.GT.$ ("Trace"), "trace", null, "[color_trace]Menu", null, "translations", J.i18n.GT.$ ("Translations"), "noCharge", J.i18n.GT.$ ("Uncharged Residues"), "[color_UNITCELL]Menu", J.i18n.GT.$ ("Unit cell"), "UNITCELLshow", null, "[set_UNITCELL]Menu", null, "showUNITCELLCB", null, "labelUpperLeft", J.i18n.GT.$ ("Upper Left"), "labelUpperRight", J.i18n.GT.$ ("Upper Right"), "surfVDW", J.i18n.GT.$ ("van der Waals Surface"), "VIBRATIONvectorMenu", J.i18n.GT.$ ("Vectors"), "property_vxyz#VIBRATION", null, "[color_vectors]Menu", null, "VIBRATIONMenu", J.i18n.GT.$ ("Vibration"), "viewMenuText", J.i18n.GT.$ ("View {0}"), "viewMenu", J.i18n.GT.$ ("View"), "violet", J.i18n.GT.$ ("Violet"), "stereoWallEyed", J.i18n.GT.$ ("Wall-eyed viewing"), "white", J.i18n.GT.$ ("White"), "renderWireframe", J.i18n.GT.$ ("Wireframe"), "labelName", J.i18n.GT.$ ("With Atom Name"), "labelNumber", J.i18n.GT.$ ("With Atom Number"), "labelSymbol", J.i18n.GT.$ ("With Element Symbol"), "yellow", J.i18n.GT.$ ("Yellow"), "zoomIn", J.i18n.GT.$ ("Zoom In"), "zoomOut", J.i18n.GT.$ ("Zoom Out"), "zoomMenu", J.i18n.GT.$ ("Zoom"), "vector005", J.i18n.GT.o (ang, "0.05"), "bond100", J.i18n.GT.o (ang, "0.10"), "hbond100", null, "ssbond100", null, "vector01", null, "10a", null, "bond150", J.i18n.GT.o (ang, "0.15"), "hbond150", null, "ssbond150", null, "bond200", J.i18n.GT.o (ang, "0.20"), "hbond200", null, "ssbond200", null, "20a", null, "bond250", J.i18n.GT.o (ang, "0.25"), "hbond250", null, "ssbond250", null, "25a", null, "bond300", J.i18n.GT.o (ang, "0.30"), "hbond300", null, "ssbond300", null, "50a", J.i18n.GT.o (ang, "0.50"), "100a", J.i18n.GT.o (ang, "1.0"), "1p", J.i18n.GT.i (pxl, 1), "10p", J.i18n.GT.i (pxl, 10), "3p", J.i18n.GT.i (pxl, 3), "vector3", null, "5p", J.i18n.GT.i (pxl, 5), "atom100", J.i18n.GT.i (vdw, 100), "atom15", J.i18n.GT.i (vdw, 15), "atom20", J.i18n.GT.i (vdw, 20), "atom25", J.i18n.GT.i (vdw, 25), "atom50", J.i18n.GT.i (vdw, 50), "atom75", J.i18n.GT.i (vdw, 75), "SIGNEDNOGLwriteIdtf", J.i18n.GT.o (exm, "IDTF"), "SIGNEDNOGLwriteMaya", J.i18n.GT.o (exm, "Maya"), "SIGNEDNOGLwriteVrml", J.i18n.GT.o (exm, "VRML"), "SIGNEDNOGLwriteX3d", J.i18n.GT.o (exm, "X3D"), "SIGNEDNOGLwriteSTL", J.i18n.GT.o (exm, "STL"), "SIGNEDNOGLwriteGif", J.i18n.GT.o (exi, "GIF"), "SIGNEDNOGLwriteJpg", J.i18n.GT.o (exi, "JPG"), "SIGNEDNOGLwritePng", J.i18n.GT.o (exi, "PNG"), "SIGNEDNOGLwritePngJmol", J.i18n.GT.o (exi, "PNG+JMOL"), "SIGNEDNOGLwritePovray", J.i18n.GT.o (exi, "POV-Ray"), "FILEUNITnineRestricted", J.i18n.GT.o (J.i18n.GT.$ ("Reload {0} + Display {1}"),  Clazz_newArray (-1, ["{444 666 1}", "555"])), "FILEMOLload", J.i18n.GT.o (rld, "(molecular)"), "FILEUNITone", J.i18n.GT.o (rld, "{1 1 1}"), "FILEUNITnine", J.i18n.GT.o (rld, "{444 666 1}"), "vectorScale02", J.i18n.GT.o (scl, "0.2"), "vectorScale05", J.i18n.GT.o (scl, "0.5"), "vectorScale1", J.i18n.GT.o (scl, "1"), "vectorScale2", J.i18n.GT.o (scl, "2"), "vectorScale5", J.i18n.GT.o (scl, "5"), "surfSolvent14", J.i18n.GT.o (J.i18n.GT.$ ("Solvent Surface ({0}-Angstrom probe)"), "1.4"), "surfSolventAccessible14", J.i18n.GT.o (J.i18n.GT.$ ("Solvent-Accessible Surface (VDW + {0} Angstrom)"), "1.4"), "vibration20", "*2", "vibration05", "/2", "JAVAmemTotal", "?", "JAVAmemMax", null, "JAVAprocessors", null, "s0", "0", "animfps10", "10", "s10", null, "zoom100", "100%", "zoom150", "150%", "animfps20", "20", "s20", null, "zoom200", "200%", "animfps30", "30", "s30", null, "s40", "40", "zoom400", "400%", "animfps5", "5", "s5", null, "animfps50", "50", "s50", null, "zoom50", "50%", "zoom800", "800%", "JSConsole", "JavaScript Console", "jmolMenu", "Jmol", "date", JV.JC.date, "version", JV.JC.version, "javaVender", JV.Viewer.strJavaVendor, "javaVersion", JV.Viewer.strJavaVersion, "os", JV.Viewer.strOSName, "jmolorg", "http://www.jmol.org"]);
+var words =  Clazz_newArray (-1, ["cnmrMenu", J.i18n.GT.$ ("13C-NMR"), "hnmrMenu", J.i18n.GT.$ ("1H-NMR"), "aboutMenu", J.i18n.GT.$ ("About..."), "negativeCharge", J.i18n.GT.$ ("Acidic Residues (-)"), "allModelsText", J.i18n.GT.$ ("All {0} models"), "allHetero", J.i18n.GT.$ ("All PDB \"HETATM\""), "Solvent", J.i18n.GT.$ ("All Solvent"), "Water", J.i18n.GT.$ ("All Water"), "selectAll", J.i18n.GT.$ ("All"), "allProtein", null, "allNucleic", null, "allCarbo", null, "altloc#PDB", J.i18n.GT.$ ("Alternative Location"), "amino#PDB", J.i18n.GT.$ ("Amino Acid"), "byAngstromMenu", J.i18n.GT.$ ("Angstrom Width"), "animModeMenu", J.i18n.GT.$ ("Animation Mode"), "FRAMESanimateMenu", J.i18n.GT.$ ("Animation"), "atPairs", J.i18n.GT.$ ("AT pairs"), "atomMenu", J.i18n.GT.$ ("Atoms"), "[color_atoms]Menu", null, "atomsText", J.i18n.GT.$ ("atoms: {0}"), "auPairs", J.i18n.GT.$ ("AU pairs"), "[color_axes]Menu", J.i18n.GT.$ ("Axes"), "showAxesCB", null, "[set_axes]Menu", null, "axisA", J.i18n.GT.$ ("Axis a"), "axisB", J.i18n.GT.$ ("Axis b"), "axisC", J.i18n.GT.$ ("Axis c"), "axisX", J.i18n.GT.$ ("Axis x"), "axisY", J.i18n.GT.$ ("Axis y"), "axisZ", J.i18n.GT.$ ("Axis z"), "back", J.i18n.GT.$ ("Back"), "proteinBackbone", J.i18n.GT.$ ("Backbone"), "nucleicBackbone", null, "backbone", null, "[color_backbone]Menu", null, "[color_background]Menu", J.i18n.GT.$ ("Background"), "renderBallAndStick", J.i18n.GT.$ ("Ball and Stick"), "nucleicBases", J.i18n.GT.$ ("Bases"), "positiveCharge", J.i18n.GT.$ ("Basic Residues (+)"), "best", J.i18n.GT.$ ("Best"), "biomoleculeText", J.i18n.GT.$ ("biomolecule {0} ({1} atoms)"), "biomoleculesMenuText", J.i18n.GT.$ ("Biomolecules"), "black", J.i18n.GT.$ ("Black"), "blue", J.i18n.GT.$ ("Blue"), "bondMenu", J.i18n.GT.$ ("Bonds"), "[color_bonds]Menu", null, "bondsText", J.i18n.GT.$ ("bonds: {0}"), "bottom", J.i18n.GT.$ ("Bottom"), "[color_boundbox]Menu", J.i18n.GT.$ ("Boundbox"), "[set_boundbox]Menu", null, "showBoundBoxCB", null, "PDBheteroComputedMenu", J.i18n.GT.$ ("By HETATM"), "PDBaaResiduesComputedMenu", J.i18n.GT.$ ("By Residue Name"), "PDBnucleicResiduesComputedMenu", null, "PDBcarboResiduesComputedMenu", null, "schemeMenu", J.i18n.GT.$ ("By Scheme"), "[color_]schemeMenu", null, "hbondCalc", J.i18n.GT.$ ("Calculate"), "SIGNEDJAVAcaptureRock", J.i18n.GT.$ ("Capture rock"), "SIGNEDJAVAcaptureSpin", J.i18n.GT.$ ("Capture spin"), "SIGNEDJAVAcaptureMenuSPECIAL", J.i18n.GT.$ ("Capture"), "PDBcarboMenu", J.i18n.GT.$ ("Carbohydrate"), "cartoonRockets", J.i18n.GT.$ ("Cartoon Rockets"), "PDBrenderCartoonsOnly", J.i18n.GT.$ ("Cartoon"), "cartoon", null, "[color_cartoon]sMenu", null, "pickCenter", J.i18n.GT.$ ("Center"), "labelCentered", J.i18n.GT.$ ("Centered"), "chain#PDB", J.i18n.GT.$ ("Chain"), "chainsText", J.i18n.GT.$ ("chains: {0}"), "colorChargeMenu", J.i18n.GT.$ ("Charge"), "measureAngle", J.i18n.GT.$ ("Click for angle measurement"), "measureDistance", J.i18n.GT.$ ("Click for distance measurement"), "measureTorsion", J.i18n.GT.$ ("Click for torsion (dihedral) measurement"), "PDBmeasureSequence", J.i18n.GT.$ ("Click two atoms to display a sequence in the console"), "modelSetCollectionText", J.i18n.GT.$ ("Collection of {0} models"), "colorMenu", J.i18n.GT.$ ("Color"), "computationMenu", J.i18n.GT.$ ("Computation"), "configurationMenuText", J.i18n.GT.$ ("Configurations ({0})"), "configurationComputedMenu", J.i18n.GT.$ ("Configurations"), "showConsole", J.i18n.GT.$ ("Console"), "renderCpkSpacefill", J.i18n.GT.$ ("CPK Spacefill"), "stereoCrossEyed", J.i18n.GT.$ ("Cross-eyed viewing"), "showState", J.i18n.GT.$ ("Current state"), "cyan", J.i18n.GT.$ ("Cyan"), "darkgray", J.i18n.GT.$ ("Dark Gray"), "measureDelete", J.i18n.GT.$ ("Delete measurements"), "SIGNEDJAVAcaptureOff", J.i18n.GT.$ ("Disable capturing"), "hideNotSelectedCB", J.i18n.GT.$ ("Display Selected Only"), "distanceAngstroms", J.i18n.GT.$ ("Distance units Angstroms"), "distanceNanometers", J.i18n.GT.$ ("Distance units nanometers"), "distancePicometers", J.i18n.GT.$ ("Distance units picometers"), "distanceHz", J.i18n.GT.$ ("Distance units hz (NMR J-coupling)"), "ssbondMenu", J.i18n.GT.$ ("Disulfide Bonds"), "[color_ssbonds]Menu", null, "DNA", J.i18n.GT.$ ("DNA"), "surfDots", J.i18n.GT.$ ("Dot Surface"), "dotted", J.i18n.GT.$ ("Dotted"), "measureOff", J.i18n.GT.$ ("Double-Click begins and ends all measurements"), "cpk", J.i18n.GT.$ ("Element (CPK)"), "elementsComputedMenu", J.i18n.GT.$ ("Element"), "SIGNEDJAVAcaptureEnd", J.i18n.GT.$ ("End capturing"), "exportMenu", J.i18n.GT.$ ("Export"), "extractMOL", J.i18n.GT.$ ("Extract MOL data"), "showFile", J.i18n.GT.$ ("File Contents"), "showFileHeader", J.i18n.GT.$ ("File Header"), "fileMenu", J.i18n.GT.$ ("File"), "formalcharge", J.i18n.GT.$ ("Formal Charge"), "front", J.i18n.GT.$ ("Front"), "gcPairs", J.i18n.GT.$ ("GC pairs"), "gold", J.i18n.GT.$ ("Gold"), "gray", J.i18n.GT.$ ("Gray"), "green", J.i18n.GT.$ ("Green"), "group#PDB", J.i18n.GT.$ ("Group"), "groupsText", J.i18n.GT.$ ("groups: {0}"), "PDBheteroMenu", J.i18n.GT.$ ("Hetero"), "off#axes", J.i18n.GT.$ ("Hide"), "showHistory", J.i18n.GT.$ ("History"), "hbondMenu", J.i18n.GT.$ ("Hydrogen Bonds"), "[color_hbonds]Menu", null, "pickIdent", J.i18n.GT.$ ("Identity"), "indigo", J.i18n.GT.$ ("Indigo"), "none", J.i18n.GT.$ ("Inherit"), "invertSelection", J.i18n.GT.$ ("Invert Selection"), "showIsosurface", J.i18n.GT.$ ("Isosurface JVXL data"), "help", J.i18n.GT.$ ("Jmol Script Commands"), "pickLabel", J.i18n.GT.$ ("Label"), "labelMenu", J.i18n.GT.$ ("Labels"), "[color_labels]Menu", null, "languageComputedMenu", J.i18n.GT.$ ("Language"), "left", J.i18n.GT.$ ("Left"), "Ligand", J.i18n.GT.$ ("Ligand"), "lightgray", J.i18n.GT.$ ("Light Gray"), "measureList", J.i18n.GT.$ ("List measurements"), "loadBiomoleculeText", J.i18n.GT.$ ("load biomolecule {0} ({1} atoms)"), "SIGNEDloadFileUnitCell", J.i18n.GT.$ ("Load full unit cell"), "loadMenu", J.i18n.GT.$ ("Load"), "loop", J.i18n.GT.$ ("Loop"), "labelLowerLeft", J.i18n.GT.$ ("Lower Left"), "labelLowerRight", J.i18n.GT.$ ("Lower Right"), "mainMenuText", J.i18n.GT.$ ("Main Menu"), "opaque", J.i18n.GT.$ ("Make Opaque"), "surfOpaque", null, "translucent", J.i18n.GT.$ ("Make Translucent"), "surfTranslucent", null, "maroon", J.i18n.GT.$ ("Maroon"), "measureMenu", J.i18n.GT.$ ("Measurements"), "showMeasure", null, "modelMenuText", J.i18n.GT.$ ("model {0}"), "hiddenModelSetText", J.i18n.GT.$ ("Model information"), "modelkit", J.i18n.GT.$ ("Model kit"), "showModel", J.i18n.GT.$ ("Model"), "FRAMESbyModelComputedMenu", J.i18n.GT.$ ("Model/Frame"), "modelKitMode", J.i18n.GT.$ ("modelKitMode"), "surf2MEP", J.i18n.GT.$ ("Molecular Electrostatic Potential (range -0.1 0.1)"), "surfMEP", J.i18n.GT.$ ("Molecular Electrostatic Potential (range ALL)"), "showMo", J.i18n.GT.$ ("Molecular orbital JVXL data"), "surfMoComputedMenuText", J.i18n.GT.$ ("Molecular Orbitals ({0})"), "surfMolecular", J.i18n.GT.$ ("Molecular Surface"), "molecule", J.i18n.GT.$ ("Molecule"), "monomer#PDB", J.i18n.GT.$ ("Monomer"), "mouse", J.i18n.GT.$ ("Mouse Manual"), "nextframe", J.i18n.GT.$ ("Next Frame"), "modelSetMenu", J.i18n.GT.$ ("No atoms loaded"), "exceptWater", J.i18n.GT.$ ("Nonaqueous HETATM") + " (hetero and not water)", "nonWaterSolvent", J.i18n.GT.$ ("Nonaqueous Solvent") + " (solvent and not water)", "PDBnoneOfTheAbove", J.i18n.GT.$ ("None of the above"), "selectNone", J.i18n.GT.$ ("None"), "stereoNone", null, "labelNone", null, "nonpolar", J.i18n.GT.$ ("Nonpolar Residues"), "PDBnucleicMenu", J.i18n.GT.$ ("Nucleic"), "atomNone", J.i18n.GT.$ ("Off"), "bondNone", null, "hbondNone", null, "ssbondNone", null, "structureNone", null, "vibrationOff", null, "vectorOff", null, "spinOff", null, "pickOff", null, "surfOff", null, "olive", J.i18n.GT.$ ("Olive"), "bondWireframe", J.i18n.GT.$ ("On"), "hbondWireframe", null, "ssbondWireframe", null, "vibrationOn", null, "vectorOn", null, "spinOn", null, "on", null, "SIGNEDloadPdb", J.i18n.GT.$ ("Open from PDB"), "SIGNEDloadFile", J.i18n.GT.$ ("Open local file"), "SIGNEDloadScript", J.i18n.GT.$ ("Open script"), "SIGNEDloadUrl", J.i18n.GT.$ ("Open URL"), "minimize", J.i18n.GT.$ ("Optimize structure"), "orange", J.i18n.GT.$ ("Orange"), "orchid", J.i18n.GT.$ ("Orchid"), "showOrient", J.i18n.GT.$ ("Orientation"), "palindrome", J.i18n.GT.$ ("Palindrome"), "partialcharge", J.i18n.GT.$ ("Partial Charge"), "pause", J.i18n.GT.$ ("Pause"), "perspectiveDepthCB", J.i18n.GT.$ ("Perspective Depth"), "byPixelMenu", J.i18n.GT.$ ("Pixel Width"), "onceThrough", J.i18n.GT.$ ("Play Once"), "play", J.i18n.GT.$ ("Play"), "polar", J.i18n.GT.$ ("Polar Residues"), "polymersText", J.i18n.GT.$ ("polymers: {0}"), "labelPositionMenu", J.i18n.GT.$ ("Position Label on Atom"), "prevframe", J.i18n.GT.$ ("Previous Frame"), "PDBproteinMenu", J.i18n.GT.$ ("Protein"), "colorrasmolCB", J.i18n.GT.$ ("RasMol Colors"), "red", J.i18n.GT.$ ("Red"), "stereoRedBlue", J.i18n.GT.$ ("Red+Blue glasses"), "stereoRedCyan", J.i18n.GT.$ ("Red+Cyan glasses"), "stereoRedGreen", J.i18n.GT.$ ("Red+Green glasses"), "SIGNEDJAVAcaptureOn", J.i18n.GT.$ ("Re-enable capturing"), "FILEUNITninePoly", J.i18n.GT.$ ("Reload + Polyhedra"), "reload", J.i18n.GT.$ ("Reload"), "restart", J.i18n.GT.$ ("Restart"), "resume", J.i18n.GT.$ ("Resume"), "playrev", J.i18n.GT.$ ("Reverse"), "rewind", J.i18n.GT.$ ("Rewind"), "ribbons", J.i18n.GT.$ ("Ribbons"), "[color_ribbon]sMenu", null, "right", J.i18n.GT.$ ("Right"), "RNA", J.i18n.GT.$ ("RNA"), "rockets", J.i18n.GT.$ ("Rockets"), "[color_rockets]Menu", null, "salmon", J.i18n.GT.$ ("Salmon"), "writeFileTextVARIABLE", J.i18n.GT.$ ("Save a copy of {0}"), "SIGNEDwriteJmol", J.i18n.GT.$ ("Save as PNG/JMOL (image+zip)"), "SIGNEDwriteIsosurface", J.i18n.GT.$ ("Save JVXL isosurface"), "writeHistory", J.i18n.GT.$ ("Save script with history"), "writeState", J.i18n.GT.$ ("Save script with state"), "saveMenu", J.i18n.GT.$ ("Save"), "sceneComputedMenu", J.i18n.GT.$ ("Scenes"), "renderSchemeMenu", J.i18n.GT.$ ("Scheme"), "aaStructureMenu", J.i18n.GT.$ ("Secondary Structure"), "structure#PDB", null, "selectMenuText", J.i18n.GT.$ ("Select ({0})"), "pickAtom", J.i18n.GT.$ ("Select atom"), "PDBpickChain", J.i18n.GT.$ ("Select chain"), "pickElement", J.i18n.GT.$ ("Select element"), "PDBpickGroup", J.i18n.GT.$ ("Select group"), "pickMolecule", J.i18n.GT.$ ("Select molecule"), "SYMMETRYpickSite", J.i18n.GT.$ ("Select site"), "showSelectionsCB", J.i18n.GT.$ ("Selection Halos"), "SIGNEDJAVAcaptureFpsSPECIAL", J.i18n.GT.$ ("Set capture replay rate"), "[set_spin_FPS]Menu", J.i18n.GT.$ ("Set FPS"), "FRAMESanimFpsMenu", null, "PDBhbondBackbone", J.i18n.GT.$ ("Set H-Bonds Backbone"), "PDBhbondSidechain", J.i18n.GT.$ ("Set H-Bonds Side Chain"), "pickingMenu", J.i18n.GT.$ ("Set picking"), "PDBssbondBackbone", J.i18n.GT.$ ("Set SS-Bonds Backbone"), "PDBssbondSidechain", J.i18n.GT.$ ("Set SS-Bonds Side Chain"), "[set_spin_X]Menu", J.i18n.GT.$ ("Set X Rate"), "[set_spin_Y]Menu", J.i18n.GT.$ ("Set Y Rate"), "[set_spin_Z]Menu", J.i18n.GT.$ ("Set Z Rate"), "shapely#PDB", J.i18n.GT.$ ("Shapely"), "showHydrogensCB", J.i18n.GT.$ ("Show Hydrogens"), "showMeasurementsCB", J.i18n.GT.$ ("Show Measurements"), "SYMMETRYpickSymmetry", J.i18n.GT.$ ("Show symmetry operation"), "showMenu", J.i18n.GT.$ ("Show"), "proteinSideChains", J.i18n.GT.$ ("Side Chains"), "slateblue", J.i18n.GT.$ ("Slate Blue"), "SYMMETRYShowComputedMenu", J.i18n.GT.$ ("Space Group"), "showSpacegroup", null, "spectraMenu", J.i18n.GT.$ ("Spectra"), "spinMenu", J.i18n.GT.$ ("Spin"), "pickSpin", null, "SIGNEDJAVAcaptureBegin", J.i18n.GT.$ ("Start capturing"), "stereoMenu", J.i18n.GT.$ ("Stereographic"), "renderSticks", J.i18n.GT.$ ("Sticks"), "stop", J.i18n.GT.$ ("Stop"), "strands", J.i18n.GT.$ ("Strands"), "[color_strands]Menu", null, "PDBstructureMenu", J.i18n.GT.$ ("Structures"), "colorPDBStructuresMenu", null, "renderMenu", J.i18n.GT.$ ("Style"), "[color_isosurface]Menu", J.i18n.GT.$ ("Surfaces"), "surfaceMenu", null, "SYMMETRYSelectComputedMenu", J.i18n.GT.$ ("Symmetry"), "SYMMETRYshowSymmetry", null, "FILEUNITMenu", null, "systemMenu", J.i18n.GT.$ ("System"), "relativeTemperature#BFACTORS", J.i18n.GT.$ ("Temperature (Relative)"), "fixedTemperature#BFACTORS", J.i18n.GT.$ ("Temperature (Fixed)"), "SIGNEDJAVAcaptureLoopingSPECIAL", J.i18n.GT.$ ("Toggle capture looping"), "top", JU.PT.split (J.i18n.GT.$ ("Top[as in \"view from the top, from above\" - (translators: remove this bracketed part]"), "[")[0], "PDBrenderTraceOnly", J.i18n.GT.$ ("Trace"), "trace", null, "[color_trace]Menu", null, "translations", J.i18n.GT.$ ("Translations"), "noCharge", J.i18n.GT.$ ("Uncharged Residues"), "[color_UNITCELL]Menu", J.i18n.GT.$ ("Unit cell"), "UNITCELLshow", null, "[set_UNITCELL]Menu", null, "showUNITCELLCB", null, "labelUpperLeft", J.i18n.GT.$ ("Upper Left"), "labelUpperRight", J.i18n.GT.$ ("Upper Right"), "surfVDW", J.i18n.GT.$ ("van der Waals Surface"), "VIBRATIONvectorMenu", J.i18n.GT.$ ("Vectors"), "property_vxyz#VIBRATION", null, "[color_vectors]Menu", null, "VIBRATIONMenu", J.i18n.GT.$ ("Vibration"), "viewMenuText", J.i18n.GT.$ ("View {0}"), "viewMenu", J.i18n.GT.$ ("View"), "violet", J.i18n.GT.$ ("Violet"), "stereoWallEyed", J.i18n.GT.$ ("Wall-eyed viewing"), "white", J.i18n.GT.$ ("White"), "renderWireframe", J.i18n.GT.$ ("Wireframe"), "labelName", J.i18n.GT.$ ("With Atom Name"), "labelNumber", J.i18n.GT.$ ("With Atom Number"), "labelSymbol", J.i18n.GT.$ ("With Element Symbol"), "yellow", J.i18n.GT.$ ("Yellow"), "zoomIn", J.i18n.GT.$ ("Zoom In"), "zoomOut", J.i18n.GT.$ ("Zoom Out"), "zoomMenu", J.i18n.GT.$ ("Zoom"), "vector005", J.i18n.GT.o (ang, "0.05"), "bond100", J.i18n.GT.o (ang, "0.10"), "hbond100", null, "ssbond100", null, "vector01", null, "10a", null, "bond150", J.i18n.GT.o (ang, "0.15"), "hbond150", null, "ssbond150", null, "bond200", J.i18n.GT.o (ang, "0.20"), "hbond200", null, "ssbond200", null, "20a", null, "bond250", J.i18n.GT.o (ang, "0.25"), "hbond250", null, "ssbond250", null, "25a", null, "bond300", J.i18n.GT.o (ang, "0.30"), "hbond300", null, "ssbond300", null, "50a", J.i18n.GT.o (ang, "0.50"), "100a", J.i18n.GT.o (ang, "1.0"), "1p", J.i18n.GT.i (pxl, 1), "10p", J.i18n.GT.i (pxl, 10), "3p", J.i18n.GT.i (pxl, 3), "vector3", null, "5p", J.i18n.GT.i (pxl, 5), "atom100", J.i18n.GT.i (vdw, 100), "atom15", J.i18n.GT.i (vdw, 15), "atom20", J.i18n.GT.i (vdw, 20), "atom25", J.i18n.GT.i (vdw, 25), "atom50", J.i18n.GT.i (vdw, 50), "atom75", J.i18n.GT.i (vdw, 75), "SIGNEDNOGLwriteIdtf", J.i18n.GT.o (exm, "IDTF"), "SIGNEDNOGLwriteMaya", J.i18n.GT.o (exm, "Maya"), "SIGNEDNOGLwriteVrml", J.i18n.GT.o (exm, "VRML"), "SIGNEDNOGLwriteX3d", J.i18n.GT.o (exm, "X3D"), "SIGNEDNOGLwriteSTL", J.i18n.GT.o (exm, "STL"), "SIGNEDNOGLwriteGif", J.i18n.GT.o (exi, "GIF"), "SIGNEDNOGLwriteJpg", J.i18n.GT.o (exi, "JPG"), "SIGNEDNOGLwritePng", J.i18n.GT.o (exi, "PNG"), "SIGNEDNOGLwritePngJmol", J.i18n.GT.o (exi, "PNG+JMOL"), "SIGNEDNOGLwritePovray", J.i18n.GT.o (exi, "POV-Ray"), "FILEUNITnineRestricted", J.i18n.GT.o (J.i18n.GT.$ ("Reload {0} + Display {1}"),  Clazz_newArray (-1, ["{444 666 1}", "555"])), "FILEMOLload", J.i18n.GT.o (rld, "(molecular)"), "FILEUNITone", J.i18n.GT.o (rld, "{1 1 1}"), "FILEUNITnine", J.i18n.GT.o (rld, "{444 666 1}"), "vectorScale02", J.i18n.GT.o (scl, "0.2"), "vectorScale05", J.i18n.GT.o (scl, "0.5"), "vectorScale1", J.i18n.GT.o (scl, "1"), "vectorScale2", J.i18n.GT.o (scl, "2"), "vectorScale5", J.i18n.GT.o (scl, "5"), "surfSolvent14", J.i18n.GT.o (J.i18n.GT.$ ("Solvent Surface ({0}-Angstrom probe)"), "1.4"), "surfSolventAccessible14", J.i18n.GT.o (J.i18n.GT.$ ("Solvent-Accessible Surface (VDW + {0} Angstrom)"), "1.4"), "vibration20", "*2", "vibration05", "/2", "JAVAmemTotal", "?", "JAVAmemMax", null, "JAVAprocessors", null, "s0", "0", "animfps10", "10", "s10", null, "zoom100", "100%", "zoom150", "150%", "animfps20", "20", "s20", null, "zoom200", "200%", "animfps30", "30", "s30", null, "s40", "40", "zoom400", "400%", "animfps5", "5", "s5", null, "animfps50", "50", "s50", null, "zoom50", "50%", "zoom800", "800%", "JSConsole", J.i18n.GT.$ ("JavaScript Console"), "jmolMenu", "Jmol", "date", JV.JC.date, "version", JV.JC.version, "javaVender", JV.Viewer.strJavaVendor, "javaVersion", JV.Viewer.strJavaVersion, "os", JV.Viewer.strOSName, "jmolorg", "http://www.jmol.org"]);
 J.i18n.GT.setDoTranslate (wasTranslating);
 for (var i = 1, n = words.length; i < n; i += 2) if (words[i] == null) words[i] = words[i - 2];
 
@@ -1702,6 +1717,11 @@ function (e) {
 var jmi = e.getSource ();
 this.popup.menuFocusCallback (jmi.getName (), jmi.getActionCommand (), false);
 }, "java.awt.event.MouseEvent");
+Clazz_overrideMethod (c$, "dispose", 
+function (popupMenu) {
+this.menuClearListeners (popupMenu);
+this.popup = null;
+}, "J.api.SC");
 });
 })(Clazz
 ,Clazz.getClassName

@@ -248,7 +248,7 @@ modInfo.put ("rsvs", this.rsvs);
 modInfo.put ("sigma", this.sigma.getArray ());
 modInfo.put ("symop", Integer.$valueOf (this.iop + 1));
 modInfo.put ("strop", this.strop);
-modInfo.put ("unitcell", this.symmetry.getUnitCellInfo ());
+modInfo.put ("unitcell", this.symmetry.getUnitCellInfo (true));
 var mInfo =  new JU.Lst ();
 for (var i = 0; i < this.mods.size (); i++) mInfo.addLast (this.mods.get (i).getInfo ());
 

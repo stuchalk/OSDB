@@ -115,7 +115,7 @@ var tag = J.c.STR.NONE;
 var code = JM.AlphaPolymer.Code.NADA;
 var runLength = 0;
 for (var i = 0; i < this.monomerCount; ++i) {
-if (codes[i] === code && code !== JM.AlphaPolymer.Code.NADA && code !== JM.AlphaPolymer.Code.BETA_SHEET) {
+if (codes[i] === code && code !== JM.AlphaPolymer.Code.NADA) {
 ++runLength;
 if (runLength == 4) {
 tag = (code === JM.AlphaPolymer.Code.BETA_SHEET ? J.c.STR.SHEET : J.c.STR.HELIX);

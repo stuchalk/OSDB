@@ -11,6 +11,9 @@ this.shadesB = null;
 this.xA = 0;
 this.yA = 0;
 this.zA = 0;
+this.xAend = 0;
+this.yAend = 0;
+this.zAend = 0;
 this.dxB = 0;
 this.dyB = 0;
 this.dzB = 0;
@@ -490,7 +493,7 @@ var xT;
 var yT;
 var zT;
 if (isPrecise) {
-if (this.dzBf == 0 || !this.g3d.setC (this.colixEndcap)) return;
+if (this.dzBf == 0 || this.colixEndcap == 0 || !this.g3d.setC (this.colixEndcap)) return;
 var xTf = this.xAf;
 var yTf = this.yAf;
 var zTf = this.zAf;
@@ -502,10 +505,10 @@ zTf += this.dzBf;
 yT = Clazz.floatToInt (yTf);
 zT = Clazz.floatToInt (zTf);
 } else {
-if (this.dzB == 0 || !this.g3d.setC (this.colixEndcap)) return;
-xT = this.xA;
-yT = this.yA;
-zT = this.zA;
+if (this.dzB == 0 || this.colixEndcap == 0 || !this.g3d.setC (this.colixEndcap)) return;
+xT = this.xAend;
+yT = this.yAend;
+zT = this.zAend;
 if (isCylinder && this.dzB < 0) {
 xT += this.dxB;
 yT += this.dyB;
@@ -565,24 +568,35 @@ this.radius2 = this.radius * this.radius;
 this.endCapHidden = false;
 var dzf = (isFloat ? this.dzBf : this.dzB);
 if (this.endcaps == 3 || dzf == 0) return;
-this.xEndcap = this.xA;
-this.yEndcap = this.yA;
-this.zEndcap = this.zA;
+this.xEndcap = this.xAend = this.xA;
+this.yEndcap = this.yAend = this.yA;
+this.zEndcap = this.zAend = this.zA;
 var shadesEndcap;
 var dxf = (isFloat ? this.dxBf : this.dxB);
 var dyf = (isFloat ? this.dyBf : this.dyB);
 if (dzf >= 0 || !tCylinder) {
 this.endcapShadeIndex = this.shader.getShadeIndex (-dxf, -dyf, dzf);
-this.colixEndcap = this.colixA;
-shadesEndcap = this.shadesA;
-} else {
-this.endcapShadeIndex = this.shader.getShadeIndex (dxf, dyf, -dzf);
+if (this.colixA == 0) {
+this.xAend += Clazz.doubleToInt (this.dxB / 2);
+this.yAend += Clazz.doubleToInt (this.dyB / 2);
+this.zAend += Clazz.doubleToInt (this.dzB / 2);
 this.colixEndcap = this.colixB;
-shadesEndcap = this.shadesB;
+} else {
+this.colixEndcap = this.colixA;
+}} else {
+this.endcapShadeIndex = this.shader.getShadeIndex (dxf, dyf, -dzf);
+if (this.colixB == 0) {
+this.colixEndcap = this.colixA;
+this.xAend -= Clazz.doubleToInt (this.dxB / 2);
+this.yAend -= Clazz.doubleToInt (this.dyB / 2);
+this.zAend -= Clazz.doubleToInt (this.dzB / 2);
+} else {
+this.colixEndcap = this.colixB;
 this.xEndcap += this.dxB;
 this.yEndcap += this.dyB;
 this.zEndcap += this.dzB;
-}if (this.endcapShadeIndex > 56) this.endcapShadeIndex = 56;
+}}shadesEndcap = (this.colixEndcap == this.colixA ? this.shadesA : this.shadesB);
+if (this.endcapShadeIndex > 56) this.endcapShadeIndex = 56;
 this.argbEndcap = shadesEndcap[this.endcapShadeIndex];
 this.endCapHidden = (this.endcaps == 1);
 }, "~B,~B");

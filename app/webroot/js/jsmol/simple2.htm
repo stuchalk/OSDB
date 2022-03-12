@@ -15,7 +15,7 @@
 
 ////// special stuff just for this particular page
 
-var s = unescape(document.location.search);
+var s = unescape(document.location.search).split("&fbclid")[0].split("?fbclid")[0];
 var defaultDisplay = ';set antialiasdisplay;set measurementUnits angstroms;set zoomlarge false;'
 
 var script = 'set errorCallback "myCallback";'
@@ -126,9 +126,9 @@ $(document).ready(function(){
 			+ "    "
 			+ Jmol.jmolLink(jmol,"set modelkitmode off", "off")
 			+ "<br>Display calculated MMFF94 energy "
-			+ Jmol.jmolLink(jmol,"set minimizationSteps 200;set loadstructcallback 'minimize energy';set minimizationcallback '';set echo top left;echo @{'' + _minimizationEnergy + ' ' + energyUnits + '/mol'};minimize energy", "on")
+			+ Jmol.jmolLink(jmol,"function atomMoved(){set echo top left;minimize energy;echo @{'' + _minimizationEnergy + ' ' + energyUnits + '/mol'}};set minimizationSteps 200;set atomMovedCallback 'jmolscript:atomMoved()';set loadstructcallback 'minimize energy';set minimizationcallback '';set echo top left;echo @{'' + _minimizationEnergy + ' ' + energyUnits + '/mol'};minimize energy", "on")
 			+ "    "
-			+ Jmol.jmolLink(jmol,"echo @{''};set minimizationCallback '';set loadstructcallback ''", "off")
+			+ Jmol.jmolLink(jmol,"echo @{''};set atomMovedCallback '';minimizationCallback '';set loadstructcallback ''", "off")
 			+ "<br>Energy Units "
 			+ Jmol.jmolLink(jmol,"set energyunits kcal;minimize energy", "kcal/mol")
 			+ "    "

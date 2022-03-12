@@ -9,6 +9,7 @@ this.ac = 0;
 this.title = null;
 this.quiet = false;
 this.defaultLabels = null;
+this.unitCellData = null;
 this.elementLabel = null;
 this.radiusPt = -2147483648;
 this.elementPt = -2147483648;
@@ -34,6 +35,7 @@ this.asc.setAtomSetName (this.title + (titleMsg == null ? "" : "[" + titleMsg + 
 }, "~S");
 Clazz.overrideMethod (c$, "finalizeSubclassReader", 
 function () {
+if (!this.iHaveFractionalCoordinates) this.fractionalizeCoordinates (true);
 if (!this.haveAtomLabels && !this.atomsLabeledInline) this.appendLoadNote ("VASP POSCAR reader using pseudo atoms Al B C Db...");
 this.finalizeReaderASCR ();
 });
@@ -44,17 +46,14 @@ this.setFractionalCoordinates (true);
 this.scaleFac = this.parseFloatStr (this.rdline ().trim ());
 var isVolume = (this.scaleFac < 0);
 if (isVolume) this.scaleFac = Math.pow (-this.scaleFac, 0.3333333333333333);
-var unitCellData =  Clazz.newFloatArray (9, 0);
+this.unitCellData =  Clazz.newFloatArray (9, 0);
 var s = this.rdline () + " " + this.rdline () + " " + this.rdline ();
-JU.Parser.parseStringInfestedFloatArray (s, null, unitCellData);
+JU.Parser.parseStringInfestedFloatArray (s, null, this.unitCellData);
 if (isVolume) {
-var m = JU.M3.newA9 (unitCellData);
+var m = JU.M3.newA9 (this.unitCellData);
 this.scaleFac /= m.determinant3 ();
-}if (this.scaleFac != 1) for (var i = 0; i < unitCellData.length; i++) unitCellData[i] *= this.scaleFac;
+}if (this.scaleFac != 1) for (var i = 0; i < this.unitCellData.length; i++) this.unitCellData[i] *= this.scaleFac;
 
-this.addExplicitLatticeVector (0, unitCellData, 0);
-this.addExplicitLatticeVector (1, unitCellData, 3);
-this.addExplicitLatticeVector (2, unitCellData, 6);
 });
 Clazz.defineMethod (c$, "readMolecularFormula", 
 function () {
@@ -93,17 +92,23 @@ function () {
 var isSelective = this.discardLinesUntilNonBlank ().toLowerCase ().contains ("selective");
 if (isSelective) this.rd ();
 var isCartesian = (this.line.toLowerCase ().contains ("cartesian"));
-if (isCartesian) this.setFractionalCoordinates (false);
+if (isCartesian) {
+this.setFractionalCoordinates (false);
+}this.addExplicitLatticeVector (0, this.unitCellData, 0);
+this.addExplicitLatticeVector (1, this.unitCellData, 3);
+this.addExplicitLatticeVector (2, this.unitCellData, 6);
 for (var i = 0; i < this.ac; i++) {
 var radius = NaN;
 var tokens = JU.PT.getTokens (this.rdline ());
 if (this.radiusPt == -2147483648) {
-for (var j = tokens.length; --j > 2; ) if (tokens[j].equals ("radius")) {
+for (var j = tokens.length; --j > 2; ) {
+var t = tokens[j];
+if (t.equals ("radius")) {
 this.radiusPt = j + 1;
-} else if (this.getElement (tokens[j]) != null) {
+} else if (!t.equals ("T") && !t.equals ("F") && this.getElement (t) != null) {
 this.elementPt = j;
 this.atomsLabeledInline = true;
-}
+}}
 }if (this.radiusPt >= 0) radius = this.parseFloatStr (tokens[this.radiusPt]);
 var label = (this.atomsLabeledInline ? tokens[this.elementPt] : this.atomLabels.get (i));
 if (isCartesian) for (var j = 0; j < 3; j++) tokens[j] = "" + this.parseFloatStr (tokens[j]) * this.scaleFac;

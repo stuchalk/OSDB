@@ -107,10 +107,10 @@ var y = this.parseFloatRange (this.line, 37, 57);
 var z = this.parseFloatRange (this.line, 57, 77);
 if (Float.isNaN (x) || Float.isNaN (y) || Float.isNaN (z)) break;
 var atom = this.asc.addNewAtom ();
-atom.elementSymbol = J.adapter.smarter.AtomSetCollectionReader.getElementSymbol (this.parseIntRange (this.line, 11, 14));
-atom.atomName = atom.elementSymbol + (++n);
 this.setAtomCoordXYZ (atom, x * 0.5291772, y * 0.5291772, z * 0.5291772);
-this.atomNames.addLast (atomName);
+var atomicNumber = this.parseIntRange (this.line, 11, 14);
+atom.elementSymbol = J.adapter.smarter.AtomSetCollectionReader.getElementSymbol (atomicNumber);
+this.setAtom (atom, atomicNumber, atom.elementSymbol + (++n), atomName);
 }
 });
 Clazz.defineMethod (c$, "readAtomsInAngstromCoordinates", 
@@ -127,9 +127,9 @@ var z = this.parseFloatRange (this.line, 46, 61);
 if (Float.isNaN (x) || Float.isNaN (y) || Float.isNaN (z)) break;
 var atom = this.asc.addNewAtom ();
 this.setAtomCoordXYZ (atom, x, y, z);
-atom.elementSymbol = J.adapter.smarter.AtomSetCollectionReader.getElementSymbol (this.parseIntRange (this.line, 11, 14));
-atom.atomName = atom.elementSymbol + (++n);
-this.atomNames.addLast (atomName);
+var atomicNumber = this.parseIntRange (this.line, 11, 14);
+atom.elementSymbol = J.adapter.smarter.AtomSetCollectionReader.getElementSymbol (atomicNumber);
+this.setAtom (atom, atomicNumber, atom.elementSymbol + (++n), atomName);
 }
 if (this.line.indexOf ("COORDINATES OF FRAGMENT MULTIPOLE CENTERS (ANGS)") >= 0) {
 this.rd ();

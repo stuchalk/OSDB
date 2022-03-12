@@ -1,3 +1,0 @@
-Jmol.___JSVDate="$Date: 2020-09-26 05:35:55 -0500 (Sat, 26 Sep 2020) $"
-Jmol.___JSVSvnRev="$LastChangedRevision: 22034 $"
-Jmol.___JSVVersion="14.31.8"

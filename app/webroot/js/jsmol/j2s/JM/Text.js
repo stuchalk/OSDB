@@ -96,7 +96,6 @@ return t;
 Clazz.defineMethod (c$, "set", 
  function (font, colix, align, scalePixelsPerMicron) {
 this.scalePixelsPerMicron = scalePixelsPerMicron;
-this.isEcho = this.isEcho;
 this.colix = colix;
 this.align = align;
 this.setFont (font, !this.isEcho);

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JSV.app");
-Clazz.load (["JSV.api.JSVAppInterface", "$.PanelListener"], "JSV.app.JSVApp", ["java.lang.Double", "JU.Lst", "$.PT", "JSV.common.Coordinate", "$.JSVFileManager", "$.JSVersion", "$.JSViewer", "$.PeakPickEvent", "$.ScriptToken", "$.SubSpecChangeEvent", "$.ZoomEvent", "JU.Logger"], function () {
+Clazz.load (["JSV.api.JSVAppInterface", "$.PanelListener", "$.ScriptInterface"], "JSV.app.JSVApp", ["java.lang.Double", "JU.Lst", "$.PT", "JSV.common.Coordinate", "$.JSVFileManager", "$.JSVersion", "$.JSViewer", "$.PeakPickEvent", "$.ScriptToken", "$.SubSpecChangeEvent", "$.ZoomEvent", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.appletFrame = null;
 this.isNewWindow = false;
@@ -11,7 +11,7 @@ this.syncCallbackFunctionName = null;
 this.vwr = null;
 this.prevPanel = null;
 Clazz.instantialize (this, arguments);
-}, JSV.app, "JSVApp", null, [JSV.api.PanelListener, JSV.api.JSVAppInterface]);
+}, JSV.app, "JSVApp", null, [JSV.api.PanelListener, JSV.api.JSVAppInterface, JSV.api.ScriptInterface]);
 Clazz.makeConstructor (c$, 
 function (appletFrame, isJS) {
 this.appletFrame = appletFrame;

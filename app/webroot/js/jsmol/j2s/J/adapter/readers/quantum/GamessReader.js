@@ -1,11 +1,22 @@
 Clazz.declarePackage ("J.adapter.readers.quantum");
-Clazz.load (["J.adapter.readers.quantum.MOReader"], "J.adapter.readers.quantum.GamessReader", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.PT", "J.adapter.readers.quantum.BasisFunctionReader", "JU.Logger"], function () {
+Clazz.load (["J.adapter.readers.quantum.MopacSlaterReader"], "J.adapter.readers.quantum.GamessReader", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.PT", "J.adapter.readers.quantum.BasisFunctionReader", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.atomNames = null;
 this.calcOptions = null;
 this.isTypeSet = false;
 Clazz.instantialize (this, arguments);
-}, J.adapter.readers.quantum, "GamessReader", J.adapter.readers.quantum.MOReader);
+}, J.adapter.readers.quantum, "GamessReader", J.adapter.readers.quantum.MopacSlaterReader);
+Clazz.defineMethod (c$, "initializeReader", 
+function () {
+this.allowMopacDCoef = false;
+Clazz.superCall (this, J.adapter.readers.quantum.GamessReader, "initializeReader", []);
+});
+Clazz.defineMethod (c$, "setAtom", 
+function (atom, atomicNumber, name, id) {
+atom.elementNumber = atomicNumber;
+atom.atomName = name;
+this.atomNames.addLast (id == null ? name : id);
+}, "J.adapter.smarter.Atom,~N,~S,~S");
 Clazz.defineMethod (c$, "readEnergy", 
 function () {
 var searchTerm = "ENERGY";
@@ -172,6 +183,11 @@ var SCFtype = this.calcOptions.get ("contrl_options_SCFTYP");
 var Runtype = this.calcOptions.get ("contrl_options_RUNTYP");
 var igauss = this.calcOptions.get ("basis_options_IGAUSS");
 var gbasis = this.calcOptions.get ("basis_options_GBASIS");
+if (gbasis != null && "AM1  MNDO PM3  PM6  PM7  RM1".indexOf (gbasis) >= 0) {
+this.mopacBasis = J.adapter.readers.quantum.MopacSlaterReader.getMopacAtomZetaSPD (gbasis);
+this.getSlaters ();
+this.calculationType = gbasis;
+} else {
 var DFunc = !"0".equals (this.calcOptions.get ("basis_options_NDFUNC"));
 var PFunc = !"0".equals (this.calcOptions.get ("basis_options_NPFUNC"));
 var FFunc = !"0".equals (this.calcOptions.get ("basis_options_NFFUNC"));
@@ -236,7 +252,7 @@ this.calculationType += "MP" + perturb;
 }if (SCFtype != null) {
 if (this.calculationType.length > 0) this.calculationType += " ";
 this.calculationType += SCFtype + " " + Runtype;
-}}});
+}}}});
 Clazz.defineMethod (c$, "readControlInfo", 
 function () {
 this.readCalculationInfo ("contrl_options_");

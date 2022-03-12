@@ -14,9 +14,9 @@ Clazz.overrideMethod (c$, "setSizeRD",
 function (rd, bsSelected) {
 this.isActive = true;
 if (this.bsSizeSet == null) this.bsSizeSet =  new JU.BS ();
-var bsLength = Math.min (this.atoms.length, bsSelected.length ());
+var bsLength = Math.min (this.ms.at.length, bsSelected.length ());
 for (var i = bsSelected.nextSetBit (0); i >= 0 && i < bsLength; i = bsSelected.nextSetBit (i + 1)) {
-var atom = this.atoms[i];
+var atom = this.ms.at[i];
 atom.setMadAtom (this.vwr, rd);
 this.bsSizeSet.set (i);
 }
@@ -29,7 +29,7 @@ if (colix == 0) colix = 2;
 if (this.bsColixSet == null) this.bsColixSet =  new JU.BS ();
 var pid = J.c.PAL.pidOf (value);
 for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
-var atom = this.atoms[i];
+var atom = this.ms.at[i];
 atom.colixAtom = this.getColixA (colix, pid, atom);
 this.bsColixSet.setBitTo (i, colix != 2 || pid != J.c.PAL.NONE.id);
 atom.paletteID = pid;
@@ -47,7 +47,7 @@ color = Integer.$valueOf (values[n++]);
 var colix = JU.C.getColixO (color);
 if (colix == 0) colix = 2;
 var pid = J.c.PAL.pidOf (color);
-var atom = this.atoms[i];
+var atom = this.ms.at[i];
 atom.colixAtom = this.getColixA (colix, pid, atom);
 this.bsColixSet.setBitTo (i, colix != 2 || pid != J.c.PAL.NONE.id);
 atom.paletteID = pid;
@@ -58,18 +58,20 @@ var data = value;
 var colixes = data[0];
 if (this.bsColixSet == null) this.bsColixSet =  new JU.BS ();
 var c;
+var atoms = this.ms.at;
 for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
 if (i >= colixes.length || (c = colixes[i]) == 0) continue;
-this.atoms[i].colixAtom = c;
-this.atoms[i].paletteID = J.c.PAL.UNKNOWN.id;
+atoms[i].colixAtom = c;
+atoms[i].paletteID = J.c.PAL.UNKNOWN.id;
 this.bsColixSet.set (i);
 }
 return;
 }if ("translucency" === propertyName) {
 var isTranslucent = ((value).equals ("translucent"));
 if (this.bsColixSet == null) this.bsColixSet =  new JU.BS ();
+var atoms = this.ms.at;
 for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
-this.atoms[i].setTranslucent (isTranslucent, this.translucentLevel);
+atoms[i].setTranslucent (isTranslucent, this.translucentLevel);
 if (isTranslucent) this.bsColixSet.set (i);
 }
 return;
@@ -80,8 +82,9 @@ propertyName = propertyName.substring (4).intern ();
 Clazz.overrideMethod (c$, "setAtomClickability", 
 function () {
 var bsDeleted = this.vwr.slm.bsDeleted;
-for (var i = this.ac; --i >= 0; ) {
-var atom = this.atoms[i];
+for (var i = this.ms.ac; --i >= 0; ) {
+var atom = this.ms.at[i];
+if (atom == null) continue;
 atom.setClickable (0);
 if (bsDeleted != null && bsDeleted.get (i) || (atom.shapeVisibilityFlags & this.vf) == 0 || this.ms.isAtomHidden (i)) continue;
 atom.setClickable (this.vf);

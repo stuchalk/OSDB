@@ -257,9 +257,9 @@ return str.toString ();
 Clazz.defineMethod (c$, "getMoInfo", 
 function (modelIndex) {
 var sb =  new JU.SB ();
-for (var m = 0, mc = this.vwr.ms.mc; m < mc; m++) {
+for (var m = 0, mc = this.ms.mc; m < mc; m++) {
 if (modelIndex >= 0 && m != modelIndex) continue;
-var moData = this.vwr.ms.getInfo (m, "moData");
+var moData = this.ms.getInfo (m, "moData");
 if (moData == null) continue;
 var mos = (moData.get ("mos"));
 var nOrb = (mos == null ? 0 : mos.size ());
@@ -277,8 +277,8 @@ if (occ != null) type = "occupancy " + occ.floatValue () + " " + type;
 var sym = mo.get ("symmetry");
 if (sym != null) type += sym;
 var energy = "" + mo.get ("energy");
-if (Float.isNaN (JU.PT.parseFloat (energy))) sb.append (JU.PT.sprintf ("model %-2s; %s %-2i # %s\n", "ssis",  Clazz.newArray (-1, [this.vwr.ms.getModelNumberDotted (m), moType, Integer.$valueOf (i + 1), type])));
- else sb.append (JU.PT.sprintf ("model %-2s;  %s %-2i # energy %-8.3f %s %s\n", "ssifss",  Clazz.newArray (-1, [this.vwr.ms.getModelNumberDotted (m), moType, Integer.$valueOf (i + 1), mo.get ("energy"), units, type])));
+if (Float.isNaN (JU.PT.parseFloat (energy))) sb.append (JU.PT.sprintf ("model %-2s; %s %-2i # %s\n", "ssis",  Clazz.newArray (-1, [this.ms.getModelNumberDotted (m), moType, Integer.$valueOf (i + 1), type])));
+ else sb.append (JU.PT.sprintf ("model %-2s;  %s %-2i # energy %-8.3f %s %s\n", "ssifss",  Clazz.newArray (-1, [this.ms.getModelNumberDotted (m), moType, Integer.$valueOf (i + 1), mo.get ("energy"), units, type])));
 }
 }
 return sb.toString ();
@@ -290,6 +290,7 @@ Clazz.defineMethod (c$, "getSettings",
  function (strID) {
 this.thisModel = this.htModels.get (strID);
 if (this.thisModel == null || this.thisModel.get ("moNumber") == null) return false;
+this.nboType = this.thisModel.get ("nboType");
 this.moTranslucency = this.thisModel.get ("moTranslucency");
 this.moTranslucentLevel = this.thisModel.get ("moTranslucentLevel");
 this.moPlane = this.thisModel.get ("moPlane");
@@ -300,7 +301,6 @@ this.moCutoff = Float.$valueOf (0.05);
 }this.thisModel.put ("moCutoff", Float.$valueOf (this.moCutoff.floatValue ()));
 this.moResolution = this.thisModel.get ("moResolution");
 this.moScale = this.thisModel.get ("moScale");
-this.nboType = this.thisModel.get ("moType");
 this.moColorPos = this.thisModel.get ("moColorPos");
 this.moColorNeg = this.thisModel.get ("moColorNeg");
 this.moSquareData = this.thisModel.get ("moSquareData");
@@ -363,7 +363,7 @@ Clazz.overrideMethod (c$, "getShapeState",
 function () {
 if (this.htModels == null) return "";
 var s =  new JU.SB ();
-var modelCount = this.vwr.ms.mc;
+var modelCount = this.ms.mc;
 for (var iModel = 0; iModel < modelCount; iModel++) {
 if (!this.getSettings (this.getId (iModel))) continue;
 if (modelCount > 1) J.shape.Shape.appendCmd (s, "frame " + this.vwr.getModelNumberDotted (iModel));

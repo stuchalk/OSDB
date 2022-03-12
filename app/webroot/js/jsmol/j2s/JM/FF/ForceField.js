@@ -17,6 +17,7 @@ this.minAngles = null;
 this.minTorsions = null;
 this.minPositions = null;
 this.bsFixed = null;
+this.trustRadius = 0.3;
 this.minimizer = null;
 Clazz.instantialize (this, arguments);
 }, JM.FF, "ForceField");
@@ -37,9 +38,10 @@ this.calc.setConstraints (m.constraints);
 this.coordSaved = null;
 }, "JM.Minimizer");
 Clazz.defineMethod (c$, "steepestDescentInitialize", 
-function (stepMax, criterion) {
+function (stepMax, criterion, trustRadius) {
 this.stepMax = stepMax;
 this.criterion = criterion / this.toUserUnits (1);
+this.trustRadius = trustRadius;
 this.currentStep = 0;
 this.clearForces ();
 this.calc.setLoggingEnabled (true);
@@ -55,7 +57,7 @@ this.e0 = this.energyFull (false, false);
 s = JU.PT.sprintf (" Initial " + this.name + " E = %10.3f " + this.minimizer.units + "/mol criterion = %8.6f max steps = " + stepMax, "ff",  Clazz.newArray (-1, [Float.$valueOf (this.toUserUnits (this.e0)), Float.$valueOf (this.toUserUnits (criterion))]));
 this.minimizer.report (s, false);
 this.calc.appendLogData (s);
-}, "~N,~N");
+}, "~N,~N,~N");
 Clazz.defineMethod (c$, "clearForces", 
  function () {
 for (var i = 0; i < this.minAtomCount; i++) this.minAtoms[i].force[0] = this.minAtoms[i].force[1] = this.minAtoms[i].force[2] = 0;
@@ -161,29 +163,29 @@ return this.calc.energyES (gradients);
 }, "~B");
 Clazz.defineMethod (c$, "linearSearch", 
  function () {
-var step = 0.23;
-var trustRadius = 0.3;
-var trustRadius2 = trustRadius * trustRadius;
+var step = 0.75 * this.trustRadius;
+var trustRadius2 = this.trustRadius * this.trustRadius;
 var e1 = this.energyFull (false, true);
 for (var iStep = 0; iStep < 10; iStep++) {
 this.saveCoordinates ();
-for (var i = 0; i < this.minAtomCount; ++i) if (this.bsFixed == null || !this.bsFixed.get (i)) {
+for (var i = 0; i < this.minAtomCount; ++i) {
+if (this.bsFixed == null || !this.bsFixed.get (i)) {
 var force = this.minAtoms[i].force;
 var coord = this.minAtoms[i].coord;
 var f2 = (force[0] * force[0] + force[1] * force[1] + force[2] * force[2]);
 if (f2 > trustRadius2 / step / step) {
-f2 = trustRadius / Math.sqrt (f2) / step;
+f2 = this.trustRadius / Math.sqrt (f2) / step;
 force[0] *= f2;
 force[1] *= f2;
 force[2] *= f2;
 }for (var j = 0; j < 3; ++j) {
 if (JM.Util.isFinite (force[j])) {
 var tempStep = force[j] * step;
-if (tempStep > trustRadius) coord[j] += trustRadius;
- else if (tempStep < -trustRadius) coord[j] -= trustRadius;
+if (tempStep > this.trustRadius) coord[j] += this.trustRadius;
+ else if (tempStep < -this.trustRadius) coord[j] -= this.trustRadius;
  else coord[j] += tempStep;
 }}
-}
+}}
 var e2 = this.energyFull (false, true);
 if (JM.Util.isNear3 (e2, e1, 1.0e-3)) break;
 if (e2 > e1) {

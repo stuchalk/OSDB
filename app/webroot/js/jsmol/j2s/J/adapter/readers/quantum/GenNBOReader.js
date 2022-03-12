@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.readers.quantum");
-Clazz.load (["J.adapter.readers.quantum.MOReader"], "J.adapter.readers.quantum.GenNBOReader", ["java.lang.Boolean", "$.Exception", "$.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.P3", "$.PT", "$.Rdr", "$.SB", "J.adapter.readers.quantum.NBOParser", "JU.Logger", "JV.JC"], function () {
+Clazz.load (["J.adapter.readers.quantum.MOReader"], "J.adapter.readers.quantum.GenNBOReader", ["java.lang.Boolean", "$.Exception", "$.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.P3", "$.PT", "$.Rdr", "$.SB", "J.adapter.readers.quantum.NBOParser", "JU.Logger", "JV.FileManager", "$.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.isOutputFile = false;
 this.nboType = "";
@@ -104,7 +104,7 @@ return structures;
 });
 Clazz.defineMethod (c$, "getFileData", 
  function (ext) {
-var fileName = this.htParams.get ("fullPathName");
+var fileName = JV.FileManager.stripTypePrefix (this.htParams.get ("fullPathName"));
 var pt = fileName.lastIndexOf (".");
 if (pt < 0) pt = fileName.length;
 fileName = fileName.substring (0, pt);
@@ -118,6 +118,7 @@ fileName = fileName.substring (0, pt + 1) + ext;
 JU.Logger.info (data.length + " bytes read from " + fileName);
 var isError = (data.indexOf ("java.io.") >= 0);
 if (data.length == 0 || isError && this.nboType !== "AO") throw  new Exception (" supplemental file " + fileName + " was not found");
+if (!isError) J.adapter.readers.quantum.GenNBOReader.addAuxFile (this.moData, fileName, this.htParams);
 return (isError ? null : data);
 }, "~S");
 Clazz.defineMethod (c$, "getFile31", 
@@ -200,9 +201,6 @@ while (this.rd ().indexOf ("$END") < 0) {
 var tokens = this.getTokens ();
 this.addAtomXYZSymName (tokens, 2, null, null).elementNumber = this.parseIntStr (tokens[0]);
 }
-if (this.doReadMolecularOrbitals && !this.getFile31 ()) {
-this.alphaOnly = true;
-this.betaOnly = false;
 this.discardLinesUntilContains ("$BASIS");
 this.appendLoadNote ("basis AOs are unnormalized");
 var centers = this.getIntData ();
@@ -234,7 +232,7 @@ this.line = l;
 this.getAlphasAndExponents ();
 this.nboType = "AO";
 this.readMOs ();
-}this.continuing = false;
+this.continuing = false;
 });
 Clazz.defineMethod (c$, "getIntData", 
  function () {
@@ -466,7 +464,8 @@ if (orbitals == null) {
 var data = null;
 if (!isAO) {
 var fileName = moData.get ("nboRoot") + "." + ext;
-if ((data = vwr.getFileAsString3 (fileName, true, null)) == null) return false;
+if ((data = vwr.getFileAsString3 (fileName, true, null)) == null || data.indexOf ("Exception:") >= 0) return false;
+J.adapter.readers.quantum.GenNBOReader.addAuxFile (moData, fileName, null);
 data = data.substring (data.indexOf ("--\n") + 3).toLowerCase ();
 if (ext == 33) data = data.substring (0, data.indexOf ("--\n") + 3);
 }orbitals = moData.get ("mos");
@@ -520,6 +519,13 @@ throw e;
 }
 return true;
 }, "java.util.Map,~S,JV.Viewer");
+c$.addAuxFile = Clazz.defineMethod (c$, "addAuxFile", 
+ function (moData, fileName, htParams) {
+var auxFiles = moData.get ("auxFiles");
+if (auxFiles == null) moData.put ("auxFiles", auxFiles =  new JU.Lst ());
+auxFiles.addLast (fileName);
+if (htParams != null) htParams.put ("auxFiles", auxFiles);
+}, "java.util.Map,~S,java.util.Map");
 c$.getNBOOccupanciesStatic = Clazz.defineMethod (c$, "getNBOOccupanciesStatic", 
  function (orbitals, nAOs, pt, data, len, next) {
 var occupancies =  Clazz.newFloatArray (nAOs, 0);

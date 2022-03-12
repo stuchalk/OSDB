@@ -52,14 +52,13 @@ return true;
 Clazz.defineMethod (c$, "readValue", 
  function (key) {
 if (key.equals ("latticeconstant")) {
-this.setCell ("constant");
+this.setCell ("latticeconstant");
 } else if (key.equals ("atomiccoordinatesformat")) {
 this.readAtomicCoordinatesFormat ();
 }}, "~S");
 Clazz.defineMethod (c$, "readBlock", 
  function (key) {
-if (key.equals ("latticevectors")) return this.setCell ("vectors");
-if (key.equals ("latticeparameters")) return this.setCell ("parameters");
+if (key.equals ("latticevectors") || key.equals ("latticeparameters")) return this.setCell (key);
 if (key.equals ("chemicalspecieslabel")) return this.readSpecies ();
 if (key.equals ("atomiccoordinatesandatomicspecies")) {
 if (!this.doGetModel (++this.modelNumber, null)) {
@@ -80,7 +79,6 @@ return false;
 });
 Clazz.defineMethod (c$, "fixToken", 
  function (i) {
-var s = this.tokens[i];
 return JU.PT.replaceAllCharacters (this.tokens[i], "_.-", "").toLowerCase ();
 }, "~N");
 Clazz.defineMethod (c$, "rdSiesta", 
@@ -134,14 +132,14 @@ this.discardLinesUntilContains ("%endblock AtomicCoordinatesAndAtomicSpecies");
 });
 Clazz.defineMethod (c$, "setCell", 
  function (key) {
-if (key.equals ("vectors")) {
+if (key.equals ("latticevectors")) {
 this.unitCellVectors =  Clazz.newFloatArray (9, 0);
 this.fillFloatArray (null, 0, this.unitCellVectors);
-} else if (key.equals ("constant")) {
+} else if (key.equals ("latticeconstant")) {
 var tokens = this.getTokens ();
 this.latticeConstant = this.parseFloatStr (tokens[1]);
 this.latticeUnits = tokens[2].toLowerCase ();
-} else if (key.equals ("parameters")) {
+} else if (key.equals ("latticeparameters")) {
 this.unitCellParamsS =  Clazz.newFloatArray (6, 0);
 this.fillFloatArray (this.line.substring (this.line.indexOf ("ters") + 4), 0, this.unitCellParamsS);
 }return true;

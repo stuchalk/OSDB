@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.writers");
-Clazz.load (["JU.SB", "JU.JSONWriter", "java.util.Hashtable"], "J.adapter.writers.QCJSONWriter", ["java.lang.Boolean", "java.util.Date", "JU.DF", "$.P3", "$.PT", "J.quantum.SlaterData", "org.qcschema.QCSchemaUnits"], function () {
+Clazz.load (["JU.SB", "J.api.JmolWriter", "JU.JSONWriter", "java.util.Hashtable"], "J.adapter.writers.QCJSONWriter", ["java.lang.Boolean", "java.util.Date", "JU.DF", "$.P3", "$.PT", "J.quantum.SlaterData", "org.qcschema.QCSchemaUnits"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.moBases = null;
 this.htBasisMap = null;
@@ -12,17 +12,27 @@ if (!Clazz.isClassDefined ("J.adapter.writers.QCJSONWriter.SparseArray")) {
 J.adapter.writers.QCJSONWriter.$QCJSONWriter$SparseArray$ ();
 }
 Clazz.instantialize (this, arguments);
-}, J.adapter.writers, "QCJSONWriter", JU.JSONWriter);
+}, J.adapter.writers, "QCJSONWriter", JU.JSONWriter, J.api.JmolWriter);
 Clazz.prepareFields (c$, function () {
 this.moBases =  new java.util.Hashtable ();
 this.htBasisMap =  new java.util.Hashtable ();
 });
-Clazz.defineMethod (c$, "set", 
-function (viewer, os) {
+Clazz.makeConstructor (c$, 
+function () {
+Clazz.superConstructor (this, J.adapter.writers.QCJSONWriter, []);
+});
+Clazz.overrideMethod (c$, "set", 
+function (viewer, oc, data) {
 this.vwr = viewer;
+this.oc = (oc == null ? this.vwr.getOutputChannel (null, null) : oc);
 this.setWriteNullAsString (false);
-this.setStream (os);
-}, "JV.Viewer,java.io.OutputStream");
+this.setStream (oc);
+}, "JV.Viewer,JU.OC,~A");
+Clazz.overrideMethod (c$, "write", 
+function (bs) {
+this.writeJSON ();
+return this.toString ();
+}, "JU.BS");
 Clazz.defineMethod (c$, "toString", 
 function () {
 return (this.oc == null ? "{}" : this.oc.toString ());

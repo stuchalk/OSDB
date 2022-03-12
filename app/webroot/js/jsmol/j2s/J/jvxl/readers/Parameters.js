@@ -149,6 +149,7 @@ this.isModelConnected = false;
 this.surfaceAtoms = null;
 this.filesData = null;
 this.probeValues = null;
+this.sbOut = null;
 Clazz.instantialize (this, arguments);
 }, J.jvxl.readers, "Parameters");
 Clazz.prepareFields (c$, function () {
@@ -379,12 +380,15 @@ this.calculationType = "unmapped plane";
 break;
 case 1203:
 this.calculationType = "molecular surface with radius " + this.solventRadius;
+if (this.minSet == 0) this.minSet = 50;
 break;
 case 1195:
 this.calculationType = "solvent-excluded surface with radius " + this.solventRadius;
+if (this.minSet == 0) this.minSet = 50;
 break;
 case 1196:
 this.calculationType = "solvent-accessible surface with radius " + this.solventRadius;
+if (this.minSet == 0) this.minSet = 50;
 break;
 }
 switch (this.dataType) {

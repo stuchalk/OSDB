@@ -71,6 +71,7 @@ this.primitives = bond.primitives;
 this.nPrimitives = bond.nPrimitives;
 this.bondsOr = bond.bondsOr;
 this.nBondsOr = bond.nBondsOr;
+this.atropType = bond.atropType;
 }, "JS.SmilesBond");
 Clazz.defineMethod (c$, "setAtropType", 
 function (nn) {
@@ -160,10 +161,6 @@ default:
 return 1;
 }
 }, "~S,~B,~B");
-Clazz.defineMethod (c$, "getBondType", 
-function () {
-return this.order;
-});
 Clazz.defineMethod (c$, "getValence", 
 function () {
 return (this.order & 7);
@@ -182,7 +179,7 @@ return this.atom2.index;
 });
 Clazz.overrideMethod (c$, "getCovalentOrder", 
 function () {
-return this.order;
+return this.order & -131073;
 });
 Clazz.overrideMethod (c$, "getOtherNode", 
 function (atom) {
@@ -201,7 +198,7 @@ function () {
 var a = this.atom1;
 this.atom1 = this.atom2;
 this.atom2 = a;
-switch (this.order) {
+switch (this.order & -131073) {
 case 65537:
 this.order = 65538;
 break;
@@ -218,19 +215,23 @@ break;
 });
 Clazz.defineMethod (c$, "getRealCovalentOrder", 
 function () {
-switch (this.order) {
+switch (this.order & -131073) {
 case 65537:
 case 65538:
 case 1025:
 case 1041:
 return 1;
 }
-return this.order;
+return this.order & -131073;
 });
 Clazz.defineMethod (c$, "getMatchingBond", 
 function () {
 return this.matchingBond == null ? this : this.matchingBond;
 });
+Clazz.overrideMethod (c$, "getAtom", 
+function (i) {
+return (i == 1 ? this.atom2 : this.atom1);
+}, "~N");
 Clazz.defineStatics (c$,
 "TYPE_UNKNOWN", -1,
 "TYPE_NONE", 0,

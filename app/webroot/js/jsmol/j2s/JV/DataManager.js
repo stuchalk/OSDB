@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JV");
-Clazz.load (["J.api.JmolDataManager", "java.util.Hashtable"], "JV.DataManager", ["JU.AU", "$.BS", "$.PT", "$.SB", "J.c.VDW", "JS.T", "JU.BSUtil", "$.Elements", "$.Escape", "$.Logger", "$.Parser"], function () {
+Clazz.load (["J.api.JmolDataManager", "java.util.Hashtable"], "JV.DataManager", ["JU.AU", "$.BS", "$.Lst", "$.PT", "$.SB", "J.c.VDW", "JS.T", "JU.BSUtil", "$.Elements", "$.Escape", "$.Logger", "$.Parser"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.dataValues = null;
 this.vwr = null;
@@ -126,7 +126,17 @@ for (var i = i0; i >= 0 && i < data.length; i = (isAll ? i + 1 : bs.nextSetBit (
 }, "~N,JU.BS,~A");
 Clazz.overrideMethod (c$, "getData", 
 function (label, bsSelected, dataType) {
-if (this.dataValues.size () == 0 || label == null) return null;
+if (label == null) return null;
+if (label.endsWith ("*")) {
+var list =  new JU.Lst ();
+label = label.substring (0, label.length - 1);
+var len = label.length;
+for (var key, $key = this.dataValues.keySet ().iterator (); $key.hasNext () && ((key = $key.next ()) || true);) {
+if (len == 0 || key.length >= len && key.substring (0, len).equalsIgnoreCase (label)) {
+list.addLast (key);
+}}
+return list;
+}if (this.dataValues.size () == 0) return null;
 label = label.toLowerCase ();
 switch (dataType) {
 case -1:
@@ -143,9 +153,16 @@ default:
 var data = this.dataValues.get (label);
 if (data == null || this.getType (data) != dataType) return null;
 if (bsSelected == null) return data[1];
-if (data[3] === Integer.$valueOf (2)) {
+if (data[3] === Integer.$valueOf (3)) {
+var fff = data[1];
+var fnew = JU.AU.newFloat3 (bsSelected.cardinality (), 0);
+for (var i = 0, n = fff.length, p = bsSelected.nextSetBit (0); p >= 0 && i < n; p = bsSelected.nextSetBit (p + 1)) {
+fnew[i++] = fff[p];
+}
+return fnew;
+} else if (data[3] === Integer.$valueOf (2)) {
 var ff = data[1];
-var fnew =  Clazz.newFloatArray (bsSelected.cardinality (), 0);
+var fnew = JU.AU.newFloat2 (bsSelected.cardinality ());
 for (var i = 0, n = ff.length, p = bsSelected.nextSetBit (0); p >= 0 && i < n; p = bsSelected.nextSetBit (p + 1)) fnew[i++] = ff[p];
 
 return fnew;
@@ -188,7 +205,7 @@ if (obj.length > 4 && !(obj[4]).booleanValue ()) continue;
 haveData = true;
 var data = obj[1];
 if (data != null && this.getType (obj) == 1) {
-sc.getAtomicPropertyStateBuffer (sb, 17, obj[2], name, data);
+sc.getAtomicPropertyStateBuffer (sb, 18, obj[2], name, data);
 sb.append ("\n");
 } else {
 sb.append ("\n").append (JU.Escape.encapsulateData (name, data, -1));

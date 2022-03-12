@@ -78,7 +78,7 @@ throw e$$;
 Clazz.defineMethod (c$, "oops", 
 function (e) {
 JU.Logger.debug (this.$name + " exception " + e);
-if (!JV.Viewer.isJS) e.printStackTrace ();
+if (!JV.Viewer.isJS || JV.Viewer.isSwingJS) e.printStackTrace ();
 this.vwr.queueOnHold = false;
 }, "Exception");
 Clazz.defineMethod (c$, "runSleep", 
@@ -106,6 +106,10 @@ Clazz.defineMethod (c$, "reset",
 function () {
 this.isReset = true;
 this.interrupt ();
+});
+Clazz.defineMethod (c$, "toString", 
+function () {
+return Clazz.superCall (this, J.thread.JmolThread, "toString", []) + "[" + this.$name + "]";
 });
 Clazz.defineStatics (c$,
 "threadIndex", 0,

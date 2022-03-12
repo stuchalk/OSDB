@@ -43,7 +43,9 @@ var JmolInfo = {
   j2sPath: "j2s",
 	isSigned: true,
   defaultModel: "",
-	script: defaultScript + ";calculate chirality;label %[chirality];background label yellow;color labels black;set antialiasdisplay"
+	script: defaultScript + ";calculate chirality;label %[chirality];"
+	+"background label yellow;color labels black;set antialiasdisplay;"
+	+"set atomMovedCallback 'jmolScript:calculate Chirality;label %[chirality]';"
 }
 
 var JMEInfo = {     

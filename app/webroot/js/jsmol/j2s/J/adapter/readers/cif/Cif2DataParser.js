@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.readers.cif");
-Clazz.load (["JU.CifDataParser"], "J.adapter.readers.cif.Cif2DataParser", ["java.lang.Float", "java.util.Hashtable", "JU.Lst", "$.PT"], function () {
+Clazz.load (["JU.CifDataParser"], "J.adapter.readers.cif.Cif2DataParser", ["java.lang.Float", "java.util.Hashtable", "JU.PT"], function () {
 c$ = Clazz.declareType (J.adapter.readers.cif, "Cif2DataParser", JU.CifDataParser);
 Clazz.overrideMethod (c$, "getVersion", 
 function () {
@@ -90,29 +90,6 @@ str = JU.PT.rep (str, "\n" + prefix, "\n");
 str = "\1" + str.substring (str.charAt (pt1 + 1) == '\\' ? pt1 + 1 : pt2 < 0 ? str.length - 1 : pt2 + 1);
 }this.ich = 0;
 return this.fixLineFolding (str);
-});
-Clazz.defineMethod (c$, "readList", 
-function () {
-this.ich++;
-var cterm0 = this.cterm;
-this.cterm = ']';
-var ns = this.nullString;
-this.nullString = null;
-var lst = (this.asObject ?  new JU.Lst () : null);
-var n = 0;
-var str = "";
-while (true) {
-var value = (this.asObject ? this.getNextTokenObject () : this.getNextToken ());
-if (value == null || value.equals ("]")) break;
-if (this.asObject) {
-lst.addLast (value);
-} else {
-if (n++ > 0) str += ",";
-str += value;
-}}
-this.cterm = cterm0;
-this.nullString = ns;
-return (this.asObject ? lst : "[" + str + "]");
 });
 Clazz.defineMethod (c$, "readTable", 
 function () {

@@ -7,7 +7,7 @@ Clazz.instantialize (this, arguments);
 Clazz.overrideMethod (c$, "renderBioShape", 
 function (bioShape) {
 var checkPass2 = (!this.isExport && !this.vwr.gdata.isPass2);
-this.isDataFrame = this.vwr.ms.isJmolDataFrameForModel (bioShape.modelIndex);
+this.isDataFrame = this.ms.isJmolDataFrameForModel (bioShape.modelIndex);
 var n = this.monomerCount;
 var atoms = this.ms.at;
 for (var i = this.bsVisible.nextSetBit (0); i >= 0; i = this.bsVisible.nextSetBit (i + 1)) {

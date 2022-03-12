@@ -2,7 +2,6 @@ Clazz.declarePackage ("J.adapter.readers.xtal");
 Clazz.load (["J.adapter.smarter.AtomSetCollectionReader", "JU.Lst"], "J.adapter.readers.xtal.VaspOutcarReader", ["java.lang.Double", "JU.DF", "$.PT"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.atomNames = null;
-this.haveIonNames = false;
 this.ac = 0;
 this.inputOnly = false;
 this.mDsimulation = false;

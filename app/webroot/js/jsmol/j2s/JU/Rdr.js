@@ -19,7 +19,8 @@ return parser.set (null, br, false).getAllCifData ();
 c$.fixUTF = Clazz.defineMethod (c$, "fixUTF", 
 function (bytes) {
 var encoding = JU.Rdr.getUTFEncoding (bytes);
-if (encoding !== JU.Encoding.NONE) try {
+if (encoding !== JU.Encoding.NONE) {
+try {
 var s =  String.instantialize (bytes, encoding.name ().$replace ('_', '-'));
 switch (encoding) {
 case JU.Encoding.UTF8:
@@ -38,7 +39,7 @@ System.out.println (e);
 throw e;
 }
 }
-return  String.instantialize (bytes);
+}return  String.instantialize (bytes);
 }, "~A");
 c$.getUTFEncoding = Clazz.defineMethod (c$, "getUTFEncoding", 
  function (bytes) {
@@ -338,6 +339,16 @@ function (bis) {
 var bytes = JU.Rdr.getMagic (bis, 264);
 return (bytes[0] != 0 && (bytes[257] & 0xFF) == 0x75 && (bytes[258] & 0xFF) == 0x73 && (bytes[259] & 0xFF) == 0x74 && (bytes[260] & 0xFF) == 0x61 && (bytes[261] & 0xFF) == 0x72);
 }, "java.io.BufferedInputStream");
+c$.streamToBytes = Clazz.defineMethod (c$, "streamToBytes", 
+function (is) {
+var bytes = JU.Rdr.getLimitedStreamBytes (is, -1);
+is.close ();
+return bytes;
+}, "java.io.InputStream");
+c$.streamToString = Clazz.defineMethod (c$, "streamToString", 
+function (is) {
+return  String.instantialize (JU.Rdr.streamToBytes (is));
+}, "java.io.InputStream");
 Clazz.pu$h(self.c$);
 c$ = Clazz.decorateAsClass (function () {
 this.stream = null;

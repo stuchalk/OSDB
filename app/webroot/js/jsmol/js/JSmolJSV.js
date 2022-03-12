@@ -170,7 +170,7 @@
 		this._showInfo(true);
 		this._showInfo(false);
 		this._readyFunction && this._readyFunction(this);
-		Jmol.Cache.setDragDrop(this);
+		Jmol.Cache.setDragDrop(this, "appletdiv");
 		Jmol._setReady(this);
 	}	
 		

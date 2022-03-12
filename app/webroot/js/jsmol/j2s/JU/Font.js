@@ -36,7 +36,7 @@ this.ascent = manager.getFontAscent (this.fontMetrics);
 }, "J.api.FontManager,~N,~N,~N,~N,~N,~O");
 c$.getFont3D = Clazz.defineMethod (c$, "getFont3D", 
 function (fontID) {
-return JU.Font.font3ds[fontID & 0xFF];
+return JU.Font.font3ds[fontID];
 }, "~N");
 c$.createFont3D = Clazz.defineMethod (c$, "createFont3D", 
 function (fontface, fontstyle, fontsize, fontsizeNominal, manager, graphicsForMetrics) {
@@ -46,9 +46,10 @@ var fontkey = ((fontface & 3) | ((fontstyle & 3) << 2) | (fontsizeX16 << 4));
 for (var i = JU.Font.fontkeyCount; --i > 0; ) if (fontkey == JU.Font.fontkeys[i] && JU.Font.font3ds[i].fontSizeNominal == fontsizeNominal) return JU.Font.font3ds[i];
 
 var fontIndexNext = JU.Font.fontkeyCount++;
-if (fontIndexNext == JU.Font.fontkeys.length) JU.Font.fontkeys = JU.AU.arrayCopyI (JU.Font.fontkeys, fontIndexNext + 8);
+if (fontIndexNext == JU.Font.fontkeys.length) {
+JU.Font.fontkeys = JU.AU.arrayCopyI (JU.Font.fontkeys, fontIndexNext + 8);
 JU.Font.font3ds = JU.AU.arrayCopyObject (JU.Font.font3ds, fontIndexNext + 8);
-var font3d =  new JU.Font (manager, fontIndexNext, fontface, fontstyle, fontsize, fontsizeNominal, graphicsForMetrics);
+}var font3d =  new JU.Font (manager, fontIndexNext, fontface, fontstyle, fontsize, fontsizeNominal, graphicsForMetrics);
 JU.Font.font3ds[fontIndexNext] = font3d;
 JU.Font.fontkeys[fontIndexNext] = fontkey;
 return font3d;

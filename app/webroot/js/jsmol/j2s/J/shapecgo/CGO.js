@@ -134,7 +134,7 @@ return V;
 Clazz.overrideMethod (c$, "getShapeState", 
 function () {
 var sb =  new JU.SB ();
-var modelCount = this.vwr.ms.mc;
+var modelCount = this.ms.mc;
 for (var i = 0; i < this.meshCount; i++) {
 var mesh = this.cmeshes[i];
 if (mesh == null || mesh.cmds == null || mesh.modelIndex >= modelCount) continue;

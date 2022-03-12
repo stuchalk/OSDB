@@ -345,7 +345,7 @@ return type;
 Clazz.defineMethod (c$, "getBondingRadius", 
 function () {
 var rr = this.group.chain.model.ms.bondingRadii;
-var r = (rr == null ? 0 : rr[this.i]);
+var r = (rr == null || this.i >= rr.length ? 0 : rr[this.i]);
 return (r == 0 ? JU.Elements.getBondingRadius (this.atomicAndIsotopeNumber, this.getFormalCharge ()) : r);
 });
 Clazz.defineMethod (c$, "getVolume", 
@@ -388,7 +388,7 @@ this.group.setAtomBits (bs);
 }, "JU.BS");
 Clazz.overrideMethod (c$, "getAtomName", 
 function () {
-return (this.atomID > 0 ? JM.Group.specialAtomNames[this.atomID] : this.group.chain.model.ms.atomNames[this.i]);
+return (this.atomID > 0 ? JM.Group.specialAtomNames[this.atomID] : this.group.chain.model.ms.atomNames == null ? "" : this.group.chain.model.ms.atomNames[this.i]);
 });
 Clazz.overrideMethod (c$, "getAtomType", 
 function () {
@@ -470,12 +470,13 @@ return this;
 Clazz.defineMethod (c$, "getFractionalCoordPt", 
 function (fixJavaFloat, ignoreOffset, pt) {
 var c = this.getUnitCell ();
-if (c == null) return this;
 if (pt == null) pt = JU.P3.newP (this);
  else pt.setT (this);
+if (c != null) {
+c = c.getUnitCellMultiplied ();
 c.toFractional (pt, ignoreOffset);
 if (fixJavaFloat) JU.PT.fixPtFloats (pt, 100000.0);
-return pt;
+}return pt;
 }, "~B,~B,JU.P3");
 Clazz.defineMethod (c$, "getUnitCell", 
 function () {
@@ -489,9 +490,10 @@ return (ch == 'X' ? pt.x : ch == 'Y' ? pt.y : pt.z);
 Clazz.defineMethod (c$, "getFractionalUnitCoordPt", 
 function (fixJavaFloat, asCartesian, pt) {
 var c = this.getUnitCell ();
-if (c == null) return this;
 if (pt == null) pt = JU.P3.newP (this);
  else pt.setT (this);
+if (c == null) return pt;
+c = c.getUnitCellMultiplied ();
 if (this.group.chain.model.isJmolDataFrame) {
 c.toFractional (pt, false);
 if (asCartesian) c.toCartesian (pt, false);
@@ -572,15 +574,16 @@ return (z - Math.sqrt (dz2) < zCompetitor - Math.sqrt (dz2Competitor));
 }, "~N,~N,~N,JM.Atom");
 Clazz.defineMethod (c$, "getInfo", 
 function () {
-return this.getIdentity (true);
+return this.getIdentity (2);
 });
 Clazz.defineMethod (c$, "getIdentityXYZ", 
-function (allInfo, pt) {
-pt = (this.group.chain.model.isJmolDataFrame ? this.getFractionalCoordPt (!this.group.chain.model.ms.vwr.g.legacyJavaFloat, false, pt) : this);
-return this.getIdentity (allInfo) + " " + JU.PT.formatF (pt.x, 0, 3, true, true) + " " + JU.PT.formatF (pt.y, 0, 3, true, true) + " " + JU.PT.formatF (pt.z, 0, 3, true, true);
-}, "~B,JU.P3");
+function (pt, mode) {
+pt = (mode == 3 || this.group.chain.model.isJmolDataFrame ? this.getFractionalCoordPt (!this.group.chain.model.ms.vwr.g.legacyJavaFloat, false, pt) : this);
+var s = (mode == 3 ? "" : this.getIdentity (mode) + " ") + JU.PT.formatF (pt.x, 0, 3, true, true) + " " + JU.PT.formatF (pt.y, 0, 3, true, true) + " " + JU.PT.formatF (pt.z, 0, 3, true, true);
+return s;
+}, "JU.P3,~N");
 Clazz.defineMethod (c$, "getIdentity", 
-function (allInfo) {
+function (mode) {
 var info =  new JU.SB ();
 var group3 = this.getGroup3 (true);
 if (group3 != null && group3.length > 0 && (!group3.equals ("UNK") || this.group.chain.model.isBioModel)) {
@@ -595,7 +598,7 @@ info.append (":");
 var s = this.getChainIDStr ();
 if (chainID >= 256) s = JU.PT.esc (s);
 info.append (s);
-}if (!allInfo) return info.toString ();
+}if (mode != 2) return info.toString ();
 info.append (".");
 }info.append (this.getAtomName ());
 if (info.length () == 0) {
@@ -611,7 +614,7 @@ info.append (this.getModelNumberForLabel ());
 }info.append (" #");
 info.appendI (this.getAtomNumber ());
 return info.toString ();
-}, "~B");
+}, "~N");
 Clazz.overrideMethod (c$, "getGroup3", 
 function (allowNull) {
 var group3 = this.group.getGroup3 ();
@@ -780,7 +783,7 @@ case 1094713367:
 return this.group.getStrucNo ();
 case 1296041986:
 return this.getSymOp ();
-case 1094715417:
+case 1094715418:
 return this.getValence ();
 }
 return 0;
@@ -969,7 +972,7 @@ return this.getGroup3 (false);
 case 1086326789:
 return this.getElementSymbolIso (true);
 case 1086324745:
-return this.getIdentity (true);
+return this.getIdentity (2);
 case 1086324746:
 ch = this.group.getInsertionCode ();
 return (ch == '\0' ? "" : "" + ch);
@@ -1089,6 +1092,16 @@ function () {
 var m = this.group.chain.model;
 return (m.isBioModel && !m.isPdbWithMultipleBonds && m.hydrogenCount == 0);
 });
+Clazz.defineMethod (c$, "setSymop", 
+function (isym, andClear) {
+if (this.atomSymmetry == null) this.atomSymmetry =  new JU.BS ();
+if (andClear) this.atomSymmetry.clearAll ();
+if (isym > 0) this.atomSymmetry.set (isym - 1);
+}, "~N,~B");
+Clazz.overrideMethod (c$, "getExplicitHydrogenCount", 
+function () {
+return 0;
+});
 Clazz.defineStatics (c$,
 "ATOM_INFRAME", 1,
 "ATOM_VISSET", 2,
@@ -1108,5 +1121,9 @@ Clazz.defineStatics (c$,
 "CIP_CHIRALITY_MASK", 0x1F0,
 "CIP_CHIRALITY_RULE_OFFSET", 9,
 "CIP_CHIRALITY_RULE_MASK", 0xE00,
-"CIP_MASK", 4080);
+"CIP_MASK", 4080,
+"ID_U", 1,
+"ID_ALL", 2,
+"ID_XTAL", 3,
+"ID_CHIME", 4);
 });

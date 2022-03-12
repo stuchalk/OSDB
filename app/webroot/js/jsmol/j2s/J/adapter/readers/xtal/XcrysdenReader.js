@@ -12,23 +12,21 @@ this.unitCellData =  Clazz.newFloatArray (9, 0);
 });
 Clazz.overrideMethod (c$, "initializeReader", 
 function () {
+this.setFractionalCoordinates (false);
 this.doApplySymmetry = true;
 });
 Clazz.overrideMethod (c$, "checkLine", 
 function () {
-if (this.line.contains ("ANIMSTEP")) {
-this.readNostep ();
-} else if (this.line.contains ("CRYSTAL")) {
-this.setFractionalCoordinates (false);
+if (this.line.startsWith ("ATOMS")) {
+this.doApplySymmetry = false;
+return this.readCoordinates ();
+}if (this.line.contains ("ANIMSTEP")) {
+this.animation = true;
 } else if (this.line.contains ("PRIMVEC")) {
 this.readUnitCell ();
 } else if (this.line.contains ("PRIMCOORD")) {
-this.readCoordinates ();
+return this.readCoordinates ();
 }return true;
-});
-Clazz.defineMethod (c$, "readNostep", 
- function () {
-this.animation = true;
 });
 Clazz.defineMethod (c$, "readUnitCell", 
  function () {
@@ -51,15 +49,24 @@ this.setFractionalCoordinates (false);
 });
 Clazz.defineMethod (c$, "readCoordinates", 
  function () {
+if (this.doApplySymmetry) {
 var atomStr = JU.PT.getTokens (this.rd ());
 this.nAtoms = Integer.parseInt (atomStr[0]);
-this.setFractionalCoordinates (false);
+} else {
+this.nAtoms = 2147483647;
+}this.setFractionalCoordinates (false);
 var counter = 0;
 while (counter < this.nAtoms && this.rd () != null) {
 var tokens = this.getTokens ();
-this.addAtomXYZSymName (tokens, 1, null, J.adapter.smarter.AtomSetCollectionReader.getElementSymbol (Integer.parseInt (tokens[0])));
+var an = JU.PT.parseInt (tokens[0]);
+if (an < 0) {
+break;
+}this.line = null;
+this.addAtomXYZSymName (tokens, 1, null, J.adapter.smarter.AtomSetCollectionReader.getElementSymbol (an));
 counter++;
 }
-this.asc.setAtomSetName (this.animation ? "Structure " + (this.animationStep++) : "Initial coordinates");
+this.asc.setAtomSetName (this.animation ? "Structure " + (++this.animationStep) : "Initial coordinates");
+if (this.line != null) this.setSymmetry ();
+return (this.line == null);
 });
 });

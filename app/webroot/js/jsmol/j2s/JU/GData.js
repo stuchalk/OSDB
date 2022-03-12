@@ -39,10 +39,10 @@ this.bufferSize = 0;
 this.shader = null;
 this.vwr = null;
 this.graphicsForMetrics = null;
+this.currentFont = null;
 this.argbNoisyUp = 0;
 this.argbNoisyDn = 0;
 this.transformedVectors = null;
-this.currentFont = null;
 Clazz.instantialize (this, arguments);
 }, JU, "GData", null, J.api.JmolGraphicsInterface);
 Clazz.prepareFields (c$, function () {
@@ -267,10 +267,21 @@ function (font, scale) {
 var newScale = font.fontSizeNominal * scale;
 return (newScale == font.fontSize ? font : JU.Font.createFont3D (font.idFontFace, font.idFontStyle, newScale, font.fontSizeNominal, this.apiPlatform, this.graphicsForMetrics));
 }, "JU.Font,~N");
-Clazz.defineMethod (c$, "getFontFid", 
+Clazz.defineMethod (c$, "getFontFidI", 
 function (fontSize) {
 return this.getFont3D (fontSize).fid;
 }, "~N");
+Clazz.defineMethod (c$, "getFont3DCurrent", 
+function () {
+return this.currentFont;
+});
+Clazz.defineMethod (c$, "setFont", 
+function (font3d) {
+}, "JU.Font");
+Clazz.defineMethod (c$, "setFontBold", 
+function (fontFace, fontSize) {
+this.setFont (this.getFont3DFSS (fontFace, "Bold", fontSize));
+}, "~S,~N");
 Clazz.defineMethod (c$, "setBackgroundTransparent", 
 function (TF) {
 }, "~B");
@@ -370,12 +381,6 @@ function (x, y, z, colorArgbOrGray, bgColor, text, font3d, jmolRenderer) {
 Clazz.defineMethod (c$, "renderBackground", 
 function (jmolRenderer) {
 }, "J.api.JmolRendererInterface");
-Clazz.defineMethod (c$, "setFont", 
-function (font3d) {
-}, "JU.Font");
-Clazz.defineMethod (c$, "setFontFid", 
-function (fid) {
-}, "~N");
 Clazz.defineMethod (c$, "setColor", 
 function (argb) {
 this.argbCurrent = this.argbNoisyUp = this.argbNoisyDn = argb;
@@ -461,10 +466,6 @@ return this.textY;
 Clazz.defineMethod (c$, "getTransformedVertexVectors", 
 function () {
 return this.transformedVectors;
-});
-Clazz.defineMethod (c$, "getFont3DCurrent", 
-function () {
-return this.currentFont;
 });
 Clazz.defineStatics (c$,
 "ENDCAPS_NONE", 0,

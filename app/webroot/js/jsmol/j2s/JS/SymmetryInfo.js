@@ -7,7 +7,7 @@ this.sgName = null;
 this.symmetryOperations = null;
 this.infoStr = null;
 this.cellRange = null;
-this.latticeType = "P";
+this.latticeType = 'P';
 this.intlTableNo = null;
 Clazz.instantialize (this, arguments);
 }, JS, "SymmetryInfo");
@@ -15,16 +15,30 @@ Clazz.makeConstructor (c$,
 function () {
 });
 Clazz.defineMethod (c$, "setSymmetryInfo", 
-function (info, unitCellParams) {
+function (info, unitCellParams, sg) {
+var symmetryCount;
+if (sg == null) {
 this.cellRange = info.get ("unitCellRange");
 this.sgName = info.get ("spaceGroup");
 if (this.sgName == null || this.sgName === "") this.sgName = "spacegroup unspecified";
-this.infoStr = "Spacegroup: " + this.sgName;
-if ((this.latticeType = info.get ("latticeType")) == null) this.latticeType = "P";
 this.intlTableNo = info.get ("intlTableNo");
-var symmetryCount = info.containsKey ("symmetryCount") ? (info.get ("symmetryCount")).intValue () : 0;
+var s = info.get ("latticeType");
+this.latticeType = (s == null ? 'P' : s.charAt (0));
+symmetryCount = info.containsKey ("symmetryCount") ? (info.get ("symmetryCount")).intValue () : 0;
 this.symmetryOperations = info.remove ("symmetryOps");
-if (this.symmetryOperations != null) {
+this.coordinatesAreFractional = info.containsKey ("coordinatesAreFractional") ? (info.get ("coordinatesAreFractional")).booleanValue () : false;
+this.isMultiCell = (this.coordinatesAreFractional && this.symmetryOperations != null);
+this.infoStr = "Spacegroup: " + this.sgName;
+} else {
+this.cellRange = null;
+this.sgName = sg.getName ();
+this.intlTableNo = sg.intlTableNumber;
+this.latticeType = sg.latticeType;
+symmetryCount = sg.getOperationCount ();
+this.symmetryOperations = sg.finalOperations;
+this.coordinatesAreFractional = true;
+this.infoStr = "Spacegroup: " + this.sgName;
+}if (this.symmetryOperations != null) {
 var c = "";
 var s = "\nNumber of symmetry operations: " + (symmetryCount == 0 ? 1 : symmetryCount) + "\nSymmetry Operations:";
 for (var i = 0; i < symmetryCount; i++) {
@@ -37,8 +51,6 @@ this.infoStr += s;
 this.infoStr += "\n";
 }if (unitCellParams == null) unitCellParams = info.get ("unitCellParams");
 if (!JU.SimpleUnitCell.isValid (unitCellParams)) return null;
-this.coordinatesAreFractional = info.containsKey ("coordinatesAreFractional") ? (info.get ("coordinatesAreFractional")).booleanValue () : false;
-this.isMultiCell = (this.coordinatesAreFractional && this.symmetryOperations != null);
 return unitCellParams;
-}, "java.util.Map,~A");
+}, "java.util.Map,~A,JS.SpaceGroup");
 });

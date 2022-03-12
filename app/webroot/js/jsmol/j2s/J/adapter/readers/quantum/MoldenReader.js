@@ -133,14 +133,17 @@ atom.elementNumber = this.parseIntStr (tokens[2]);
 });
 Clazz.defineMethod (c$, "readSlaterBasis", 
 function () {
+var stoFactor = (this.line.indexOf ("ANGS") >= 0 ? 0.5291772 : 1);
+this.scaleSlaters = (this.line.indexOf ("MOPAC") >= 0);
 this.nCoef = 0;
 while (this.rd () != null && this.line.indexOf ("[") < 0) {
 var tokens = this.getTokens ();
 if (tokens.length < 7) continue;
-this.addSlater (this.parseIntStr (tokens[0]), this.parseIntStr (tokens[1]), this.parseIntStr (tokens[2]), this.parseIntStr (tokens[3]), this.parseIntStr (tokens[4]), this.parseFloatStr (tokens[5]), this.parseFloatStr (tokens[6]));
+var zeta = this.parseFloatStr (tokens[5]) * stoFactor;
+this.addSlater (this.parseIntStr (tokens[0]), this.parseIntStr (tokens[1]), this.parseIntStr (tokens[2]), this.parseIntStr (tokens[3]), this.parseIntStr (tokens[4]), zeta, this.parseFloatStr (tokens[6]));
 this.nCoef++;
 }
-this.setSlaters (false, false);
+this.setSlaters (false);
 return false;
 });
 Clazz.defineMethod (c$, "readGaussianBasis", 
@@ -263,14 +266,14 @@ JU.Logger.debug (coefs.length + " coefficients in MO " + this.orbitals.size ());
 }}this.line = l;
 }
 if (this.debugging) JU.Logger.debug ("read " + this.orbitals.size () + " MOs");
-this.setMOs ("eV");
+this.setMOs ("");
 if (this.haveEnergy && this.doSort) this.sortMOs ();
 return false;
 });
 Clazz.defineMethod (c$, "rd", 
 function () {
 if (++this.ptLineBuf < this.bufLen) {
-return this.lineBuffer.get (this.ptLineBuf);
+return this.line = this.lineBuffer.get (this.ptLineBuf);
 }if (this.bufLen > 0) {
 this.lineBuffer = null;
 this.bufLen = -1;

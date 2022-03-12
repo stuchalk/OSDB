@@ -230,4 +230,11 @@ Clazz.overrideMethod (c$, "getInChI",
 function () {
 return null;
 });
+Clazz.overrideMethod (c$, "confirm", 
+function (msg, msgNo) {
+var ok = false;
+if (ok) return 0;
+if (msgNo != null) ok = false;
+return (ok ? 1 : 2);
+}, "~S,~S");
 });

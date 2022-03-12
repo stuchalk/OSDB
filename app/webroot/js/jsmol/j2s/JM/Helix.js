@@ -14,7 +14,7 @@ for (var i = 0; i <= this.nRes; i++) this.apolymer.getLeadMidPoint (this.monomer
 
 this.axisA =  new JU.P3 ();
 this.axisUnitVector =  new JU.V3 ();
-JU.Measure.calcBestAxisThroughPoints (points, this.axisA, this.axisUnitVector, this.vectorProjection, 4);
+JU.Measure.calcBestAxisThroughPoints (points, points.length, this.axisA, this.axisUnitVector, this.vectorProjection, 4);
 this.axisB = JU.P3.newP (points[this.nRes]);
 JU.Measure.projectOntoAxis (this.axisB, this.axisA, this.axisUnitVector, this.vectorProjection);
 });

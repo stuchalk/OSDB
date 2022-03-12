@@ -19,7 +19,6 @@ this.defaultBgcolix = 0;
 this.defaultPaletteID = 0;
 this.defaultPointer = 0;
 this.zeroFontId = 0;
-this.defaultsOnlyForNone = true;
 this.setDefaults = false;
 this.isScaled = false;
 this.scalePixelsPerMicron = 0;
@@ -47,28 +46,30 @@ this.defaultZPos = 0;
 this.translucentAllowed = false;
 });
 Clazz.overrideMethod (c$, "setProperty", 
-function (propertyName, value, bsSelected) {
+function (propertyName, value, bs) {
 this.isActive = true;
+var atoms = this.ms.at;
+var ac = this.ms.ac;
 if ("setDefaults" === propertyName) {
 this.setDefaults = (value).booleanValue ();
 return;
 }if ("color" === propertyName) {
 var pid = J.c.PAL.pidOf (value);
 var colix = JU.C.getColixO (value);
-if (!this.setDefaults) {
-var n = this.checkColixLength (colix, bsSelected.length ());
-for (var i = bsSelected.nextSetBit (0); i >= 0 && i < n; i = bsSelected.nextSetBit (i + 1)) this.setLabelColix (i, colix, pid);
-
-}if (this.setDefaults || !this.defaultsOnlyForNone) {
+if (this.setDefaults) {
 this.defaultColix = colix;
 this.defaultPaletteID = pid;
+} else {
+var n = this.checkColixLength (colix, bs.length ());
+for (var i = bs.nextSetBit (0); i >= 0 && i < n; i = bs.nextSetBit (i + 1)) this.setLabelColix (i, colix, pid);
+
 }return;
 }if ("scalereference" === propertyName) {
 if (this.strings == null) return;
 var val = (value).floatValue ();
 var scalePixelsPerMicron = (val == 0 ? 0 : 10000 / val);
-var n = Math.min (this.ac, this.strings.length);
-for (var i = bsSelected.nextSetBit (0); i >= 0 && i < n; i = bsSelected.nextSetBit (i + 1)) {
+var n = Math.min (ac, this.strings.length);
+for (var i = bs.nextSetBit (0); i >= 0 && i < n; i = bs.nextSetBit (i + 1)) {
 var text = this.getLabel (i);
 if (text == null) {
 text = JM.Text.newLabel (this.vwr, null, this.strings[i], 0, 0, 0, scalePixelsPerMicron);
@@ -78,17 +79,17 @@ text.setScalePixelsPerMicron (scalePixelsPerMicron);
 }}
 return;
 }if ("label" === propertyName) {
-var isPicked = (this.isPickingMode () && bsSelected.cardinality () == 1 && bsSelected.nextSetBit (0) == this.lastPicked);
+var isPicked = (this.isPickingMode () && bs.cardinality () == 1 && bs.nextSetBit (0) == this.lastPicked);
 this.setScaling ();
 var tokens = null;
-var nbs = this.checkStringLength (bsSelected.length ());
-if (this.defaultColix != 0 || this.defaultPaletteID != 0) this.checkColixLength (this.defaultColix, bsSelected.length ());
-if (this.defaultBgcolix != 0) this.checkBgColixLength (this.defaultBgcolix, bsSelected.length ());
+var nbs = this.checkStringLength (bs.length ());
+if (this.defaultColix != 0 || this.defaultPaletteID != 0) this.checkColixLength (this.defaultColix, bs.length ());
+if (this.defaultBgcolix != 0) this.checkBgColixLength (this.defaultBgcolix, bs.length ());
 if (Clazz.instanceOf (value, JU.Lst)) {
 var list = value;
 var n = list.size ();
 tokens =  Clazz.newArray (-1, [null]);
-for (var pt = 0, i = bsSelected.nextSetBit (0); i >= 0 && i < nbs; i = bsSelected.nextSetBit (i + 1)) {
+for (var pt = 0, i = bs.nextSetBit (0); i >= 0 && i < nbs; i = bs.nextSetBit (i + 1)) {
 if (pt >= n) {
 this.setLabel (J.shape.Labels.nullToken, "", i, !isPicked);
 continue;
@@ -98,12 +99,12 @@ this.setLabel (tokens, JS.SV.sValue (list.get (pt++)), i, !isPicked);
 } else {
 var strLabel = value;
 tokens = (strLabel == null || strLabel.length == 0 ? J.shape.Labels.nullToken :  Clazz.newArray (-1, [null]));
-for (var i = bsSelected.nextSetBit (0); i >= 0 && i < this.ac; i = bsSelected.nextSetBit (i + 1)) this.setLabel (tokens, strLabel, i, !isPicked);
+for (var i = bs.nextSetBit (0); i >= 0 && i < ac; i = bs.nextSetBit (i + 1)) this.setLabel (tokens, strLabel, i, !isPicked);
 
 }return;
 }if (propertyName.startsWith ("label:")) {
 this.setScaling ();
-this.checkStringLength (this.ac);
+this.checkStringLength (ac);
 var label = propertyName.substring (6);
 if (label.length == 0) label = null;
 this.setLabel ( Clazz.newArray (-1, [null]), label, (value).intValue (), false);
@@ -115,83 +116,100 @@ return;
 return;
 }if ("bgcolor" === propertyName) {
 this.isActive = true;
-if (this.bsBgColixSet == null) this.bsBgColixSet = JU.BS.newN (this.ac);
+if (this.bsBgColixSet == null) this.bsBgColixSet = JU.BS.newN (ac);
 var bgcolix = JU.C.getColixO (value);
-if (!this.setDefaults) {
-var n = this.checkBgColixLength (bgcolix, bsSelected.length ());
-for (var i = bsSelected.nextSetBit (0); i >= 0 && i < n; i = bsSelected.nextSetBit (i + 1)) this.setBgcolix (i, bgcolix);
+if (this.setDefaults) {
+this.defaultBgcolix = bgcolix;
+} else {
+var n = this.checkBgColixLength (bgcolix, bs.length ());
+for (var i = bs.nextSetBit (0); i >= 0 && i < n; i = bs.nextSetBit (i + 1)) this.setBgcolix (i, bgcolix);
 
-}if (this.setDefaults || !this.defaultsOnlyForNone) this.defaultBgcolix = bgcolix;
-return;
-}if (this.bsFontSet == null) this.bsFontSet = JU.BS.newN (this.ac);
+}return;
+}if (this.bsFontSet == null) this.bsFontSet = JU.BS.newN (ac);
 if ("fontsize" === propertyName) {
 var fontsize = (value).intValue ();
 if (fontsize < 0) {
 this.fids = null;
 return;
-}var fid = this.vwr.gdata.getFontFid (fontsize);
-if (!this.setDefaults) for (var i = bsSelected.nextSetBit (0); i >= 0 && i < this.ac; i = bsSelected.nextSetBit (i + 1)) this.setFont (i, fid);
-
-if (this.setDefaults || !this.defaultsOnlyForNone) this.defaultFontId = fid;
-return;
+}var f;
+if (this.setDefaults) {
+f = JU.Font.getFont3D (this.defaultFontId);
+this.defaultFontId = this.vwr.getFont3D (f.fontFace, f.fontStyle, fontsize).fid;
+} else {
+for (var i = bs.nextSetBit (0); i >= 0 && i < ac; i = bs.nextSetBit (i + 1)) {
+f = JU.Font.getFont3D (this.fids == null || i >= this.fids.length ? this.fids[i] : this.defaultFontId);
+this.setFont (i, this.vwr.getFont3D (f.fontFace, f.fontStyle, fontsize).fid);
+}
+}return;
 }if ("font" === propertyName) {
 var fid = (value).fid;
-if (!this.setDefaults) for (var i = bsSelected.nextSetBit (0); i >= 0 && i < this.ac; i = bsSelected.nextSetBit (i + 1)) this.setFont (i, fid);
-
-if (this.setDefaults || !this.defaultsOnlyForNone) this.defaultFontId = fid;
-return;
-}if ("offset" === propertyName) {
-if (!(Clazz.instanceOf (value, Integer))) {
-if (!this.setDefaults) {
-this.checkColixLength (-1, this.ac);
-for (var i = bsSelected.nextSetBit (0); i >= 0 && i < this.ac; i = bsSelected.nextSetBit (i + 1)) this.setPymolOffset (i, value);
+if (this.setDefaults) {
+this.defaultFontId = fid;
+} else {
+for (var i = bs.nextSetBit (0); i >= 0 && i < ac; i = bs.nextSetBit (i + 1)) this.setFont (i, fid);
 
 }return;
-}var offset = (value).intValue ();
-if (!this.setDefaults) for (var i = bsSelected.nextSetBit (0); i >= 0 && i < this.ac; i = bsSelected.nextSetBit (i + 1)) this.setOffsets (i, offset);
+}if ("offset" === propertyName) {
+if (Clazz.instanceOf (value, Integer)) {
+var offset = (value).intValue ();
+if (this.setDefaults) {
+this.defaultOffset = offset;
+} else {
+for (var i = bs.nextSetBit (0); i >= 0 && i < ac; i = bs.nextSetBit (i + 1)) this.setOffsets (i, offset);
 
-if (this.setDefaults || !this.defaultsOnlyForNone) this.defaultOffset = offset;
-return;
+}} else if (!this.setDefaults) {
+this.checkColixLength (-1, ac);
+for (var i = bs.nextSetBit (0); i >= 0 && i < ac; i = bs.nextSetBit (i + 1)) this.setPymolOffset (i, value);
+
+}return;
 }if ("align" === propertyName) {
 var type = value;
 var hAlignment = (type.equalsIgnoreCase ("right") ? 12 : type.equalsIgnoreCase ("center") ? 8 : 4);
-for (var i = bsSelected.nextSetBit (0); i >= 0 && i < this.ac; i = bsSelected.nextSetBit (i + 1)) this.setHorizAlignment (i, hAlignment);
+if (this.setDefaults) {
+this.defaultAlignment = hAlignment;
+} else {
+for (var i = bs.nextSetBit (0); i >= 0 && i < ac; i = bs.nextSetBit (i + 1)) this.setHorizAlignment (i, hAlignment);
 
-if (this.setDefaults || !this.defaultsOnlyForNone) this.defaultAlignment = hAlignment;
-return;
+}return;
 }if ("pointer" === propertyName) {
 var pointer = (value).intValue ();
-if (!this.setDefaults) for (var i = bsSelected.nextSetBit (0); i >= 0 && i < this.ac; i = bsSelected.nextSetBit (i + 1)) this.setPointer (i, pointer);
+if (this.setDefaults) {
+this.defaultPointer = pointer;
+} else {
+for (var i = bs.nextSetBit (0); i >= 0 && i < ac; i = bs.nextSetBit (i + 1)) this.setPointer (i, pointer);
 
-if (this.setDefaults || !this.defaultsOnlyForNone) this.defaultPointer = pointer;
-return;
+}return;
 }if ("front" === propertyName) {
 var TF = (value).booleanValue ();
-if (!this.setDefaults) for (var i = bsSelected.nextSetBit (0); i >= 0 && i < this.ac; i = bsSelected.nextSetBit (i + 1)) this.setZPos (i, 32, TF);
+if (this.setDefaults) {
+this.defaultZPos = (TF ? 32 : 0);
+} else {
+for (var i = bs.nextSetBit (0); i >= 0 && i < ac; i = bs.nextSetBit (i + 1)) this.setZPos (i, 32, TF);
 
-if (this.setDefaults || !this.defaultsOnlyForNone) this.defaultZPos = (TF ? 32 : 0);
-return;
+}return;
 }if ("group" === propertyName) {
 var TF = (value).booleanValue ();
-if (!this.setDefaults) for (var i = bsSelected.nextSetBit (0); i >= 0 && i < this.ac; i = bsSelected.nextSetBit (i + 1)) this.setZPos (i, 16, TF);
+if (this.setDefaults) {
+this.defaultZPos = (TF ? 16 : 0);
+} else {
+for (var i = bs.nextSetBit (0); i >= 0 && i < ac; i = bs.nextSetBit (i + 1)) this.setZPos (i, 16, TF);
 
-if (this.setDefaults || !this.defaultsOnlyForNone) this.defaultZPos = (TF ? 16 : 0);
-return;
+}return;
 }if ("display" === propertyName || "toggleLabel" === propertyName) {
 var mode = ("toggleLabel" === propertyName ? 0 : (value).booleanValue () ? 1 : -1);
-if (this.mads == null) this.mads =  Clazz.newShortArray (this.ac, 0);
+if (this.mads == null) this.mads =  Clazz.newShortArray (ac, 0);
 var strLabelPDB = null;
 var tokensPDB = null;
 var strLabelUNK = null;
 var tokensUNK = null;
 var strLabel;
 var tokens;
-var nstr = this.checkStringLength (bsSelected.length ());
+var nstr = this.checkStringLength (bs.length ());
 var bgcolix = this.defaultBgcolix;
-var nbg = this.checkBgColixLength (bgcolix, bsSelected.length ());
+var nbg = this.checkBgColixLength (bgcolix, bs.length ());
 var thisMad = (mode >= 0 ? 1 : -1);
-for (var i = bsSelected.nextSetBit (0); i >= 0 && i < this.ac; i = bsSelected.nextSetBit (i + 1)) {
-var atom = this.atoms[i];
+for (var i = bs.nextSetBit (0); i >= 0 && i < ac; i = bs.nextSetBit (i + 1)) {
+var atom = atoms[i];
 if (i < nstr && this.strings[i] != null) {
 this.mads[i] = (mode == 1 || mode == 0 && this.mads[i] < 0 ? 1 : -1);
 } else {
@@ -216,7 +234,7 @@ if (i < nbg && !this.bsBgColixSet.get (i)) this.setBgcolix (i, this.defaultBgcol
 }
 return;
 }if ("pymolLabels" === propertyName) {
-this.setPymolLabels (value, bsSelected);
+this.setPymolLabels (value, bs);
 return;
 }if (propertyName === "deleteModelAtoms") {
 this.labelBoxes = null;
@@ -227,9 +245,9 @@ this.bgcolixes = JU.AU.deleteElements (this.bgcolixes, firstAtomDeleted, nAtomsD
 this.offsets = JU.AU.deleteElements (this.offsets, firstAtomDeleted, nAtomsDeleted);
 this.formats = JU.AU.deleteElements (this.formats, firstAtomDeleted, nAtomsDeleted);
 this.strings = JU.AU.deleteElements (this.strings, firstAtomDeleted, nAtomsDeleted);
-JU.BSUtil.deleteBits (this.bsFontSet, bsSelected);
-JU.BSUtil.deleteBits (this.bsBgColixSet, bsSelected);
-}this.setPropAS (propertyName, value, bsSelected);
+JU.BSUtil.deleteBits (this.bsFontSet, bs);
+JU.BSUtil.deleteBits (this.bsBgColixSet, bs);
+}this.setPropAS (propertyName, value, bs);
 }, "~S,~O,JU.BS");
 Clazz.defineMethod (c$, "isPickingMode", 
  function () {
@@ -237,7 +255,8 @@ return (this.vwr.getPickingMode () == 2 && this.labelBoxes != null);
 });
 Clazz.defineMethod (c$, "checkStringLength", 
  function (n) {
-n = Math.min (this.ac, n);
+var ac = this.ms.ac;
+n = Math.min (ac, n);
 if (this.strings == null || n > this.strings.length) {
 this.formats = JU.AU.ensureLengthS (this.formats, n);
 this.strings = JU.AU.ensureLengthS (this.strings, n);
@@ -246,7 +265,7 @@ if (this.bsSizeSet == null) this.bsSizeSet = JU.BS.newN (n);
 }, "~N");
 Clazz.defineMethod (c$, "checkBgColixLength", 
  function (colix, n) {
-n = Math.min (this.ac, n);
+n = Math.min (this.ms.ac, n);
 if (colix == 0) return (this.bgcolixes == null ? 0 : this.bgcolixes.length);
 if (this.bgcolixes == null || n > this.bgcolixes.length) this.bgcolixes = JU.AU.ensureLengthShort (this.bgcolixes, n);
 return n;
@@ -254,7 +273,7 @@ return n;
 Clazz.defineMethod (c$, "setPymolLabels", 
  function (labels, bsSelected) {
 this.setScaling ();
-var n = this.checkStringLength (this.ac);
+var n = this.checkStringLength (this.ms.ac);
 this.checkColixLength (-1, n);
 for (var i = bsSelected.nextSetBit (0); i >= 0 && i < n; i = bsSelected.nextSetBit (i + 1)) this.setPymolLabel (i, labels.get (Integer.$valueOf (i)), null);
 
@@ -266,14 +285,15 @@ if (text == null) {
 if (this.strings == null || i >= this.strings.length || this.strings[i] == null) return;
 var fid = (this.bsFontSet != null && this.bsFontSet.get (i) ? this.fids[i] : -1);
 if (fid < 0) this.setFont (i, fid = this.defaultFontId);
-text = JM.Text.newLabel (this.vwr, JU.Font.getFont3D (fid), this.strings[i], this.getColix2 (i, this.atoms[i], false), this.getColix2 (i, this.atoms[i], true), 0, this.scalePixelsPerMicron);
+var a = this.ms.at[i];
+text = JM.Text.newLabel (this.vwr, JU.Font.getFont3D (fid), this.strings[i], this.getColix2 (i, a, false), this.getColix2 (i, a, true), 0, this.scalePixelsPerMicron);
 this.setPymolLabel (i, text, this.formats[i]);
 }text.pymolOffset = value;
 }, "~N,~A");
 Clazz.defineMethod (c$, "setScaling", 
  function () {
 this.isActive = true;
-if (this.bsSizeSet == null) this.bsSizeSet = JU.BS.newN (this.ac);
+if (this.bsSizeSet == null) this.bsSizeSet = JU.BS.newN (this.ms.ac);
 this.isScaled = this.vwr.getBoolean (603979845);
 this.scalePixelsPerMicron = (this.isScaled ? this.vwr.getScalePixelsPerAngstrom (false) * 10000 : 0);
 });
@@ -281,7 +301,8 @@ Clazz.defineMethod (c$, "setPymolLabel",
  function (i, t, format) {
 if (t == null) return;
 var label = t.text;
-var atom = this.atoms[i];
+var atom = this.ms.at[i];
+if (atom == null) return;
 this.addString (atom, i, label, format == null ? JU.PT.rep (label, "%", "%%") : format);
 atom.setShapeVisibility (this.vf, true);
 if (t.colix >= 0) this.setLabelColix (i, t.colix, J.c.PAL.UNKNOWN.id);
@@ -290,7 +311,7 @@ this.putLabel (i, t);
 }, "~N,JM.Text,~S");
 Clazz.defineMethod (c$, "setLabel", 
  function (temp, strLabel, i, doAll) {
-var atom = this.atoms[i];
+var atom = this.ms.at[i];
 var tokens = temp[0];
 if (tokens == null) tokens = temp[0] = JM.LabelToken.compile (this.vwr, strLabel, '\0', null);
 var label = (tokens == null ? null : JM.LabelToken.formatLabelAtomArray (this.vwr, atom, tokens, '\0', null, this.ptTemp));
@@ -325,6 +346,7 @@ return isNew;
 }, "JM.Atom,~N,~S,~S");
 Clazz.overrideMethod (c$, "getProperty", 
 function (property, index) {
+if (property.equals ("font")) return JU.Font.getFont3D (this.defaultFontId);
 if (property.equals ("offsets")) return this.offsets;
 if (property.equals ("label")) return (this.strings != null && index < this.strings.length && this.strings[index] != null ? this.strings[index] : "");
 return null;
@@ -367,7 +389,7 @@ Clazz.defineMethod (c$, "setOffsets",
  function (i, offset) {
 if (this.offsets == null || i >= this.offsets.length) {
 if (offset == JV.JC.LABEL_DEFAULT_OFFSET) return;
-this.offsets = JU.AU.ensureLengthI (this.offsets, this.ac);
+this.offsets = JU.AU.ensureLengthI (this.offsets, this.ms.ac);
 }this.offsets[i] = (this.offsets[i] & 63) | offset;
 var text = this.getLabel (i);
 if (text != null) text.setOffset (offset);
@@ -380,7 +402,7 @@ case 0:
 case 4:
 return;
 }
-this.offsets = JU.AU.ensureLengthI (this.offsets, this.ac);
+this.offsets = JU.AU.ensureLengthI (this.offsets, this.ms.ac);
 }if (hAlign == 0) hAlign = 4;
 this.offsets[i] = JV.JC.setHorizAlignment (this.offsets[i], hAlign);
 var text = this.getLabel (i);
@@ -390,7 +412,7 @@ Clazz.defineMethod (c$, "setPointer",
  function (i, pointer) {
 if (this.offsets == null || i >= this.offsets.length) {
 if (pointer == 0) return;
-this.offsets = JU.AU.ensureLengthI (this.offsets, this.ac);
+this.offsets = JU.AU.ensureLengthI (this.offsets, this.ms.ac);
 }this.offsets[i] = JV.JC.setPointer (this.offsets[i], pointer);
 var text = this.getLabel (i);
 if (text != null) text.pointer = pointer;
@@ -399,14 +421,14 @@ Clazz.defineMethod (c$, "setZPos",
  function (i, flag, TF) {
 if (this.offsets == null || i >= this.offsets.length) {
 if (!TF) return;
-this.offsets = JU.AU.ensureLengthI (this.offsets, this.ac);
+this.offsets = JU.AU.ensureLengthI (this.offsets, this.ms.ac);
 }this.offsets[i] = JV.JC.setZPosition (this.offsets[i], TF ? flag : 0);
 }, "~N,~N,~B");
 Clazz.defineMethod (c$, "setFont", 
  function (i, fid) {
 if (this.fids == null || i >= this.fids.length) {
 if (fid == this.zeroFontId) return;
-this.fids = JU.AU.ensureLengthByte (this.fids, this.ac);
+this.fids = JU.AU.ensureLengthI (this.fids, this.ms.ac);
 }this.fids[i] = fid;
 this.bsFontSet.set (i);
 var text = this.getLabel (i);
@@ -418,7 +440,7 @@ function () {
 if (this.strings == null) return;
 for (var i = this.strings.length; --i >= 0; ) {
 var label = this.strings[i];
-if (label != null && this.ms.at.length > i && !this.ms.isAtomHidden (i)) this.ms.at[i].setClickable (this.vf);
+if (label != null && this.ms.at.length > i && this.ms.at[i] != null && !this.ms.isAtomHidden (i)) this.ms.at[i].setClickable (this.vf);
 }
 });
 Clazz.overrideMethod (c$, "checkObjectClicked", 
@@ -458,8 +480,9 @@ var dmin = 3.4028235E38;
 var imin = -1;
 var zmin = 3.4028235E38;
 var afactor = (this.vwr.antialiased ? 2 : 1);
+var atoms = this.ms.at;
 for (var entry, $entry = this.labelBoxes.entrySet ().iterator (); $entry.hasNext () && ((entry = $entry.next ()) || true);) {
-if (!this.atoms[entry.getKey ().intValue ()].isVisible (this.vf | 9)) continue;
+if (!atoms[entry.getKey ().intValue ()].isVisible (this.vf | 9)) continue;
 var boxXY = entry.getValue ();
 var dx = (x - boxXY[0]) * afactor;
 var dy = (y - boxXY[1]) * afactor;

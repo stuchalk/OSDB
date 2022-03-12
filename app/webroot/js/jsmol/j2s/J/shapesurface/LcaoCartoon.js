@@ -109,9 +109,11 @@ var list = this.getMeshList (this.lcaoID, false);
 for (var i = list.size (); --i >= 0; ) list.get (i).visible = TF;
 
 return;
-}var ac = this.vwr.ms.ac;
-for (var i = ac; --i >= 0; ) if (this.lcaoID != null || this.thisSet.get (i)) this.setLcaoOn (i, TF);
-
+}var ac = this.ms.ac;
+var at = this.ms.at;
+for (var i = ac; --i >= 0; ) {
+if (this.lcaoID != null || this.thisSet.get (i)) this.setLcaoOn (i, TF && at[i] != null);
+}
 }, "~B");
 Clazz.defineMethod (c$, "setLcaoOn", 
  function (iAtom, TF) {
@@ -124,7 +126,7 @@ Clazz.defineMethod (c$, "deleteLcaoCartoon",
 if (JU.PT.isWild (this.lcaoID)) {
 this.deleteMeshKey (this.lcaoID);
 return;
-}var ac = this.vwr.ms.ac;
+}var ac = this.ms.ac;
 for (var i = ac; --i >= 0; ) if (this.lcaoID != null || this.thisSet.get (i)) this.deleteLcaoCartoon (i);
 
 });
@@ -178,7 +180,7 @@ axes[1].set (1, 0, 0);
 }if (this.isMolecular || isCpk || this.thisType.equalsIgnoreCase ("s") || this.vwr.getHybridizationAndAxes (iAtom, axes[0], axes[1], this.thisType) != null) {
 this.setPropI ((this.isRadical ? "radical" : this.isLonePair ? "lonePair" : "lcaoCartoon"), axes, null);
 }if (isCpk) {
-var colix = this.vwr.ms.at[iAtom].colixAtom;
+var colix = this.ms.at[iAtom].colixAtom;
 if (JU.C.isColixTranslucent (colix)) {
 this.setPropI ("translucentLevel", Float.$valueOf (JU.C.getColixTranslucencyLevel (colix)), null);
 this.setPropI ("translucency", "translucent", null);

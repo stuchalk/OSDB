@@ -1,6 +1,7 @@
 Clazz.declarePackage ("JV");
-Clazz.load (["java.util.Hashtable"], ["JV.Connection", "$.Scene", "$.StateManager", "$.Connections"], ["java.util.Arrays", "JU.BS", "$.SB", "JM.Orientation", "JU.BSUtil"], function () {
+Clazz.load (["java.util.Hashtable"], ["JV.Connection", "$.Scene", "$.StateManager", "$.Connections"], ["java.util.Arrays", "JU.BS", "$.Lst", "$.SB", "JM.Orientation", "JU.BSUtil"], function () {
 c$ = Clazz.decorateAsClass (function () {
+this.maxUndo = 20;
 this.vwr = null;
 this.saved = null;
 this.lastOrientation = "";
@@ -11,6 +12,8 @@ this.lastSelected = "";
 this.lastState = "";
 this.lastShape = "";
 this.lastCoordinates = "";
+this.undoStateStack = null;
+this.redoStateStack = null;
 Clazz.instantialize (this, arguments);
 }, JV, "StateManager");
 Clazz.prepareFields (c$, function () {
@@ -151,25 +154,66 @@ function (saveName) {
 var name = (saveName.length > 0 ? "Selected_" + saveName : this.lastSelected);
 var bsSelected = JV.StateManager.getNoCase (this.saved, name);
 if (bsSelected == null) {
-this.vwr.select ( new JU.BS (), false, 0, false);
+this.vwr.selectStatus ( new JU.BS (), false, 0, false, false);
 return false;
-}this.vwr.select (bsSelected, false, 0, false);
+}this.vwr.selectStatus (bsSelected, false, 0, false, false);
 return true;
 }, "~S");
 Clazz.defineMethod (c$, "saveState", 
 function (saveName) {
 if (saveName.equalsIgnoreCase ("DELETE")) {
 this.deleteSavedType ("State_");
+this.clearStateStack ();
+return;
+}if (saveName.length == 0) {
+this.vwr.setBooleanProperty ("undoAuto", false);
+this.appendState (this.getStack (603984065));
+this.redoStateStack.clear ();
 return;
 }saveName = this.lastState = "State_" + saveName;
 this.saved.put (saveName, this.vwr.getStateInfo ());
 }, "~S");
 Clazz.defineMethod (c$, "getSavedState", 
 function (saveName) {
-var name = (saveName.length > 0 ? "State_" + saveName : this.lastState);
+if (saveName.length == 0) {
+var stack = this.getStack (603984065);
+return (stack.size () > 0 ? stack.get (stack.size () - 1) : null);
+}var name = (saveName.length > 0 ? "State_" + saveName : this.lastState);
 var script = JV.StateManager.getNoCase (this.saved, name);
 return (script == null ? "" : script);
 }, "~S");
+Clazz.defineMethod (c$, "popStack", 
+function (type) {
+var stack = this.getStack (type);
+var state = (stack.size () > 0 ? stack.remove (stack.size () - 1) : null);
+if (state != null) {
+this.appendState (this.getStack (type == 603984065 ? 4139 : 603984065));
+}this.checkStack (this.getStack (603984065));
+return state;
+}, "~N");
+Clazz.defineMethod (c$, "appendState", 
+ function (stack) {
+this.checkStack (stack);
+if (this.maxUndo > 0) stack.addLast (this.vwr.getStateInfo ());
+}, "JU.Lst");
+Clazz.defineMethod (c$, "checkStack", 
+ function (stack) {
+while (stack.size () > this.maxUndo) stack.removeItemAt (0);
+
+}, "JU.Lst");
+Clazz.defineMethod (c$, "getStack", 
+ function (type) {
+if (this.undoStateStack == null) {
+this.undoStateStack =  new JU.Lst ();
+this.redoStateStack =  new JU.Lst ();
+}return (type == 603984065 ? this.undoStateStack : this.redoStateStack);
+}, "~N");
+Clazz.defineMethod (c$, "clearStateStack", 
+ function () {
+if (this.undoStateStack == null) return;
+this.undoStateStack.clear ();
+this.redoStateStack.clear ();
+});
 Clazz.defineMethod (c$, "saveStructure", 
 function (saveName) {
 if (saveName.equalsIgnoreCase ("DELETE")) {
@@ -280,6 +324,29 @@ function (name, sv, nMax) {
 if (nMax > 0 && sv.length > nMax) sv = sv.substring (0, nMax) + " #...more (" + sv.length + " bytes -- use SHOW " + name + " or MESSAGE @" + name + " to view)";
 return sv;
 }, "~S,~S,~N");
+Clazz.defineMethod (c$, "getUndoMax", 
+function () {
+return this.maxUndo;
+});
+Clazz.defineMethod (c$, "setUndoMax", 
+function (n) {
+this.maxUndo = Math.max (n, 0);
+this.checkStack (this.getStack (603984065));
+this.checkStack (this.getStack (4139));
+}, "~N");
+Clazz.defineMethod (c$, "getUndoRedoState", 
+function (tok) {
+return this.popStack (tok);
+}, "~N");
+Clazz.defineMethod (c$, "canDo", 
+function (type) {
+return (this.maxUndo > 0 && this.vwr.getBoolean (603979898) && !this.getStack (type).isEmpty ());
+}, "~N");
+Clazz.defineMethod (c$, "getUndoInfo", 
+function () {
+var auto = this.vwr.getBooleanProperty ("undoAuto");
+return (this.vwr.getBoolean (603979898) ? "undoAuto=" + auto + (!auto ? "; user stack sizes: UNDO=" + this.getStack (603984065).size () + ", REDO=" + this.getStack (4139).size () : "") : "SET preserveState = FALSE -- undo/redo is disabled");
+});
 Clazz.defineStatics (c$,
 "OBJ_BACKGROUND", 0,
 "OBJ_AXIS1", 1,
@@ -289,7 +356,8 @@ Clazz.defineStatics (c$,
 "OBJ_UNITCELL", 5,
 "OBJ_FRANK", 6,
 "OBJ_MAX", 7,
-"objectNameList", "background axis1      axis2      axis3      boundbox   unitcell   frank      ");
+"objectNameList", "background axis1      axis2      axis3      boundbox   unitcell   frank      ",
+"MAX_UNDO_DEFAULT", 20);
 c$ = Clazz.decorateAsClass (function () {
 this.saveName = null;
 this.scene = null;

@@ -168,9 +168,10 @@ pt.y *= this.bbVector.y;
 pt.z *= this.bbVector.z;
 pt.add (this.bbCenter);
 }
+if (scale != 1) {
 this.bbCorner0.setT (this.bbVertices[0]);
 this.bbCorner1.setT (this.bbVertices[7]);
-}, "~N");
+}}, "~N");
 Clazz.defineMethod (c$, "isWithin", 
 function (pt) {
 if (!this.isScaleSet) this.setBbcage (1);
@@ -179,6 +180,10 @@ return (pt.x >= this.bbCorner0.x && pt.x <= this.bbCorner1.x && pt.y >= this.bbC
 Clazz.defineMethod (c$, "getMaxDim", 
 function () {
 return this.bbVector.length () * 2;
+});
+Clazz.overrideMethod (c$, "toString", 
+function () {
+return "" + this.bbCorner0 + this.bbCorner1;
 });
 Clazz.defineStatics (c$,
 "X", 4,

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.export");
-Clazz.load (["J.export.__CartesianExporter", "java.util.Hashtable", "JU.AU", "$.M4", "$.P3", "$.SB"], "J.export._IdtfExporter", ["java.lang.Boolean", "JU.Lst", "$.Quat", "JU.C", "$.Geodesic", "JV.Viewer"], function () {
+Clazz.load (["J.export.__CartesianExporter", "java.util.Hashtable", "JU.AU", "$.M4", "$.P3", "$.SB"], "J.export._IdtfExporter", ["java.lang.Boolean", "$.Short", "JU.Lst", "$.Quat", "JU.C", "$.Geodesic", "JV.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.haveSphere = false;
 this.haveCylinder = false;
@@ -410,8 +410,8 @@ if (colorList != null) {
 var isAll = (bsPolygons == null);
 var i0 = (isAll ? nPolygons - 1 : bsPolygons.nextSetBit (0));
 for (var i = i0; i >= 0; i = (isAll ? i - 1 : bsPolygons.nextSetBit (i + 1))) {
-sbColorIndexes.append (" " + htColixes.get ("" + colixes[indices[i][0]]) + " " + htColixes.get ("" + colixes[indices[i][1]]) + " " + htColixes.get ("" + colixes[indices[i][2]]));
-if (faceVertexMax == 4 && indices[i].length == 4) sbColorIndexes.append (" " + htColixes.get ("" + colixes[indices[i][0]]) + " " + htColixes.get ("" + colixes[indices[i][2]]) + " " + htColixes.get ("" + colixes[indices[i][3]]));
+sbColorIndexes.append (" " + htColixes.get (Short.$valueOf (colixes[indices[i][0]])) + " " + htColixes.get (Short.$valueOf (colixes[indices[i][1]])) + " " + htColixes.get (Short.$valueOf (colixes[indices[i][2]])));
+if (faceVertexMax == 4 && indices[i].length == 4) sbColorIndexes.append (" " + htColixes.get (Short.$valueOf (colixes[indices[i][0]])) + " " + htColixes.get (Short.$valueOf (colixes[indices[i][2]])) + " " + htColixes.get (Short.$valueOf (colixes[indices[i][3]])));
 }
 }var sbCoords = this.sbTemp =  new JU.SB ();
 this.outputVertices (vertices, nVertices, offset);

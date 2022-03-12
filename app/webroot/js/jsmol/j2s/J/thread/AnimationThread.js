@@ -82,7 +82,8 @@ mode = 0;
 break;
 case -2:
 if (JU.Logger.debugging) JU.Logger.debug ("animation thread " + this.intThread + " exiting");
-this.am.stopThread (false);
+if (this.am.animationThread === this) this.am.stopThread (false);
+ else this.interrupt ();
 return;
 }
 }

@@ -315,9 +315,10 @@ var ac = this.asc.getLastAtomSetAtomCount ();
 var data =  new Array (ac);
 var temp = null;
 var atomIndices =  Clazz.newIntArray (ac, 0);
-while (this.line != null && this.line.length > 20) {
+while (this.line != null && this.line.length > 20 && this.line.indexOf ("Temperature") < 0) {
 var symmetries = JU.PT.getTokens (this.rd ());
 this.discardLinesUntilContains (" Frequencies");
+if (this.line == null) return;
 this.isHighPrecision = (this.line.indexOf ("---") > 0);
 if (this.isHighPrecision ? !this.allowHighPrecision : this.haveHighPrecision) return;
 if (this.isHighPrecision && !this.haveHighPrecision) {
@@ -351,9 +352,10 @@ if (temp[0] == null) break;
 }
 } else {
 var nLines = 0;
+var nMin = frequencyCount * 3 + 1;
 while (true) {
 this.fillDataBlockFixed (temp, 0, 0, 0);
-if (temp[0].length < 10) break;
+if (temp[0].length < nMin) break;
 atomIndices[nLines] = Integer.$valueOf (temp[0][0]).intValue () - 1;
 data[nLines++] = temp[0];
 }
@@ -385,10 +387,12 @@ JU.Logger.info ("Mulliken charges found for Model " + this.asc.atomSetCount);
 Clazz.defineMethod (c$, "readCSATensors", 
  function () {
 this.rd ();
-while (this.rd () != null && this.line.indexOf ("Isotropic") >= 0) {
+this.rd ();
+while (this.line != null && this.line.indexOf ("Isotropic") >= 0) {
 var iatom = this.parseIntAt (this.line, 0);
 var data = (this.rd () + this.rd () + this.rd ()).$plit ("=");
 this.addTensor (iatom, data);
+if (this.rd () != null && this.line.indexOf ("Eigen") >= 0) this.rd ();
 }
 this.appendLoadNote ("NMR shift tensors are available for model=" + (this.asc.iSet + 1) + "\n using \"ellipsoids set 'csa'.");
 });
@@ -408,7 +412,6 @@ System.out.println ("calc Tensor " + t + "calc isotropy=" + t.getInfo ("isotropy
 Clazz.defineMethod (c$, "readCouplings", 
  function () {
 var type = (this.line.indexOf (" K ") >= 0 ? "K" : "J");
-var i0 = this.asc.getLastAtomSetAtomIndex ();
 var n = this.asc.getLastAtomSetAtomCount ();
 var data =  Clazz.newFloatArray (n, n, 0);
 var k0 = 0;

@@ -465,13 +465,12 @@ return (value != null && value.length > 1 && value.startsWith ("\"") && value.en
 }, "~S");
 c$.isNonStringPrimitive = Clazz.defineMethod (c$, "isNonStringPrimitive", 
 function (info) {
-return Clazz.instanceOf (info, Number) || Clazz.instanceOf (info, Boolean);
-}, "~O");
-c$.arrayGet = Clazz.defineMethod (c$, "arrayGet", 
- function (info, i) {
 {
-return info[i];
-}}, "~O,~N");
+if(typeof info == "number" || typeof info == "boolean") {
+return true;
+}
+}return Clazz.instanceOf (info, Number) || Clazz.instanceOf (info, Boolean);
+}, "~O");
 c$.toJSON = Clazz.defineMethod (c$, "toJSON", 
 function (infoType, info) {
 if (info == null) return JU.PT.packageJSON (infoType, null);
@@ -494,6 +493,7 @@ if (Clazz.instanceOf (info, java.util.Map)) {
 sb.append ("{ ");
 var sep = "";
 for (var key, $key = (info).keySet ().iterator (); $key.hasNext () && ((key = $key.next ()) || true);) {
+if (key == null) key = "null";
 sb.append (sep).append (JU.PT.packageJSON (key, JU.PT.toJSON (null, (info).get (key))));
 sep = ",";
 }
@@ -524,16 +524,28 @@ break;
 if (s == null) {
 sb.append ("[");
 var n = JU.AU.getLength (info);
+var o = null;
+{
+o = info[0];
+typeof o != "number" && typeof 0 != "boolean" && (o = null);
+}if (o != null) {
+sb.appendO (info);
+} else {
 for (var i = 0; i < n; i++) {
 if (i > 0) sb.appendC (',');
 sb.append (JU.PT.toJSON (null, JU.PT.arrayGet (info, i)));
 }
-sb.append ("]");
+}sb.append ("]");
 break;
 }info = info.toString ();
 }
 return JU.PT.packageJSON (infoType, (s == null ? sb.toString () : s));
 }, "~S,~O");
+c$.arrayGet = Clazz.defineMethod (c$, "arrayGet", 
+ function (info, i) {
+{
+return info[i];
+}}, "~O,~N");
 c$.nonArrayString = Clazz.defineMethod (c$, "nonArrayString", 
 function (x) {
 {
@@ -602,7 +614,7 @@ c$.escF = Clazz.defineMethod (c$, "escF",
 function (f) {
 var sf = "" + f;
 {
-if (sf.indexOf(".") < 0 && sf.indexOf("e") < 0)
+if (sf.indexOf(".") < 0 && sf.indexOf("e") < 0 && sf.indexOf("N") < 0 && sf.indexOf("n") < 0)
 sf += ".0";
 }return sf;
 }, "~N");
@@ -695,12 +707,15 @@ var isExponential = false;
 if (strFormat.charAt (ich) == '.') {
 ++ich;
 if ((ch = strFormat.charAt (ich)) == '-') {
-isExponential = (strT == null);
+isExponential = true;
 ++ich;
 }if ((ch = strFormat.charAt (ich)) >= '0' && ch <= '9') {
 precision = ch.charCodeAt (0) - 48;
 ++ich;
-}if (isExponential) precision = -precision;
+if ((ch = strFormat.charAt (ich)) >= '0' && ch <= '9') {
+precision = 10 * precision + (ch.charCodeAt (0) - 48);
+++ich;
+}}if (isExponential) precision = -precision;
 }var st = strFormat.substring (ich, ich + len);
 if (!st.equals (key)) {
 ich = ichPercent + 1;
@@ -708,7 +723,7 @@ strLabel += '%';
 continue;
 }ich += len;
 if (!Float.isNaN (floatT)) strLabel += JU.PT.formatF (floatT, width, precision, alignLeft, zeroPad);
- else if (strT != null) strLabel += JU.PT.formatS (strT, width, precision, alignLeft, zeroPad);
+ else if (strT != null) strLabel += JU.PT.formatS (strT, width, precision < 0 ? precision - 1 : precision, alignLeft, zeroPad);
  else if (!Double.isNaN (doubleT)) strLabel += JU.PT.formatD (doubleT, width, precision - 1, alignLeft, zeroPad, true);
 if (doOne) break;
 } catch (ioobe) {
@@ -952,7 +967,7 @@ return (pt < 0 ? JU.PT.parseFloat (s) : JU.PT.parseFloat (s.substring (0, pt)) /
 }, "~S");
 Clazz.defineStatics (c$,
 "tensScale",  Clazz.newFloatArray (-1, [10, 100, 1000, 10000, 100000, 1000000]),
-"decimalScale",  Clazz.newFloatArray (-1, [0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001, 0.000000001]),
+"decimalScale",  Clazz.newFloatArray (-1, [0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001, 0.000000001, 0.0000000001, 0.00000000001, 0.000000000001, 0.0000000000001, 0.00000000000001, 0.000000000000001]),
 "FLOAT_MIN_SAFE", 2E-45,
 "escapable", "\\\\\tt\rr\nn\"\"",
 "FRACTIONAL_PRECISION", 100000,

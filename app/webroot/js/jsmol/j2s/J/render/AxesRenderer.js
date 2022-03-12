@@ -28,12 +28,13 @@ this.font3d = this.vwr.gdata.getFont3DScaled (axes.font3d, this.imageFontScaling
 var modelIndex = this.vwr.am.cmi;
 var isDataFrame = this.vwr.isJmolDataFrame ();
 this.pt000 = (isDataFrame ? this.pt0 : axes.originPoint);
+if (this.ms.isJmolDataFrameForModel (modelIndex) && !this.ms.getJmolFrameType (modelIndex).equals ("plot data")) return false;
 var isUnitCell = (this.vwr.g.axesMode == 603979808);
-if (this.vwr.ms.isJmolDataFrameForModel (modelIndex) && !this.vwr.ms.getJmolFrameType (modelIndex).equals ("plot data")) return false;
 if (isUnitCell && modelIndex < 0 && this.vwr.getCurrentUnitCell () == null) return false;
+isUnitCell = new Boolean (isUnitCell & (this.ms.unitCells != null)).valueOf ();
 var nPoints = 6;
 var labelPtr = 0;
-if (isUnitCell && this.ms.unitCells != null) {
+if (isUnitCell) {
 nPoints = 3;
 labelPtr = 6;
 } else if (isXY) {
@@ -97,7 +98,7 @@ var yCenter = ptTemp.y;
 this.colixes[0] = this.vwr.getObjectColix (1);
 this.colixes[1] = this.vwr.getObjectColix (2);
 this.colixes[2] = this.vwr.getObjectColix (3);
-var showOrigin = (!isXY && nPoints == 3 && axes.scale == 2);
+var showOrigin = (!isXY && nPoints == 3 && (axes.scale == 2 || isUnitCell));
 for (var i = nPoints; --i >= 0; ) {
 if (checkAxisType && !axes.axisType.contains (J.render.AxesRenderer.axesTypes[i]) || this.exportType != 1 && (Math.abs (xCenter - this.p3Screens[i].x) + Math.abs (yCenter - this.p3Screens[i].y) <= 2) && (!(showOrigin = false))) continue;
 this.colix = this.colixes[i % 3];

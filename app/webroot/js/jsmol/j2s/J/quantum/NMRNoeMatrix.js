@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.quantum");
-Clazz.load (null, "J.quantum.NMRNoeMatrix", ["java.lang.Exception", "$.StringBuffer", "java.util.Hashtable", "JU.BS", "$.DF", "$.Lst", "JM.Atom"], function () {
+Clazz.load (["java.text.NumberFormat"], "J.quantum.NMRNoeMatrix", ["java.io.BufferedReader", "$.File", "$.FileReader", "java.lang.Double", "$.Exception", "$.StringBuffer", "java.util.Hashtable", "JU.BS", "$.Lst", "JM.Atom"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.eigenValues = null;
 this.eigenVectors = null;
@@ -87,7 +87,7 @@ return noeMatrix;
 Clazz.makeConstructor (c$, 
  function (params) {
 this.params = params;
-params.id = ++J.quantum.NMRNoeMatrix.id;
+params.id = ++J.quantum.NMRNoeMatrix.staticid;
 }, "J.quantum.NMRNoeMatrix.NOEParams");
 Clazz.defineMethod (c$, "calcNOEs", 
 function () {
@@ -96,15 +96,12 @@ this.noeM =  Clazz.newDoubleArray (0, 0, 0);
 return;
 }if (this.nHAtoms != this.atomCounter) {
 throw  new Exception ("Not all atoms have been read in yet!");
-}var isNew = false;
-if (this.params.tainted) {
+}if (this.params.tainted) {
 this.calcRelaxMatrix ();
 this.Diagonalise ();
-isNew = true;
 }if (this.params.tainted || this.params.mixingChanged) {
 this.calcNoeMatrix ();
 this.params.mixingChanged = false;
-isNew = true;
 }this.params.tainted = false;
 });
 Clazz.defineMethod (c$, "initArrays", 
@@ -287,7 +284,7 @@ var sb;
 sb =  new StringBuffer ();
 for (this.i = 0; this.i < this.nHAtoms; this.i++) {
 for (this.j = 0; this.j < this.nHAtoms; this.j++) {
-sb.append (JU.DF.formatDecimalDbl (this.noeM[this.i][this.j], 4) + "\t");
+sb.append (J.quantum.NMRNoeMatrix.nf.format (this.noeM[this.i][this.j]) + "\t");
 }
 sb.append ("\n");
 }
@@ -297,11 +294,14 @@ return sb.toString ();
 Clazz.defineMethod (c$, "toStringNormRow", 
 function () {
 var sb;
+var nf = java.text.NumberFormat.getInstance ();
+nf.setMinimumFractionDigits (4);
+nf.setMaximumFractionDigits (4);
 sb =  new StringBuffer ();
 for (this.i = 0; this.i < this.nHAtoms; this.i++) {
 for (this.j = 0; this.j < this.nHAtoms; this.j++) {
 var val = this.noeM[this.i][this.j] / this.noeM[this.i][this.i];
-sb.append (JU.DF.formatDecimalDbl (val, 4) + "\t");
+sb.append (nf.format (val) + "\t");
 }
 sb.append ("\n");
 }
@@ -405,6 +405,81 @@ var y1 = atom1.y - atom2.y;
 var z1 = atom1.z - atom2.z;
 return (x1 * x1) + (y1 * y1) + (z1 * z1);
 }}, "J.quantum.NMRNoeMatrix.NOEAtom,J.quantum.NMRNoeMatrix.NOEAtom");
+Clazz.defineMethod (c$, "doItAll", 
+ function (file) {
+System.out.println ("starting");
+this.readAtomsFromFile (file);
+this.relaxMatrix =  Clazz.newDoubleArray (this.nHAtoms, this.nHAtoms, 0);
+this.eigenValues =  Clazz.newDoubleArray (this.nHAtoms, this.nHAtoms, 0);
+this.eigenVectors =  Clazz.newDoubleArray (this.nHAtoms, this.nHAtoms, 0);
+this.noeM =  Clazz.newDoubleArray (this.nHAtoms, this.nHAtoms, 0);
+System.out.println ("read atoms: " + Integer.toString (this.nHAtoms));
+this.calcRelaxMatrix ();
+System.out.println ("built matrix");
+System.out.println ("total iterations = " + Integer.toString (this.Diagonalise ()));
+System.out.println ("diagonalised matrix");
+this.calcNoeMatrix ();
+System.out.println ("calculated NOE matrix");
+System.out.println (this.toString ());
+System.out.println ("");
+System.out.println (this.toStringNormRow ());
+try {
+this.calcNOEs ();
+} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+System.out.println (e.toString ());
+} else {
+throw e;
+}
+}
+}, "java.io.File");
+Clazz.defineMethod (c$, "readAtomsFromFile", 
+ function (file) {
+this.atoms =  new Array (200);
+this.nHAtoms = 0;
+var br = null;
+try {
+br =  new java.io.BufferedReader ( new java.io.FileReader (file));
+br.readLine ();
+System.out.println ("found file");
+while (true) {
+var linetokens = br.readLine ().$plit ("\\s+");
+if (linetokens[1].matches ("41") || linetokens[1].matches ("44")) {
+this.atoms[this.nHAtoms] =  new J.quantum.NMRNoeMatrix.NOEAtom ();
+this.atoms[this.nHAtoms].x = Double.$valueOf (linetokens[14]).doubleValue ();
+this.atoms[this.nHAtoms].y = Double.$valueOf (linetokens[15]).doubleValue ();
+this.atoms[this.nHAtoms].z = Double.$valueOf (linetokens[16]).doubleValue ();
+this.atoms[this.nHAtoms].methyl = false;
+this.nHAtoms++;
+}}
+} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+System.out.println (e.toString ());
+} else {
+throw e;
+}
+} finally {
+if (br != null) try {
+br.close ();
+} catch (e) {
+if (Clazz.exceptionOf (e, java.io.IOException)) {
+} else {
+throw e;
+}
+}
+}
+}, "java.io.File");
+c$.main = Clazz.defineMethod (c$, "main", 
+function (args) {
+var params =  new J.quantum.NMRNoeMatrix.NOEParams ();
+params.setNMRfreqMHz (500);
+params.setCorrelationTimeTauPS (80.0);
+params.setMixingTimeSec (0.5);
+params.setCutoffAng (10.0);
+params.setRhoStar (0.1);
+params.setNoesy (true);
+ new J.quantum.NMRNoeMatrix (params).doItAll ( new java.io.File (args[0]));
+}, "~A");
 c$.createLabelMapAndIndex = Clazz.defineMethod (c$, "createLabelMapAndIndex", 
  function (viewer, bsMol, labelArray, bsH, labels, indexAtomInMol) {
 var labelMap =  new java.util.Hashtable ();
@@ -571,5 +646,9 @@ Clazz.instantialize (this, arguments);
 }, J.quantum.NMRNoeMatrix, "NOEAtom");
 c$ = Clazz.p0p ();
 Clazz.defineStatics (c$,
-"id", 0);
-});
+"staticid", 0);
+c$.nf = c$.prototype.nf = java.text.NumberFormat.getInstance ();
+{
+J.quantum.NMRNoeMatrix.nf.setMinimumFractionDigits (4);
+J.quantum.NMRNoeMatrix.nf.setMaximumFractionDigits (4);
+}});

@@ -70,14 +70,14 @@ Clazz.defineMethod (c$, "setGlobals",
  function () {
 this.invalidateMesh = false;
 this.needTranslucent = false;
-this.g3d.addRenderer (553648145);
+this.g3d.addRenderer (553648143);
 var TF = (!this.isExport && !this.vwr.checkMotionRendering (1112152066));
 if (TF != this.wireframeOnly) this.invalidateMesh = true;
 this.wireframeOnly = TF;
 TF = (this.isExport || !this.wireframeOnly && this.vwr.getBoolean (603979864));
 if (TF != this.isHighRes) this.invalidateMesh = true;
 this.isHighRes = TF;
-TF = !this.wireframeOnly && (this.vwr.getBoolean (603979817) || this.isExport);
+TF = !this.wireframeOnly && (this.vwr.getBoolean (603979816) || this.isExport);
 if (this.cartoonsFancy != TF) {
 this.invalidateMesh = true;
 this.cartoonsFancy = TF;
@@ -96,7 +96,7 @@ if (this.aspectRatio > 0) {
 if (this.meshRenderer == null) {
 this.meshRenderer = javajs.api.Interface.getInterface ("J.renderbio.BioMeshRenderer");
 this.meshRenderer.setViewerG3dShapeID (this.vwr, this.shape.shapeID);
-}this.meshRenderer.setup (this.g3d, this.vwr.ms, this.shape);
+}this.meshRenderer.setup (this.g3d, this.ms, this.shape);
 }TF = this.vwr.getBoolean (603979966);
 if (TF != this.isTraceAlpha) this.invalidateMesh = true;
 this.isTraceAlpha = TF;
@@ -135,7 +135,7 @@ this.vwr.freeTempEnum (this.structureTypes);
 Clazz.defineMethod (c$, "initializePolymer", 
  function (bioShape) {
 var bsDeleted = this.vwr.slm.bsDeleted;
-if (this.vwr.ms.isJmolDataFrameForModel (bioShape.modelIndex)) {
+if (this.ms.isJmolDataFrameForModel (bioShape.modelIndex)) {
 this.controlPoints = bioShape.bioPolymer.getControlPoints (true, 0, false);
 } else {
 this.controlPoints = bioShape.bioPolymer.getControlPoints (this.isTraceAlpha, this.sheetSmoothing, this.invalidateSheets);
@@ -247,7 +247,7 @@ if (!thisTypeOnly || this.structureTypes[i] === this.structureTypes[this.iNext])
 this.diameterMid = Clazz.floatToInt (this.vwr.tm.scaleToScreen (this.monomers[i].getLeadAtom ().sZ, this.madMid));
 this.diameterEnd = Clazz.floatToInt (this.vwr.tm.scaleToScreen (Clazz.floatToInt (this.controlPointScreens[this.iNext].z), this.madEnd));
 var doCap0 = (i == this.iPrev || !this.bsVisible.get (this.iPrev) || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iPrev]);
-var doCap1 = (this.iNext == this.iNext2 || !this.bsVisible.get (this.iNext) || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iNext]);
+var doCap1 = (this.iNext == this.iNext2 || this.iNext2 == this.iNext3 || !this.bsVisible.get (this.iNext) || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iNext]);
 return (this.aspectRatio > 0 && this.meshRenderer != null && this.meshRenderer.check (doCap0, doCap1));
 }, "~N,~B");
 Clazz.defineMethod (c$, "renderHermiteCylinder", 

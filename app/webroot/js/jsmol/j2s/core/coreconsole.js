@@ -249,6 +249,9 @@ Jmol.Console.JSConsole = function(appletConsole) {
 	Jmol.$html(id + "_inputdiv", '<textarea id="' + id + '_input" style="width:'+w+'px;height:'+h+'px"></textarea>');
 	Jmol.$html(id + "_outputdiv", '<textarea id="' + id + '_output" style="width:'+w+'px;height:'+(h*2)+'px"></textarea>');
 
+		Jmol.Cache.setDragDrop(this.applet, "console_output");
+		Jmol.Cache.setDragDrop(this.applet, "console_input");
+
 	Jmol.$bind("#" + id + "_input", "keydown keypress keyup", function(event) { console.input.keyEvent(event) });
 	Jmol.$bind("#" + id + "_input", "mousedown touchstart", function(event) { console.ignoreMouse=true });
 	Jmol.$bind("#" + id + "_output", "mousedown touchstart", function(event) { console.ignoreMouse=true });
@@ -575,7 +578,7 @@ Clazz_defineMethod (c$, "execute",
 function (strCommand) {
 var cmd = (strCommand == null ? this.input.getText () : strCommand);
 if (strCommand == null) this.input.setText (null);
-var strErrorMessage = this.vwr.script (cmd + "\u0001## EDITOR_IGNORE ##");
+var strErrorMessage = this.vwr.script (cmd + "; ## GUI ##" + "\u0001## EDITOR_IGNORE ##");
 if (strErrorMessage != null && !strErrorMessage.equals ("pending")) this.outputMsg (strErrorMessage);
 }, "~S");
 Clazz_defineMethod (c$, "destroyConsole", 
@@ -618,10 +621,8 @@ c$.map = Clazz_defineMethod (c$, "map",
 function (button, key, label, menuMap) {
 var mnemonic = J.console.GenericConsole.getMnemonic (label);
 if (mnemonic != ' ') (button).setMnemonic (mnemonic);
-if (menuMap != null) {
-if (key.indexOf ("NMR.") >= 0) System.out.println ("genericconsole mapping " + key + " to " + label);
-menuMap.put (key, button);
-}}, "~O,~S,~S,java.util.Map");
+if (menuMap != null) menuMap.put (key, button);
+}, "~O,~S,~S,java.util.Map");
 Clazz_overrideMethod (c$, "notifyEnabled", 
 function (type) {
 switch (type) {
@@ -633,6 +634,7 @@ return true;
 case J.c.CBK.ANIMFRAME:
 case J.c.CBK.APPLETREADY:
 case J.c.CBK.ATOMMOVED:
+case J.c.CBK.AUDIO:
 case J.c.CBK.CLICK:
 case J.c.CBK.DRAGDROP:
 case J.c.CBK.ERROR:
@@ -641,11 +643,13 @@ case J.c.CBK.HOVER:
 case J.c.CBK.IMAGE:
 case J.c.CBK.LOADSTRUCT:
 case J.c.CBK.MINIMIZATION:
+case J.c.CBK.MODELKIT:
 case J.c.CBK.SERVICE:
 case J.c.CBK.RESIZE:
 case J.c.CBK.SCRIPT:
-case J.c.CBK.SYNC:
+case J.c.CBK.SELECT:
 case J.c.CBK.STRUCTUREMODIFIED:
+case J.c.CBK.SYNC:
 break;
 }
 return false;
@@ -716,10 +720,18 @@ Clazz_overrideMethod (c$, "zap",
 function () {
 });
 Clazz_defineMethod (c$, "recallCommand", 
-function (up) {
+function (up, pageUp) {
 var cmd = this.vwr.getSetHistory (up ? -1 : 1);
-if (cmd != null) this.input.setText (JU.PT.escUnicode (cmd));
-}, "~B");
+if (cmd != null) {
+cmd = this.trimGUI (cmd);
+this.input.setText (JU.PT.escUnicode (cmd));
+}}, "~B,~B");
+Clazz_defineMethod (c$, "trimGUI", 
+function (cmd) {
+var pt = cmd.indexOf ("; ## GUI ##");
+if (pt >= 0) cmd = cmd.substring (0, pt);
+return JU.PT.trim (cmd, "; ");
+}, "~S");
 Clazz_defineMethod (c$, "processKey", 
 function (kcode, kid, isControlDown) {
 var mode = 0;
@@ -746,7 +758,7 @@ if (kcode == 10 && !isControlDown) {
 this.execute (null);
 return mode;
 }if (kcode == 38 || kcode == 40) {
-this.recallCommand (kcode == 38);
+this.recallCommand (kcode == 38, false);
 return mode;
 }break;
 case 402:

@@ -44,7 +44,6 @@ var vectors = this.shape;
 if (!vectors.isActive) return false;
 var mads = vectors.mads;
 if (mads == null) return false;
-var atoms = vectors.atoms;
 var colixes = vectors.colixes;
 var needTranslucent = false;
 this.vectorScale = this.vwr.getFloat (1648361473);
@@ -57,6 +56,7 @@ this.vibrationOn = this.vwr.tm.vibrationOn;
 this.headScale = -0.2;
 if (this.vectorScale < 0) this.headScale = -this.headScale;
 var haveModulations = false;
+var atoms = this.ms.at;
 for (var i = this.ms.ac; --i >= 0; ) {
 var atom = atoms[i];
 if (!this.isVisibleForMe (atom)) continue;

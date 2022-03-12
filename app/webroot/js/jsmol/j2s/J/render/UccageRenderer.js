@@ -54,7 +54,7 @@ this.unitcell.toCartesian (this.offsetT, true);
 this.offset.sub (this.offsetT);
 var hiddenLines = this.vwr.getBoolean (603979856);
 var fset = this.unitcell.getUnitCellMultiplier ();
-var haveMultiple = (fset != null && fset.distanceSquared (this.fset0) != 0);
+var haveMultiple = (fset != null && !fset.equals (this.fset0));
 if (!haveMultiple) fset = this.fset0;
 var t3w = (Clazz.instanceOf (fset, JU.T4) ? Clazz.floatToInt ((fset).w) : 0);
 JU.SimpleUnitCell.ijkToPoint3f (Clazz.floatToInt (fset.x), this.cell0, 0, t3w);
@@ -112,10 +112,12 @@ this.renderInfo ();
 }, "~N");
 Clazz.defineMethod (c$, "renderInfo", 
  function () {
-if (this.isExport || !this.vwr.getBoolean (603979828) || this.unitcell.isSimple () || this.vwr.isPreviewOnly || !this.vwr.gdata.setC (this.vwr.cm.colixBackgroundContrast) || this.vwr.gdata.getTextPosition () != 0) return;
-this.vwr.gdata.setFontFid (this.vwr.gdata.getFontFidFS ("Monospaced", 14 * this.imageFontScaling));
+var showDetails = this.vwr.getBoolean (603979937);
+if (this.isExport || !this.vwr.getBoolean (603979828) || this.vwr.isPreviewOnly || !this.vwr.gdata.setC (this.vwr.cm.colixBackgroundContrast) || this.vwr.gdata.getTextPosition () != 0) return;
+this.vwr.gdata.setFontBold ("Monospaced", 14 * this.imageFontScaling);
 this.xpos = Clazz.doubleToInt (Math.floor (10 * this.imageFontScaling));
 this.ypos = this.lineheight = Clazz.doubleToInt (Math.floor (15 * this.imageFontScaling));
+if (!this.unitcell.isSimple ()) {
 var sgName = (this.isPolymer ? "polymer" : this.isSlab ? "slab" : this.unitcell.getSpaceGroupName ());
 if (sgName != null) {
 if (sgName.startsWith ("cell=!")) sgName = "cell=inverse[" + sgName.substring (6) + "]";
@@ -128,8 +130,8 @@ this.drawInfo (sgName, 0, null);
 }}var info = this.unitcell.getMoreInfo ();
 if (info != null) for (var i = 0; i < info.size (); i++) this.drawInfo (info.get (i), 0, null);
 
-if (!this.vwr.getBoolean (603979937)) return;
-this.drawInfo ("a=", 0, "\u00C5");
+if (!showDetails) return;
+}this.drawInfo ("a=", 0, "\u00C5");
 if (!this.isPolymer) this.drawInfo ("b=", 1, "\u00C5");
 if (!this.isPolymer && !this.isSlab) this.drawInfo ("c=", 2, "\u00C5");
 if (!this.isPolymer) {

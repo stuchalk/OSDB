@@ -37,7 +37,7 @@ this.modifiersWhenPressed10 = modifiers;
 this.pressed (time, x, y, modifiers, false);
 break;
 case 506:
-this.dragged (time, x, y, modifiers);
+this.dragged (time, x, y);
 break;
 case 504:
 this.entry (time, x, y, false);
@@ -121,7 +121,7 @@ Clazz.defineMethod (c$, "mouseDragged",
 function (e) {
 var modifiers = e.getModifiers ();
 if ((modifiers & 28) == 0) modifiers |= 16;
-this.dragged (e.getWhen (), e.getX (), e.getY (), modifiers);
+this.dragged (e.getWhen (), e.getX (), e.getY ());
 }, "java.awt.event.MouseEvent");
 Clazz.defineMethod (c$, "mouseMoved", 
 function (e) {
@@ -172,7 +172,7 @@ case 2:
 this.vwr.undoMoveAction (4165, 1);
 break;
 case 3:
-this.vwr.undoMoveAction (4139, 1);
+this.vwr.undoMoveAction (4140, 1);
 break;
 }
 break;
@@ -180,7 +180,7 @@ case 25:
 case 'y':
 switch (modifiers) {
 case 2:
-this.vwr.undoMoveAction (4139, 1);
+this.vwr.undoMoveAction (4140, 1);
 break;
 }
 break;
@@ -263,11 +263,11 @@ this.wheeling = false;
 this.manager.mouseAction (5, time, x, y, 0, modifiers);
 }, "~N,~N,~N,~N");
 Clazz.defineMethod (c$, "dragged", 
- function (time, x, y, modifiers) {
+ function (time, x, y) {
 if (this.wheeling) return;
 if ((this.modifiersDown & 20) == 20) this.modifiersDown = this.modifiersDown & -5 | 2;
 this.manager.mouseAction (1, time, x, y, 0, this.modifiersDown);
-}, "~N,~N,~N,~N");
+}, "~N,~N,~N");
 c$.applyLeftMouse = Clazz.defineMethod (c$, "applyLeftMouse", 
  function (modifiers) {
 return ((modifiers & 28) == 0) ? (modifiers | 16) : modifiers;

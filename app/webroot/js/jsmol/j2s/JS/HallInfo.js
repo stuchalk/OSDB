@@ -18,6 +18,7 @@ this.rotationTerms =  new Array (16);
 Clazz.makeConstructor (c$, 
 function (hallSymbol) {
 try {
+if (hallSymbol.startsWith ("Hall:")) hallSymbol = hallSymbol.substring (5).trim ();
 var str = this.hallSymbol = hallSymbol.trim ();
 str = this.extractLatticeInfo (str);
 if (JS.HallTranslation.getLatticeIndex (this.latticeCode) == 0) return;
@@ -103,4 +104,8 @@ name = "";
 this.nRotations++;
 return name;
 }, "~S,~N,~S");
+Clazz.overrideMethod (c$, "toString", 
+function () {
+return this.hallSymbol;
+});
 });

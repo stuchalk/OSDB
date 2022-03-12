@@ -1,5 +1,5 @@
-Clazz.declarePackage ("JU");
-Clazz.load (null, "JU.MolWriter", ["java.lang.Float", "java.util.Arrays", "$.Hashtable", "JU.Lst", "$.Measure", "$.P3", "$.PT", "$.SB", "$.V3", "JS.SV", "$.T", "JU.Elements", "$.Escape", "JV.PropertyManager", "$.Viewer"], function () {
+Clazz.declarePackage ("J.adapter.writers");
+Clazz.load (null, "J.adapter.writers.MOLWriter", ["java.lang.Float", "java.util.Arrays", "$.Hashtable", "JU.Lst", "$.Measure", "$.P3", "$.PT", "$.SB", "$.V3", "JS.SV", "$.T", "JU.Elements", "$.Escape", "JV.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.ptTemp = null;
@@ -7,7 +7,7 @@ this.vNorm = null;
 this.vTemp = null;
 this.connections = null;
 Clazz.instantialize (this, arguments);
-}, JU, "MolWriter");
+}, J.adapter.writers, "MOLWriter");
 Clazz.makeConstructor (c$, 
 function () {
 });
@@ -94,7 +94,7 @@ mol.append ("$$$$\n");
 }, "~N,JU.SB,JU.BS,JU.BS,~B,~B,~B,JU.Quat");
 Clazz.defineMethod (c$, "getAtomRecordMOL", 
  function (iModel, ms, mol, n, a, q, pTemp, asV3000, asJSON, atomValues, tokValue, asSDF) {
-JV.PropertyManager.getPointTransf (iModel, ms, a, q, pTemp);
+ms.getPointTransf (iModel, a, q, pTemp);
 var elemNo = a.getElementNumber ();
 var sym = (a.isDeleted () ? "Xx" : JU.Elements.elementSymbolFromNumber (elemNo));
 var isotope = a.getIsotopeNumber ();

@@ -903,7 +903,7 @@ return JU.ZipTools.newZIS (is);
 }, "java.io.InputStream");
 c$.newZIS = Clazz_defineMethod (c$, "newZIS", 
  function (is) {
-return (Clazz_instanceOf (is, javajs.api.ZInputStream) ? is : Clazz_instanceOf (is, java.io.BufferedInputStream) ?  new javajs.api.GenericZipInputStream (is) :  new javajs.api.GenericZipInputStream ( new java.io.BufferedInputStream (is)));
+return (Clazz_instanceOf (is, java.util.zip.ZipInputStream) ? is : Clazz_instanceOf (is, java.io.BufferedInputStream) ?  new javajs.api.GenericZipInputStream (is) :  new javajs.api.GenericZipInputStream ( new java.io.BufferedInputStream (is)));
 }, "java.io.InputStream");
 Clazz_overrideMethod (c$, "getAllZipData", 
 function (is, subfileList, name0, binaryFileList, exclude, fileData) {
@@ -916,7 +916,7 @@ var fileName = (justDir ? "." : list[listPtr]);
 if (JU.Rdr.isTar (bis)) return JU.ZipTools.getTarFileDirectory (bis, fileName, asBufferedInputStream);
 if (justDir) return this.getZipDirectoryAsStringAndClose (bis);
 bis = JU.Rdr.getPngZipStream (bis, true);
-var zis =  new java.util.zip.ZipInputStream (bis);
+var zis = JU.ZipTools.newZIS (bis);
 var ze;
 try {
 var isAll = (fileName.equals ("."));
@@ -985,7 +985,7 @@ if (fileName.lastIndexOf ("/") == fileName.length - 1) return ret;
 try {
 if (JU.Rdr.isTar (bis)) return JU.ZipTools.getTarContents (bis, fileName, null);
 bis = JU.Rdr.getPngZipStream (bis, true);
-var zis =  new java.util.zip.ZipInputStream (bis);
+var zis = JU.ZipTools.newZIS (bis);
 var ze;
 while ((ze = zis.getNextEntry ()) != null) {
 if (!fileName.equals (ze.getName ())) continue;
@@ -1079,7 +1079,7 @@ Clazz_defineMethod (c$, "getZipDirectoryOrErrorAndClose",
  function (bis, manifestID) {
 bis = JU.Rdr.getPngZipStream (bis, true);
 var v =  new JU.Lst ();
-var zis =  new java.util.zip.ZipInputStream (bis);
+var zis = JU.ZipTools.newZIS (bis);
 var ze;
 var manifest = null;
 while ((ze = zis.getNextEntry ()) != null) {
@@ -1281,6 +1281,10 @@ c$.deActivatePngZipB = Clazz_defineMethod (c$, "deActivatePngZipB",
 if (JU.Rdr.isPngZipB (bytes)) bytes[51] = 32;
 return bytes;
 }, "~A");
+Clazz_overrideMethod (c$, "isZipStream", 
+function (br) {
+return Clazz_instanceOf (br, javajs.api.ZInputStream);
+}, "~O");
 Clazz_defineStatics (c$,
 "b512", null);
 });

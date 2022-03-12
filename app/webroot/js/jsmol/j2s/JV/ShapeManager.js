@@ -43,7 +43,9 @@ Clazz.defineMethod (c$, "getShapeIdFromObjectName",
 function (objectName) {
 if (this.shapes != null) for (var i = 16; i < 30; ++i) if (this.shapes[i] != null && this.shapes[i].getIndexFromName (objectName) >= 0) return i;
 
-return -1;
+if (this.shapes[6] != null && this.shapes[6].getIndexFromName (objectName) >= 0) {
+return 6;
+}return -1;
 }, "~S");
 Clazz.defineMethod (c$, "loadDefaultShapes", 
 function (newModelSet) {
@@ -213,7 +215,7 @@ this.ms.clearVisibleSets ();
 if (atoms.length > 0) {
 for (var i = this.ms.ac; --i >= 0; ) {
 var atom = atoms[i];
-atom.shapeVisibilityFlags &= -64;
+if (atom != null) atom.shapeVisibilityFlags &= -64;
 if (bsDeleted != null && bsDeleted.get (i)) continue;
 if (bs.get (atom.mi)) {
 var f = 1;
@@ -342,7 +344,7 @@ var bsSubset = this.vwr.slm.bsSubset;
 if (bsSubset != null) {
 bsSelected = this.vwr.slm.getSelectedAtomsNoSubset ();
 bsSelected.and (bsSubset);
-this.vwr.select (bsSelected, false, 0, true);
+this.vwr.selectStatus (bsSelected, false, 0, true, false);
 JU.BSUtil.invertInPlace (bsSelected, this.vwr.ms.ac);
 bsSelected.and (bsSubset);
 }}JU.BSUtil.andNot (bsSelected, this.vwr.slm.bsDeleted);
@@ -358,7 +360,7 @@ for (var iShape = 21; --iShape >= 0; ) if (iShape != 6 && this.getShape (iShape)
 if (this.getShape (21) != null) this.setShapePropertyBs (21, "off", bs, null);
 this.setLabel (null, bs);
 if (!isBond) this.vwr.setBooleanProperty ("bondModeOr", bondmode);
-this.vwr.select (bsSelected, false, 0, true);
+this.vwr.selectStatus (bsSelected, false, 0, true, false);
 }, "~B,~B");
 Clazz.defineStatics (c$,
 "hoverable",  Clazz.newIntArray (-1, [31, 20, 25, 24, 22, 36]));

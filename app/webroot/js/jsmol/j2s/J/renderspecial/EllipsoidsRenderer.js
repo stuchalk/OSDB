@@ -126,7 +126,7 @@ if (!this.bOptions[0] && !this.bOptions[1] && !this.bOptions[4]) this.bOptions[2
 if (this.bOptions[0]) {
 this.bOptions[1] = false;
 this.bOptions[3] = false;
-this.dotScale = this.vwr.getInt (553648142);
+this.dotScale = this.vwr.getInt (553648140);
 }if (this.bOptions[0]) {
 this.dotCount = (this.vwr.getP ("ellipsoidDotCount")).intValue ();
 if (this.coords == null || this.coords.length != this.dotCount * 3) this.coords =  Clazz.newIntArray (this.dotCount * 3, 0);
@@ -327,7 +327,7 @@ this.pt1.setT (this.pt2);
 this.s1.setT (this.s2);
 }
 if (!this.fillArc && !this.bOptions[6]) {
-this.g3d.addRenderer (553648145);
+this.g3d.addRenderer (553648143);
 for (var i = 0; i < 18; i++) {
 this.g3d.fillHermite (5, this.diameter, this.diameter, this.diameter, this.screens[i == 0 ? i + 6 : i + 5], this.screens[i + 6], this.screens[i + 7], this.screens[i == 17 ? i + 7 : i + 8]);
 }

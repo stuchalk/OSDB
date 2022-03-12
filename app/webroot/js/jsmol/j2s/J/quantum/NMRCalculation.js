@@ -51,7 +51,7 @@ var models = this.vwr.ms.am;
 for (var i = bsA.nextSetBit (0); i >= 0; i = bsA.nextSetBit (i + 1)) {
 if (!bsA.get (i)) continue;
 var a = atoms[i];
-bs.set (models[a.mi].firstAtomIndex - 1 + a.atomSite);
+bs.set (models[a.mi].firstAtomIndex - 1 + a.getAtomSite ());
 }
 return bs;
 }, "JU.BS");
@@ -59,20 +59,19 @@ Clazz.overrideMethod (c$, "getUniqueTensorSet",
 function (bsAtoms) {
 var bs =  new JU.BS ();
 var atoms = this.vwr.ms.at;
-for (var i = this.vwr.ms.mc; --i >= 0; ) {
-var bsModelAtoms = this.vwr.getModelUndeletedAtomsBitSet (i);
-bsModelAtoms.and (bsAtoms);
-if (this.vwr.ms.getUnitCell (i) == null) continue;
-for (var j = bsModelAtoms.nextSetBit (0); j >= 0; j = bsModelAtoms.nextSetBit (j + 1)) if (atoms[j].atomSite != atoms[j].i + 1) bsModelAtoms.clear (j);
+for (var mi = this.vwr.ms.mc; --mi >= 0; ) {
+var bsModelAtoms = this.vwr.restrictToModel (bsAtoms, mi);
+if (this.vwr.ms.getUnitCell (mi) == null) continue;
+for (var i = bsModelAtoms.nextSetBit (0); i >= 0; i = bsModelAtoms.nextSetBit (i + 1)) if (atoms[i].getAtomSite () != atoms[i].i + 1) bsModelAtoms.clear (i);
 
 bs.or (bsModelAtoms);
-for (var j = bsModelAtoms.nextSetBit (0); j >= 0; j = bsModelAtoms.nextSetBit (j + 1)) {
-var ta = atoms[j].getTensors ();
+for (var i = bsModelAtoms.nextSetBit (0); i >= 0; i = bsModelAtoms.nextSetBit (i + 1)) {
+var ta = atoms[i].getTensors ();
 if (ta == null) continue;
 for (var jj = ta.length; --jj >= 0; ) {
 var t = ta[jj];
 if (t == null) continue;
-for (var k = bsModelAtoms.nextSetBit (j + 1); k >= 0; k = bsModelAtoms.nextSetBit (k + 1)) {
+for (var k = bsModelAtoms.nextSetBit (i + 1); k >= 0; k = bsModelAtoms.nextSetBit (k + 1)) {
 var tb = atoms[k].getTensors ();
 if (tb == null) continue;
 for (var kk = tb.length; --kk >= 0; ) {

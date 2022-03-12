@@ -14,6 +14,7 @@ this.elementNumberMax = 0;
 this.altElementMax = 0;
 this.mf = null;
 this.atomList = null;
+this.atNos = null;
 Clazz.instantialize (this, arguments);
 }, JU, "JmolMolecule");
 Clazz.prepareFields (c$, function () {
@@ -33,10 +34,11 @@ var moleculeCount = 0;
 var molecules =  new Array (4);
 if (bsExclude == null) bsExclude =  new JU.BS ();
 for (var i = 0; i < atoms.length; i++) if (!bsExclude.get (i) && !bsBranch.get (i)) {
-if (atoms[i].isDeleted ()) {
+var a = atoms[i];
+if (a == null || a.isDeleted ()) {
 bsExclude.set (i);
 continue;
-}var modelIndex = atoms[i].getModelIndex ();
+}var modelIndex = a.getModelIndex ();
 if (modelIndex != thisModelIndex) {
 thisModelIndex = modelIndex;
 indexInModel = 0;
@@ -70,34 +72,44 @@ return m.getMolecularFormula (false, wts, isEmpirical);
 }, "~A,JU.BS,~A,~B");
 Clazz.defineMethod (c$, "getMolecularFormula", 
 function (includeMissingHydrogens, wts, isEmpirical) {
+return this.getMolecularFormulaImpl (includeMissingHydrogens, wts, isEmpirical);
+}, "~B,~A,~B");
+Clazz.defineMethod (c$, "getMolecularFormulaImpl", 
+function (includeMissingHydrogens, wts, isEmpirical) {
 if (this.mf != null) return this.mf;
 if (this.atomList == null) {
 this.atomList =  new JU.BS ();
-this.atomList.setBits (0, this.nodes.length);
+this.atomList.setBits (0, this.atNos == null ? this.nodes.length : this.atNos.length);
 }this.elementCounts =  Clazz.newIntArray (JU.Elements.elementNumberMax, 0);
 this.altElementCounts =  Clazz.newIntArray (JU.Elements.altElementMax, 0);
 this.ac = this.atomList.cardinality ();
 this.nElements = 0;
 for (var p = 0, i = this.atomList.nextSetBit (0); i >= 0; i = this.atomList.nextSetBit (i + 1), p++) {
-var node = this.nodes[i];
+var n;
+var node = null;
+if (this.atNos == null) {
+node = this.nodes[i];
 if (node == null) continue;
-var n = node.getAtomicAndIsotopeNumber ();
-var f = (wts == null ? 1 : Clazz.floatToInt (8 * wts[p]));
+n = node.getAtomicAndIsotopeNumber ();
+} else {
+n = this.atNos[i];
+}var f = (wts == null ? 1 : Clazz.floatToInt (8 * wts[p]));
 if (n < JU.Elements.elementNumberMax) {
 if (this.elementCounts[n] == 0) this.nElements++;
 this.elementCounts[n] += f;
 this.elementNumberMax = Math.max (this.elementNumberMax, n);
-if (includeMissingHydrogens) {
-var nH = node.getImplicitHydrogenCount ();
-if (nH > 0) {
-if (this.elementCounts[1] == 0) this.nElements++;
-this.elementCounts[1] += nH * f;
-}}} else {
+} else {
 n = JU.Elements.altElementIndexFromNumber (n);
 if (this.altElementCounts[n] == 0) this.nElements++;
 this.altElementCounts[n] += f;
 this.altElementMax = Math.max (this.altElementMax, n);
-}}
+}if (includeMissingHydrogens) {
+var nH = Math.max (0, node.getImplicitHydrogenCount ()) + Math.max (node.getExplicitHydrogenCount (), 0);
+if (nH > 0) {
+if (this.elementCounts[1] == 0) this.nElements++;
+this.elementCounts[1] += nH * f;
+this.elementNumberMax = Math.max (this.elementNumberMax, 1);
+}}}
 if (wts != null) for (var i = 1; i <= this.elementNumberMax; i++) {
 var c = Clazz.doubleToInt (this.elementCounts[i] / 8);
 if (c * 8 != this.elementCounts[i]) return "?";
@@ -166,6 +178,7 @@ bsResult.or (b);
 bsToTest.andNot (b);
 for (var j = b.nextSetBit (0); j >= 0; j = b.nextSetBit (j + 1)) {
 var atom1 = atoms[j];
+if (atom1 == null) continue;
 bsToTest.set (j);
 JU.JmolMolecule.getCovalentlyConnectedBitSet (atoms, atom1, bsToTest, allowCyclic, allowBioResidue, biobranches, bsResult);
 bsToTest.clear (j);
