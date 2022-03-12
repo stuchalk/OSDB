@@ -39,4 +39,4 @@ ehthumbs.db
 Thumbs.db
 
 # protected files
-!/app/webroot/files/ir.zip
+/app/webroot/files/ir.zip
