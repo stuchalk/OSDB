@@ -6,7 +6,7 @@ App::uses('AppController', 'Controller');
  */
 class UsersController extends AppController {
 
-    public $uses=['User','Report','File'];
+    public array $uses=['User','Report','File'];
 
     /**
      * beforeFilter function
@@ -29,7 +29,7 @@ class UsersController extends AppController {
                 // to add file redirects to collections/add after authentication
                 $this->redirect($this->Auth->redirectUrl(['controller'=>'users','action'=>'dashboard']));
             } else {
-                $this->Flash->error('Invalid credentials,<br />please try again.');
+                $this->Flash->set('Invalid credentials,<br />please try again.');
             }
         }
     }
@@ -52,14 +52,14 @@ class UsersController extends AppController {
             if ($this->request->is('post') && $r = $this->Recaptcha->check($this->data['g-recaptcha-response'])) {
                 $this->User->create();
                 $data = $this->request->data;
-                $data['recap_date'] = $r['challenge_ts'];
+                $data['recap_date'] = date("Y-m-d H:i:s",strtotime($r['challenge_ts']));
                 $data['recap_ip'] = $r['hostname'];
                 //debug($data);exit;
                 if ($this->User->save($data)) {
-                    $this->Flash->success('User created!<br />Please sign in...');
+                    $this->Flash->set('User created!<br />Please sign in...');
                     $this->redirect(['action' => 'login']);
                 } else {
-                    $this->Flash->error('User could not be created.');
+                    $this->Flash->set('User could not be created.');
                 }
             }
         }
@@ -138,7 +138,7 @@ class UsersController extends AppController {
     {
         $type=$this->Auth->user('type');
         if($type!='admin') {
-            $this->Flash->error('Access Denied');
+            $this->Flash->set('Access Denied');
             $this->redirect(['controller'=>'users','action'=>'dashboard']);
         }
         // Get files
