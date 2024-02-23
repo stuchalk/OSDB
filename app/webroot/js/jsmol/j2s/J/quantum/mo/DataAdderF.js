@@ -1,11 +1,8 @@
-Clazz.declarePackage ("J.quantum.mo");
-Clazz.load (["J.quantum.mo.DataAdder"], "J.quantum.mo.DataAdderF", null, function () {
-c$ = Clazz.declareType (J.quantum.mo, "DataAdderF", null, J.quantum.mo.DataAdder);
-Clazz.makeConstructor (c$, 
-function () {
-});
-Clazz.overrideMethod (c$, "addData", 
-function (calc, havePoints) {
+Clazz.declarePackage("J.quantum.mo");
+Clazz.load(["J.quantum.mo.DataAdder"], "J.quantum.mo.DataAdderF", null, function(){
+var c$ = Clazz.declareType(J.quantum.mo, "DataAdderF", null, J.quantum.mo.DataAdder);
+/*LV!1824 unnec constructor*/Clazz.overrideMethod(c$, "addData", 
+function(calc, havePoints){
 var alpha;
 var c1;
 var a;
@@ -52,14 +49,14 @@ norm3 = 1.4721580892990938;
 normalizeAlpha = true;
 break;
 case 2:
-norm1 = calc.getContractionNormalization (3, 1);
+norm1 = calc.getContractionNormalization(3, 1);
 norm2 = norm1;
 norm3 = norm1;
 normalizeAlpha = true;
 break;
 case 3:
-norm1 = Math.sqrt (15);
-norm2 = Math.sqrt (5);
+norm1 = Math.sqrt(15);
+norm2 = Math.sqrt(5);
 norm3 = 1;
 break;
 }
@@ -76,9 +73,9 @@ var mxyz = coeffs[9];
 for (var ig = 0; ig < calc.nGaussians; ig++) {
 alpha = calc.gaussians[calc.gaussianPtr + ig][0];
 c1 = calc.gaussians[calc.gaussianPtr + ig][1];
-calc.setE (calc.EX, alpha);
+calc.setE(calc.EX, alpha);
 a = c1;
-if (normalizeAlpha) a *= Math.pow (alpha, 2.25);
+if (normalizeAlpha) a *= Math.pow(alpha, 2.25);
 axxx = a * norm3 * mxxx;
 ayyy = a * norm3 * myyy;
 azzz = a * norm3 * mzzz;
@@ -94,7 +91,7 @@ x = calc.X[ix];
 xx = x * x;
 var Ex = calc.EX[ix];
 cxxx = axxx * xx * x;
-if (havePoints) calc.setMinMax (ix);
+if (havePoints) calc.setMinMax(ix);
 for (var iy = calc.yMax; --iy >= calc.yMin; ) {
 y = calc.Y[iy];
 yy = y * y;
@@ -120,3 +117,4 @@ vd[(havePoints ? 0 : iz)] += (cxxx + cyyy + czzz + cxyy + cxxy + cxxz + cxzz + c
 return true;
 }, "J.quantum.MOCalculation,~B");
 });
+;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024

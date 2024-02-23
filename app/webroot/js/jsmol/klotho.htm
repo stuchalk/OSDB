@@ -123,14 +123,15 @@ $(document).ready(function() {
   Jmol.setDocument(0);
   
   var html = Jmol.getAppletHtml("jmolApplet0", Info)
-    + "<br>"
-    + Jmol.jmolButton(jmolApplet0, "select *;spacefill off;wireframe 0.05","wireframe")
-    + Jmol.jmolButton(jmolApplet0, "select *;spacefill 20%;wireframe 0.15","ball and stick")
-    + Jmol.jmolButton(jmolApplet0, "select *;wireframe off;spacefill","spacefill")
-    + "<br>"
-    + Jmol.jmolButton(jmolApplet0, "write PNGJ \"?.jpg\"","save PNG+Jmol")
-    + Jmol.jmolButton(jmolApplet0, "console")
   $("#appdiv").html(html);  
+  html = Jmol.jmolButton(jmolApplet0, "select off *;spacefill off;wireframe 0.05","wireframe")
+    + Jmol.jmolButton(jmolApplet0, "select off *;spacefill 20%;wireframe 0.15","ball and stick")
+    + Jmol.jmolButton(jmolApplet0, "select off *;wireframe off;spacefill","spacefill")
+    + "<br>"
+    + Jmol.jmolButton(jmolApplet0, "write PNGJ \"?.png\"","save PNG+Jmol")
+    + Jmol.jmolButton(jmolApplet0, "console")
+  $("#controldiv").html(html);  
+
 
 })
 
@@ -515,7 +516,8 @@ http://web.archive.org/web/20011205065732/http://www.ibc.wustl.edu:80/klotho/
 
 </td><td valign=top>
 <div id=appdiv></div>
-<br>
+</td><td valign=top>
+<div id=controldiv></div>
 <input type=button onclick="doFischer(0)" value="Fischer projection">
 <input type=button onclick="doFischer(1)" value="Reset">
 <input type=button onclick="doRingFlip(0)" value="Flip pyranose">

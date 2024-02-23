@@ -1,5 +1,6 @@
-Clazz.declarePackage ("JM.FF");
-c$ = Clazz.decorateAsClass (function () {
+Clazz.declarePackage("JM.FF");
+(function(){
+var c$ = Clazz.decorateAsClass(function(){
 this.elemNo = 0;
 this.descr = null;
 this.smartsCode = null;
@@ -12,10 +13,9 @@ this.arom = false;
 this.pilp = false;
 this.mltb = 0;
 this.val = 0;
-Clazz.instantialize (this, arguments);
-}, JM.FF, "AtomType");
-Clazz.makeConstructor (c$, 
-function (elemNo, mmType, hType, formalCharge, val, descr, smartsCode) {
+Clazz.instantialize(this, arguments);}, JM.FF, "AtomType", null);
+Clazz.makeConstructor(c$, 
+function(elemNo, mmType, hType, formalCharge, val, descr, smartsCode){
 this.elemNo = elemNo;
 this.mmType = mmType;
 this.hType = hType;
@@ -24,3 +24,5 @@ this.val = val;
 this.descr = descr;
 this.smartsCode = smartsCode;
 }, "~N,~N,~N,~N,~N,~S,~S");
+})();
+;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024

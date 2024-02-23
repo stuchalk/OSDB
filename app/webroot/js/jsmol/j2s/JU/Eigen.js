@@ -1,70 +1,66 @@
-Clazz.declarePackage ("JU");
-Clazz.load (["javajs.api.EigenInterface"], "JU.Eigen", ["JU.V3"], function () {
-c$ = Clazz.decorateAsClass (function () {
+Clazz.declarePackage("JU");
+Clazz.load(["javajs.api.EigenInterface"], "JU.Eigen", ["JU.V3"], function(){
+var c$ = Clazz.decorateAsClass(function(){
 this.n = 3;
 this.d = null;
 this.e = null;
 this.V = null;
-Clazz.instantialize (this, arguments);
-}, JU, "Eigen", null, javajs.api.EigenInterface);
-Clazz.makeConstructor (c$, 
-function () {
-});
-Clazz.defineMethod (c$, "set", 
-function (n) {
+Clazz.instantialize(this, arguments);}, JU, "Eigen", null, javajs.api.EigenInterface);
+/*LV!1824 unnec constructor*/Clazz.defineMethod(c$, "set", 
+function(n){
 this.n = n;
 this.V =  Clazz.newDoubleArray (n, n, 0);
 this.d =  Clazz.newDoubleArray (n, 0);
 this.e =  Clazz.newDoubleArray (n, 0);
 return this;
 }, "~N");
-Clazz.overrideMethod (c$, "setM", 
-function (m) {
-this.set (m.length);
-this.calc (m);
+Clazz.overrideMethod(c$, "setM", 
+function(m){
+this.set(m.length);
+this.calc(m);
 return this;
 }, "~A");
-Clazz.overrideMethod (c$, "getEigenvalues", 
-function () {
+Clazz.overrideMethod(c$, "getEigenvalues", 
+function(){
 return this.d;
 });
-Clazz.overrideMethod (c$, "fillFloatArrays", 
-function (eigenVectors, eigenValues) {
+Clazz.overrideMethod(c$, "fillFloatArrays", 
+function(eigenVectors, eigenValues){
 for (var i = 0; i < 3; i++) {
 if (eigenVectors != null) {
-if (eigenVectors[i] == null) eigenVectors[i] =  new JU.V3 ();
-eigenVectors[i].set (this.V[0][i], this.V[1][i], this.V[2][i]);
+if (eigenVectors[i] == null) eigenVectors[i] =  new JU.V3();
+eigenVectors[i].set(this.V[0][i], this.V[1][i], this.V[2][i]);
 }if (eigenValues != null) eigenValues[i] = this.d[i];
 }
 }, "~A,~A");
-Clazz.overrideMethod (c$, "getEigenvectorsFloatTransposed", 
-function () {
+Clazz.overrideMethod(c$, "getEigenvectorsFloatTransposed", 
+function(){
 var f =  Clazz.newFloatArray (this.n, this.n, 0);
 for (var i = this.n; --i >= 0; ) for (var j = this.n; --j >= 0; ) f[j][i] = this.V[i][j];
 
 
 return f;
 });
-Clazz.defineMethod (c$, "calc", 
-function (A) {
+Clazz.defineMethod(c$, "calc", 
+function(A){
 for (var i = 0; i < this.n; i++) {
 for (var j = 0; j < this.n; j++) {
 this.V[i][j] = A[i][j];
 }
 }
-this.tred2 ();
-this.tql2 ();
+this.tred2();
+this.tql2();
 }, "~A");
-Clazz.defineMethod (c$, "getRealEigenvalues", 
-function () {
+Clazz.defineMethod(c$, "getRealEigenvalues", 
+function(){
 return this.d;
 });
-Clazz.defineMethod (c$, "getImagEigenvalues", 
-function () {
+Clazz.defineMethod(c$, "getImagEigenvalues", 
+function(){
 return this.e;
 });
-Clazz.defineMethod (c$, "tred2", 
- function () {
+Clazz.defineMethod(c$, "tred2", 
+function(){
 for (var j = 0; j < this.n; j++) {
 this.d[j] = this.V[this.n - 1][j];
 }
@@ -72,7 +68,7 @@ for (var i = this.n - 1; i > 0; i--) {
 var scale = 0.0;
 var h = 0.0;
 for (var k = 0; k < i; k++) {
-scale = scale + Math.abs (this.d[k]);
+scale = scale + Math.abs(this.d[k]);
 }
 if (scale == 0.0) {
 this.e[i] = this.d[i - 1];
@@ -87,7 +83,7 @@ this.d[k] /= scale;
 h += this.d[k] * this.d[k];
 }
 var f = this.d[i - 1];
-var g = Math.sqrt (h);
+var g = Math.sqrt(h);
 if (f > 0) {
 g = -g;
 }this.e[i] = scale * g;
@@ -154,20 +150,20 @@ this.V[this.n - 1][j] = 0.0;
 this.V[this.n - 1][this.n - 1] = 1.0;
 this.e[0] = 0.0;
 });
-Clazz.defineMethod (c$, "tql2", 
- function () {
+Clazz.defineMethod(c$, "tql2", 
+function(){
 for (var i = 1; i < this.n; i++) {
 this.e[i - 1] = this.e[i];
 }
 this.e[this.n - 1] = 0.0;
 var f = 0.0;
 var tst1 = 0.0;
-var eps = Math.pow (2.0, -52.0);
+var eps = Math.pow(2.0, -52.0);
 for (var l = 0; l < this.n; l++) {
-tst1 = Math.max (tst1, Math.abs (this.d[l]) + Math.abs (this.e[l]));
+tst1 = Math.max(tst1, Math.abs(this.d[l]) + Math.abs(this.e[l]));
 var m = l;
 while (m < this.n) {
-if (Math.abs (this.e[m]) <= eps * tst1) {
+if (Math.abs(this.e[m]) <= eps * tst1) {
 break;
 }m++;
 }
@@ -177,7 +173,7 @@ do {
 iter = iter + 1;
 var g = this.d[l];
 var p = (this.d[l + 1] - g) / (2.0 * this.e[l]);
-var r = JU.Eigen.hypot (p, 1.0);
+var r = JU.Eigen.hypot(p, 1.0);
 if (p < 0) {
 r = -r;
 }this.d[l] = this.e[l] / (p + r);
@@ -201,7 +197,7 @@ c2 = c;
 s2 = s;
 g = c * this.e[i];
 h = c * p;
-r = JU.Eigen.hypot (p, this.e[i]);
+r = JU.Eigen.hypot(p, this.e[i]);
 this.e[i + 1] = s * r;
 s = this.e[i] / r;
 c = p / r;
@@ -216,7 +212,7 @@ this.V[k][i] = c * this.V[k][i] - s * h;
 p = -s * s2 * c3 * el1 * this.e[l] / dl1;
 this.e[l] = s * p;
 this.d[l] = c * p;
-} while (Math.abs (this.e[l]) > eps * tst1);
+} while (Math.abs(this.e[l]) > eps * tst1);
 }this.d[l] = this.d[l] + f;
 this.e[l] = 0.0;
 }
@@ -238,17 +234,18 @@ this.V[j][k] = p;
 }
 }}
 });
-c$.hypot = Clazz.defineMethod (c$, "hypot", 
- function (a, b) {
+c$.hypot = Clazz.defineMethod(c$, "hypot", 
+function(a, b){
 var r;
-if (Math.abs (a) > Math.abs (b)) {
+if (Math.abs(a) > Math.abs(b)) {
 r = b / a;
-r = Math.abs (a) * Math.sqrt (1 + r * r);
+r = Math.abs(a) * Math.sqrt(1 + r * r);
 } else if (b != 0) {
 r = a / b;
-r = Math.abs (b) * Math.sqrt (1 + r * r);
+r = Math.abs(b) * Math.sqrt(1 + r * r);
 } else {
 r = 0.0;
 }return r;
 }, "~N,~N");
 });
+;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024

@@ -1,6 +1,6 @@
-Clazz.declarePackage ("J.jvxl.data");
-Clazz.load (null, "J.jvxl.data.JvxlData", ["java.lang.Float", "JU.SB", "J.jvxl.data.JvxlCoder"], function () {
-c$ = Clazz.decorateAsClass (function () {
+Clazz.declarePackage("J.jvxl.data");
+Clazz.load(null, "J.jvxl.data.JvxlData", ["JU.SB", "J.jvxl.data.JvxlCoder"], function(){
+var c$ = Clazz.decorateAsClass(function(){
 this.msg = "";
 this.wasJvxl = false;
 this.wasCubic = false;
@@ -37,6 +37,7 @@ this.mappedDataMax = 0;
 this.valueMappedToRed = 0;
 this.valueMappedToBlue = 0;
 this.cutoff = 0;
+this.cutoffRange = null;
 this.pointsPerAngstrom = 0;
 this.nPointsX = 0;
 this.nPointsY = 0;
@@ -85,16 +86,15 @@ this.fixedLattice = null;
 this.baseColor = null;
 this.integration = NaN;
 this.sbOut = null;
-Clazz.instantialize (this, arguments);
-}, J.jvxl.data, "JvxlData");
-Clazz.prepareFields (c$, function () {
-this.jvxlExcluded =  new Array (4);
+Clazz.instantialize(this, arguments);}, J.jvxl.data, "JvxlData", null);
+Clazz.prepareFields (c$, function(){
+this.jvxlExcluded =  new Array(4);
 });
-Clazz.makeConstructor (c$, 
-function () {
+Clazz.makeConstructor(c$, 
+function(){
 });
-Clazz.defineMethod (c$, "clear", 
-function () {
+Clazz.defineMethod(c$, "clear", 
+function(){
 this.allowVolumeRender = true;
 this.jvxlSurfaceData = "";
 this.jvxlEdgeData = "";
@@ -128,35 +128,35 @@ this.vertexColorMap = null;
 this.vertexColors = null;
 this.voxelVolume = 0;
 });
-Clazz.defineMethod (c$, "setSurfaceInfo", 
-function (thePlane, mapLattice, nSurfaceInts, surfaceData) {
+Clazz.defineMethod(c$, "setSurfaceInfo", 
+function(thePlane, mapLattice, nSurfaceInts, surfaceData){
 this.jvxlSurfaceData = surfaceData;
-if (this.jvxlSurfaceData.indexOf ("--") == 0) this.jvxlSurfaceData = this.jvxlSurfaceData.substring (2);
 this.jvxlPlane = thePlane;
 this.mapLattice = mapLattice;
 this.nSurfaceInts = nSurfaceInts;
 }, "JU.P4,JU.P3,~N,~S");
-Clazz.defineMethod (c$, "setSurfaceInfoFromBitSet", 
-function (bs, thePlane) {
-this.setSurfaceInfoFromBitSetPts (bs, thePlane, null);
+Clazz.defineMethod(c$, "setSurfaceInfoFromBitSet", 
+function(bs, thePlane){
+this.setSurfaceInfoFromBitSetPts(bs, thePlane, null);
 }, "JU.BS,JU.P4");
-Clazz.defineMethod (c$, "setSurfaceInfoFromBitSetPts", 
-function (bs, thePlane, mapLattice) {
-var sb =  new JU.SB ();
-var nSurfaceInts = (thePlane != null ? 0 : J.jvxl.data.JvxlCoder.jvxlEncodeBitSetBuffer (bs, this.nPointsX * this.nPointsY * this.nPointsZ, sb));
-this.setSurfaceInfo (thePlane, mapLattice, nSurfaceInts, sb.toString ());
+Clazz.defineMethod(c$, "setSurfaceInfoFromBitSetPts", 
+function(bs, thePlane, mapLattice){
+var sb =  new JU.SB();
+var nSurfaceInts = (thePlane != null ? 0 : J.jvxl.data.JvxlCoder.jvxlEncodeBitSetBuffer(bs, this.nPointsX * this.nPointsY * this.nPointsZ, sb));
+this.setSurfaceInfo(thePlane, mapLattice, nSurfaceInts, sb.toString());
 }, "JU.BS,JU.P4,JU.P3");
-Clazz.defineMethod (c$, "jvxlUpdateInfo", 
-function (title, nBytes) {
+Clazz.defineMethod(c$, "jvxlUpdateInfo", 
+function(title, nBytes){
 this.title = title;
 this.nBytes = nBytes;
 }, "~A,~N");
-c$.updateSurfaceData = Clazz.defineMethod (c$, "updateSurfaceData", 
-function (edgeData, vertexValues, vertexCount, vertexIncrement, isNaN) {
+c$.updateSurfaceData = Clazz.defineMethod(c$, "updateSurfaceData", 
+function(edgeData, vertexValues, vertexCount, vertexIncrement, isNaN){
 if (edgeData.length == 0) return "";
-var chars = edgeData.toCharArray ();
-for (var i = 0, ipt = 0; i < vertexCount; i += vertexIncrement, ipt++) if (Float.isNaN (vertexValues[i])) chars[ipt] = isNaN;
+var chars = edgeData.toCharArray();
+for (var i = 0, ipt = 0; i < vertexCount; i += vertexIncrement, ipt++) if (Float.isNaN(vertexValues[i])) chars[ipt] = isNaN;
 
-return String.copyValueOf (chars);
+return String.copyValueOf(chars);
 }, "~S,~A,~N,~N,~S");
 });
+;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024

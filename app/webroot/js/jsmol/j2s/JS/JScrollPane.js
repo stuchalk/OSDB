@@ -1,22 +1,23 @@
-Clazz.declarePackage ("JS");
-Clazz.load (["JS.JComponent"], "JS.JScrollPane", ["JU.SB"], function () {
-c$ = Clazz.declareType (JS, "JScrollPane", JS.JComponent);
-Clazz.makeConstructor (c$, 
-function (component) {
-Clazz.superConstructor (this, JS.JScrollPane, ["JScP"]);
-this.add (component);
+Clazz.declarePackage("JS");
+Clazz.load(["JS.JComponent"], "JS.JScrollPane", ["JU.SB"], function(){
+var c$ = Clazz.declareType(JS, "JScrollPane", JS.JComponent);
+Clazz.makeConstructor(c$, 
+function(component){
+Clazz.superConstructor(this, JS.JScrollPane, ["JScP"]);
+this.add(component);
 }, "JS.JComponent");
-Clazz.defineMethod (c$, "toHTML", 
-function () {
-var sb =  new JU.SB ();
-sb.append ("\n<div id='" + this.id + "' class='JScrollPane' style='" + this.getCSSstyle (98, 98) + "overflow:auto'>\n");
+Clazz.defineMethod(c$, "toHTML", 
+function(){
+var sb =  new JU.SB();
+sb.append("\n<div id='" + this.id + "' class='JScrollPane' style='" + this.getCSSstyle(98, 98) + "overflow:auto'>\n");
 if (this.list != null) {
-var c = this.list.get (0);
-sb.append (c.toHTML ());
-}sb.append ("\n</div>\n");
-return sb.toString ();
+var c = this.list.get(0);
+sb.append(c.toHTML());
+}sb.append("\n</div>\n");
+return sb.toString();
 });
-Clazz.overrideMethod (c$, "setMinimumSize", 
-function (dimension) {
+Clazz.overrideMethod(c$, "setMinimumSize", 
+function(dimension){
 }, "JS.Dimension");
 });
+;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024

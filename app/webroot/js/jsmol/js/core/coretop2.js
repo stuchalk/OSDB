@@ -15,15 +15,12 @@
 ,Clazz_defineEnumConstant
 ,Clazz_exceptionOf
 ,Clazz_newIntArray
-,Clazz_defineStatics
 ,Clazz_newFloatArray
 ,Clazz_declareType
 ,Clazz_prepareFields
 ,Clazz_superConstructor
 ,Clazz_newByteArray
 ,Clazz_declareInterface
-,Clazz_p0p
-,Clazz_pu$h
 ,Clazz_newShortArray
 ,Clazz_innerTypeInstance
 ,Clazz_isClassDefined

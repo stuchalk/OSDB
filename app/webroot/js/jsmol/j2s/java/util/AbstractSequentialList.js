@@ -1,56 +1,57 @@
-Clazz.load(["java.util.AbstractList"],"java.util.AbstractSequentialList",["java.lang.IndexOutOfBoundsException"],function(){
-c$=Clazz.declareType(java.util,"AbstractSequentialList",java.util.AbstractList);
-Clazz.defineMethod(c$,"add",
-function(location,object){
+Clazz.load(["java.util.AbstractList"], "java.util.AbstractSequentialList", null, function(){
+var c$ = Clazz.declareType(java.util, "AbstractSequentialList", java.util.AbstractList);
+Clazz.defineMethod(c$, "add", 
+function(location, object){
 this.listIterator(location).add(object);
-},"~N,~O");
-Clazz.defineMethod(c$,"addAll",
-function(location,collection){
-var it=this.listIterator(location);
-var colIt=collection.iterator();
-var next=it.nextIndex();
-while(colIt.hasNext()){
+}, "~N,~O");
+Clazz.defineMethod(c$, "addAll", 
+function(location, collection){
+var it = this.listIterator(location);
+var colIt = collection.iterator();
+var next = it.nextIndex();
+while (colIt.hasNext()) {
 it.add(colIt.next());
 it.previous();
 }
-return next!=it.nextIndex();
-},"~N,java.util.Collection");
-Clazz.overrideMethod(c$,"get",
+return next != it.nextIndex();
+}, "~N,java.util.Collection");
+Clazz.overrideMethod(c$, "get", 
 function(location){
-try{
+try {
 return this.listIterator(location).next();
-}catch(e){
-if(Clazz.instanceOf(e,java.util.NoSuchElementException)){
-throw new IndexOutOfBoundsException();
-}else{
+} catch (e) {
+if (Clazz.exceptionOf(e,"java.util.NoSuchElementException")){
+throw  new IndexOutOfBoundsException();
+} else {
 throw e;
 }
 }
-},"~N");
-Clazz.overrideMethod(c$,"iterator",
+}, "~N");
+Clazz.overrideMethod(c$, "iterator", 
 function(){
 return this.listIterator(0);
 });
-Clazz.defineMethod(c$,"remove",
+Clazz.defineMethod(c$, "remove", 
 function(location){
-try{
-var it=this.listIterator(location);
-var result=it.next();
+try {
+var it = this.listIterator(location);
+var result = it.next();
 it.remove();
 return result;
-}catch(e){
-if(Clazz.instanceOf(e,java.util.NoSuchElementException)){
-throw new IndexOutOfBoundsException();
-}else{
+} catch (e) {
+if (Clazz.exceptionOf(e,"java.util.NoSuchElementException")){
+throw  new IndexOutOfBoundsException();
+} else {
 throw e;
 }
 }
-},"~N");
-Clazz.overrideMethod(c$,"set",
-function(location,object){
-var it=this.listIterator(location);
-var result=it.next();
+}, "~N");
+Clazz.overrideMethod(c$, "set", 
+function(location, object){
+var it = this.listIterator(location);
+var result = it.next();
 it.set(object);
 return result;
-},"~N,~O");
+}, "~N,~O");
 });
+;//5.0.1-v2 Thu Feb 08 09:49:36 CST 2024

@@ -1,5 +1,6 @@
-Clazz.declarePackage ("JM.FF");
-c$ = Clazz.decorateAsClass (function () {
+Clazz.declarePackage("JM.FF");
+(function(){
+var c$ = Clazz.decorateAsClass(function(){
 this.key = null;
 this.dE = 0;
 this.a = null;
@@ -17,22 +18,21 @@ this.rab = 0;
 this.theta = 0;
 this.energy = 0;
 this.calcs = null;
-Clazz.instantialize (this, arguments);
-}, JM.FF, "Calculation");
-Clazz.defineMethod (c$, "set", 
-function (calcs) {
+Clazz.instantialize(this, arguments);}, JM.FF, "Calculation", null);
+Clazz.defineMethod(c$, "set", 
+function(calcs){
 this.calcs = calcs;
 return this;
 }, "JM.FF.Calculations");
-Clazz.defineMethod (c$, "setData", 
-function (calc, ia, ib, d) {
+Clazz.defineMethod(c$, "setData", 
+function(calc, ia, ib, d){
 }, "JU.Lst,~N,~N,~N");
-Clazz.defineMethod (c$, "getEnergy", 
-function () {
+Clazz.defineMethod(c$, "getEnergy", 
+function(){
 return this.energy;
 });
-Clazz.defineMethod (c$, "getPointers", 
-function (dataIn) {
+Clazz.defineMethod(c$, "getPointers", 
+function(dataIn){
 this.dData = dataIn[1];
 this.iData = dataIn[0];
 switch (this.iData.length) {
@@ -48,3 +48,9 @@ case 0:
 break;
 }
 }, "~A");
+Clazz.defineMethod(c$, "isLoggable", 
+function(n){
+return this.calcs.ff.minimizer.isLoggable(this.iData, n);
+}, "~N");
+})();
+;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024

@@ -8,6 +8,8 @@
 
 <script type="text/javascript">
 
+// BH 2022.05.24 adds occ and adp types
+
 Images = [["image", "model", "scale", "caption"]
 	,["data/Sr2Nb2O7_working2.gif","data/Sr2Nb2O7_working2.png", 0.3, "<a href='http://www.crystal.uni-bayreuth.de/en/research/incommensurately_modulated_Sr2Nb2O7/'>Sr2Nb2O7</a>, View 1", 800, 445]
 	,["data/Sr2Nb2O7_working.gif","data/Sr2Nb2O7_working.png", 0.3, "<a href='http://www.crystal.uni-bayreuth.de/en/research/incommensurately_modulated_Sr2Nb2O7/'>Sr2Nb2O7</a>, View 2", 800, 445]
@@ -35,106 +37,153 @@ function getImage(id) {
 
 function myPickCallback(a,b,c,d) {
 
+	lastAtom = (nAtoms == 1 ? Jmol.evaluateVar(jmol, "{picked}.atomNo") : null);
+
 	var d = $("#consolediv");
 	var s = d.html();
 	if (s.indexOf("plotT(a)") >= 0)s = "";
+
 	d.html(s + b + "\n");
 	
 	d[0].scrollTop = 0;//d[0].scrollHeight
-	setTimeout(tPlot,100)
+	setTimeout(function() {tPlot(lastAtom)},100)
 }
 
 var nAtoms = 1;
 var outputType = "mc";
-var xyz = "x";
+var xyzType = "x"; // or y or z or xyz
+var modType = "dis" // or occ or adp
+var lastAtom = null;
 
 function doSetOpt(a, n) {
 	switch(n[1]) {
 	case 1:
 		nAtoms = n[2];
+		modType = n[3];
 		$("#optdiv2").css("visibility",(nAtoms == 1 ? "visible" : "hidden"));
 		break;
 	case 2:
 		outputType = n[2];
 		break;
 	case 3:
-		xyz = n[2];
+		xyzType = n[2];
 		break;
 	}
-	doTPlot();
+	if (nAtoms != 1)
+		lastAtom = null;
+	doTPlot(lastAtom);
 }
 
-function doTPlot() {
+function doTPlot(atom) {
 	clearSelection();
-	tPlot();
+	tPlot(atom);
+}
+
+function clearGraph() {
+
+	$("#plotarea").html("");
+	$("#consolediv").html("");
 }
 
 function clearSelection() {
-  Jmol.script(jmol, "selectonHalos on;set picking select atom;measures delete;select none;picked = ({});pickedList=[];");
+  Jmol.script(jmol, "selectionHalos on;set picking select atom;measures delete;select none;picked = ({});pickedList=[];");
 }
 
 var AtomInfo=["", "one atom", "two atoms", "three atoms", "four atoms"];
 var DataInfo=["", "its modulation", "the distance modulation", "the angle modulation", "the dihedral modulation"];
 
-function tPlot() {
+function tPlot(atomNo) {
   // we use Jmol.evaluate with script to retrieve a table of data from Jmol
   // created using spt/ext/xtal/plott.spt
-  
+
+
   // picked and pickedList give us the last
 
   Jmol.scriptWait(jmol, "measures delete;modulation scale 1;set echo bottom center;echo;if (!plotT){script spt/ext/xtal/plott.spt};")
-	var n= Jmol.evaluate(jmol,"{picked}.count")
+
+  var xyzOrType = (modType != "dis" ? modType : outputType + (xyzType.length == 1 ? xyzType : ""));
+
+
+  var n = (atomNo ? 1 : nAtoms);
+
+  var data = createData(atomNo, n, xyzOrType, outputType);
+
+  if (data) {
+	createGraph(n, data);
+  }
+}
+
+function createData(atomNo, nAtoms, xyzOrType, outputType) {
+  
 	var s;
 	var firstRow = 3; // plott...   min/max...   ave/stddev...
-	var dataColumn = 1;
+	var n= (atomNo ? 1 : Jmol.evaluate(jmol,"{picked}.count"))
 	if (n < nAtoms) {
 		$("#plotarea").html("		After loading a model, click on \n		" + AtomInfo[nAtoms] + " to see " + DataInfo[nAtoms] + ".");
 		Jmol.script(jmol, "select picked");
 		return;
 	}
+  try {
 	switch (nAtoms) {
 	case 1:
-		if (xyz.length == 1) {
+		if (xyzOrType.length == 1) {
 			firstRow = 4; // plott... t/type...   min/max...   ave/stddev...
-			s = Jmol.evaluate(jmol,"script('plotT(pickedList[0],\""+outputType+xyz+"\");')");
 		} else {
 			firstRow = 1000; // skip graph
-			s = Jmol.evaluate(jmol,"script('plotT(pickedList[0],\""+outputType+"\");')");
 		}
+
+		var cmd = "plotT(" + (typeof atomNo == "number" ? "@" + atomNo : "pickedList[0]") + ",'"+xyzOrType+"')";
+		s = Jmol.evaluateVar(jmol,cmd);
 		break;
 	case 2:
-		s = Jmol.evaluate(jmol,"script('plotT(pickedList[-1] pickedList[0]);')");
+		lastAtom = null;
+		s = Jmol.evaluateVar(jmol,"plotT(pickedList[-1] pickedList[0])");
 		break;
 	case 3:
-		s = Jmol.evaluate(jmol,"script('plotT(pickedList[-2] pickedList[-1] pickedList[0]);')");
+		lastAtom = null;
+		s = Jmol.evaluateVar(jmol,"plotT(pickedList[-2] pickedList[-1] pickedList[0])");
 		break;
 	case 4:
-		s = Jmol.evaluate(jmol,"script('plotT(pickedList[-3] pickedList[-2] pickedList[-1] pickedList[0]);')");
+		lastAtom = null;
+		s = Jmol.evaluateVar(jmol,"plotT(pickedList[-3] pickedList[-2] pickedList[-1] pickedList[0])");
 		break;
 	default:
 		clearSelection();
-	  return;
+		return;
 	}
+
+  } catch(e) {
+	s = ["no such modulation"];
+  }
 	
 	// write the output
-	s = '<textarea style="width:450px;height:225px">' + s +'</textarea>'
-	$("#consolediv").html(s)
+
+	clearGraph();
+	$("#consolediv").html('<textarea style="width:450px;height:225px">' + s.join("\n").replace(/,/g,"\t") +'</textarea><br>');
+	
+	return s;
+}
+
+function createGraph(nAtoms, s) {
 
 	// plotT will return a tab-separated list with two header lines
+
+
 	// generate an array of [x,y] pairs
 	
-	var S = s.split("\n");
+	var dataColumn = 1;
+	var S = s;
 	var a = [];
 	var max = -1e10;
 	var min = 1e10;
-	for (var i = firstRow; i < S.length; i++) {
-		var SS = S[i].trim().split("\t");
-		var val = parseFloat(SS[dataColumn]);
+	for (var i = 0; i < S.length; i++) {
+		var SS = S[i];
+		var val = SS[1];
 		if (isNaN(val))
 			continue;
 		max = Math.max(max, val);
 		min = Math.min(min, val);
-		a.push([parseFloat(SS[0]), val, nAtoms]);
+		a.push([SS[0], val, nAtoms]);
 	}
 
 	// fix dihedrals:
@@ -179,12 +228,12 @@ function plotClickCallback(event, pos, item) {
 var Info = {
 	width: 700,
 	height: 450,
-	script: "set echo top left;echo click on an image;set debugscript",
-	use: "JAVA",
-	jarPath: "java",
+	script: "set echo top left;echo click on an image;",//set debugscript",
+//	use: "JAVA",
+//	jarPath: "java",
 	j2sPath: "j2s",
 	pickCallback: "myPickCallback",
-	jarFile: "JmolAppletSigned.jar",
+//	jarFile: "JmolAppletSigned.jar",
 	isSigned: true,
 	addSelectionOptions: false,
 	serverURL: "https://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
@@ -212,10 +261,6 @@ $(document).ready(function(){
 		+ "<br>"
 		+ Jmol.jmolButton(jmol,"write FILE ?","Save FILE")
 		+ Jmol.jmolButton(jmol,"write PNGJ jsmol.png","Save 3D-PNG")
-		+ "<br><br>"
-		+ " <a href=images.htm?_USE=JAVA>JAVA version</a>"
-		+ " <a href=images.htm?_USE=HTML5>HTML5 version</a>"
-		+ "<br>"
 	);
 
 	// button panel:
@@ -268,8 +313,11 @@ $(document).ready(function(){
 	// option divs:
 	
 	$("#optdiv1").html(
+		"atom " + 
 		Jmol.jmolRadioGroup(jmol, [
-		[[doSetOpt, 1, 1],"atom", "checked"],
+		[[doSetOpt, 1, 1, "dis"],"displacement", "checked"],
+		[[doSetOpt, 1, 1, "occ"],"occupancy"],
+		[[doSetOpt, 1, 1, "adp"],"adp<br>"],
 		[[doSetOpt, 1, 2], "distance"],
 		[[doSetOpt, 1, 3], "angle"],
 		[[doSetOpt, 1, 4], "dihedral"]

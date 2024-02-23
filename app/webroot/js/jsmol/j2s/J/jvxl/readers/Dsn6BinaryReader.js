@@ -1,6 +1,6 @@
-Clazz.declarePackage ("J.jvxl.readers");
-Clazz.load (["J.jvxl.readers.MapFileReader"], "J.jvxl.readers.Dsn6BinaryReader", ["java.io.DataInputStream", "JU.Rdr", "$.SB", "JU.Logger"], function () {
-c$ = Clazz.decorateAsClass (function () {
+Clazz.declarePackage("J.jvxl.readers");
+Clazz.load(["J.jvxl.readers.MapFileReader"], "J.jvxl.readers.Dsn6BinaryReader", ["java.io.DataInputStream", "JU.Rdr", "$.SB", "JU.Logger"], function(){
+var c$ = Clazz.decorateAsClass(function(){
 this.byteFactor = 0;
 this.xyCount = 0;
 this.nBrickX = 0;
@@ -10,32 +10,31 @@ this.brickLayerByteCount = 0;
 this.brickRowByteCount = 0;
 this.brickLayer = null;
 this.pt = 0;
-Clazz.instantialize (this, arguments);
-}, J.jvxl.readers, "Dsn6BinaryReader", J.jvxl.readers.MapFileReader);
-Clazz.makeConstructor (c$, 
-function () {
+Clazz.instantialize(this, arguments);}, J.jvxl.readers, "Dsn6BinaryReader", J.jvxl.readers.MapFileReader);
+Clazz.makeConstructor(c$, 
+function(){
 Clazz.superConstructor (this, J.jvxl.readers.Dsn6BinaryReader, []);
 });
-Clazz.overrideMethod (c$, "init2", 
-function (sg, brNull) {
-this.init2MFR (sg, this.br);
-this.binarydoc = this.newBinaryDocument ();
-var o2 = sg.getReaderData ();
+Clazz.overrideMethod(c$, "init2", 
+function(sg, brNull){
+this.init2MFR(sg, this.br);
+this.binarydoc = this.newBinaryDocument();
+var o2 = sg.getReaderData();
 var fileName = o2[0];
 var data = o2[1];
-if (data == null) this.binarydoc.setStream (sg.atomDataServer.getBufferedInputStream (fileName), true);
- else this.binarydoc.setStreamData ( new java.io.DataInputStream (JU.Rdr.getBIS (data.getBytes ())), true);
+if (data == null) this.binarydoc.setStream(sg.atomDataServer.getBufferedInputStream(fileName), true);
+ else this.binarydoc.setStreamData( new java.io.DataInputStream(JU.Rdr.getBIS(data.getBytes())), true);
 if (this.params.thePlane == null) this.params.insideOut = !this.params.insideOut;
 this.nSurfaces = 1;
 }, "J.jvxl.readers.SurfaceGenerator,java.io.BufferedReader");
-Clazz.overrideMethod (c$, "readParameters", 
-function () {
+Clazz.overrideMethod(c$, "readParameters", 
+function(){
 var header =  Clazz.newShortArray (19, 0);
-for (var i = 0; i < 19; i++) header[i] = this.binarydoc.readShort ();
+for (var i = 0; i < 19; i++) header[i] = this.binarydoc.readShort();
 
 if (header[18] != 100) {
-this.binarydoc.setStream (null, false);
-for (var i = 0; i < 19; i++) header[i] = this.binarydoc.swapBytesS (header[i]);
+this.binarydoc.setStream(null, false);
+for (var i = 0; i < 19; i++) header[i] = this.binarydoc.swapBytesS(header[i]);
 
 }this.xyzStart[0] = header[0];
 this.xyzStart[1] = header[1];
@@ -67,59 +66,60 @@ var dminError1 = (0 - header17 - 0.5) * header19 / (header16 - 0.5);
 var dminError2 = (0 - header17 + 0.5) * header19 / (header16 + 0.5);
 var dmaxError1 = (255 - header17 - 0.5) * header19 / (header16 - 0.5);
 var dmaxError2 = (255 - header17 + 0.5) * header19 / (header16 + 0.5);
-var dminError = Math.round ((dminError2 - dminError1) / 0.002) * 0.001;
-var dmaxError = Math.round ((dmaxError2 - dmaxError1) / 0.002) * 0.001;
-JU.Logger.info ("DNS6 dmin,dmax = " + this.dmin + "+/-" + dminError + "," + this.dmax + "+/-" + dmaxError);
+var dminError = Math.round((dminError2 - dminError1) / 0.002) * 0.001;
+var dmaxError = Math.round((dmaxError2 - dmaxError1) / 0.002) * 0.001;
+JU.Logger.info("DNS6 dmin,dmax = " + this.dmin + "+/-" + dminError + "," + this.dmax + "+/-" + dmaxError);
 this.a /= scalingFactor;
 this.b /= scalingFactor;
 this.c /= scalingFactor;
 this.alpha /= scalingFactor;
 this.beta /= scalingFactor;
 this.gamma /= scalingFactor;
-this.binarydoc.seek (0x200);
-this.getVectorsAndOrigin ();
-this.setCutoffAutomatic ();
+this.binarydoc.seek(0x200);
+this.getVectorsAndOrigin();
+this.setCutoffAutomatic();
 this.xyCount = this.n0 * this.n1;
 this.brickLayerVoxelCount = this.xyCount * 8;
-this.nBrickX = Clazz.doubleToInt ((this.n0 + 7) / 8);
-this.nBrickY = Clazz.doubleToInt ((this.n1 + 7) / 8);
+this.nBrickX = Clazz.doubleToInt((this.n0 + 7) / 8);
+this.nBrickY = Clazz.doubleToInt((this.n1 + 7) / 8);
 this.brickRowByteCount = this.nBrickX * 512;
 this.brickLayerByteCount = this.brickRowByteCount * this.nBrickY;
 this.brickLayer =  Clazz.newByteArray (this.brickLayerByteCount, 0);
-this.jvxlFileHeaderBuffer =  new JU.SB ();
-this.jvxlFileHeaderBuffer.append ("DNS6/O progressive brick data reader\n");
-this.jvxlFileHeaderBuffer.append ("see http://www.uoxray.uoregon.edu/tnt/manual/node104.html\n");
+this.jvxlFileHeaderBuffer =  new JU.SB();
+this.jvxlFileHeaderBuffer.append("DNS6/O progressive brick data reader\n");
+this.jvxlFileHeaderBuffer.append("see http://www.uoxray.uoregon.edu/tnt/manual/node104.html\n");
 });
-Clazz.defineMethod (c$, "readBrickLayer", 
- function () {
-this.binarydoc.readByteArray (this.brickLayer, 0, this.brickLayerByteCount);
+Clazz.defineMethod(c$, "readBrickLayer", 
+function(){
+this.binarydoc.readByteArray(this.brickLayer, 0, this.brickLayerByteCount);
 this.pt = 0;
-this.nBytes = this.binarydoc.getPosition ();
+this.nBytes = this.binarydoc.getPosition();
 });
-Clazz.defineMethod (c$, "getBrickValue", 
- function (pt) {
+Clazz.defineMethod(c$, "getBrickValue", 
+function(pt){
 var x = pt % this.n0;
-var y = (Clazz.doubleToInt (pt / this.n0)) % this.n1;
-var z = Clazz.doubleToInt (pt / this.xyCount);
+var y = (Clazz.doubleToInt(pt / this.n0)) % this.n1;
+var z = Clazz.doubleToInt(pt / this.xyCount);
 var brickX = x % 8;
 var brickY = y % 8;
 var brickZ = z % 8;
-var bX = Clazz.doubleToInt (x / 8);
-var bY = Clazz.doubleToInt (y / 8);
+var bX = Clazz.doubleToInt(x / 8);
+var bY = Clazz.doubleToInt(y / 8);
 var bPt = bY * 512 * this.nBrickX + bX * 512 + brickZ * 64 + brickY * 8 + brickX;
 if (bPt % 2 == 0) bPt++;
  else bPt--;
 var value = (this.brickLayer[bPt] + 256) % 256;
 return this.dmin + value * this.byteFactor;
 }, "~N");
-Clazz.overrideMethod (c$, "nextVoxel", 
-function () {
-if ((this.pt % this.brickLayerVoxelCount) == 0) this.readBrickLayer ();
-return this.getBrickValue (this.pt++);
+Clazz.overrideMethod(c$, "nextVoxel", 
+function(){
+if ((this.pt % this.brickLayerVoxelCount) == 0) this.readBrickLayer();
+return this.getBrickValue(this.pt++);
 });
-Clazz.overrideMethod (c$, "skipData", 
-function (nPoints) {
-for (var i = 0; i < nPoints; i++) this.binarydoc.readByte ();
+Clazz.overrideMethod(c$, "skipData", 
+function(nPoints){
+for (var i = 0; i < nPoints; i++) this.binarydoc.readByte();
 
 }, "~N");
 });
+;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024

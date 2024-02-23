@@ -13,7 +13,7 @@
 // BH 6/1/2014 8:32:12 AM added Help button; better mouse/keypress handling
 // BH 1/5/2013 12:45:19 PM
 
-Jmol.Console = {
+;Jmol.Console = {
 	buttons:{},
 	buttonWidth:100,
 	click:function(id) {
@@ -264,7 +264,7 @@ Jmol.Console.Input = function(console) {
 			kcode=10; 
 		// keycode is deprecated, but is essential still
 		if (type == "keyup") { 
-			mode = (kcode == 38 || kcode == 40 ? 1 : this.console.appletConsole.processKey(kcode, 402/*java.awt.event.KeyEvent.KEY_RELEASED*/, isCtrl));
+			mode = (kcode == 38 || kcode == 40 ? 1 : this.console.appletConsole.processKey(kcode, 402, isCtrl));
 			if ((mode & 1) == 1)
 				ev.preventDefault();
 			return;
@@ -292,7 +292,7 @@ Jmol.Console.Input = function(console) {
 		default:
 			kcode = 0; // nothing to report
 		}					
-		mode = this.console.appletConsole.processKey(kcode, 401/*java.awt.event.KeyEvent.KEY_PRESSED*/, isCtrl);
+		mode = this.console.appletConsole.processKey(kcode, 401, isCtrl);
 		if (isCtrl && kcode == 10)
 			this.setText(this.getText() + "\n")
 		if (mode == 0 && ev.keyCode == 9) {
@@ -355,3 +355,4 @@ Jmol.Console.Button.prototype.html = function() {
 	return s;
 }
 
+;

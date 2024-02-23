@@ -1,5 +1,6 @@
 // JmolApplet.js -- Jmol._Applet and Jmol._Image
 
+// BH 2022.08.25 fixing ?j2sdebugcode to allow menu and console
 // BH 2022.01.23 updated _availableParams callbacks
 // BH 1/28/2018 7:15:09 AM adding _notifyAudioEnded
 // BH 2/14/2016 12:31:02 PM fixed local reader not disappearing after script call
@@ -252,13 +253,17 @@
 	}
 	
 	proto._addCoreFiles = function() {
-		Jmol._addCoreFile("jmol", this._j2sPath, this.__Info.preloadCore);
+		Jmol._addCoreFile("jmol" + (Jmol._debugCode ? "debug" : ""), this._j2sPath, this.__Info.preloadCore);
+		if (Jmol._debugCode) {
+			Jmol._addCoreFile("jmoldebug", this._j2sPath, this.__Info.preloadCore);
+		}
 		if (!this._is2D) {
 	 		Jmol._addExec([this, null, "J.export.JSExporter","load JSExporter"])
 	//		Jmol._addExec([this, this.__addExportHook, null, "addExportHook"])
 		}
-		if (Jmol._debugCode)
+		if (Jmol._debugCode) {
 			Jmol._addExec([this, null, "J.appletjs.Jmol", "load Jmol"]);
+		}
   }
   
 	proto._create = function(id, Info){

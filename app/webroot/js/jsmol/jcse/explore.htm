@@ -6,6 +6,7 @@
 <script type="text/javascript" src="../js/Jmol2.js"></script>
 <script type="text/javascript">
 
+// 2022.09.13 add CBSE curriculum nacl,graphite,diamond,quartz,bcc,fcc,hcp stack
 // 10/19/2016 5:19:50 PM
 // 10/21/2016 5:19:04 AM
 
@@ -20,24 +21,28 @@ jmolSetMenuCssClass('" style="font-style:italic"')
 var Models = "=1blu {1 1 1}|P31 2 1,\
 nepheline.cif packed|P 61,\
 troilite.cif packed|P -6 2 c,\
-quartz.cif packed|P 32 2 1,\
 -00=---------------------------,\
 -99=---------------------------,\
--01=04369a.cif {1 1 1}|P n m a,\
--02=AgFUPMOS.cif packed|P 21/n,\
-diamond.cif packed|F d -3 m:2,\
+-01=NaCl nacl.cif packed|F m -3 m,\
+-02=graphite.cif packed|P 63 m c,\
+-03=diamond.cif packed|F d -3 m:2,\
+-04=quartz.cif packed|P 32 2 1,\
+-05=bcc chromium.cif 3 packed|I m 3 m,\
+-06=fcc(ccp) chromium.cif 1 packed|F m 3 m,\
+-07=hcp chromium.cif 2 packed|P 63/m m c,\
 dickite.cif packed|C 1 c 1,\
 gold.cif packed|F m -3 m,\
--03=kuds0105a.ccdc.cif {1 1 1}|P 21 21 21,\
 calcite.cif 1 packed|R -3 c:h,\
 Ti2O3.cif packed|R -3 c:h,\
 icsd_200866.cif 1 packed|P 63/m m c,\
 icsd_250072.cif packed|P -6,\
 icsd_26520.cif packed|P 63 m c,\
 maleic.cif 5 {1 1 1}|P 21/c,\
-nacl.cif packed|F m -3 m,\
--04=nank0104a.ccdc.cif {1 1 1}|F d d 2,\
--05=sebi0105c.ccdc.cif {1 1 1}|P 21 21 21\
+04369a.cif {1 1 1}|P n m a,\
+AgFUPMOS.cif packed|P 21/n,\
+kuds0105a.ccdc.cif {1 1 1}|P 21 21 21,\
+nank0104a.ccdc.cif {1 1 1}|F d d 2,\
+sebi0105c.ccdc.cif {1 1 1}|P 21 21 21\
 ".split(",")
 
 var modelSelectHtml
@@ -94,7 +99,11 @@ function getModelSelectHtml() {
 		var isSelected = (m.indexOf("*")>=0 && isDefault)
 		m = m.replace(/\*/,"")
 		if (isSelected)selectedModel = m
-		var n = m.split(".")[0].split(" ")[0]
+		var fname = m.split(".")[0].split(" ")
+		var n = fname[0]
+		if (fname[1]) {
+			m = m.substring(n.length + 1);
+		}
 		var f = (n.indexOf("=") == 0 ? "\"" + m.replace(/ /,'" '): datadir + "/" + m)
 		if (m.indexOf("----") >= 0)
      f = "zap";

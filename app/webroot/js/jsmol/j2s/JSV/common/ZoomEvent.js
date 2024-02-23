@@ -1,5 +1,5 @@
-Clazz.declarePackage ("JSV.common");
-c$ = Clazz.declareType (JSV.common, "ZoomEvent");
-Clazz.makeConstructor (c$, 
-function () {
-});
+Clazz.declarePackage("JSV.common");
+(function(){
+var c$ = Clazz.declareType(JSV.common, "ZoomEvent", null);
+/*LV!1824 unnec constructor*/})();
+;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024

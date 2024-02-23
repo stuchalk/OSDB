@@ -20,7 +20,7 @@ style3 = ";select *;font label 20;set labelfront;set labeloffset 0 0;display rem
 var jmol="jmol";
 var jme = "jme";
 
-var defaultScript = ""
+var defaultScript = "set zoomlarge false; "
 if (document.location.href.indexOf("model=") >= 0) { 
  defaultScript = "set zoomlarge false; load \"$" + document.location.href.split("model=")[1].split("&")[0] + "\";"
 } else if (document.location.href.indexOf("load=") >= 0) {
@@ -100,7 +100,7 @@ for that compound. You can save your work as an <a target=_blank href=https://en
 jmol = Jmol.getApplet(jmol, JmolInfo)
 jme = Jmol.getJMEApplet(jme, JMEInfo, jmol);
 
-Jmol.jmolButton(jmol, "load $glucose;" + calcscript + styleYellow, "glucose");
+//Jmol.jmolButton(jmol, "load $glucose;" + calcscript + //styleYellow, "glucose");
 Jmol.jmolHtml("<center>")
 Jmol.jmolHtml("<br>")
 Jmol.jmolButton(jmol, calcscript + styleYellow,"show R/S")

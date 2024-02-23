@@ -1,473 +1,426 @@
-// BH 8/25/2014 1:10:59 AM  - removed indirect access/inner class business.
-
-Clazz.load(["java.util.AbstractCollection","$.Iterator","$.List","$.ListIterator","$.RandomAccess","$.NoSuchElementException"],"java.util.AbstractList",["java.lang.IllegalArgumentException","$.IllegalStateException","$.IndexOutOfBoundsException","$.UnsupportedOperationException","java.util.ConcurrentModificationException"],function(){
-c$=Clazz.decorateAsClass(function(){
-this.modCount=0;
-
-
-
-//if(!Clazz.isClassDefined("java.util.AbstractList.SimpleListIterator")){
-//java.util.AbstractList.$AbstractList$SimpleListIterator$();
-//}
-//if(!Clazz.isClassDefined("java.util.AbstractList.FullListIterator")){
-//java.util.AbstractList.$AbstractList$FullListIterator$();
-//}
-
-
-
-Clazz.instantialize(this,arguments);
-},java.util,"AbstractList",java.util.AbstractCollection,java.util.List);
-Clazz.defineMethod(c$,"add",
-function(location,object){
-throw new UnsupportedOperationException();
-},"~N,~O");
-Clazz.defineMethod(c$,"add",
+Clazz.load(["java.util.AbstractCollection", "$.Iterator", "$.List", "$.ListIterator", "$.RandomAccess"], "java.util.AbstractList", null, function(){
+var c$ = Clazz.decorateAsClass(function(){
+this.modCount = 0;
+Clazz.instantialize(this, arguments);}, java.util, "AbstractList", java.util.AbstractCollection, java.util.List);
+Clazz.defineMethod(c$, "add", 
+function(location, object){
+throw  new UnsupportedOperationException();
+}, "~N,~O");
+Clazz.defineMethod(c$, "add", 
 function(object){
-this.add(this.size(),object);
+this.add(this.size(), object);
 return true;
-},"~O");
-Clazz.defineMethod(c$,"addAll",
-function(location,collection){
-var it=collection.iterator();
-while(it.hasNext()){
-this.add(location++,it.next());
+}, "~O");
+Clazz.defineMethod(c$, "addAll", 
+function(location, collection){
+var it = collection.iterator();
+while (it.hasNext()) {
+this.add(location++, it.next());
 }
-return!collection.isEmpty();
-},"~N,java.util.Collection");
-Clazz.overrideMethod(c$,"clear",
+return !collection.isEmpty();
+}, "~N,java.util.Collection");
+Clazz.overrideMethod(c$, "clear", 
 function(){
-this.removeRange(0,this.size());
+this.removeRange(0, this.size());
 });
-Clazz.overrideMethod(c$,"equals",
+Clazz.overrideMethod(c$, "equals", 
 function(object){
-if(this===object){
+if (this === object) {
 return true;
-}if(Clazz.instanceOf(object,java.util.List)){
-var list=object;
-if(list.size()!=this.size()){
+}if (Clazz.instanceOf(object,"java.util.List")) {
+var list = object;
+if (list.size() != this.size()) {
 return false;
-}var it1=this.iterator();
-var it2=list.iterator();
-while(it1.hasNext()){
-var e1=it1.next();
-var e2=it2.next();
-if(!(e1==null?e2==null:e1.equals(e2))){
+}var it1 = this.iterator();
+var it2 = list.iterator();
+while (it1.hasNext()) {
+var e1 = it1.next();
+var e2 = it2.next();
+if (!(e1 == null ? e2 == null : e1.equals(e2))) {
 return false;
 }}
 return true;
 }return false;
-},"~O");
-Clazz.overrideMethod(c$,"hashCode",
+}, "~O");
+Clazz.overrideMethod(c$, "hashCode", 
 function(){
-var result=1;
-var it=this.iterator();
-while(it.hasNext()){
-var object=it.next();
-result=(31*result)+(object==null?0:object.hashCode());
+var result = 1;
+var it = this.iterator();
+while (it.hasNext()) {
+var object = it.next();
+result = (31 * result) + (object == null ? 0 : object.hashCode());
 }
 return result;
 });
-Clazz.overrideMethod(c$,"indexOf",
+Clazz.overrideMethod(c$, "indexOf", 
 function(object){
-var it=this.listIterator();
-if(object!=null){
-while(it.hasNext()){
-if(object.equals(it.next())){
+var it = this.listIterator();
+if (object != null) {
+while (it.hasNext()) {
+if (object.equals(it.next())) {
 return it.previousIndex();
 }}
-}else{
-while(it.hasNext()){
-if(it.next()==null){
+} else {
+while (it.hasNext()) {
+if (it.next() == null) {
 return it.previousIndex();
 }}
-}return-1;
-},"~O");
-Clazz.overrideMethod(c$,"iterator",
+}return -1;
+}, "~O");
+Clazz.overrideMethod(c$, "iterator", 
 function(){
-return new java.util.AbstractListSimpleListIterator(this); // Clazz.innerTypeInstance(java.util.AbstractList.SimpleListIterator,this,null);
+return  new java.util.AbstractList.SimpleListIterator(this);
 });
-Clazz.overrideMethod(c$,"lastIndexOf",
+Clazz.overrideMethod(c$, "lastIndexOf", 
 function(object){
-var it=this.listIterator(this.size());
-if(object!=null){
-while(it.hasPrevious()){
-if(object.equals(it.previous())){
+var it = this.listIterator(this.size());
+if (object != null) {
+while (it.hasPrevious()) {
+if (object.equals(it.previous())) {
 return it.nextIndex();
 }}
-}else{
-while(it.hasPrevious()){
-if(it.previous()==null){
+} else {
+while (it.hasPrevious()) {
+if (it.previous() == null) {
 return it.nextIndex();
 }}
-}return-1;
-},"~O");
-//Clazz.defineMethod(c$,"listIterator",
-//function(){
-//return this.listIterator(0);
-//});
-Clazz.defineMethod(c$,"listIterator",
+}return -1;
+}, "~O");
+Clazz.defineMethod(c$, "listIterator", 
+function(){
+return this.listIterator(0);
+});
+Clazz.defineMethod(c$, "listIterator", 
 function(location){
-location || (location = 0);
-return new java.util.AbstractListFullListIterator(this, location);//Clazz.innerTypeInstance(java.util.AbstractList.FullListIterator,this,null,location);
-},"~N");
-Clazz.defineMethod(c$,"remove",
+return  new java.util.AbstractList.FullListIterator(this, location);
+}, "~N");
+Clazz.defineMethod(c$, "remove", 
 function(location){
-throw new UnsupportedOperationException();
-},"~N");
-Clazz.defineMethod(c$,"removeRange",
-function(start,end){
-var it=this.listIterator(start);
-for(var i=start;i<end;i++){
+throw  new UnsupportedOperationException();
+}, "~N");
+Clazz.defineMethod(c$, "removeRange", 
+function(start, end){
+var it = this.listIterator(start);
+for (var i = start; i < end; i++) {
 it.next();
 it.remove();
 }
-},"~N,~N");
-Clazz.overrideMethod(c$,"set",
-function(location,object){
-throw new UnsupportedOperationException();
-},"~N,~O");
-Clazz.overrideMethod(c$,"subList",
-function(start,end){
-if(0<=start&&end<=this.size()){
-if(start<=end){
-if(Clazz.instanceOf(this,java.util.RandomAccess)){
-return new java.util.AbstractList.SubAbstractListRandomAccess(this,start,end);
-}return new java.util.AbstractList.SubAbstractList(this,start,end);
-}throw new IllegalArgumentException();
-}throw new IndexOutOfBoundsException();
-},"~N,~N");
-
-
-
-//c$.$AbstractList$SimpleListIterator$=function(){
-
-Clazz.pu$h(self.c$);
-
-c$=Clazz.decorateAsClass(function(){
-//Clazz.prepareCallback(this,arguments);
-this.pos=-1;
-this.expectedModCount=0;
-this.lastPosition=-1;
-Clazz.instantialize(this,arguments);
-},java.util,"AbstractListSimpleListIterator",null,java.util.Iterator);
-
-
-Clazz.makeConstructor(c$,
-function(a){
-this._list = a;
-this.expectedModCount=a.modCount;
+}, "~N,~N");
+Clazz.overrideMethod(c$, "set", 
+function(location, object){
+throw  new UnsupportedOperationException();
+}, "~N,~O");
+Clazz.overrideMethod(c$, "subList", 
+function(start, end){
+if (0 <= start && end <= this.size()) {
+if (start <= end) {
+if (Clazz.instanceOf(this,"java.util.RandomAccess")) {
+return  new java.util.AbstractList.SubAbstractListRandomAccess(this, start, end);
+}return  new java.util.AbstractList.SubAbstractList(this, start, end);
+}throw  new IllegalArgumentException();
+}throw  new IndexOutOfBoundsException();
+}, "~N,~N");
+/*if3*/;(function(){
+var c$ = Clazz.decorateAsClass(function(){
+this.pos = -1;
+this.expectedModCount = 0;
+this.lastPosition = -1;
+this.list = null;
+Clazz.instantialize(this, arguments);}, java.util.AbstractList, "SimpleListIterator", null, java.util.Iterator);
+Clazz.makeConstructor(c$, 
+function(l){
+this.list = l;
+this.expectedModCount = l.modCount;
 }, "java.util.AbstractList");
-
-Clazz.overrideMethod(c$,"hasNext",
+Clazz.overrideMethod(c$, "hasNext", 
 function(){
-return this.pos+1<this._list.size();
+return this.pos + 1 < this.list.size();
 });
-Clazz.overrideMethod(c$,"next",
+Clazz.overrideMethod(c$, "next", 
 function(){
-if(this.expectedModCount==this._list.modCount){
-try{
-var a=this._list.get(this.pos+1);
-this.lastPosition=++this.pos;
-return a;
-}catch(e){
-if(Clazz.instanceOf(e,IndexOutOfBoundsException)){
-throw new java.util.NoSuchElementException();
-}else{
+if (this.expectedModCount == this.list.modCount) {
+try {
+var result = this.list.get(this.pos + 1);
+this.lastPosition = ++this.pos;
+return result;
+} catch (e) {
+if (Clazz.exceptionOf(e,"IndexOutOfBoundsException")){
+throw  new java.util.NoSuchElementException();
+} else {
 throw e;
 }
 }
-}throw new java.util.ConcurrentModificationException();
+}throw  new java.util.ConcurrentModificationException();
 });
-Clazz.overrideMethod(c$,"remove",
+Clazz.overrideMethod(c$, "remove", 
 function(){
-if(this.expectedModCount==this._list.modCount){
-try{
-this._list.remove(this.lastPosition);
-}catch(e){
-if(Clazz.instanceOf(e,IndexOutOfBoundsException)){
-throw new IllegalStateException();
-}else{
+if (this.expectedModCount == this.list.modCount) {
+try {
+this.list.remove(this.lastPosition);
+} catch (e) {
+if (Clazz.exceptionOf(e,"IndexOutOfBoundsException")){
+throw  new IllegalStateException();
+} else {
 throw e;
 }
 }
-if(this._list.modCount!=this.expectedModCount){
+if (this.list.modCount != this.expectedModCount) {
 this.expectedModCount++;
-}if(this.pos==this.lastPosition){
+}if (this.pos == this.lastPosition) {
 this.pos--;
-}this.lastPosition=-1;
-}else{
-throw new java.util.ConcurrentModificationException();
+}this.lastPosition = -1;
+} else {
+throw  new java.util.ConcurrentModificationException();
 }});
-
-c$=Clazz.p0p();
-//};
-
-
-//c$.$AbstractList$FullListIterator$=function(){
-Clazz.pu$h(self.c$);
-c$=Clazz.decorateAsClass(function(){
-//Clazz.prepareCallback(this,arguments);
-Clazz.instantialize(this,arguments);
-},java.util,"AbstractListFullListIterator",java.util.AbstractListSimpleListIterator,java.util.ListIterator);
-
-//,Clazz.innerTypeInstance(java.util.AbstractList.SimpleListIterator,this,null,Clazz.inheritArgs));
-
-Clazz.makeConstructor(c$,
-function(a,b){
-Clazz.superConstructor(this,java.util.AbstractListFullListIterator,[a]);
-if(0<=b&&b<=this._list.size()){
-this.pos=b-1;
-}else{
-throw new IndexOutOfBoundsException();
-}},"java.util.AbstractList,~N");
-Clazz.overrideMethod(c$,"add",
-function(a){
-if(this.expectedModCount==this._list.modCount){
-try{
-this._list.add(this.pos+1,a);
-}catch(e){
-if(Clazz.instanceOf(e,IndexOutOfBoundsException)){
-throw new java.util.NoSuchElementException();
-}else{
+/*eoif3*/})();
+/*if3*/;(function(){
+var c$ = Clazz.declareType(java.util.AbstractList, "FullListIterator", java.util.AbstractList.SimpleListIterator, java.util.ListIterator);
+Clazz.makeConstructor(c$, 
+function(list, start){
+Clazz.superConstructor(this, java.util.AbstractList.FullListIterator, [list]);
+if (0 <= start && start <= list.size()) {
+this.pos = start - 1;
+} else {
+throw  new IndexOutOfBoundsException();
+}}, "java.util.AbstractList,~N");
+Clazz.overrideMethod(c$, "add", 
+function(object){
+if (this.expectedModCount == this.list.modCount) {
+try {
+this.list.add(this.pos + 1, object);
+} catch (e) {
+if (Clazz.exceptionOf(e,"IndexOutOfBoundsException")){
+throw  new java.util.NoSuchElementException();
+} else {
 throw e;
 }
 }
 this.pos++;
-this.lastPosition=-1;
-if(this._list.modCount!=this.expectedModCount){
+this.lastPosition = -1;
+if (this.list.modCount != this.expectedModCount) {
 this.expectedModCount++;
-}}else{
-throw new java.util.ConcurrentModificationException();
-}},"~O");
-Clazz.overrideMethod(c$,"hasPrevious",
+}} else {
+throw  new java.util.ConcurrentModificationException();
+}}, "~O");
+Clazz.overrideMethod(c$, "hasPrevious", 
 function(){
-return this.pos>=0;
+return this.pos >= 0;
 });
-Clazz.overrideMethod(c$,"nextIndex",
+Clazz.overrideMethod(c$, "nextIndex", 
 function(){
-return this.pos+1;
+return this.pos + 1;
 });
-Clazz.overrideMethod(c$,"previous",
+Clazz.overrideMethod(c$, "previous", 
 function(){
-if(this.expectedModCount==this._list.modCount){
-try{
-var a=this._list.get(this.pos);
-this.lastPosition=this.pos;
+if (this.expectedModCount == this.list.modCount) {
+try {
+var result = this.list.get(this.pos);
+this.lastPosition = this.pos;
 this.pos--;
-return a;
-}catch(e){
-if(Clazz.instanceOf(e,IndexOutOfBoundsException)){
-throw new java.util.NoSuchElementException();
-}else{
+return result;
+} catch (e) {
+if (Clazz.exceptionOf(e,"IndexOutOfBoundsException")){
+throw  new java.util.NoSuchElementException();
+} else {
 throw e;
 }
 }
-}throw new java.util.ConcurrentModificationException();
+}throw  new java.util.ConcurrentModificationException();
 });
-Clazz.overrideMethod(c$,"previousIndex",
+Clazz.overrideMethod(c$, "previousIndex", 
 function(){
 return this.pos;
 });
-Clazz.overrideMethod(c$,"set",
-function(a){
-if(this.expectedModCount==this._list.modCount){
-try{
-this._list.set(this.lastPosition,a);
-}catch(e){
-if(Clazz.instanceOf(e,IndexOutOfBoundsException)){
-throw new IllegalStateException();
-}else{
+Clazz.overrideMethod(c$, "set", 
+function(object){
+if (this.expectedModCount == this.list.modCount) {
+try {
+this.list.set(this.lastPosition, object);
+} catch (e) {
+if (Clazz.exceptionOf(e,"IndexOutOfBoundsException")){
+throw  new IllegalStateException();
+} else {
 throw e;
 }
 }
-}else{
-throw new java.util.ConcurrentModificationException();
-}},"~O");
-c$=Clazz.p0p();
-//};
-
-
-
-
-Clazz.pu$h(self.c$);
-c$=Clazz.declareType(java.util.AbstractList,"SubAbstractListRandomAccess",java.util.AbstractList.SubAbstractList,java.util.RandomAccess);
-c$=Clazz.p0p();
-
-
-
-
-Clazz.pu$h(self.c$);
-c$=Clazz.decorateAsClass(function(){
-this.fullList=null;
-this.offset=0;
-this.$size=0;
-Clazz.instantialize(this,arguments);
-},java.util.AbstractList,"SubAbstractList",java.util.AbstractList);
-Clazz.makeConstructor(c$,
-function(a,b,c){
-Clazz.superConstructor(this,java.util.AbstractList.SubAbstractList);
-this.fullList=a;
-this.modCount=this.fullList.modCount;
-this.offset=b;
-this.$size=c-b;
-},"java.util.AbstractList,~N,~N");
-Clazz.defineMethod(c$,"add",
-function(a,b){
-if(this.modCount==this.fullList.modCount){
-if(0<=a&&a<=this.$size){
-this.fullList.add(a+this.offset,b);
+} else {
+throw  new java.util.ConcurrentModificationException();
+}}, "~O");
+/*eoif3*/})();
+/*if3*/;(function(){
+var c$ = Clazz.declareType(java.util.AbstractList, "SubAbstractListRandomAccess", java.util.AbstractList.SubAbstractList, java.util.RandomAccess);
+/*eoif3*/})();
+/*if3*/;(function(){
+var c$ = Clazz.decorateAsClass(function(){
+this.fullList = null;
+this.offset = 0;
+this.$size = 0;
+Clazz.instantialize(this, arguments);}, java.util.AbstractList, "SubAbstractList", java.util.AbstractList);
+Clazz.makeConstructor(c$, 
+function(list, start, end){
+Clazz.superConstructor(this, java.util.AbstractList.SubAbstractList);
+this.fullList = list;
+this.modCount = this.fullList.modCount;
+this.offset = start;
+this.$size = end - start;
+}, "java.util.AbstractList,~N,~N");
+Clazz.defineMethod(c$, "add", 
+function(location, object){
+if (this.modCount == this.fullList.modCount) {
+if (0 <= location && location <= this.$size) {
+this.fullList.add(location + this.offset, object);
 this.$size++;
-this.modCount=this.fullList.modCount;
-}else{
-throw new IndexOutOfBoundsException();
-}}else{
-throw new java.util.ConcurrentModificationException();
-}},"~N,~O");
-Clazz.defineMethod(c$,"addAll",
-function(a,b){
-if(this.modCount==this.fullList.modCount){
-if(0<=a&&a<=this.$size){
-var c=this.fullList.addAll(a+this.offset,b);
-if(c){
-this.$size+=b.size();
-this.modCount=this.fullList.modCount;
-}return c;
-}throw new IndexOutOfBoundsException();
-}throw new java.util.ConcurrentModificationException();
-},"~N,java.util.Collection");
-Clazz.defineMethod(c$,"addAll",
-function(a){
-if(this.modCount==this.fullList.modCount){
-var b=this.fullList.addAll(this.offset+this.$size,a);
-if(b){
-this.$size+=a.size();
-this.modCount=this.fullList.modCount;
-}return b;
-}throw new java.util.ConcurrentModificationException();
-},"java.util.Collection");
-Clazz.defineMethod(c$,"get",
-function(a){
-if(this.modCount==this.fullList.modCount){
-if(0<=a&&a<this.$size){
-return this.fullList.get(a+this.offset);
-}throw new IndexOutOfBoundsException();
-}throw new java.util.ConcurrentModificationException();
-},"~N");
-Clazz.overrideMethod(c$,"iterator",
+this.modCount = this.fullList.modCount;
+} else {
+throw  new IndexOutOfBoundsException();
+}} else {
+throw  new java.util.ConcurrentModificationException();
+}}, "~N,~O");
+Clazz.defineMethod(c$, "addAll", 
+function(location, collection){
+if (this.modCount == this.fullList.modCount) {
+if (0 <= location && location <= this.$size) {
+var result = this.fullList.addAll(location + this.offset, collection);
+if (result) {
+this.$size += collection.size();
+this.modCount = this.fullList.modCount;
+}return result;
+}throw  new IndexOutOfBoundsException();
+}throw  new java.util.ConcurrentModificationException();
+}, "~N,java.util.Collection");
+Clazz.defineMethod(c$, "addAll", 
+function(collection){
+if (this.modCount == this.fullList.modCount) {
+var result = this.fullList.addAll(this.offset + this.$size, collection);
+if (result) {
+this.$size += collection.size();
+this.modCount = this.fullList.modCount;
+}return result;
+}throw  new java.util.ConcurrentModificationException();
+}, "java.util.Collection");
+Clazz.defineMethod(c$, "get", 
+function(location){
+if (this.modCount == this.fullList.modCount) {
+if (0 <= location && location < this.$size) {
+return this.fullList.get(location + this.offset);
+}throw  new IndexOutOfBoundsException();
+}throw  new java.util.ConcurrentModificationException();
+}, "~N");
+Clazz.overrideMethod(c$, "iterator", 
 function(){
 return this.listIterator(0);
 });
-Clazz.defineMethod(c$,"listIterator",
-function(a){
-if(this.modCount==this.fullList.modCount){
-if(0<=a&&a<=this.$size){
-return new java.util.AbstractList.SubAbstractList.SubAbstractListIterator(this.fullList.listIterator(a+this.offset),this,this.offset,this.$size);
-}throw new IndexOutOfBoundsException();
-}throw new java.util.ConcurrentModificationException();
-},"~N");
-Clazz.defineMethod(c$,"remove",
-function(a){
-if(this.modCount==this.fullList.modCount){
-if(0<=a&&a<this.$size){
-var b=this.fullList.remove(a+this.offset);
+Clazz.defineMethod(c$, "listIterator", 
+function(location){
+if (this.modCount == this.fullList.modCount) {
+if (0 <= location && location <= this.$size) {
+return  new java.util.AbstractList.SubAbstractList.SubAbstractListIterator(this.fullList.listIterator(location + this.offset), this, this.offset, this.$size);
+}throw  new IndexOutOfBoundsException();
+}throw  new java.util.ConcurrentModificationException();
+}, "~N");
+Clazz.defineMethod(c$, "remove", 
+function(location){
+if (this.modCount == this.fullList.modCount) {
+if (0 <= location && location < this.$size) {
+var result = this.fullList.remove(location + this.offset);
 this.$size--;
-this.modCount=this.fullList.modCount;
-return b;
-}throw new IndexOutOfBoundsException();
-}throw new java.util.ConcurrentModificationException();
-},"~N");
-Clazz.defineMethod(c$,"removeRange",
-function(a,b){
-if(a!=b){
-if(this.modCount==this.fullList.modCount){
-this.fullList.removeRange(a+this.offset,b+this.offset);
-this.$size-=b-a;
-this.modCount=this.fullList.modCount;
-}else{
-throw new java.util.ConcurrentModificationException();
-}}},"~N,~N");
-Clazz.defineMethod(c$,"set",
-function(a,b){
-if(this.modCount==this.fullList.modCount){
-if(0<=a&&a<this.$size){
-return this.fullList.set(a+this.offset,b);
-}throw new IndexOutOfBoundsException();
-}throw new java.util.ConcurrentModificationException();
-},"~N,~O");
-Clazz.overrideMethod(c$,"size",
+this.modCount = this.fullList.modCount;
+return result;
+}throw  new IndexOutOfBoundsException();
+}throw  new java.util.ConcurrentModificationException();
+}, "~N");
+Clazz.defineMethod(c$, "removeRange", 
+function(start, end){
+if (start != end) {
+if (this.modCount == this.fullList.modCount) {
+this.fullList.removeRange(start + this.offset, end + this.offset);
+this.$size -= end - start;
+this.modCount = this.fullList.modCount;
+} else {
+throw  new java.util.ConcurrentModificationException();
+}}}, "~N,~N");
+Clazz.defineMethod(c$, "set", 
+function(location, object){
+if (this.modCount == this.fullList.modCount) {
+if (0 <= location && location < this.$size) {
+return this.fullList.set(location + this.offset, object);
+}throw  new IndexOutOfBoundsException();
+}throw  new java.util.ConcurrentModificationException();
+}, "~N,~O");
+Clazz.overrideMethod(c$, "size", 
 function(){
 return this.$size;
 });
-Clazz.defineMethod(c$,"sizeChanged",
-function(a){
-if(a){
+Clazz.defineMethod(c$, "sizeChanged", 
+function(increment){
+if (increment) {
 this.$size++;
-}else{
+} else {
 this.$size--;
-}this.modCount=this.fullList.modCount;
-},"~B");
-Clazz.pu$h(self.c$);
-c$=Clazz.decorateAsClass(function(){
-this.subList=null;
-this.iterator=null;
-this.start=0;
-this.end=0;
-Clazz.instantialize(this,arguments);
-},java.util.AbstractList.SubAbstractList,"SubAbstractListIterator",null,java.util.ListIterator);
-Clazz.makeConstructor(c$,
-function(a,b,c,d){
-this.iterator=a;
-this.subList=b;
-this.start=c;
-this.end=this.start+d;
-},"java.util.ListIterator,java.util.AbstractList.SubAbstractList,~N,~N");
-Clazz.defineMethod(c$,"add",
-function(a){
-this.iterator.add(a);
+}this.modCount = this.fullList.modCount;
+}, "~B");
+/*if3*/;(function(){
+var c$ = Clazz.decorateAsClass(function(){
+this.subList = null;
+this.iterator = null;
+this.start = 0;
+this.end = 0;
+Clazz.instantialize(this, arguments);}, java.util.AbstractList.SubAbstractList, "SubAbstractListIterator", null, java.util.ListIterator);
+Clazz.makeConstructor(c$, 
+function(it, list, offset, length){
+this.iterator = it;
+this.subList = list;
+this.start = offset;
+this.end = this.start + length;
+}, "java.util.ListIterator,java.util.AbstractList.SubAbstractList,~N,~N");
+Clazz.defineMethod(c$, "add", 
+function(object){
+this.iterator.add(object);
 this.subList.sizeChanged(true);
 this.end++;
-},"~O");
-Clazz.overrideMethod(c$,"hasNext",
+}, "~O");
+Clazz.overrideMethod(c$, "hasNext", 
 function(){
-return this.iterator.nextIndex()<this.end;
+return this.iterator.nextIndex() < this.end;
 });
-Clazz.overrideMethod(c$,"hasPrevious",
+Clazz.overrideMethod(c$, "hasPrevious", 
 function(){
-return this.iterator.previousIndex()>=this.start;
+return this.iterator.previousIndex() >= this.start;
 });
-Clazz.defineMethod(c$,"next",
+Clazz.defineMethod(c$, "next", 
 function(){
-if(this.iterator.nextIndex()<this.end){
+if (this.iterator.nextIndex() < this.end) {
 return this.iterator.next();
-}throw new java.util.NoSuchElementException();
+}throw  new java.util.NoSuchElementException();
 });
-Clazz.defineMethod(c$,"nextIndex",
+Clazz.defineMethod(c$, "nextIndex", 
 function(){
-return this.iterator.nextIndex()-this.start;
+return this.iterator.nextIndex() - this.start;
 });
-Clazz.defineMethod(c$,"previous",
+Clazz.defineMethod(c$, "previous", 
 function(){
-if(this.iterator.previousIndex()>=this.start){
+if (this.iterator.previousIndex() >= this.start) {
 return this.iterator.previous();
-}throw new java.util.NoSuchElementException();
+}throw  new java.util.NoSuchElementException();
 });
-Clazz.defineMethod(c$,"previousIndex",
+Clazz.defineMethod(c$, "previousIndex", 
 function(){
-var a=this.iterator.previousIndex();
-if(a>=this.start){
-return a-this.start;
-}return-1;
+var previous = this.iterator.previousIndex();
+if (previous >= this.start) {
+return previous - this.start;
+}return -1;
 });
-Clazz.defineMethod(c$,"remove",
+Clazz.defineMethod(c$, "remove", 
 function(){
 this.iterator.remove();
 this.subList.sizeChanged(false);
 this.end--;
 });
-Clazz.defineMethod(c$,"set",
-function(a){
-this.iterator.set(a);
-},"~O");
-c$=Clazz.p0p();
-c$=Clazz.p0p();
+Clazz.defineMethod(c$, "set", 
+function(object){
+this.iterator.set(object);
+}, "~O");
+/*eoif3*/})();
+/*eoif3*/})();
 });
+;//5.0.1-v2 Thu Feb 08 09:49:36 CST 2024

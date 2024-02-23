@@ -44,7 +44,6 @@ echo $this->Html->script('swagger/lib/bootstrap.min');
             supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
             onComplete: function (swaggerApi, swaggerUi) {
                 if (typeof initOAuth == "function") {
-
                     initOAuth({
                         clientId: "ffe7748a-3a3f-4860-a02a-42ab08e4fde2",
                         realm: "realm",

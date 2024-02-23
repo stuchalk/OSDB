@@ -1,6 +1,6 @@
-Clazz.declarePackage ("JU");
-Clazz.load (["JU.InfTree"], "JU.InfBlocks", ["JU.InfCodes"], function () {
-c$ = Clazz.decorateAsClass (function () {
+Clazz.declarePackage("JU");
+Clazz.load(["JU.InfTree"], "JU.InfBlocks", ["JU.InfCodes"], function(){
+var c$ = Clazz.decorateAsClass(function(){
 this.mode = 0;
 this.left = 0;
 this.table = 0;
@@ -26,21 +26,20 @@ this.write = 0;
 this.check = false;
 this.inftree = null;
 this.z = null;
-Clazz.instantialize (this, arguments);
-}, JU, "InfBlocks");
-Clazz.prepareFields (c$, function () {
+Clazz.instantialize(this, arguments);}, JU, "InfBlocks", null);
+Clazz.prepareFields (c$, function(){
 this.bb =  Clazz.newIntArray (1, 0);
 this.tb =  Clazz.newIntArray (1, 0);
 this.bl =  Clazz.newIntArray (1, 0);
 this.bd =  Clazz.newIntArray (1, 0);
 this.tli =  Clazz.newIntArray (1, 0);
 this.tdi =  Clazz.newIntArray (1, 0);
-this.inftree =  new JU.InfTree ();
+this.inftree =  new JU.InfTree();
 });
-Clazz.makeConstructor (c$, 
-function (z, w) {
+Clazz.makeConstructor(c$, 
+function(z, w){
 this.z = z;
-this.codes =  new JU.InfCodes (this.z, this);
+this.codes =  new JU.InfCodes(this.z, this);
 this.hufts =  Clazz.newIntArray (4320, 0);
 this.window =  Clazz.newByteArray (w, 0);
 this.end = w;
@@ -49,21 +48,21 @@ this.mode = 0;
 {
 this.tl = Clazz.newArray(1, null);
 this.td = Clazz.newArray(1, null);
-}this.reset ();
+}this.reset();
 }, "JU.ZStream,~N");
-Clazz.defineMethod (c$, "reset", 
-function () {
+Clazz.defineMethod(c$, "reset", 
+function(){
 if (this.mode == 6) {
-this.codes.free (this.z);
+this.codes.free(this.z);
 }this.mode = 0;
 this.bitk = 0;
 this.bitb = 0;
 this.read = this.write = 0;
 if (this.check) {
-this.z.checksum.reset ();
+this.z.checksum.reset();
 }});
-Clazz.defineMethod (c$, "proc", 
-function (r) {
+Clazz.defineMethod(c$, "proc", 
+function(r){
 var t;
 var b;
 var k;
@@ -92,7 +91,7 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 }n--;
 b |= (this.z.next_in[p++] & 0xff) << k;
 k += 8;
@@ -111,8 +110,8 @@ k -= (t);
 }this.mode = 1;
 break;
 case 1:
-JU.InfTree.inflate_trees_fixed (this.bl, this.bd, this.tl, this.td, this.z);
-this.codes.init (this.bl[0], this.bd[0], this.tl[0], 0, this.td[0], 0);
+JU.InfTree.inflate_trees_fixed(this.bl, this.bd, this.tl, this.td, this.z);
+this.codes.init(this.bl[0], this.bd[0], this.tl[0], 0, this.td[0], 0);
 {
 b >>>= (3);
 k -= (3);
@@ -137,7 +136,7 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 }
 break;
 case 1:
@@ -151,7 +150,7 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 }n--;
 b |= (this.z.next_in[p++] & 0xff) << k;
 k += 8;
@@ -166,7 +165,7 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 }this.left = (b & 0xffff);
 b = k = 0;
 this.mode = this.left != 0 ? 2 : (this.last != 0 ? 7 : 0);
@@ -179,14 +178,14 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 }if (m == 0) {
 if (q == this.end && this.read != 0) {
 q = 0;
 m = (q < this.read ? this.read - q - 1 : this.end - q);
 }if (m == 0) {
 this.write = q;
-r = this.inflate_flush (r);
+r = this.inflate_flush(r);
 q = this.write;
 m = (q < this.read ? this.read - q - 1 : this.end - q);
 if (q == this.end && this.read != 0) {
@@ -199,12 +198,12 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 }}}r = 0;
 t = this.left;
 if (t > n) t = n;
 if (t > m) t = m;
-System.arraycopy (this.z.next_in, p, this.window, q, t);
+System.arraycopy(this.z.next_in, p, this.window, q, t);
 p += t;
 n -= t;
 q += t;
@@ -223,7 +222,7 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 }n--;
 b |= (this.z.next_in[p++] & 0xff) << k;
 k += 8;
@@ -239,7 +238,7 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 }t = 258 + (t & 0x1f) + ((t >> 5) & 0x1f);
 if (this.blens == null || this.blens.length < t) {
 this.blens =  Clazz.newIntArray (t, 0);
@@ -264,7 +263,7 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 }n--;
 b |= (this.z.next_in[p++] & 0xff) << k;
 k += 8;
@@ -278,7 +277,7 @@ while (this.index < 19) {
 this.blens[JU.InfBlocks.border[this.index++]] = 0;
 }
 this.bb[0] = 7;
-t = this.inftree.inflate_trees_bits (this.blens, this.bb, this.tb, this.hufts, this.z);
+t = this.inftree.inflate_trees_bits(this.blens, this.bb, this.tb, this.hufts, this.z);
 if (t != 0) {
 r = t;
 if (r == -3) {
@@ -290,7 +289,7 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 }this.index = 0;
 this.mode = 5;
 case 5:
@@ -312,7 +311,7 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 }n--;
 b |= (this.z.next_in[p++] & 0xff) << k;
 k += 8;
@@ -336,7 +335,7 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 }n--;
 b |= (this.z.next_in[p++] & 0xff) << k;
 k += 8;
@@ -359,7 +358,7 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 }c = c == 16 ? this.blens[i - 1] : 0;
 do {
 this.blens[i++] = c;
@@ -371,7 +370,7 @@ this.tb[0] = -1;
 this.bl[0] = 9;
 this.bd[0] = 6;
 t = this.table;
-t = this.inftree.inflate_trees_dynamic (257 + (t & 0x1f), 1 + ((t >> 5) & 0x1f), this.blens, this.bl, this.bd, this.tli, this.tdi, this.hufts, this.z);
+t = this.inftree.inflate_trees_dynamic(257 + (t & 0x1f), 1 + ((t >> 5) & 0x1f), this.blens, this.bl, this.bd, this.tli, this.tdi, this.hufts, this.z);
 if (t != 0) {
 if (t == -3) {
 this.blens = null;
@@ -383,8 +382,8 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
-}this.codes.init (this.bl[0], this.bd[0], this.hufts, this.tli[0], this.hufts, this.tdi[0]);
+return this.inflate_flush(r);
+}this.codes.init(this.bl[0], this.bd[0], this.hufts, this.tli[0], this.hufts, this.tdi[0]);
 }this.mode = 6;
 case 6:
 this.bitb = b;
@@ -393,10 +392,10 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-if ((r = this.codes.proc (r)) != 1) {
-return this.inflate_flush (r);
+if ((r = this.codes.proc(r)) != 1) {
+return this.inflate_flush(r);
 }r = 0;
-this.codes.free (this.z);
+this.codes.free(this.z);
 p = this.z.next_in_index;
 n = this.z.avail_in;
 b = this.bitb;
@@ -409,7 +408,7 @@ break;
 }this.mode = 7;
 case 7:
 this.write = q;
-r = this.inflate_flush (r);
+r = this.inflate_flush(r);
 q = this.write;
 m = (q < this.read ? this.read - q - 1 : this.end - q);
 if (this.read != this.write) {
@@ -419,7 +418,7 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 }this.mode = 8;
 case 8:
 r = 1;
@@ -429,7 +428,7 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 case 9:
 r = -3;
 this.bitb = b;
@@ -438,7 +437,7 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 default:
 r = -2;
 this.bitb = b;
@@ -447,27 +446,27 @@ this.z.avail_in = n;
 this.z.total_in += p - this.z.next_in_index;
 this.z.next_in_index = p;
 this.write = q;
-return this.inflate_flush (r);
+return this.inflate_flush(r);
 }
 }
 }, "~N");
-Clazz.defineMethod (c$, "free", 
-function () {
-this.reset ();
+Clazz.defineMethod(c$, "free", 
+function(){
+this.reset();
 this.window = null;
 this.hufts = null;
 });
-Clazz.defineMethod (c$, "set_dictionary", 
-function (d, start, n) {
-System.arraycopy (d, start, this.window, 0, n);
+Clazz.defineMethod(c$, "set_dictionary", 
+function(d, start, n){
+System.arraycopy(d, start, this.window, 0, n);
 this.read = this.write = n;
 }, "~A,~N,~N");
-Clazz.defineMethod (c$, "sync_point", 
-function () {
+Clazz.defineMethod(c$, "sync_point", 
+function(){
 return this.mode == 1 ? 1 : 0;
 });
-Clazz.defineMethod (c$, "inflate_flush", 
-function (r) {
+Clazz.defineMethod(c$, "inflate_flush", 
+function(r){
 var n;
 var p;
 var q;
@@ -479,8 +478,8 @@ if (n != 0 && r == -5) r = 0;
 this.z.avail_out -= n;
 this.z.total_out += n;
 if (this.check && n > 0) {
-this.z.checksum.update (this.window, q, n);
-}System.arraycopy (this.window, q, this.z.next_out, p, n);
+this.z.checksum.update(this.window, q, n);
+}System.arraycopy(this.window, q, this.z.next_out, p, n);
 p += n;
 q += n;
 if (q == this.end) {
@@ -492,31 +491,15 @@ if (n != 0 && r == -5) r = 0;
 this.z.avail_out -= n;
 this.z.total_out += n;
 if (this.check && n > 0) {
-this.z.checksum.update (this.window, q, n);
-}System.arraycopy (this.window, q, this.z.next_out, p, n);
+this.z.checksum.update(this.window, q, n);
+}System.arraycopy(this.window, q, this.z.next_out, p, n);
 p += n;
 q += n;
 }this.z.next_out_index = p;
 this.read = q;
 return r;
 }, "~N");
-Clazz.defineStatics (c$,
-"MANY", 1440,
-"inflate_mask",  Clazz.newIntArray (-1, [0x00000000, 0x00000001, 0x00000003, 0x00000007, 0x0000000f, 0x0000001f, 0x0000003f, 0x0000007f, 0x000000ff, 0x000001ff, 0x000003ff, 0x000007ff, 0x00000fff, 0x00001fff, 0x00003fff, 0x00007fff, 0x0000ffff]),
-"border",  Clazz.newIntArray (-1, [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]),
-"Z_OK", 0,
-"Z_STREAM_END", 1,
-"Z_STREAM_ERROR", -2,
-"Z_DATA_ERROR", -3,
-"Z_BUF_ERROR", -5,
-"TYPE", 0,
-"LENS", 1,
-"STORED", 2,
-"TABLE", 3,
-"BTREE", 4,
-"DTREE", 5,
-"CODES", 6,
-"DRY", 7,
-"DONE", 8,
-"BAD", 9);
+c$.inflate_mask =  Clazz.newIntArray(-1, [0x00000000, 0x00000001, 0x00000003, 0x00000007, 0x0000000f, 0x0000001f, 0x0000003f, 0x0000007f, 0x000000ff, 0x000001ff, 0x000003ff, 0x000007ff, 0x00000fff, 0x00001fff, 0x00003fff, 0x00007fff, 0x0000ffff]);
+c$.border =  Clazz.newIntArray(-1, [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]);
 });
+;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024

@@ -1,0 +1,66 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>JSmol atoms demo</title>
+<link rel="stylesheet" type="text/css" href="../default.css">
+<script src="../jsmol/JSmol.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+var myJmol = 'myJmol';
+var JmolInfo = {
+	width:'100%',
+	height:'100%',
+	color:'#E2F4F5',
+	j2sPath:'../jsmol/j2s',
+	serverURL:'../jsmol/php/jsmol.php',
+	use:'html5'
+}
+
+$(document).ready(function(){
+	$('#JmolOuterDiv').css(	{ 'width':'calc( 100% - 1.2em )', 'border':'1px dotted gray', 'border-radius':'0.6em', 'padding':'0.6em', 'min-height':'90vmin' } );
+	$('#JmolOuterDiv').prepend( '<div id="JmolInnerDiv" style="width:90vmin; height:90vmin; float:left; margin-right:0.6em;"></div>' );
+  $('#JmolInnerDiv').html( Jmol.getAppletHtml(myJmol, JmolInfo) );
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){
+	Jmol.script(myJmol, 'set defaultVDW babel; zap; set echo middle center; font echo 18 sanserif bold; color echo yellow; echo Loading...; delay 0.5;load 1274.res {555 555 1}; cpk 0; wireframe 0; select NOT symmetry; axes OFF; unitcell OFF; center selected; ellipsoids OFF; cpk 15%; wireframe 0.10; color boron Skyblue; color carbon LightGrey; set measurements Angstroms; set perspectiveDepth OFF; zoom 150');
+});
+</script>
+</head>
+<body>
+
+<div id="JmolOuterDiv">
+	<div id="JmolActions">
+		  <h2>Compound 1274</h2>
+	    <br>
+	    
+
+          <p>To access a pop-up menu use the right button on a PC or do a 
+          control-click on a Mac while the cursor is inside the java frame.
+          <BR><BR>
+          To measure a bond distance, double-click on two atoms.
+          <BR><BR>
+          To measure a bond angle, do double-click, single-click, double-click
+          on three atoms.
+          <BR><BR>
+          To measure a torsion angle, do double-click, single-click, single-click,
+          double-click on four atoms.
+          </p>
+          <BR>
+	      <center>
+	      <script type="text/javascript">
+	      Jmol.jmolButton(myJmol, "cpk 15%; wireframe 0.10", "Ball-and-Stick");
+	      Jmol.jmolButton(myJmol, "cpk 0; ellipsoids ON", "ellipsoids");
+	      Jmol.jmolButton(myJmol, "cpk 0; wireframe 0.10", "Rods");
+	      Jmol.jmolButton(myJmol, "cpk 100%", "spacefill");
+	    </script>
+	    </center>
+	    <br>
+			
+	</div>
+</div>
+
+  </body>
+</html>

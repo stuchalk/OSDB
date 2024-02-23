@@ -1,5 +1,6 @@
-Clazz.declarePackage ("JSV.common");
-c$ = Clazz.decorateAsClass (function () {
+Clazz.declarePackage("JSV.common");
+(function(){
+var c$ = Clazz.decorateAsClass(function(){
 this.imageableX = 0;
 this.imageableY = 0;
 this.paperHeight = 0;
@@ -17,17 +18,18 @@ this.paper = null;
 this.asPDF = true;
 this.title = null;
 this.date = null;
-Clazz.instantialize (this, arguments);
-}, JSV.common, "PrintLayout");
-Clazz.prepareFields (c$, function () {
-this.paperHeight = Clazz.floatToInt (Math.min (11, 11.69) * 72);
-this.paperWidth = Clazz.floatToInt (Math.min (8.5, 8.27) * 72);
+Clazz.instantialize(this, arguments);}, JSV.common, "PrintLayout", null);
+Clazz.prepareFields (c$, function(){
+this.paperHeight = Clazz.floatToInt(Math.min(11, 11.69) * 72);
+this.paperWidth = Clazz.floatToInt(Math.min(8.5, 8.27) * 72);
 this.imageableHeight = this.paperHeight;
 this.imageableWidth = this.paperWidth;
 });
-Clazz.makeConstructor (c$, 
-function (pd) {
+Clazz.makeConstructor(c$, 
+function(pd){
 if (pd != null) {
 this.asPDF = true;
-pd.setDefaultPrintOptions (this);
+pd.setDefaultPrintOptions(this);
 }}, "JSV.common.PanelData");
+})();
+;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024

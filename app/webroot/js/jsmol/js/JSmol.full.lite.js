@@ -10654,7 +10654,12 @@ return jQuery;
 
 // see JSmolApi.js for public user-interface. All these are private functions
 
-
+// BH 2024.02.07 adding binary types BCIF 
+// BH 2023.01.19 Jmol._allowKeyboardFocus = true; can be set to false if page jumping is a problem.
+// BH 8/25/2022 fixes getFileData response "" from empty file returning "OK" instead of ""
+// BH 8/15/2022 adds .lut for binary
+// BH 6/23/2022 implements Jmol._lastAppletID via setMouseOwner
+// BH 5/12/2022 adds setting file type option for drag drop
 // BH 4/30/2019 fixes write xyz "https://...."
 // BH 7/6/2017 2:22:07 AM adds BZ2 as binary
 // BH 4/13/2017 11:23:05 PM adds "binary pmesh" .pmb extension
@@ -10829,7 +10834,7 @@ Jmol = (function(document) {
 		}
 	};
 	var j = {
-		_version: "$Date: 2022-01-23 22:53:29 -0600 (Sun, 23 Jan 2022) $", // svn.keywords:lastUpdated
+		_version: "$Date: 2022-06-24 05:54:49 -0500 (Fri, 24 Jun 2022) $", // svn.keywords:lastUpdated
 		_alertNoBinary: true,
 		// this url is used to Google Analytics tracking of Jmol use. You may remove it or modify it if you wish. 
 		_allowedJmolSize: [25, 2048, 300],   // min, max, default (pixels)
@@ -10837,6 +10842,7 @@ Jmol = (function(document) {
 				before calling Jmol.getApplet(), limits for applet size can be overriden.
 				2048 standard for GeoWall (http://geowall.geo.lsa.umich.edu/home.html)
 		*/
+		_allowKeyboardFocus: true, // set false on page if mouse moves and clicks cause too much scrolling of window
 		_appletCssClass: "",
 		_appletCssText: "",
 		_fileCache: null, // enabled by Jmol.setFileCaching(applet, true/false)
@@ -10864,6 +10870,7 @@ Jmol = (function(document) {
         ".x3dna.org": null,
         "rruff.geo.arizona.edu": null, 
         ".rcsb.org": null, 
+        		"chemapps.stolaf.edu/jmol/jsmol/": null,
 				"ftp.wwpdb.org": null,
 				"pdbe.org": null, 
 				"materialsproject.org": null, 
@@ -10895,7 +10902,8 @@ Jmol = (function(document) {
 	}
 	
 	var ref = document.location.href.toLowerCase();
-  j._debugCore = (ref.indexOf("j2sdebugcore") >= 0);
+	j._debugCore = (ref.indexOf("j2sdebugcore") >= 0);
+	// j._debugCode is set by the JmolDebugOff.js script fragment
 	j._httpProto = (ref.indexOf("https") == 0 ? "https://" : "http://"); 
 	j._isFile = (ref.indexOf("file:") == 0);
 	if (j._isFile) // ensure no attempt to read XML in local request:
@@ -10918,6 +10926,9 @@ Jmol = (function(document) {
 
 (function (Jmol, $) {
 
+  Jmol.clazzAlert = function(msg) {
+	  //TODO
+  }
   Jmol.__$ = $; // local jQuery object -- important if any other module needs to access it (JSmolMenu, for example)
 
 // this library is organized into the following sections:
@@ -11622,7 +11633,7 @@ Jmol = (function(document) {
 		return true;  
 	}
 
-	Jmol._binaryTypes = ["mmtf",".gz",".bz2",".jpg",".gif",".png",".zip",".jmol",".bin",".smol",".spartan",".pmb",".mrc",".map",".ccp4",".dn6",".delphi",".omap",".pse",".dcd",".uk/pdbe/densities/"];
+	Jmol._binaryTypes = ["mmtf",".bcif",".gz",".bz2",".jpg",".gif",".png",".zip",".jmol",".bin",".smol",".spartan",".pmb",".mrc",".map",".ccp4",".dn6",".delphi",".omap",".pse",".dcd",".lut",".uk/pdbe/densities/"];
 
 	Jmol.isBinaryUrl = function(url) {
 		for (var i = Jmol._binaryTypes.length; --i >= 0;)
@@ -11687,7 +11698,7 @@ Jmol = (function(document) {
 	}
 	
 	Jmol._xhrReturn = function(xhr){
-		if (!xhr.responseText || self.Clazz && Clazz.instanceOf(xhr.response, self.ArrayBuffer)) {
+		if (!xhr.responseText && xhr.responseText !== '' || self.Clazz && Clazz.instanceOf(xhr.response, self.ArrayBuffer)) {
 			// Safari or error 
 			return xhr.response || xhr.statusText;
 		} 
@@ -12267,10 +12278,12 @@ Jmol = (function(document) {
 	//////////////////// mouse events //////////////////////
 
 	Jmol._setMouseOwner = function(who, tf) {
-		if (who == null || tf)
+		if (who == null || tf) {
 			Jmol._mouseOwner = who;
-		else if (Jmol._mouseOwner == who)
+			who && who._applet && (Jmol._lastAppletID = who._applet._id);
+		} else if (Jmol._mouseOwner == who) {
 			Jmol._mouseOwner = null;
+		}
 	}
 
 	Jmol._jsGetMouseModifiers = function(ev) {
@@ -12391,6 +12404,8 @@ Jmol = (function(document) {
 		Jmol.$bind(canvas, 'mousedown touchstart', function(ev) {
       if (doIgnore(ev))
         return true;
+      if (Jmol._allowKeyboardFocus)	
+    	  canvas.focus();
 			Jmol._setMouseOwner(canvas, true);
 			ev.stopPropagation();
       var ui = ev.target["data-UI"];
@@ -12429,6 +12444,9 @@ Jmol = (function(document) {
 		Jmol.$bind(canvas, 'mousemove touchmove', function(ev) { // touchmove
       if (doIgnore(ev))
         return true;
+      if (Jmol._allowKeyboardFocus)	
+    	  canvas.focus(); //in Chrome and Edge, this forces a jump 
+      // if the Jmol window is not within viewing bounds
 		  // defer to console or menu when dragging within this canvas
 			if (Jmol._mouseOwner && Jmol._mouseOwner != canvas && Jmol._mouseOwner.isDragging) {
         if (!Jmol._mouseOwner.mouseMove)
@@ -12439,6 +12457,18 @@ Jmol = (function(document) {
 			return Jmol._drag(canvas, ev);
 		});
 		
+
+		Jmol.$bind(canvas, 'keydown keyup', function(ev) {
+      if (doIgnore(ev))
+        return true;
+			ev.stopPropagation();
+  			ev.preventDefault();
+			var xym = Jmol._jsGetXY(canvas, ev);
+			var type = (ev.type == "keydown" ? 401 : 402);
+  			canvas.applet._processKeyEvent && canvas.applet._processKeyEvent(type, xym, ev);//java.awt.Event.
+			return true;
+		});
+
 		Jmol._drag = function(canvas, ev) {
       
 			ev.stopPropagation();
@@ -12553,7 +12583,7 @@ Jmol.Swing = {
 
 (function(Swing) {
 
-SwingController = Swing; // see javajs.api.SwingController
+SwingController = Swing;
 
 Swing.setDraggable = function(Obj) {
 	
@@ -13088,8 +13118,9 @@ Jmol.Cache.put = function(filename, data) {
 					else
 						me._appletPanel.cachePut(cacheName, bytes);
 					var xym = Jmol._jsGetXY(me._canvas, e);
-					if(xym && (!me._appletPanel.setStatusDragDropped || me._appletPanel.setStatusDragDropped(0, xym[0], xym[1], cacheName))) {
-						me._appletPanel.openFileAsyncSpecial(cacheName, 1);
+					var retType = [null];
+					if(xym && (!me._appletPanel.setStatusDragDropped || me._appletPanel.setStatusDragDropped(0, xym[0], xym[1], cacheName, retType))) {
+						me._appletPanel.openFileAsyncSpecialType(cacheName, 1, retType[0]);
 					}
 				}
 			};
@@ -13098,7 +13129,7 @@ Jmol.Cache.put = function(filename, data) {
 	}
   
 })(Jmol, jQuery);
-Jmol._debugCode = false;
+Jmol._debugCode = (document && document.location && document.location.href.indexOf("j2sdebugcode") >=0);
 // JSmolTM.js -- JSmol TwirlyMol implementation
 //
 // TM for "TwirlyMol" -- which this is derived from.

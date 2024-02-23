@@ -1,67 +1,67 @@
-Clazz.declarePackage ("JS");
-Clazz.load (["JS.ColumnSelectionModel", "$.JComponent", "$.ListSelectionModel"], "JS.JTable", ["JU.BS", "$.SB"], function () {
-c$ = Clazz.decorateAsClass (function () {
+Clazz.declarePackage("JS");
+Clazz.load(["JS.ColumnSelectionModel", "$.JComponent", "$.ListSelectionModel"], "JS.JTable", ["JU.BS", "$.SB"], function(){
+var c$ = Clazz.decorateAsClass(function(){
 this.tableModel = null;
 this.bsSelectedCells = null;
 this.bsSelectedRows = null;
 this.rowSelectionAllowed = false;
 this.cellSelectionEnabled = false;
 this.selectionListener = null;
-Clazz.instantialize (this, arguments);
-}, JS, "JTable", JS.JComponent, [JS.ListSelectionModel, JS.ColumnSelectionModel]);
-Clazz.makeConstructor (c$, 
-function (tableModel) {
-Clazz.superConstructor (this, JS.JTable, ["JT"]);
+Clazz.instantialize(this, arguments);}, JS, "JTable", JS.JComponent, [JS.ListSelectionModel, JS.ColumnSelectionModel]);
+Clazz.makeConstructor(c$, 
+function(tableModel){
+Clazz.superConstructor(this, JS.JTable, ["JT"]);
 this.tableModel = tableModel;
-this.bsSelectedCells =  new JU.BS ();
-this.bsSelectedRows =  new JU.BS ();
+this.bsSelectedCells =  new JU.BS();
+this.bsSelectedRows =  new JU.BS();
 }, "JS.AbstractTableModel");
-Clazz.overrideMethod (c$, "getSelectionModel", 
-function () {
+Clazz.overrideMethod(c$, "getSelectionModel", 
+function(){
 return this;
 });
-Clazz.defineMethod (c$, "getColumnModel", 
-function () {
+Clazz.defineMethod(c$, "getColumnModel", 
+function(){
 return this;
 });
-Clazz.defineMethod (c$, "setPreferredScrollableViewportSize", 
-function (dimension) {
+Clazz.defineMethod(c$, "setPreferredScrollableViewportSize", 
+function(dimension){
 this.width = dimension.width;
 this.height = dimension.height;
 }, "JS.Dimension");
-Clazz.defineMethod (c$, "clearSelection", 
-function () {
-this.bsSelectedCells.clearAll ();
-this.bsSelectedRows.clearAll ();
+Clazz.defineMethod(c$, "clearSelection", 
+function(){
+this.bsSelectedCells.clearAll();
+this.bsSelectedRows.clearAll();
 });
-Clazz.defineMethod (c$, "setRowSelectionAllowed", 
-function (b) {
+Clazz.defineMethod(c$, "setRowSelectionAllowed", 
+function(b){
 this.rowSelectionAllowed = b;
 }, "~B");
-Clazz.defineMethod (c$, "setRowSelectionInterval", 
-function (i, j) {
-this.bsSelectedRows.clearAll ();
-this.bsSelectedRows.setBits (i, j);
-this.bsSelectedCells.clearAll ();
+Clazz.defineMethod(c$, "setRowSelectionInterval", 
+function(i, j){
+this.bsSelectedRows.clearAll();
+this.bsSelectedRows.setBits(i, j);
+this.bsSelectedCells.clearAll();
 }, "~N,~N");
-Clazz.defineMethod (c$, "setCellSelectionEnabled", 
-function (enabled) {
+Clazz.defineMethod(c$, "setCellSelectionEnabled", 
+function(enabled){
 this.cellSelectionEnabled = enabled;
 }, "~B");
-Clazz.overrideMethod (c$, "addListSelectionListener", 
-function (listener) {
+Clazz.overrideMethod(c$, "addListSelectionListener", 
+function(listener){
 this.selectionListener = listener;
 }, "~O");
-Clazz.overrideMethod (c$, "getColumn", 
-function (i) {
-return this.tableModel.getColumn (i);
+Clazz.overrideMethod(c$, "getColumn", 
+function(i){
+return this.tableModel.getColumn(i);
 }, "~N");
-Clazz.overrideMethod (c$, "toHTML", 
-function () {
-var sb =  new JU.SB ();
-sb.append ("\n<table id='" + this.id + "_table' class='JTable' >");
-this.tableModel.toHTML (sb, this.id, this.bsSelectedRows);
-sb.append ("\n</table>\n");
-return sb.toString ();
+Clazz.overrideMethod(c$, "toHTML", 
+function(){
+var sb =  new JU.SB();
+sb.append("\n<table id='" + this.id + "_table' class='JTable' >");
+this.tableModel.toHTML(sb, this.id, this.bsSelectedRows);
+sb.append("\n</table>\n");
+return sb.toString();
 });
 });
+;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
