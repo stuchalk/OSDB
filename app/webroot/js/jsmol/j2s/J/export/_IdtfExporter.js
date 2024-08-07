@@ -529,4 +529,4 @@ var normals =  Clazz.newArray(-1, [this.tempV2, this.tempV2, this.tempV2]);
 return this.getMeshData(key, this.triangleFace, vertexes, normals);
 }, "~S,JU.T3,JU.T3,JU.T3");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

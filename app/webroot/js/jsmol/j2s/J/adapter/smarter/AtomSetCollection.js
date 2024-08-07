@@ -535,7 +535,11 @@ return this.getXSymmetry().getSymmetry();
 Clazz.defineMethod(c$, "setSymmetry", 
 function(symmetry){
 return (symmetry == null ? null : this.getXSymmetry().setSymmetry(symmetry));
-}, "J.api.SymmetryInterface");
+}, "J.adapter.smarter.XtalSymmetry.FileSymmetry");
+Clazz.defineMethod(c$, "newFileSymmetry", 
+function(){
+return this.getXSymmetry().newFileSymmetry();
+});
 Clazz.defineMethod(c$, "setTensors", 
 function(){
 if (this.haveAnisou) this.getXSymmetry().setTensors();
@@ -873,4 +877,4 @@ this.bsAtoms.clear(b.atomIndex1);
 }}
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

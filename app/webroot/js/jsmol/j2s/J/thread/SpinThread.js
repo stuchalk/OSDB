@@ -91,7 +91,7 @@ case -2:
 if (this.dihedralList != null) {
 this.vwr.setDihedrals(this.dihedralList, this.bsBranches, 0);
 } else if (this.bsAtoms != null && this.endPositions != null) {
-this.vwr.setAtomCoords(this.bsAtoms, 1145047050, this.endPositions);
+this.vwr.setAtomCoords(this.bsAtoms, 1145047049, this.endPositions);
 this.bsAtoms = null;
 this.endPositions = null;
 }if (!this.isReset) {
@@ -115,7 +115,7 @@ this.transformManager.setNavigationOffsetRelative();
 } else if (this.transformManager.isSpinInternal || this.transformManager.isSpinFixed) {
 this.angle = (this.transformManager.isSpinInternal ? this.transformManager.internalRotationAxis : this.transformManager.fixedRotationAxis).angle / this.myFps;
 if (this.transformManager.isSpinInternal) {
-this.transformManager.rotateAxisAngleRadiansInternal(this.angle, this.bsAtoms, this.m4);
+this.transformManager.rotateAxisAngleRadiansInternal(this.angle, this.bsAtoms, this.m4, false);
 } else {
 this.transformManager.rotateAxisAngleRadiansFixed(this.angle, this.bsAtoms);
 }this.nDegrees += Math.abs(this.angle * 57.29577951308232);
@@ -128,4 +128,4 @@ this.transformManager.rotateYRadians((this.transformManager.spinY * 0.0174532925
 this.transformManager.rotateZRadians((this.transformManager.spinZ * 0.017453292519943295 / this.myFps));
 }}});
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

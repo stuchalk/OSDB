@@ -253,4 +253,4 @@ Clazz.defineEnumConstant(c$, "UNSPECIFIED", 16, [17, "1", "unspecified"]);
 /*eoif2*/})();
 c$.argbsHbondType =  Clazz.newIntArray(-1, [0xFFFF69B4, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFFFF, 0xFFFF00FF, 0xFFFF0000, 0xFFFFA500, 0xFF00FFFF, 0xFF00FF00, 0xFFFF8080]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

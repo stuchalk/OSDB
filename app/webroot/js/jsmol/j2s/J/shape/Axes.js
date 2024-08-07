@@ -104,8 +104,10 @@ ptTemp.scale(0.5);
 }, "~N,~B,JU.P3");
 Clazz.overrideMethod(c$, "getProperty", 
 function(property, index){
-if (property === "origin") return this.fixedOrigin;
+if (property === "originPoint") return this.originPoint;
+if (property === "axisPoints") return this.axisPoints;
 if (property === "axesTypeXY") return (this.axisXY.z == 0 ? Boolean.FALSE : Boolean.TRUE);
+if (property === "origin") return this.fixedOrigin;
 return null;
 }, "~S,~N");
 Clazz.defineMethod(c$, "setScale", 
@@ -142,4 +144,4 @@ sb.append("  axes type " + JU.PT.esc(this.axisType));
 }return sb.toString();
 }, "JU.SB");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

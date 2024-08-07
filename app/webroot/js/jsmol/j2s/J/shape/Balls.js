@@ -34,6 +34,7 @@ atom.colixAtom = this.getColixA(colix, pid, atom);
 this.bsColixSet.setBitTo(i, colix != 2 || pid != J.c.PAL.NONE.id);
 atom.paletteID = pid;
 }
+this.vwr.setModelkitPropertySafely("updateatomkeys", bs);
 return;
 }if ("colorValues" === propertyName) {
 var values = value;
@@ -91,4 +92,4 @@ atom.setClickable(this.vf);
 }
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

@@ -1,5 +1,9 @@
 Clazz.declarePackage("JM");
 Clazz.load(["JM.BioPolymer"], "JM.PhosphorusPolymer", null, function(){
 var c$ = Clazz.declareType(JM, "PhosphorusPolymer", JM.BioPolymer);
+Clazz.makeConstructor(c$, 
+function(monomers){
+Clazz.superConstructor(this, JM.PhosphorusPolymer, [monomers, true]);
+}, "~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

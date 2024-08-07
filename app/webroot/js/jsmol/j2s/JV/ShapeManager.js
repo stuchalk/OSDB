@@ -94,6 +94,12 @@ this.getShapePropertyData(31, "%SCALE", data);
 this.scaleText = data[0];
 }this.shapes =  new Array(37);
 }, "~B");
+Clazz.defineMethod(c$, "setShapeProperties", 
+function(shapeID, values){
+this.vwr.setShapeErrorState(shapeID, "set properties");
+this.loadShape(shapeID).setProperties(values);
+this.vwr.setShapeErrorState(-1, null);
+}, "~N,~A");
 Clazz.defineMethod(c$, "setShapeSizeBs", 
 function(shapeID, size, rd, bsSelected){
 if (this.shapes == null) return;
@@ -114,12 +120,6 @@ this.loadShape(5);
 this.setShapeSizeBs(5, 0, null, bsSelection);
 }this.setShapePropertyBs(5, "label", strLabel, bsSelection);
 }, "~O,JU.BS");
-Clazz.defineMethod(c$, "setShapeProperties", 
-function(shapeID, values){
-this.vwr.setShapeErrorState(shapeID, "set properties");
-this.loadShape(shapeID).setProperties(values);
-this.vwr.setShapeErrorState(-1, null);
-}, "~N,~A");
 Clazz.defineMethod(c$, "setShapePropertyBs", 
 function(shapeID, propertyName, value, bsSelected){
 if (this.shapes == null || this.shapes[shapeID] == null) return;
@@ -170,9 +170,25 @@ if (this.shapes != null) for (var j = 0; j < 37; j++) if (this.shapes[j] != null
 Clazz.defineMethod(c$, "deleteVdwDependentShapes", 
 function(bs){
 if (bs == null) bs = this.vwr.bsA();
-if (this.shapes[24] != null) this.shapes[24].setProperty("deleteVdw", null, bs);
-if (this.shapes[25] != null) this.shapes[25].setProperty("deleteVdw", null, bs);
+this.setShapeAtomsSafely(24, "deleteVdw", bs);
+this.setShapeAtomsSafely(25, "deleteVdw", bs);
 }, "JU.BS");
+Clazz.defineMethod(c$, "setShapeAtomsSafely", 
+function(i, key, bs){
+if (this.shapes[i] != null) this.shapes[i].setProperty(key, null, bs);
+}, "~N,~S,JU.BS");
+Clazz.defineMethod(c$, "notifyAtoms", 
+function(prop, atomsAndModels){
+switch (prop) {
+case "atomsDeleted":
+this.setShapeAtomsSafely(6, prop, atomsAndModels[0]);
+this.vwr.setModelkitPropertySafely("updatemodelkeys", atomsAndModels);
+break;
+case "atomsMoved":
+if (this.getShape(22) != null) this.vwr.setModelkitPropertySafely(prop, atomsAndModels[0]);
+break;
+}
+}, "~S,~A");
 Clazz.defineMethod(c$, "getAtomShapeValue", 
 function(tok, group, atomIndex){
 var iShape = JV.JC.shapeTokenIndex(tok);
@@ -382,4 +398,4 @@ this.vwr.selectStatus(bsSelected, false, 0, true, false);
 c$.hoverable =  Clazz.newIntArray(-1, [31, 20, 25, 24, 22, 36]);
 c$.clickableMax = JV.ShapeManager.hoverable.length - 1;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

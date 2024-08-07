@@ -127,6 +127,10 @@ this.setShapeProperty(shapeID, "set", data);
 if (translucentLevel != 3.4028235E38) this.e.setShapeTranslucency(shapeID, "", "translucent", translucentLevel, bs);
 if (intScale != 0) {
 this.setShapeProperty(shapeID, "scale", Integer.$valueOf(intScale));
+}if (iptDisplayProperty < 0) {
+iptDisplayProperty = -1 - iptDisplayProperty;
+this.setShapeProperty(shapeID, "token", Integer.$valueOf(1073742018));
+this.setShapeProperty(shapeID, "token", Integer.$valueOf(1073742046));
 }if (iptDisplayProperty > 0) {
 if (!this.e.setMeshDisplayProperty(shapeID, iptDisplayProperty, 0)) this.invArg();
 }}, "~N,~N,~N,~N,~B,~O,~N,JU.BS");
@@ -178,4 +182,4 @@ for (var i = bs.nextSetBit(0), pt = 0; i >= 0; i = bs.nextSetBit(i + 1)) p[pt++]
 return p;
 }, "JU.BS");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

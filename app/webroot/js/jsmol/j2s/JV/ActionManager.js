@@ -210,8 +210,10 @@ return (pickingMode < 0 || pickingMode >= JV.ActionManager.pickingModeNames.leng
 }, "~N");
 c$.getPickingMode = Clazz.defineMethod(c$, "getPickingMode", 
 function(str){
-for (var i = JV.ActionManager.pickingModeNames.length; --i >= 0; ) if (str.equalsIgnoreCase(JV.ActionManager.pickingModeNames[i])) return i;
-
+for (var i = JV.ActionManager.pickingModeNames.length; --i >= 0; ) if (str.equalsIgnoreCase(JV.ActionManager.pickingModeNames[i])) {
+if (i == 38) i = 6;
+return i;
+}
 return -1;
 }, "~S");
 c$.getPickingStyleName = Clazz.defineMethod(c$, "getPickingStyleName", 
@@ -256,10 +258,10 @@ if (isNew) this.resetMeasurement();
 Clazz.defineMethod(c$, "getPickingState", 
 function(){
 var script = ";set modelkitMode " + this.vwr.getBoolean(603983903) + ";set picking " + JV.ActionManager.getPickingModeName(this.apm);
-if (this.apm == 32) script += "_" + this.vwr.getModelkitPropertySafely("atomType");
+if (this.apm == 32) script += "_" + this.vwr.getModelkitPropertySafely("atomtype");
 script += ";";
 if (this.bondPickingMode != 0) script += "set picking " + JV.ActionManager.getPickingModeName(this.bondPickingMode);
-if (this.bondPickingMode == 33) script += "_" + this.vwr.getModelkitPropertySafely("bondType");
+if (this.bondPickingMode == 33) script += "_" + this.vwr.getModelkitPropertySafely("bondtype");
 script += ";";
 return script;
 });
@@ -410,7 +412,7 @@ if (this.keyProcessing) return false;
 this.keyProcessing = true;
 switch (key) {
 case 18:
-if (this.dragSelectedMode && this.isAltKeyReleased) this.vwr.moveSelected(-2147483648, 0, -2147483648, -2147483648, -2147483648, null, false, false, modifiers);
+if (this.dragSelectedMode && this.isAltKeyReleased) this.vwr.moveSelectedXY(-2147483648, 0, modifiers);
 this.isAltKeyReleased = false;
 this.moved.modifiers |= 8;
 break;
@@ -456,7 +458,7 @@ function(key){
 switch (key) {
 case 18:
 this.moved.modifiers &= -9;
-if (this.dragSelectedMode) this.vwr.moveSelected(2147483647, 0, -2147483648, -2147483648, -2147483648, null, false, false, this.moved.modifiers);
+if (this.dragSelectedMode) this.vwr.moveSelectedXY(2147483647, 0, this.moved.modifiers);
 this.isAltKeyReleased = true;
 break;
 case 16:
@@ -624,7 +626,7 @@ this.enterMeasurementMode(this.dragAtomIndex);
 this.mp.addPoint(this.dragAtomIndex, null, false);
 if (bi >= 0) {
 this.updateModelkitBranch(bi, true);
-}}var xy = this.vwr.getModelkitPropertySafely("screenXY");
+}}var xy = this.vwr.getModelkitPropertySafely("screenxy");
 this.mkBondPressed = (xy != null && this.pressed.inRange(10, xy[0], xy[1]));
 return;
 }if (this.bnd(this.pressAction, [23])) {
@@ -632,7 +634,7 @@ this.doPopup(x, y);
 return;
 }if (this.dragSelectedMode) {
 this.haveSelection = (!isDragSelectedAction || this.vwr.findNearestAtomIndexMovable(x, y, true) >= 0);
-if (this.haveSelection && this.bnd(this.dragAction, [13, 14])) this.vwr.moveSelected(-2147483648, 0, -2147483648, -2147483648, -2147483648, null, false, false, buttonMods);
+if (this.haveSelection && this.bnd(this.dragAction, [13, 14])) this.vwr.moveSelectedXY(-2147483648, 0, buttonMods);
 return;
 }this.checkMotionRotateZoom(this.dragAction, x, 0, 0, true);
 }, "~N,~N,~N");
@@ -653,7 +655,7 @@ if (bi >= 0) {
 if (this.dragAtomIndex >= 0 || this.mkBondPressed || this.bnd(dragWheelAction, [26])) {
 if (this.dragAtomIndex >= 0) {
 this.updateModelkitBranch(bi, false);
-}this.vwr.moveSelected(deltaX, deltaY, -2147483648, x, y, null, false, false, this.dragAtomIndex >= 0 ? 0 : 16);
+}this.vwr.moveSelected(deltaX, deltaY, -2147483648, x, y, null, null, null, false, false, this.dragAtomIndex >= 0 ? 0 : 16);
 return;
 }}var bs = null;
 if (this.dragAtomIndex >= 0 && this.apm != 2) {
@@ -682,8 +684,8 @@ case 30:
 this.vwr.selectStatus(bs, false, 0, true, true);
 break;
 }
-this.vwr.moveAtomWithHydrogens(this.dragAtomIndex, deltaX, deltaY, (this.bnd(dragWheelAction, [14]) ? -deltaY : -2147483648), bs);
-this.vwr.checkCoordinatesChanged();
+this.vwr.moveAtomWithHydrogens(this.dragAtomIndex, deltaX, deltaY, (this.bnd(dragWheelAction, [14]) ? -deltaY : -2147483648), null, bs);
+this.vwr.checkCoordinatesChanged(null);
 }return;
 }
 }if (this.dragAtomIndex >= 0 && mode == 1 && this.bnd(this.clickAction, [0]) && this.apm == 32) {
@@ -713,7 +715,7 @@ return;
 var iatom = this.vwr.bsA().nextSetBit(0);
 if (iatom < 0) return;
 if (this.dragGesture.getPointCount() == 1) this.vwr.undoMoveActionClear(iatom, 2, true);
- else this.vwr.moveSelected(2147483647, 0, -2147483648, -2147483648, -2147483648, null, false, false, buttonmods);
+ else this.vwr.moveSelected(2147483647, 0, -2147483648, -2147483648, -2147483648, null, null, null, false, false, buttonmods);
 this.dragSelected(dragWheelAction, deltaX, deltaY, false);
 return;
 }if (this.isDrawOrLabelAction(dragWheelAction)) {
@@ -755,7 +757,7 @@ return;
 }}, "~N,~N,~N,~N,~N,~N,~N");
 Clazz.defineMethod(c$, "updateModelkitBranch", 
 function(bondIndex, isClick){
-this.vwr.setModelkitPropertySafely(isClick ? "branchAtomClicked" : "branchAtomDragged", Integer.$valueOf(this.dragAtomIndex));
+this.vwr.setModelkitPropertySafely(isClick ? "branchatomclicked" : "branchatomdragged", Integer.$valueOf(this.dragAtomIndex));
 if (this.measurementQueued == null || this.measurementQueued.numSet == 0 || this.mp == null) {
 this.vwr.setPendingMeasurement(this.vwr.getModelkit(false).setBondMeasure(bondIndex, this.measurementQueued = this.mp = this.getMP()));
 } else {
@@ -765,7 +767,7 @@ Clazz.defineMethod(c$, "dragSelected",
 function(a, deltaX, deltaY, isPickingDrag){
 this.setMotion(13, true);
 if (this.bnd(a, [27]) && this.vwr.getBoolean(603979785)) this.vwr.rotateSelected(this.getDegrees(deltaX, true), this.getDegrees(deltaY, false), null);
- else this.vwr.moveSelected(deltaX, deltaY, (isPickingDrag && this.bnd(a, [14]) ? -deltaY : -2147483648), -2147483648, -2147483648, null, true, false, this.dragged.modifiers);
+ else this.vwr.moveSelected(deltaX, deltaY, (isPickingDrag && this.bnd(a, [14]) ? -deltaY : -2147483648), -2147483648, -2147483648, null, null, null, true, false, this.dragged.modifiers);
 }, "~N,~N,~N,~B");
 Clazz.defineMethod(c$, "checkReleaseAction", 
 function(x, y, time, dragRelease){
@@ -781,7 +783,7 @@ if (this.mp == null || this.dragAtomIndex < 0) {
 this.exitMeasurementMode(null);
 return;
 } else if (this.bondPickingMode == 34) {
-this.vwr.setModelkitPropertySafely("bondAtomIndex", Integer.$valueOf(this.dragAtomIndex));
+this.vwr.setModelkitPropertySafely("rotateBond", Integer.$valueOf(this.dragAtomIndex));
 this.exitMeasurementMode(null);
 return;
 }this.assignNew(-1);
@@ -797,7 +799,7 @@ this.vwr.notifyMouseClicked(x, y, JV.binding.Binding.getMouseAction(this.pressed
 }if (this.isDrawOrLabelAction(this.dragAction)) {
 this.vwr.checkObjectDragged(2147483647, 0, x, y, this.dragAction);
 return;
-}if (this.haveSelection && this.dragSelectedMode && this.bnd(this.dragAction, [13])) this.vwr.moveSelected(2147483647, 0, -2147483648, -2147483648, -2147483648, null, false, false, this.dragged.modifiers);
+}if (this.haveSelection && this.dragSelectedMode && this.bnd(this.dragAction, [13])) this.vwr.moveSelectedXY(2147483647, 0, this.dragged.modifiers);
 if (dragRelease && this.checkUserAction(this.pressAction, x, y, 0, 0, time, 5)) return;
 if (this.vwr.getBoolean(603979780)) {
 if (this.bnd(this.dragAction, [44])) {
@@ -808,7 +810,11 @@ return;
 }}}, "~N,~N,~N,~B");
 Clazz.defineMethod(c$, "checkClickAction", 
 function(x, y, time, clickedCount){
-if (clickedCount > 0) {
+if (clickedCount > 1 && (this.apm == 5 || this.apm == 6)) {
+this.resetMeasurement();
+this.runScript("draw ID sym* delete;spin off;");
+return;
+}if (clickedCount > 0) {
 if (this.checkUserAction(this.clickAction, x, y, 0, 0, time, 32768)) return;
 this.clickAction = this.vwr.notifyMouseClicked(x, y, this.clickAction, 32768);
 if (this.clickAction == 0) return;
@@ -893,7 +899,7 @@ return;
 }}, "~N,~N,~N,~N");
 Clazz.defineMethod(c$, "doPopup", 
 function(x, y){
-this.vwr.popupMenu(x, y, this.vwr.getBoolean(603983903) ? 'm' : 'j');
+this.vwr.popupMenu(x, y, this.vwr.isModelKitOpen() ? 'm' : 'j');
 }, "~N,~N");
 Clazz.defineMethod(c$, "pickLabel", 
 function(iatom){
@@ -1162,8 +1168,10 @@ this.runScript("zoomTo " + JU.Escape.eP(ptClicked));
 }return;
 case 5:
 case 6:
-if (this.bnd(this.clickAction, [17])) this.checkTwoAtomAction(ptClicked, atomIndex);
-}
+if (this.bnd(this.clickAction, [17])) {
+this.checkTwoAtomAction(ptClicked, atomIndex);
+return;
+}}
 if (ptClicked != null) return;
 var bs;
 switch (mode) {
@@ -1237,7 +1245,7 @@ function(index){
 switch (this.bondPickingMode) {
 case 33:
 this.vwr.undoMoveActionClear(-1, 4146, true);
-this.vwr.setModelkitPropertySafely("scriptAssignBond", Integer.$valueOf(index));
+this.vwr.setModelkitPropertySafely("assignBond", Integer.$valueOf(index));
 break;
 case 34:
 break;
@@ -1248,6 +1256,8 @@ this.vwr.deleteBonds(JU.BSUtil.newAndSetBit(index));
 Clazz.defineMethod(c$, "checkTwoAtomAction", 
 function(ptClicked, atomIndex){
 var isSpin = (this.apm == 5);
+var isSymmetry = (this.apm == 6);
+if (!isSpin && !isSymmetry) return;
 if (this.vwr.tm.spinOn || this.vwr.tm.navOn || this.vwr.getPendingMeasurement() != null) {
 this.resetMeasurement();
 if (this.vwr.tm.spinOn) this.runScript("spin off");
@@ -1259,14 +1269,16 @@ if (ptClicked == null) {
 if (this.measurementQueued.getAtomIndex(1) == atomIndex) return;
 } else {
 if (this.measurementQueued.getAtom(1).distance(ptClicked) == 0) return;
-}}if (atomIndex >= 0 || ptClicked != null) queuedAtomCount = this.queueAtom(atomIndex, ptClicked);
+}}if (!isSpin && !isSymmetry) return;
+if (atomIndex >= 0 || ptClicked != null) queuedAtomCount = this.queueAtom(atomIndex, ptClicked);
 if (queuedAtomCount < 2) {
 if (isSpin) this.vwr.scriptStatus(queuedAtomCount == 1 ? J.i18n.GT.$("pick one more atom in order to spin the model around an axis") : J.i18n.GT.$("pick two atoms in order to spin the model around an axis"));
  else this.vwr.scriptStatus(queuedAtomCount == 1 ? J.i18n.GT.$("pick one more atom in order to display the symmetry relationship") : J.i18n.GT.$("pick two atoms in order to display the symmetry relationship between them"));
 return;
 }var s = this.measurementQueued.getMeasurementScript(" ", false);
+this.resetMeasurement();
 if (isSpin) this.runScript("spin" + s + " " + this.vwr.getInt(553648157));
- else this.runScript("draw symop " + s + ";show symop " + s);
+ else this.runScript("draw symop " + s + ";print 'all:';show symop " + s);
 }, "JU.Point3fi,~N");
 Clazz.defineMethod(c$, "reset", 
 function(){
@@ -1331,7 +1343,7 @@ return !JS.SV.vF.equals(result);
 c$.actionInfo =  new Array(47);
 c$.actionNames =  new Array(47);
 {
-JV.ActionManager.pickingModeNames = "off identify label center draw spin symmetry deleteatom deletebond atom group chain molecule polymer structure site model element measure distance angle torsion sequence navigate connect struts dragselected dragmolecule dragatom dragminimize dragminimizemolecule invertstereo assignatom assignbond rotatebond identifybond dragligand dragmodel".$plit(" ");
+JV.ActionManager.pickingModeNames = "off identify label center draw spin symmetry deleteatom deletebond atom group chain molecule polymer structure site model element measure distance angle torsion sequence navigate connect struts dragselected dragmolecule dragatom dragminimize dragminimizemolecule invertstereo assignatom assignbond rotatebond identifybond dragligand dragmodel symop".$plit(" ");
 }{
 JV.ActionManager.pickingStyleNames = "toggle selectOrToggle extendedSelect drag measure measureoff".$plit(" ");
 }var c$ = Clazz.decorateAsClass(function(){
@@ -1436,4 +1448,4 @@ if (this.nodes.length == 0) return "" + this;
 return JV.binding.Binding.getMouseActionName(this.action, false) + " nPoints = " + this.ptNext + " " + this.nodes[0];
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

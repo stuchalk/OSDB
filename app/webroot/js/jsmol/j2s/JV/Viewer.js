@@ -442,6 +442,7 @@ width = (this.screenWidth == 0 ? this.screenWidth = 500 : this.screenWidth);
 height = (this.screenHeight == 0 ? this.screenHeight = 500 : this.screenHeight);
 }this.tm.setScreenParameters(width, height, isImageWrite || isReset ? this.g.zoomLarge : false, this.antialiased, false, false);
 this.gdata.setWindowParameters(width, height, this.antialiased);
+this.setModelkitPropertySafely("frameresized", null);
 if (width > 0 && !isImageWrite) this.setStatusResized(width, height);
 }, "~N,~N,~B,~B,~B");
 Clazz.overrideMethod(c$, "getScreenWidth", 
@@ -672,7 +673,7 @@ if (isMovie) {
 entryName = "" + (entryName === "" ? currentFrame + 1 : this.am.caf + 1) + ": " + entryName;
 } else {
 var script = "" + this.getModelNumberDotted(currentFrame);
-if (!entryName.equals(script)) entryName = script + ": " + entryName;
+if (!script.equals(entryName)) entryName = script + ": " + entryName;
 }this.sm.setStatusFrameChanged(fileNo, modelNo, (this.am.animationDirection < 0 ? -firstNo : firstNo), (this.am.currentDirection < 0 ? -lastNo : lastNo), currentFrame, currentMorphModel, entryName);
 if (this.doHaveJDX()) this.getJSV().setModel(modelIndex);
 if (JV.Viewer.isJS) this.updateJSView(modelIndex, -1);
@@ -905,7 +906,7 @@ this.setBooleanProperty("_signedApplet", this.isSignedApplet);
 this.setBooleanProperty("_headless", this.headless);
 this.setStringProperty("_restrict", "\"" + this.access + "\"");
 this.setBooleanProperty("_useCommandThread", this.useCommandThread);
-this.setBooleanPropertyTok("doubleprecision", 603979831, true);
+this.setBooleanPropertyTok("doubleprecision", 603979831, false);
 });
 Clazz.defineMethod(c$, "getExportDriverList", 
 function(){
@@ -1097,7 +1098,7 @@ Clazz.defineMethod(c$, "setMovableBitSet",
 function(bsSelected, checkMolecule){
 if (bsSelected == null) bsSelected = this.bsA();
 bsSelected = JU.BSUtil.copy(bsSelected);
-JU.BSUtil.andNot(bsSelected, this.getMotionFixedAtoms(bsSelected.nextSetBit(0)));
+JU.BSUtil.andNot(bsSelected, this.getMotionFixedAtoms(null, null));
 if (checkMolecule && !this.g.allowMoveAtoms) bsSelected = this.ms.getMoleculeBitSet(bsSelected);
 return this.movableBitSet = bsSelected;
 }, "JU.BS,~B");
@@ -1835,7 +1836,7 @@ this.setErrorMessage(null, null);
 try {
 var script = this.mm.createAtomDataSet(atomSetCollection, tokType);
 switch (tokType) {
-case 1145047050:
+case 1145047049:
 if (script != null) this.runScriptCautiously(script);
 break;
 case 4166:
@@ -2044,7 +2045,7 @@ this.am.initializePointers(1);
 return;
 }this.reset(true);
 this.selectAll();
-if (this.modelkit != null) this.modelkit.initializeForModel();
+this.setModelkitPropertySafely("initializemodel", null);
 this.movingSelected = false;
 this.slm.noneSelected = Boolean.FALSE;
 this.setHoverEnabled(true);
@@ -2088,6 +2089,7 @@ return (symmetry == null ? NaN : symmetry.getUnitCellInfoType(infoType));
 Clazz.defineMethod(c$, "getV0abc", 
 function(iModel, def){
 var uc = (iModel < 0 ? this.getCurrentUnitCell() : this.getUnitCell(iModel));
+if (uc == null) uc = this.getSymTemp();
 return (uc == null ? null : uc.getV0abc(def, null));
 }, "~N,~O");
 Clazz.defineMethod(c$, "getCurrentUnitCell", 
@@ -2255,7 +2257,7 @@ pt.add(unitCell.getCartesianOffset());
 Clazz.defineMethod(c$, "setAtomData", 
 function(type, name, coordinateData, isDefault){
 this.ms.setAtomData(type, name, coordinateData, isDefault);
-if (type == 2) this.checkCoordinatesChanged();
+if (type == 2) this.checkCoordinatesChanged(null);
 this.refreshMeasures(true);
 }, "~N,~S,~S,~B");
 Clazz.overrideMethod(c$, "setCenterSelected", 
@@ -3071,7 +3073,7 @@ this.g.setO("_hoverLabel", this.hoverLabel);
 this.g.setUserVariable("hovered", JS.SV.getVariable(JU.BSUtil.newAndSetBit(atomIndex)));
 if (this.sm.haveHoverCallback()) this.sm.setStatusAtomHovered(atomIndex, this.getAtomInfoXYZ(atomIndex, 2));
 if (!this.hoverEnabled || this.eval != null && this.isScriptExecuting() || atomIndex == this.hoverAtomIndex || this.g.hoverDelayMs == 0 || !this.slm.isInSelectionSubset(atomIndex)) return;
-var label = (isLabel ? J.i18n.GT.$("Drag to move label") : this.isModelKitOpen() || this.isModelkitPickingActive() ? this.getModelkit(false).setProperty("hoverLabel", Integer.$valueOf(atomIndex)) : null);
+var label = (isLabel ? J.i18n.GT.$("Drag to move label") : this.isModelKitOpen() || this.isModelkitPickingActive() ? this.getModelkit(false).setProperty("hoverlabel", Integer.$valueOf(atomIndex)) : null);
 this.shm.loadShape(35);
 if (label != null && (!isLabel || this.ms.at[atomIndex].isVisible(512))) {
 this.setShapeProperty(35, "specialLabel", label);
@@ -3185,11 +3187,11 @@ break;
 option = Character.toUpperCase(option.charAt(0)) + (option.length == 1 ? "" : option.substring(1, 2));
 switch (pickingMode) {
 case 32:
-this.getModelkit(false).setProperty("atomType", option);
+this.getModelkit(false).setProperty("atomtype", option);
 break;
 case 33:
 this.setBooleanPropertyTok("bondPicking", 603979814, true);
-this.getModelkit(false).setProperty("bondType", option);
+this.getModelkit(false).setProperty("bondtype", option);
 break;
 default:
 JU.Logger.error("Bad picking mode: " + strMode + "_" + option);
@@ -3479,13 +3481,15 @@ case 603979831:
 return this.g.doublePrecision;
 case 603979834:
 return this.g.drawPicking;
-case 603979844:
+case 603979838:
+return this.g.elementKey;
+case 603979846:
 return this.g.fontCaching;
-case 603979845:
-return this.g.fontScaling;
 case 603979847:
-return this.g.forceAutoBond;
+return this.g.fontScaling;
 case 603979848:
+return this.g.forceAutoBond;
+case 603979849:
 return false;
 case 603979850:
 return this.g.greyscaleRendering;
@@ -3575,6 +3579,8 @@ case 603979952:
 return this.g.ssbondsBackbone;
 case 603979955:
 return this.g.strutsMultiple;
+case 603979956:
+return this.g.symmetryHermannMauguin;
 case 603979960:
 return this.g.testFlag1;
 case 603979962:
@@ -3611,7 +3617,7 @@ return (this.g.dragSelected && !this.g.modelKitMode);
 });
 Clazz.defineMethod(c$, "getBondsPickable", 
 function(){
-return (this.g.bondPicking || this.isModelKitOpen() && this.getModelkitPropertySafely("isMolecular") === Boolean.TRUE || this.isModelkitPickingActive());
+return (this.g.bondPicking || this.isModelkitPickingActive() || this.isModelKitOpen() && this.getModelkitPropertySafely("ismolecular") === Boolean.TRUE);
 });
 Clazz.defineMethod(c$, "isModelKitOpen", 
 function(){
@@ -4284,6 +4290,13 @@ Clazz.defineMethod(c$, "setBooleanPropertyTok",
 function(key, tok, value){
 var doRepaint = true;
 switch (tok) {
+case 603979838:
+this.g.elementKey = value;
+this.getModelkit(false).setProperty("setelementkey", Boolean.$valueOf(value));
+break;
+case 603979956:
+this.g.symmetryHermannMauguin = value;
+break;
 case 603979831:
 value = new Boolean (value & JV.Viewer.isJS).valueOf();
 this.g.doublePrecision = value;
@@ -4330,7 +4343,7 @@ break;
 case 603979937:
 this.g.showUnitCellDetails = value;
 break;
-case 603979848:
+case 603979849:
 doRepaint = false;
 break;
 case 603979972:
@@ -4345,7 +4358,7 @@ break;
 case 603979818:
 this.g.cartoonRibose = value;
 break;
-case 603979838:
+case 603979840:
 this.g.ellipsoidArrows = value;
 break;
 case 603979967:
@@ -4357,7 +4370,7 @@ break;
 case 603979968:
 var b = this.g.twistedSheets;
 this.g.twistedSheets = value;
-if (b != value) this.checkCoordinatesChanged();
+if (b != value) this.checkCoordinatesChanged(null);
 break;
 case 603979820:
 this.gdata.setCel(value);
@@ -4434,7 +4447,7 @@ break;
 case 603979955:
 this.g.strutsMultiple = value;
 break;
-case 603979843:
+case 603979845:
 break;
 case 603979939:
 this.g.slabByAtom = value;
@@ -4464,7 +4477,7 @@ break;
 case 603979924:
 this.g.showKeyStrokes = value;
 break;
-case 603979844:
+case 603979846:
 this.g.fontCaching = value;
 break;
 case 603979796:
@@ -4491,25 +4504,25 @@ break;
 case 603979895:
 this.g.pdbGetHeader = value;
 break;
-case 603979839:
+case 603979841:
 this.g.ellipsoidAxes = value;
 break;
-case 603979837:
+case 603979839:
 this.g.ellipsoidArcs = value;
 break;
-case 603979840:
+case 603979842:
 this.g.ellipsoidBall = value;
 break;
-case 603979841:
+case 603979843:
 this.g.ellipsoidDots = value;
 break;
-case 603979842:
+case 603979844:
 this.g.ellipsoidFill = value;
 break;
-case 603979845:
+case 603979847:
 this.g.fontScaling = value;
 break;
-case 603979956:
+case 603979957:
 this.setSyncTarget(0, value);
 break;
 case 603979958:
@@ -4765,7 +4778,7 @@ case 603979827:
 doRepaint = false;
 this.g.disablePopupMenu = value;
 break;
-case 603979847:
+case 603979848:
 doRepaint = false;
 this.g.forceAutoBond = value;
 break;
@@ -4809,7 +4822,7 @@ this.acm.setPickingMode(-1);
 if (isChange) {
 this.sm.setStatusModelKit(0);
 } else if (!value) {
-this.getModelkit(false).setProperty("hideMenu", null);
+this.getModelkit(false).setProperty("hidemenu", null);
 }}}, "~B");
 Clazz.defineMethod(c$, "setSmilesString", 
 function(s){
@@ -5173,22 +5186,22 @@ if (isOK) this.setSync();
 return isOK;
 }, "J.api.JmolScriptEvaluator,JU.P3,JU.V3,~N,~N,~B,JU.BS");
 Clazz.defineMethod(c$, "rotateAboutPointsInternal", 
-function(eval, point1, point2, degreesPerSecond, endDegrees, isSpin, bsSelected, translation, finalPoints, dihedralList, m4){
+function(eval, point1, point2, degreesPerSecond, endDegrees, isSpin, bsSelected, translation, finalPoints, dihedralList, m4, useModelKit){
 if (eval == null) eval = this.eval;
 if (this.headless) {
 if (isSpin && endDegrees == 3.4028235E38) return false;
 isSpin = false;
-}var isOK = this.tm.rotateAboutPointsInternal(eval, point1, point2, degreesPerSecond, endDegrees, false, isSpin, bsSelected, false, translation, finalPoints, dihedralList, m4);
+}var isOK = this.tm.rotateAboutPointsInternal(eval, point1, point2, degreesPerSecond, endDegrees, false, isSpin, bsSelected, false, translation, finalPoints, dihedralList, m4, useModelKit);
 if (isOK) this.setSync();
 return isOK;
-}, "J.api.JmolScriptEvaluator,JU.P3,JU.P3,~N,~N,~B,JU.BS,JU.V3,JU.Lst,~A,JU.M4");
+}, "J.api.JmolScriptEvaluator,JU.P3,JU.P3,~N,~N,~B,JU.BS,JU.V3,JU.Lst,~A,JU.M4,~B");
 Clazz.defineMethod(c$, "startSpinningAxis", 
 function(pt1, pt2, isClockwise){
 if (this.tm.spinOn || this.tm.navOn) {
 this.tm.setSpinOff();
 this.tm.setNavOn(false);
 return;
-}this.tm.rotateAboutPointsInternal(null, pt1, pt2, this.g.pickingSpinRate, 3.4028235E38, isClockwise, true, null, false, null, null, null, null);
+}this.tm.rotateAboutPointsInternal(null, pt1, pt2, this.g.pickingSpinRate, 3.4028235E38, isClockwise, true, null, false, null, null, null, null, false);
 }, "JU.T3,JU.T3,~B");
 Clazz.defineMethod(c$, "getModelDipole", 
 function(){
@@ -5259,6 +5272,8 @@ if (tok == 1648363544) this.shm.deleteVdwDependentShapes(bs);
 this.clearMinimization();
 this.ms.setAtomProperty(bs, tok, iValue, fValue, sValue, values, list);
 switch (tok) {
+case 1086326789:
+this.setModelkitPropertySafely("updateatomkeys", bs);
 case 1111492609:
 case 1111492610:
 case 1111492611:
@@ -5268,15 +5283,14 @@ case 1111492614:
 case 1111490577:
 case 1111490578:
 case 1111490579:
-case 1086326789:
 this.refreshMeasures(true);
 }
 }, "JU.BS,~N,~N,~N,~S,~A,~A");
 Clazz.defineMethod(c$, "checkCoordinatesChanged", 
-function(){
-this.ms.recalculatePositionDependentQuantities(null, null);
+function(bsAtoms){
+this.ms.recalculatePositionDependentQuantities(bsAtoms, null);
 this.refreshMeasures(true);
-});
+}, "JU.BS");
 Clazz.defineMethod(c$, "setAtomCoords", 
 function(bs, tokType, xyzValues){
 if (bs.isEmpty()) return;
@@ -5350,11 +5364,11 @@ this.ms.invertSelected(pt, plane, iAtom, bsAtoms);
 this.setStatusAtomMoved(true, bsAtoms);
 }, "JU.P3,JU.P4,~N,JU.BS");
 Clazz.defineMethod(c$, "moveAtoms", 
-function(m4, mNew, rotation, translation, center, isInternal, bsAtoms, translationOnly){
+function(m4, mNew, rotation, translation, center, isInternal, bsAtoms, translationOnly, useModelKit){
 if (bsAtoms.isEmpty()) return;
-var bsFixed = this.getMotionFixedAtoms(bsAtoms.nextSetBit(0));
+var bsFixed = this.getMotionFixedAtoms(null, null);
 if (bsAtoms.intersects(bsFixed)) return;
-var uc = this.getOperativeSymmetry();
+var uc = (useModelKit ? this.getOperativeSymmetry() : null);
 var apos0 = null;
 if (uc != null) {
 apos0 = this.ms.saveAtomPositions();
@@ -5362,27 +5376,32 @@ apos0 = this.ms.saveAtomPositions();
 if (uc != null) {
 this.getModelkit(false).checkMovedAtoms(bsFixed, bsAtoms, apos0);
 }this.setStatusAtomMoved(true, bsAtoms);
-}, "JU.M4,JU.M3,JU.M3,JU.V3,JU.P3,~B,JU.BS,~B");
+}, "JU.M4,JU.M3,JU.M3,JU.V3,JU.P3,~B,JU.BS,~B,~B");
+Clazz.defineMethod(c$, "moveSelectedXY", 
+function(deltaX, deltaY, modifiers){
+this.moveSelected(deltaX, deltaY, -2147483648, -2147483648, -2147483648, null, null, null, false, false, modifiers);
+}, "~N,~N,~N");
 Clazz.defineMethod(c$, "moveSelected", 
-function(deltaX, deltaY, deltaZ, x, y, bsSelected, isTranslation, asAtoms, modifiers){
-if (deltaZ == 0 || this.isJmolDataFrame()) return;
-if (x == -2147483648 && this.modelkit != null) this.setModelkitPropertySafely("rotateBondIndex", Integer.$valueOf(-2147483648));
+function(deltaX, deltaY, deltaZ, x, y, bsSelected, ptOld, ptNew, isTranslation, asAtoms, modifiers){
+if (deltaZ == 0 && ptNew == null || this.isJmolDataFrame()) return 0;
+if (ptNew == null) {
+if (x == -2147483648 && this.modelkit != null) this.setModelkitPropertySafely("rotatebondindex", Integer.$valueOf(-2147483648));
 if (deltaX == -2147483648) {
 this.showSelected = true;
 this.movableBitSet = this.setMovableBitSet(null, !asAtoms);
 this.shm.loadShape(8);
 this.refresh(6, "moveSelected");
-return;
+return 0;
 }if (deltaX == 2147483647) {
-if (!this.showSelected) return;
+if (!this.showSelected) return 0;
 this.showSelected = false;
 this.movableBitSet = null;
 this.refresh(6, "moveSelected");
-return;
-}if (this.movingSelected) return;
+return 0;
+}}if (this.movingSelected) return 0;
 this.movingSelected = true;
 this.stopMinimization();
-if (x != -2147483648 && this.modelkit != null && this.modelkit.getProperty("rotateBondIndex") != null) {
+if (ptNew == null && x != -2147483648 && this.modelkit != null && this.modelkit.getProperty("rotatebondindex") != null) {
 this.modelkit.actionRotateBond(deltaX, deltaY, x, y, (modifiers & 16) != 0);
 } else {
 if (bsSelected == null) bsSelected = this.bsA();
@@ -5393,26 +5412,29 @@ bsSelected.set(iatom);
 this.sm.setStatusStructureModified(iatom, this.getModelIndexForAtom(iatom), -3, "FAILED", 1, bsSelected);
 } else {
 if (isTranslation) {
-var ptCenter = this.ms.getAtomSetCenter(bsSelected);
+var ptCenter = (ptOld == null ? this.ms.getAtomSetCenter(bsSelected) : ptOld);
+if (ptNew == null) {
 this.tm.finalizeTransformParameters();
 var f = (this.g.antialiasDisplay ? 2 : 1);
 this.tm.transformPt3f(ptCenter, this.ptScreen);
 if (deltaZ != -2147483648) this.ptScreenNew.set(this.ptScreen.x, this.ptScreen.y, this.ptScreen.z + deltaZ);
  else this.ptScreenNew.set(this.ptScreen.x + deltaX * f, this.ptScreen.y + deltaY * f, this.ptScreen.z);
 this.tm.unTransformPoint(this.ptScreenNew, this.ptNew);
+ptNew = this.ptNew;
 var uc = this.getOperativeSymmetry();
 if (uc != null) {
-this.ptNew.sub(ptCenter);
-this.ptNew.add(this.ms.at[iatom]);
-this.getModelkit(false).cmdAssignMoveAtoms(bsSelected, null, null, iatom, this.ptNew, null, true);
-}if (!Float.isNaN(this.ptNew.x)) {
-this.ptNew.sub(ptCenter);
-this.setAtomCoordsRelative(this.ptNew, bsSelected);
+ptNew.sub(ptCenter);
+ptNew.add(this.ms.at[iatom]);
+this.getModelkit(false).cmdAssignMoveAtoms(bsSelected, iatom, ptNew, null, true, !asAtoms);
+}}if (!Float.isNaN(ptNew.x)) {
+ptNew.sub(ptCenter);
+this.setAtomCoordsRelative(ptNew, bsSelected);
 }} else {
 this.tm.rotateXYBy(deltaX, deltaY, bsSelected);
 }}}this.refresh(2, "");
 this.movingSelected = false;
-}, "~N,~N,~N,~N,~N,JU.BS,~B,~B,~N");
+return (bsSelected == null ? 0 : bsSelected.cardinality());
+}, "~N,~N,~N,~N,~N,JU.BS,JU.P3,JU.P3,~B,~B,~N");
 Clazz.defineMethod(c$, "highlightBond", 
 function(index, closestAtomIndex, x, y){
 if (!this.hoverEnabled) return;
@@ -5424,9 +5446,9 @@ bs = JU.BSUtil.newAndSetBit(i);
 bs.set(b.atom1.i);
 }this.highlight(bs);
 this.getModelkit(false);
-this.setModelkitPropertySafely("screenXY",  Clazz.newIntArray(-1, [x, y]));
-this.setModelkitPropertySafely("bondIndex", Integer.$valueOf(index));
-var text = this.setModelkitPropertySafely("hoverLabel", Integer.$valueOf(-2 - index));
+this.setModelkitPropertySafely("screenxy",  Clazz.newIntArray(-1, [x, y]));
+this.setModelkitPropertySafely("bondindex", Integer.$valueOf(index));
+var text = this.setModelkitPropertySafely("hoverlabel", Integer.$valueOf(-2 - index));
 if (text != null) this.hoverOnPt(x, y, text, null, null);
 this.refresh(3, "highlightBond");
 }, "~N,~N,~N,~N");
@@ -5567,7 +5589,7 @@ return s;
 Clazz.defineMethod(c$, "addCommand", 
 function(command){
 if (this.autoExit || !this.haveDisplay || !this.getPreserveState()) return;
-if (command.startsWith("pause ") || command.equals("pause")) command = "resume" + command.substring(5);
+if (command.startsWith("pause ") || command.equals("pause")) command = "resume";
 this.commandHistory.addCommand(JU.PT.replaceAllCharacters(command, "\r\n\t", " "));
 }, "~S");
 Clazz.defineMethod(c$, "pushState", 
@@ -6118,12 +6140,15 @@ function(bs){
 this.slm.setMotionFixedAtoms(bs);
 }, "JU.BS");
 Clazz.defineMethod(c$, "getMotionFixedAtoms", 
-function(iatom){
-var bs = JU.BSUtil.copy(this.slm.getMotionFixedAtoms());
-if (iatom < 0) iatom = this.getModelUndeletedAtomsBitSet(this.getVisibleFramesBitSet().nextSetBit(0)).nextSetBit(0);
-if (iatom >= 0 && (this.modelkit != null || this.getOperativeSymmetry() != null && this.getModelkit(false) != null)) this.modelkit.addLockedAtoms(iatom, bs);
-return bs;
-}, "~N");
+function(sym, bsFixed){
+if (this.am.cmi < 0) return  new JU.BS();
+if (bsFixed == null) bsFixed =  new JU.BS();
+bsFixed.or(this.slm.getMotionFixedAtoms());
+bsFixed.and(this.getThisModelAtoms());
+if (sym == null) sym = this.getOperativeSymmetry();
+if (sym != null && this.getModelkit(false) != null) this.modelkit.addLockedAtoms(sym, bsFixed);
+return bsFixed;
+}, "J.api.SymmetryInterface,JU.BS");
 Clazz.defineMethod(c$, "getAtomicPropertyState", 
 function(commands, type, bs, name, data){
 this.getStateCreator().getAtomicPropertyStateBuffer(commands, type, bs, name, data);
@@ -6190,18 +6215,16 @@ function(taintedAtom, type, clearRedo){
 if (this.g.preserveState && this.getOperativeSymmetry() == null) this.getStateCreator().undoMoveActionClear(taintedAtom, type, clearRedo);
 }, "~N,~N,~B");
 Clazz.defineMethod(c$, "moveAtomWithHydrogens", 
-function(atomIndex, deltaX, deltaY, deltaZ, bsAtoms){
+function(atomIndex, deltaX, deltaY, deltaZ, ptNew, bsAtoms){
 this.stopMinimization();
-if (bsAtoms == null) {
+var modelkitNoAddH = (ptNew != null && deltaX == 0);
 var atom = this.ms.at[atomIndex];
+if (bsAtoms == null) {
 bsAtoms = JU.BSUtil.newAndSetBit(atomIndex);
-var bonds = (this.getOperativeSymmetry() == null || this.isModelKitOpen() && !this.modelkit.hasConstraint(atomIndex, true, false) ? atom.bonds : null);
-if (bonds != null) for (var i = 0; i < bonds.length; i++) {
-var atom2 = bonds[i].getOtherAtom(atom);
-if (atom2.getElementNumber() == 1) bsAtoms.set(atom2.i);
-}
-}this.moveSelected(deltaX, deltaY, deltaZ, -2147483648, -2147483648, bsAtoms, true, true, 0);
-}, "~N,~N,~N,~N,JU.BS");
+var addH = (this.getOperativeSymmetry() == null || this.isModelKitOpen() && !this.modelkit.hasConstraint(atomIndex, true, false));
+if (addH && !modelkitNoAddH) this.ms.addConnectedHAtoms(atom, bsAtoms);
+}return this.moveSelected(deltaX, deltaY, deltaZ, -2147483648, -2147483648, bsAtoms, atom, ptNew, true, true, 0);
+}, "~N,~N,~N,~N,JU.P3,JU.BS");
 Clazz.defineMethod(c$, "isModelPDB", 
 function(i){
 return this.ms.am[i].isBioModel;
@@ -6470,6 +6493,7 @@ if (pts.length > 0) {
 this.clearModelDependentObjects();
 try {
 bsB = (isQuick && vConnections.get(0).mi == this.ms.mc - 1 ? this.ms.addHydrogens(vConnections, pts) : this.addHydrogensInline(bsAtoms, vConnections, pts, null));
+this.setModelkitPropertySafely("updateatomkeys", bsAtoms);
 } catch (e) {
 if (Clazz.exceptionOf(e, Exception)){
 System.out.println(e.toString());
@@ -6683,9 +6707,10 @@ Clazz.defineMethod(c$, "dragMinimizeAtom",
 function(iAtom){
 this.stopMinimization();
 var flags = 0;
-if (this.getOperativeSymmetry() != null) {
+var sym = this.getOperativeSymmetry();
+if (sym != null) {
 flags = 256;
-}var bs = (flags != 0 ? null : (this.getMotionFixedAtoms(iAtom).isEmpty() ? this.ms.getAtoms((this.ms.isAtomPDB(iAtom) ? 1086324742 : 1094713360), JU.BSUtil.newAndSetBit(iAtom)) : JU.BSUtil.setAll(this.ms.ac)));
+}var bs = (flags != 0 ? null : (this.getMotionFixedAtoms(sym, null).isEmpty() ? this.ms.getAtoms((this.ms.isAtomPDB(iAtom) ? 1086324742 : 1094713360), JU.BSUtil.newAndSetBit(iAtom)) : JU.BSUtil.setAll(this.ms.ac)));
 try {
 this.minimize(this.eval, 2147483647, 0, bs, null, null, 0, flags);
 } catch (e) {
@@ -6735,6 +6760,10 @@ return this.getJSJSONParser().parse(jsonArray, true);
 Clazz.defineMethod(c$, "getSymTemp", 
 function(){
 return J.api.Interface.getSymmetry(this, "ms");
+});
+Clazz.defineMethod(c$, "getSymStatic", 
+function(){
+return (JV.Viewer.symStatic == null ? (JV.Viewer.symStatic = J.api.Interface.getSymmetry(this, "ms")) : JV.Viewer.symStatic);
 });
 Clazz.defineMethod(c$, "setWindowDimensions", 
 function(dims){
@@ -6827,6 +6856,10 @@ Clazz.defineMethod(c$, "setModelkitPropertySafely",
 function(key, value){
 return (this.modelkit == null ? null : this.modelkit.setProperty(key, value));
 }, "~S,~O");
+Clazz.defineMethod(c$, "isModelKitOption", 
+function(type, value){
+return this.modelkit != null && this.modelkit.checkOption(type, value);
+}, "~S,~S");
 Clazz.defineMethod(c$, "getSymmetryInfo", 
 function(iatom, xyz, iOp, translation, pt1, pt2, type, desc, scaleFactor, nth, options, opList){
 try {
@@ -6916,17 +6949,17 @@ return "";
 }
 }, "JU.BS,~O,~S");
 Clazz.defineMethod(c$, "findSpaceGroup", 
-function(bsAtoms, xyzList, unitCellParams, origin, asString, isAssign, checkSupercell){
+function(sym, bsAtoms, xyzList, unitCellParams, origin, oabc, flags){
 var ret = null;
-if (bsAtoms == null && xyzList == null || isAssign) bsAtoms = this.getThisModelAtoms();
+if (bsAtoms == null && xyzList == null || (flags & 2) != 0) bsAtoms = this.getThisModelAtoms();
 if (xyzList == null) {
 if (!bsAtoms.isEmpty()) {
-var uc = this.getCurrentUnitCell();
-ret = (uc == null ? null : uc.findSpaceGroup(this, bsAtoms, null, unitCellParams, origin, asString, isAssign, checkSupercell));
+var uc = (sym == null ? this.getOperativeSymmetry() : sym);
+ret = (uc == null ? null : uc.findSpaceGroup(this, bsAtoms, null, unitCellParams, null, oabc, flags));
 }} else {
-ret = this.getSymTemp().findSpaceGroup(this, bsAtoms, xyzList, unitCellParams, origin, asString, isAssign, checkSupercell);
-}return (ret == null && asString ? "" : ret);
-}, "JU.BS,~S,~A,JU.T3,~B,~B,~B");
+ret = this.getSymTemp().findSpaceGroup(this, bsAtoms, xyzList, unitCellParams, origin, oabc, flags);
+}return (ret == null && (flags & 1) != 0 ? "" : ret);
+}, "J.api.SymmetryInterface,JU.BS,~S,~A,JU.T3,~A,~N");
 Clazz.defineMethod(c$, "restrictToModel", 
 function(bs, mi){
 if (bs == null) bs = this.bsA();
@@ -6954,7 +6987,7 @@ Clazz.defineMethod(c$, "getSymmetryEquivPointList",
 function(pts, flags){
 var uc = this.getCurrentUnitCell();
 if (uc == null) return  new JU.Lst();
-uc.getEquivPointList(pts, 0, flags.toLowerCase());
+uc.getEquivPointList(pts, 0, flags.toLowerCase(), null);
 return pts;
 }, "JU.Lst,~S");
 Clazz.defineMethod(c$, "getOperativeSymmetry", 
@@ -7043,19 +7076,11 @@ ret[0] = p;
 ret[1] = e;
 return se + u;
 }, "~S,~B,~N,~A");
-Clazz.defineMethod(c$, "assignSpaceGroup", 
-function(bs, type){
-return this.getModelkit(false).cmdAssignSpaceGroup(bs, type);
-}, "JU.BS,~S");
 Clazz.defineMethod(c$, "setStatusAtomMoved", 
 function(andCheckMinimize, bs){
 if (andCheckMinimize) this.checkMinimization();
 this.sm.setStatusAtomMoved(bs);
 }, "~B,JU.BS");
-Clazz.defineMethod(c$, "isModelKitOption", 
-function(type, value){
-return this.modelkit != null && this.modelkit.checkOption(type, value);
-}, "~S,~S");
 Clazz.defineMethod(c$, "getFormulaForAtoms", 
 function(bs, type, isEmpirical){
 return JU.JmolMolecule.getMolecularFormulaAtoms(this.ms.at, bs, ("CELLFORMULA".equals(type) ? this.ms.getCellWeights(bs) : null), isEmpirical);
@@ -7073,20 +7098,6 @@ this.html5Applet._showInfo(strScript.indexOf("CLOSE")<0); if
 this.html5Applet._clearConsole(); return true; }
 }return false;
 }, "~S");
-Clazz.defineMethod(c$, "setModelCagePts", 
-function(iModel, originABC, name){
-if (iModel < 0) iModel = this.am.cmi;
-var sym = J.api.Interface.getSymmetry(this, "eval");
-if (sym == null && this.async) throw  new NullPointerException();
-try {
-this.ms.setModelCage(iModel, originABC == null ? null : sym.getUnitCell(originABC, false, name));
-} catch (e) {
-if (Clazz.exceptionOf(e, Exception)){
-} else {
-throw e;
-}
-}
-}, "~N,~A,~S");
 c$.$Viewer$1$=function(){
 /*if5*/;(function(){
 var c$ = Clazz.declareAnonymous(JV, "Viewer$1", null, Runnable);
@@ -7122,5 +7133,6 @@ c$.nProcessors = 1;
 c$.isHighPrecision = false;
 {
 {
-}}});
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+}}c$.symStatic = null;
+});
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

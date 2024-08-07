@@ -593,7 +593,7 @@ if (width < 400) size = ((width * size) / 400);
 } else {
 if (width < 250) size = ((width * size) / 250);
 }var face = this.jsvp.getFontFaceID(this.isPrinting ? this.printingFontName : this.displayFontName);
-return this.currentFont = JU.Font.createFont3D(face, style, size, size, this.jsvp.getApiPlatform(), g);
+return this.currentFont = JU.Font.createFont3D(face, style, size, size, 0, this.jsvp.getApiPlatform(), g);
 }, "~O,~N,~N,~N,~B");
 Clazz.defineMethod(c$, "notifySubSpectrumChange", 
 function(isub, spec){
@@ -1214,4 +1214,4 @@ Clazz.defineEnumConstant(c$, "UP", 0, []);
 Clazz.defineEnumConstant(c$, "DOWN", 1, []);
 /*eoif2*/})();
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

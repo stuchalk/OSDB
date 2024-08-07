@@ -252,4 +252,4 @@ return JSV.common.Coordinate.findXForPeakNearest(xyCoords, xyCoords[pt].getXVal(
 }, "~A,~N,~N,~B,~B");
 c$.c =  new JSV.common.CoordComparator();
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

@@ -4,9 +4,6 @@ var c$ = Clazz.decorateAsClass(function(){
 this.tickInfos = null;
 this.font3d = null;
 Clazz.instantialize(this, arguments);}, J.shape, "FontLineShape", J.shape.Shape);
-Clazz.prepareFields (c$, function(){
-this.tickInfos =  new Array(4);
-});
 Clazz.overrideMethod(c$, "initShape", 
 function(){
 this.translucentAllowed = false;
@@ -15,12 +12,23 @@ Clazz.defineMethod(c$, "setPropFLS",
 function(propertyName, value){
 if ("tickInfo" === propertyName) {
 var t = value;
+var type = t.type;
 if (t.ticks == null) {
-if (t.type.equals(" ")) {
-this.tickInfos[0] = this.tickInfos[1] = this.tickInfos[2] = this.tickInfos[3] = null;
+if (t.type == ' ') {
+this.tickInfos = null;
 return;
-}t = null;
-}this.tickInfos["xyz".indexOf(t.type) + 1] = t;
+}if (this.tickInfos != null) {
+var haveTicks = false;
+for (var i = 0; i < 4; i++) {
+if (this.tickInfos[i] != null && this.tickInfos[i].type == t.type) {
+this.tickInfos[i] = null;
+} else {
+haveTicks = true;
+}}
+if (!haveTicks) this.tickInfos = null;
+}return;
+}if (this.tickInfos == null) this.tickInfos =  new Array(4);
+this.tickInfos["xyz".indexOf(type) + 1] = t;
 return;
 }if ("font" === propertyName) {
 this.font3d = value;
@@ -31,4 +39,4 @@ function(){
 return null;
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

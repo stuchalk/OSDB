@@ -63,7 +63,7 @@ var $t$;
 //var c$;
 Clazz_declarePackage("J.api");
 Clazz_declareInterface(J.api, "GenericMenuInterface");
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JSV.js2d");
 Clazz_load(["JSV.popup.JSVGenericPopup"], "JSV.js2d.JsPopup", ["JSV.popup.JSVPopupResourceBundle", "J.awtjs2d.JSPopupHelper"], function(){
 var c$ = Clazz_declareType(JSV.js2d, "JsPopup", JSV.popup.JSVGenericPopup);
@@ -96,7 +96,7 @@ Clazz_overrideMethod(c$, "menuFocusCallback",
 function(name, actionCommand, b){
 }, "~S,~S,~B");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JSV.popup");
 Clazz_load(["J.popup.GenericPopup"], "JSV.popup.JSVGenericPopup", ["JU.PT", "JSV.common.JSVersion", "$.JSViewer", "JSV.popup.JSVPopupResourceBundle"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -299,7 +299,7 @@ function(item, name, what, TF){
 return null;
 }, "J.api.SC,~S,~S,~B");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JSV.popup");
 Clazz_load(["J.popup.PopupResource"], "JSV.popup.JSVPopupResourceBundle", null, function(){
 var c$ = Clazz_declareType(JSV.popup, "JSVPopupResourceBundle", J.popup.PopupResource);
@@ -328,7 +328,7 @@ return this.getStuctureAsText(title, JSV.popup.JSVPopupResourceBundle.menuConten
 c$.menuContents =  Clazz_newArray(-1, [ Clazz_newArray(-1, ["appMenu", "_SIGNED_FileMenu Spectra... ShowMenu OptionsMenu ZoomMenu - Integration Peaks Measurements - Script... Properties"]),  Clazz_newArray(-1, ["appletMenu", "_SIGNED_FileMenu Spectra... - OptionsMenu ZoomMenu - Integration Peaks Measurements - Script... - Print... - AboutMenu"]),  Clazz_newArray(-1, ["_SIGNED_FileMenu", "Open_File... Open_Simulation... Open_URL... - Add_File... Add_Simulation... Add_URL... - Save_AsMenu Export_AsMenu - Close_Views Close_Simulations Close_All"]),  Clazz_newArray(-1, ["Save_AsMenu", "Original... JDXMenu CML XML(AnIML)"]),  Clazz_newArray(-1, ["JDXMenu", "XY DIF DIFDUP FIX PAC SQZ"]),  Clazz_newArray(-1, ["Export_AsMenu", "PDF - JPG PNG SVG"]),  Clazz_newArray(-1, ["ShowMenu", "Show_Header Show_Source Show_Overlay_Key"]),  Clazz_newArray(-1, ["OptionsMenu", "Toggle_Grid Toggle_X_Axis Toggle_Y_Axis Toggle_Coordinates Toggle_Trans/Abs Reverse_Plot - Predicted_Solution_Colour Fill_Solution_Colour_(all)  Fill_Solution_Colour_(none)"]),  Clazz_newArray(-1, ["ZoomMenu", "Next_Zoom Previous_Zoom Reset_Zoom - Set_X_Scale... Reset_X_Scale"]),  Clazz_newArray(-1, ["AboutMenu", "VERSION"])]);
 c$.structureContents =  Clazz_newArray(-1, [ Clazz_newArray(-1, ["Open_File...", "load ?"]),  Clazz_newArray(-1, ["Open_URL...", "load http://?"]),  Clazz_newArray(-1, ["Open_Simulation...", "load $?"]),  Clazz_newArray(-1, ["Add_File...", "load append ?"]),  Clazz_newArray(-1, ["Add_URL...", "load append http://?"]),  Clazz_newArray(-1, ["Add_Simulation...", "load append $?; view \"1HNMR\""]),  Clazz_newArray(-1, ["Close_All", "close all"]),  Clazz_newArray(-1, ["Close_Views", "close views"]),  Clazz_newArray(-1, ["Close Simulations", "close simulations"]),  Clazz_newArray(-1, ["Show_Header", "showProperties"]),  Clazz_newArray(-1, ["Show_Source", "showSource"]),  Clazz_newArray(-1, ["Show_Overlay_Key...", "showKey"]),  Clazz_newArray(-1, ["Next_Zoom", "zoom next;showMenu"]),  Clazz_newArray(-1, ["Previous_Zoom", "zoom prev;showMenu"]),  Clazz_newArray(-1, ["Reset_Zoom", "zoom clear"]),  Clazz_newArray(-1, ["Reset_X_Scale", "zoom out"]),  Clazz_newArray(-1, ["Set_X_Scale...", "zoom"]),  Clazz_newArray(-1, ["Spectra...", "view"]),  Clazz_newArray(-1, ["Overlay_Offset...", "stackOffsetY"]),  Clazz_newArray(-1, ["Script...", "script INLINE"]),  Clazz_newArray(-1, ["Properties", "showProperties"]),  Clazz_newArray(-1, ["Toggle_X_Axis", "XSCALEON toggle;showMenu"]),  Clazz_newArray(-1, ["Toggle_Y_Axis", "YSCALEON toggle;showMenu"]),  Clazz_newArray(-1, ["Toggle_Grid", "GRIDON toggle;showMenu"]),  Clazz_newArray(-1, ["Toggle_Coordinates", "COORDINATESON toggle;showMenu"]),  Clazz_newArray(-1, ["Reverse_Plot", "REVERSEPLOT toggle;showMenu"]),  Clazz_newArray(-1, ["Measurements", "SHOWMEASUREMENTS"]),  Clazz_newArray(-1, ["Peaks", "SHOWPEAKLIST"]),  Clazz_newArray(-1, ["Integration", "SHOWINTEGRATION"]),  Clazz_newArray(-1, ["Toggle_Trans/Abs", "IRMODE TOGGLE"]),  Clazz_newArray(-1, ["Predicted_Solution_Colour", "GETSOLUTIONCOLOR"]),  Clazz_newArray(-1, ["Fill_Solution_Colour_(all)", "GETSOLUTIONCOLOR fillall"]),  Clazz_newArray(-1, ["Fill_Solution_Colour_(none)", "GETSOLUTIONCOLOR fillallnone"]),  Clazz_newArray(-1, ["Print...", "print"]),  Clazz_newArray(-1, ["Original...", "write SOURCE"]),  Clazz_newArray(-1, ["CML", "write CML"]),  Clazz_newArray(-1, ["XML(AnIML)", "write XML"]),  Clazz_newArray(-1, ["XY", "write XY"]),  Clazz_newArray(-1, ["DIF", "write DIF"]),  Clazz_newArray(-1, ["DIFDUP", "write DIFDUP"]),  Clazz_newArray(-1, ["FIX", "write FIX"]),  Clazz_newArray(-1, ["PAC", "write PAC"]),  Clazz_newArray(-1, ["SQZ", "write SQZ"]),  Clazz_newArray(-1, ["JPG", "write JPG"]),  Clazz_newArray(-1, ["SVG", "write SVG"]),  Clazz_newArray(-1, ["PNG", "write PNG"]),  Clazz_newArray(-1, ["PDF", "write PDF"])]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 })(Clazz
 ,Clazz.getClassName
 ,Clazz.newLongArray

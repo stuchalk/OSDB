@@ -3,11 +3,10 @@ Clazz.load(["java.lang.Enum", "JM.BioPolymer"], "JM.AlphaPolymer", ["JU.Measure"
 var c$ = Clazz.decorateAsClass(function(){
 this.pt0 = 0;
 Clazz.instantialize(this, arguments);}, JM, "AlphaPolymer", JM.BioPolymer);
-Clazz.defineMethod(c$, "setPoly", 
+Clazz.makeConstructor(c$, 
 function(monomers, pt0){
+Clazz.superConstructor(this, JM.AlphaPolymer, [monomers, true]);
 this.pt0 = pt0;
-this.set(monomers);
-this.hasStructure = true;
 }, "~A,~N");
 Clazz.overrideMethod(c$, "getProteinStructure", 
 function(monomerIndex){
@@ -181,4 +180,4 @@ Clazz.defineEnumConstant(c$, "RIGHT_TURN", 5, []);
 /*eoif2*/})();
 c$.dsspTypes =  Clazz.newArray(-1, ["H", null, "H", "S", "H", null, "T"]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

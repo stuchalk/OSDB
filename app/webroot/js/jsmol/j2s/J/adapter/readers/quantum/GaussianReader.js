@@ -434,4 +434,4 @@ this.asc.setAtomProperties("J", data, this.asc.iSet, false);
 this.appendLoadNote("NMR J Couplings saved for model=" + (this.asc.iSet + 1) + " as property_J;\n use set measurementUnits \"+hz\" to measure them.");
 }});
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

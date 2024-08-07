@@ -1,5 +1,29 @@
 <html>
+<head>
+<script>
+function chooseConvention() {
+  document.getElementById("choose").style.display="block";
+}
+
+function openPage(type) {
+  window.open(type == "SF" ? "explore.htm" : "exploreHM.htm");
+}
+</script>
+</head>
 <body>
-<center><a href=explore.htm><img src=jpge.png></a></center>
+<center><a href=javascript:chooseConvention()><img src=jpge.png width=90%></a></center>
+<div id=choose style="
+background-color:lightgray;
+font-size:30px;
+position: fixed;left:50%;top:50%;transform:translate(-50%, -50%);
+width:650px;
+height:200px;
+display:none">Continue with: 
+<br>
+<table cellpadding=30>
+<tr><td style="font-size:30px"><input style="font-size:30px" onclick=openPage('SF') type=button name=conv id=convsf value="Schoenflies notation"</input>(C<sub>2v</sub>, T<sub>d</sub>, ...)
+<br><input style="font-size:30px" onclick=openPage('HM') type=button name=conv id=convhm value="Hermann-Mauguin notation"</input>(2m, -43m, ...)
+</td></tr></table>
+</div>
 </body>
 </html>

@@ -3,7 +3,7 @@ Clazz.load(["JU.BS"], "JU.Elements", ["java.util.Hashtable", "JU.PT", "JU.Logger
 var c$ = Clazz.declareType(JU, "Elements", null);
 c$.getNaturalIsotope = Clazz.defineMethod(c$, "getNaturalIsotope", 
 function(elementNumber){
-return JU.Elements.isotopeMass[elementNumber & 0x7F];
+return JU.Elements.isotopeMass[elementNumber & 127];
 }, "~N");
 c$.getAtomicMass = Clazz.defineMethod(c$, "getAtomicMass", 
 function(i){
@@ -50,7 +50,7 @@ if (elemNo >= JU.Elements.elementNumberMax) {
 for (var j = JU.Elements.altElementMax; --j >= 0; ) if (elemNo == JU.Elements.altElementNumbers[j]) return JU.Elements.altElementSymbols[j];
 
 isoNumber = JU.Elements.getIsotopeNumber(elemNo);
-elemNo %= 128;
+elemNo &= 127;
 return "" + isoNumber + JU.Elements.getElementSymbol(elemNo);
 }return JU.Elements.getElementSymbol(elemNo);
 }, "~N");
@@ -102,7 +102,7 @@ return atomicAndIsotopeNumber & 127;
 }, "~N");
 c$.getIsotopeNumber = Clazz.defineMethod(c$, "getIsotopeNumber", 
 function(atomicAndIsotopeNumber){
-return (atomicAndIsotopeNumber & 248) >> 7;
+return (atomicAndIsotopeNumber & 32640) >> 7;
 }, "~N");
 c$.getAtomicAndIsotopeNumber = Clazz.defineMethod(c$, "getAtomicAndIsotopeNumber", 
 function(n, mass){
@@ -191,4 +191,4 @@ if ((JU.Elements.elementNames.length != JU.Elements.elementNumberMax) || (JU.Ele
 JU.Logger.error("ERROR!!! Element table length mismatch:\n elementSymbols.length=" + JU.Elements.elementSymbols.length + "\n elementNames.length=" + JU.Elements.elementNames.length + "\n vanderwaalsMars.length=" + JU.Elements.vanderwaalsMars.length + "\n covalentMars.length=" + JU.Elements.defaultBondingMars.length);
 }}c$.electroNegativities =  Clazz.newFloatArray(-1, [0, 2.2, 0, 0.97, 1.47, 2.01, 2.5, 3.07, 3.5, 4.1, 0, 1.01, 1.23, 1.47, 1.74, 2.06, 2.44, 2.83, 0, 0.91, 1.04, 1.2, 1.32, 1.45, 1.56, 1.6, 1.64, 1.7, 1.75, 1.75, 1.66, 1.82, 2.02, 2.2, 2.48, 2.74, 0, 0.89, 0.99, 1.11, 1.22, 1.23, 1.3, 1.36, 1.42, 1.45, 1.35, 1.42, 1.46, 1.49, 1.72, 1.82, 2.01, 2.21]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

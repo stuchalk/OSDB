@@ -37,7 +37,8 @@ var mesh = this.dmesh = draw.meshes[i];
 if (mesh == null) {
 System.out.println("DrawRenderer mesh is null?");
 return false;
-}if (mesh.connectedAtoms != null) {
+}if (this.dmesh.thisModelOnly && this.vwr.am.cmi < 0) continue;
+if (mesh.connectedAtoms != null) {
 if (mesh.connectedAtoms[0] < 0) continue;
 mesh.vs =  new Array(4);
 mesh.vc = 4;
@@ -76,17 +77,8 @@ this.pt1f.scale(1 / n);
 this.tm.transformPtScr(this.pt1f, this.pt1i);
 this.diameter = Clazz.floatToInt(this.vwr.tm.scaleToScreen(this.pt1i.z, Clazz.doubleToInt(Math.floor(this.width * 1000))));
 if (this.diameter == 0) this.diameter = 1;
-}if (this.dmesh.haveXyPoints) {
-if (this.dmesh.isVector) {
-var ptXY = 0;
-for (var i = 0; i < 2; i++) if (this.vertices[i].z == 3.4028235E38 || this.vertices[i].z == -3.4028235E38) ptXY += i + 1;
-
-if (--ptXY < 2) {
-this.renderXyArrow(ptXY);
-return;
-}} else if (this.drawType === J.shapespecial.Draw.EnumDrawType.POINT) {
-this.renderXyPoint();
-}}var tension = 5;
+}if (this.dmesh.haveXyPoints && this.drawXYPoints()) return;
+var tension = 5;
 switch (this.drawType) {
 case J.shapespecial.Draw.EnumDrawType.CYLINDER:
 this.allowDashed = false;
@@ -147,6 +139,20 @@ i0 = i;
 } else {
 this.render2b(false);
 }}, "~B");
+Clazz.defineMethod(c$, "drawXYPoints", 
+function(){
+if (this.dmesh.isVector) {
+var ptXY = 0;
+for (var i = 0; i < 2; i++) if (J.shapespecial.Draw.is2DPoint(this.vertices[i])) ptXY += i + 1;
+
+if (--ptXY < 2) {
+this.renderXyArrow(ptXY);
+return true;
+}} else if (this.drawType === J.shapespecial.Draw.EnumDrawType.POINT || this.drawType === J.shapespecial.Draw.EnumDrawType.MULTIPLE) {
+this.renderXyPoint();
+return true;
+}return false;
+});
 Clazz.defineMethod(c$, "setArc", 
 function(v1, v2, ptRef, nDegreesOffset, theta, fractionalOffset, scale){
 this.vTemp.sub2(v2, v1);
@@ -289,11 +295,14 @@ this.pt0f.setT(pt1);
 this.pt2f.setT(pt2);
 var d = this.pt0f.distance(this.pt2f);
 if (d == 0) return;
+var headWidth = (this.width > 0 ? this.width * 3 : 0);
 this.vTemp.sub2(this.pt2f, this.pt0f);
 this.vTemp.normalize();
-this.vTemp.scale(fScale / 5);
+this.vTemp.scale(Math.min(headWidth == 0 ? fScale : headWidth * 1.5, fScale) / 5);
 if (!withShaft) this.pt2f.add(this.vTemp);
 this.vTemp.scale(5);
+var len = this.vTemp.length();
+if (len > headWidth * 1.5) this.vTemp.scale(headWidth * 1.5 / len);
 this.pt1f.sub2(this.pt2f, this.vTemp);
 if (isTransformed) {
 this.s1f.setT(this.pt1f);
@@ -379,4 +388,4 @@ break;
 }
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

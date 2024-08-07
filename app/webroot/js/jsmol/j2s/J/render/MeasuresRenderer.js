@@ -27,7 +27,7 @@ measures.clear();
 return false;
 }this.doJustify = this.vwr.getBoolean(603979870);
 this.modulating = this.ms.bsModulated != null;
-this.imageFontScaling = this.vwr.imageFontScaling;
+this.setRenderVars();
 this.mad0 = measures.mad;
 this.font3d = this.vwr.gdata.getFont3DScaled(measures.font3d, this.imageFontScaling);
 this.m = measures.mPending;
@@ -98,7 +98,7 @@ this.mad = this.mad0;
 } else {
 this.mad = this.m.mad;
 this.dotsOrDashes = true;
-this.dashDots = (this.mad < 0 ? null : J.render.FontLineShapeRenderer.ndots);
+this.dashDots = (this.m.text.pymolOffset != null ? J.render.FontLineShapeRenderer.pymoldashes : this.mad < 0 ? null : J.render.FontLineShapeRenderer.ndots);
 }switch (this.count) {
 case 1:
 this.drawLine(this.p[0].sX, this.p[0].sY, this.p[0].sZ, this.m.traceX, this.m.traceY, this.p[0].sZ, this.mad);
@@ -257,8 +257,8 @@ y <<= 1;
 Clazz.overrideMethod(c$, "drawLine", 
 function(x1, y1, z1, x2, y2, z2, mad){
 var diameter = Clazz.floatToInt(mad >= 20 && this.exportType != 1 ? this.vwr.tm.scaleToScreen(Clazz.doubleToInt((z1 + z2) / 2), mad) : mad);
-if (this.dotsOrDashes && (this.dashDots == null || this.dashDots === J.render.FontLineShapeRenderer.ndots)) this.width = diameter;
+if (this.dotsOrDashes && (this.dashDots == null || this.dashDots === J.render.FontLineShapeRenderer.ndots || this.dashDots === J.render.FontLineShapeRenderer.pymoldashes)) this.width = diameter;
 return this.drawLine2(this.g3d, x1, y1, z1, x2, y2, z2, diameter);
 }, "~N,~N,~N,~N,~N,~N,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 19:27:37 CDT 2024

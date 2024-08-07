@@ -27,6 +27,7 @@ this.isValid = false;
 this.noHead = false;
 this.isBarb = false;
 this.indicatedModelIndex = -1;
+this.indicatedModelOnly = false;
 this.modelInfo = null;
 this.makePoints = false;
 this.plane = null;
@@ -130,6 +131,7 @@ return;
 this.indicatedModelIndex = (value).intValue();
 if (this.indicatedModelIndex < 0 || this.indicatedModelIndex >= this.ms.mc) return;
 this.vData.addLast( Clazz.newArray(-1, [Integer.$valueOf(4), (this.modelInfo =  Clazz.newIntArray(-1, [this.indicatedModelIndex, 0]))]));
+if (this.thisMesh.thisID.startsWith("_!_")) this.indicatedModelOnly = true;
 return;
 }if ("planedef" === propertyName) {
 this.plane = value;
@@ -306,7 +308,7 @@ this.thisMesh.hoverLabel = s.substring(0, i);
 value = s.substring(i + 8);
 } else {
 this.thisMesh.hoverLabel = s;
-value = s;
+value = "";
 }}}return Clazz.superCall(this, J.shapespecial.Draw, "setTitle", [value]);
 }, "~O");
 Clazz.defineMethod(c$, "deleteMeshElement", 
@@ -323,6 +325,7 @@ this.diameter = 0;
 this.explicitID = false;
 this.thisFontID = -1;
 this.indicatedModelIndex = -1;
+this.indicatedModelOnly = false;
 this.intersectID = null;
 this.isCurve = this.isArc = this.isArrow = this.isPlane = this.isCircle = this.isCylinder = this.isLine = false;
 this.isFixed = this.isReversed = this.isRotated45 = this.isCrossed = this.noHead = this.isBarb = false;
@@ -461,6 +464,7 @@ this.thisMesh.drawVertexCounts =  Clazz.newIntArray (modelCount, 0);
 this.thisMesh.vc = 0;
 if (this.indicatedModelIndex >= 0) {
 this.setPoints(-1, 0);
+this.thisMesh.thisModelOnly = this.indicatedModelOnly;
 this.thisMesh.drawType = J.shapespecial.Draw.EnumDrawType.MULTIPLE;
 this.thisMesh.drawVertexCount = -1;
 this.thisMesh.modelFlags.set(this.indicatedModelIndex);
@@ -532,7 +536,7 @@ function(newPt, iModel){
 if (this.makePoints) {
 if (newPt == null || iModel >= 0 && !this.bsAllModels.get(iModel)) return;
 this.ptList[this.nPoints] = JU.P3.newP(newPt);
-if (newPt.z == 3.4028235E38 || newPt.z == -3.4028235E38) this.thisMesh.haveXyPoints = true;
+if (J.shapespecial.Draw.is2DPoint(newPt)) this.thisMesh.haveXyPoints = true;
 } else if (iModel >= 0) {
 this.bsAllModels.set(iModel);
 }this.nPoints++;
@@ -559,13 +563,15 @@ var nVertices = Math.max(this.nPoints, 3);
 var n0 = this.thisMesh.vc;
 if (this.nPoints > 0) {
 var p = this.thisMesh.pis[modelIndex] =  Clazz.newIntArray (nVertices, 0);
+var pt = null;
 for (var j = 0; j < this.nPoints; j++) {
 info = this.vData.get(++i);
-p[j] = this.thisMesh.addV(info[1], false);
+p[j] = this.thisMesh.addV(pt = info[1], false);
 }
 for (var j = this.nPoints; j < 3; j++) {
 p[j] = n0 + this.nPoints - 1;
 }
+this.thisMesh.haveXyPoints = J.shapespecial.Draw.is2DPoint(pt);
 this.thisMesh.drawTypes[modelIndex] = J.shapespecial.Draw.EnumDrawType.getType(this.nPoints);
 this.thisMesh.drawVertexCounts[modelIndex] = this.nPoints;
 this.thisMesh.modelFlags.set(modelIndex);
@@ -1125,7 +1131,7 @@ if (iModel >= mesh.pis.length) iModel = 0;
 var adjustPt = (mesh.isVector && mesh.drawType !== J.shapespecial.Draw.EnumDrawType.ARC);
 for (var i = 0; i < nVertices; i++) {
 var pt = mesh.vs[mesh.pis[iModel][i]];
-if (pt.z == 3.4028235E38 || pt.z == -3.4028235E38) {
+if (J.shapespecial.Draw.is2DPoint(pt)) {
 str += (i == 0 ? " " : " ,") + "[" + Clazz.floatToInt(pt.x) + " " + Clazz.floatToInt(pt.y) + (pt.z < 0 ? " %]" : "]");
 } else if (adjustPt && i == 1) {
 var pt1 = JU.P3.newP(pt);
@@ -1143,6 +1149,10 @@ throw e;
 }
 return str;
 }, "J.shapespecial.DrawMesh,~N,~N");
+c$.is2DPoint = Clazz.defineMethod(c$, "is2DPoint", 
+function(pt){
+return (pt.z == 3.4028235E38 || pt.z == -3.4028235E38);
+}, "JU.T3");
 Clazz.overrideMethod(c$, "getShapeDetail", 
 function(){
 var V =  new JU.Lst();
@@ -1248,4 +1258,4 @@ Clazz.defineEnumConstant(c$, "LINE_SEGMENT", 11, [20, "lineSegment"]);
 Clazz.defineEnumConstant(c$, "POLYGON", 12, [21, "polygon"]);
 /*eoif2*/})();
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

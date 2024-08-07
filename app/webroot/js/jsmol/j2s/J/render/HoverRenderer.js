@@ -36,4 +36,4 @@ if (label == null || atom == null) return null;
 return (this.ms.isJmolDataFrameForModel(atom.mi) && label.equals("%U") ? "%W" : label);
 }, "JM.Atom,~S");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

@@ -272,7 +272,7 @@ var pt2 = JU.P3.new3(-yDelta, xDelta, 0);
 pt2.add(ptScreen);
 this.unTransformPoint(pt2, pt2);
 this.vwr.setInMotion(false);
-this.rotateAboutPointsInternal(null, pt2, pt1, 10 * speed, NaN, false, true, null, true, null, null, null, null);
+this.rotateAboutPointsInternal(null, pt2, pt1, 10 * speed, NaN, false, true, null, true, null, null, null, null, false);
 }, "~N,~N,~N");
 Clazz.defineMethod(c$, "rotateXYBy", 
 function(degX, degY, bsAtoms){
@@ -284,29 +284,29 @@ if (x != 2147483647 && y != 2147483647) this.resetXYCenter(x, y);
 this.rotateZRadians((zDelta / 57.29577951308232));
 }, "~N,~N,~N");
 Clazz.defineMethod(c$, "applyRotation", 
-function(mNew, isInternal, bsAtoms, translation, translationOnly, m4){
+function(mNew, isInternal, bsAtoms, translation, translationOnly, m4, useModelKit){
 if (bsAtoms == null) {
 this.matrixRotate.mul2(mNew, this.matrixRotate);
 return;
-}this.vwr.moveAtoms(m4, mNew, this.matrixRotate, translation, this.internalRotationCenter, isInternal, bsAtoms, translationOnly);
+}this.vwr.moveAtoms(m4, mNew, this.matrixRotate, translation, this.internalRotationCenter, isInternal, bsAtoms, translationOnly, useModelKit);
 if (translation != null) {
 this.internalRotationCenter.add(translation);
-}}, "JU.M3,~B,JU.BS,JU.V3,~B,JU.M4");
+}}, "JU.M3,~B,JU.BS,JU.V3,~B,JU.M4,~B");
 Clazz.defineMethod(c$, "rotate3DBall", 
 function(xDeg, yDeg, bsAtoms){
-if (this.matrixTemp3.setAsBallRotation(0.017453292519943295, -yDeg, -xDeg)) this.applyRotation(this.matrixTemp3, false, bsAtoms, null, false, null);
+if (this.matrixTemp3.setAsBallRotation(0.017453292519943295, -yDeg, -xDeg)) this.applyRotation(this.matrixTemp3, false, bsAtoms, null, false, null, false);
 }, "~N,~N,JU.BS");
 Clazz.defineMethod(c$, "rotateXRadians", 
 function(angleRadians, bsAtoms){
-this.applyRotation(this.matrixTemp3.setAsXRotation(angleRadians), false, bsAtoms, null, false, null);
+this.applyRotation(this.matrixTemp3.setAsXRotation(angleRadians), false, bsAtoms, null, false, null, false);
 }, "~N,JU.BS");
 Clazz.defineMethod(c$, "rotateYRadians", 
 function(angleRadians, bsAtoms){
-this.applyRotation(this.matrixTemp3.setAsYRotation(angleRadians), false, bsAtoms, null, false, null);
+this.applyRotation(this.matrixTemp3.setAsYRotation(angleRadians), false, bsAtoms, null, false, null, false);
 }, "~N,JU.BS");
 Clazz.defineMethod(c$, "rotateZRadians", 
 function(angleRadians){
-this.applyRotation(this.matrixTemp3.setAsZRotation(angleRadians), false, null, null, false, null);
+this.applyRotation(this.matrixTemp3.setAsZRotation(angleRadians), false, null, null, false, null, false);
 }, "~N");
 Clazz.defineMethod(c$, "rotateAxisAngle", 
 function(rotAxis, radians){
@@ -315,7 +315,7 @@ this.rotateAxisAngle2(this.axisangleT, null);
 }, "JU.V3,~N");
 Clazz.defineMethod(c$, "rotateAxisAngle2", 
 function(axisAngle, bsAtoms){
-this.applyRotation(this.matrixTemp3.setAA(axisAngle), false, bsAtoms, null, false, null);
+this.applyRotation(this.matrixTemp3.setAA(axisAngle), false, bsAtoms, null, false, null, false);
 }, "JU.A4,JU.BS");
 Clazz.defineMethod(c$, "rotateAxisAngleAtCenter", 
 function(eval, rotCenter, rotAxis, degreesPerSecond, endDegrees, isSpin, bsAtoms){
@@ -350,7 +350,7 @@ this.axisangleT.angle = angleRadians;
 this.rotateAxisAngle2(this.axisangleT, bsAtoms);
 }, "~N,JU.BS");
 Clazz.defineMethod(c$, "rotateAboutPointsInternal", 
-function(eval, point1, point2, degreesPerSecond, endDegrees, isClockwise, isSpin, bsAtoms, isGesture, translation, finalPoints, dihedralList, m4){
+function(eval, point1, point2, degreesPerSecond, endDegrees, isClockwise, isSpin, bsAtoms, isGesture, translation, finalPoints, dihedralList, m4, useModelKit){
 if (isSpin) this.setSpinOff();
 this.setNavOn(false);
 if (dihedralList == null && (translation == null || translation.length() < 0.001) && (isSpin ? Float.isNaN(degreesPerSecond) || degreesPerSecond == 0 : endDegrees == 0)) return false;
@@ -381,18 +381,18 @@ endDegrees = degreesPerSecond;
 return !Float.isNaN(endDegrees);
 }var radians = (endDegrees * 0.017453292519943295);
 this.internalRotationAxis.setVA(axis, radians);
-this.rotateAxisAngleRadiansInternal(radians, bsAtoms, m4);
+this.rotateAxisAngleRadiansInternal(radians, bsAtoms, m4, useModelKit);
 return false;
-}, "J.api.JmolScriptEvaluator,JU.T3,JU.T3,~N,~N,~B,~B,JU.BS,~B,JU.V3,JU.Lst,~A,JU.M4");
+}, "J.api.JmolScriptEvaluator,JU.T3,JU.T3,~N,~N,~B,~B,JU.BS,~B,JU.V3,JU.Lst,~A,JU.M4,~B");
 Clazz.defineMethod(c$, "rotateAxisAngleRadiansInternal", 
-function(radians, bsAtoms, m4){
+function(radians, bsAtoms, m4, useModelKit){
 this.internalRotationAngle = radians;
 this.vectorT.set(this.internalRotationAxis.x, this.internalRotationAxis.y, this.internalRotationAxis.z);
 this.matrixRotate.rotate2(this.vectorT, this.vectorT2);
 this.axisangleT.setVA(this.vectorT2, radians);
-this.applyRotation(this.matrixTemp3.setAA(this.axisangleT), true, bsAtoms, this.internalTranslation, radians > 1e6, m4);
+this.applyRotation(this.matrixTemp3.setAA(this.axisangleT), true, bsAtoms, this.internalTranslation, radians > 1e6, m4, useModelKit);
 if (bsAtoms == null) this.getNewFixedRotationCenter();
-}, "~N,JU.BS,JU.M4");
+}, "~N,JU.BS,JU.M4,~B");
 Clazz.defineMethod(c$, "getNewFixedRotationCenter", 
 function(){
 this.axisangleT.setAA(this.internalRotationAxis);
@@ -1510,7 +1510,7 @@ case 122:
 v.set(0, 0, x);
 break;
 }
-this.vwr.moveAtoms(null, null, this.matrixRotate, v, this.internalRotationCenter, false, bsAtoms, true);
+this.vwr.moveAtoms(null, null, this.matrixRotate, v, this.internalRotationCenter, false, bsAtoms, true, false);
 return;
 }this.bsSelectedAtoms = bsAtoms;
 switch ((xyz).charCodeAt(0)) {
@@ -1711,4 +1711,4 @@ function(){
 return (this.mode == 1 && this.getNav() ? this.nav.getNavigationState() : "");
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

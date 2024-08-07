@@ -878,7 +878,7 @@ var qqqq = "????";
 var nq = 4;
 while (nq < sLen) {
 qqqq += qqqq;
-nq += 4;
+nq *= 2;
 }
 if (checkStar) {
 if (isStar0) {
@@ -976,4 +976,4 @@ return (pt < 0 ? JU.PT.parseFloat(s) : JU.PT.parseFloat(s.substring(0, pt)) / JU
 c$.tensScale =  Clazz.newFloatArray(-1, [10, 100, 1000, 10000, 100000, 1000000]);
 c$.decimalScale =  Clazz.newFloatArray(-1, [0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001, 0.000000001, 0.0000000001, 0.00000000001, 0.000000000001, 0.0000000000001, 0.00000000000001, 0.000000000000001]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

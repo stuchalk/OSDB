@@ -325,10 +325,10 @@ xyz = values[n++];
 break;
 }
 if (xyz != null) switch (tokType) {
-case 1145047050:
+case 1145047049:
 this.setAtomCoord(i, xyz.x, xyz.y, xyz.z);
 break;
-case 1145047051:
+case 1145047050:
 case 1145047053:
 this.at[i].setFractionalCoordTo(xyz, false);
 this.taintAtom(i, 2);
@@ -2059,16 +2059,13 @@ Clazz.defineMethod(c$, "generateCrystalClass",
 function(atomIndex, pt){
 var sym = (atomIndex < 0 || atomIndex >= this.ac ? this.vwr.getOperativeSymmetry() : this.at[atomIndex].getUnitCell());
 var isRandom = (pt != null && Float.isNaN(pt.x));
-return (sym == null ?  new JU.Lst() : sym.generateCrystalClass(isRandom ? null : pt != null ? pt : this.at[atomIndex]));
+var ret = (sym == null ? null : sym.generateCrystalClass(isRandom ? null : pt != null ? pt : this.at[atomIndex]));
+return (ret == null ?  new JU.Lst() : ret);
 }, "~N,JU.P3");
 c$.isDeleted = Clazz.defineMethod(c$, "isDeleted", 
 function(atom){
 return (atom == null || atom.isDeleted());
 }, "JM.Atom");
-Clazz.defineMethod(c$, "getWyckoffPosition", 
-function(iatom){
-return (iatom < 0 || iatom >= this.ac || JM.AtomCollection.isDeleted(this.at[iatom]) ? "?" : this.at[iatom].getWyckoffPosition());
-}, "~N");
 c$.$AtomCollection$AtomSorter$ = function(){
 /*if4*/;(function(){
 var c$ = Clazz.decorateAsClass(function(){
@@ -2084,4 +2081,4 @@ c$.sqrt3_2 = Math.sqrt(3) / 2;
 c$.vRef = JU.V3.new3(3.14159, 2.71828, 1.41421);
 c$.userSettableValues = null;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

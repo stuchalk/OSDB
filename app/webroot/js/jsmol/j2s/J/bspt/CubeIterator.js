@@ -100,4 +100,4 @@ this.dx = t.x - this.cx;
 return ((!this.tHemisphere || this.dx >= 0) && (this.dx = Math.abs(this.dx)) <= this.radius && (this.dy = Math.abs(t.y - this.cy)) <= this.radius && (this.dz = Math.abs(t.z - this.cz)) <= this.radius);
 }, "JU.T3");
 })();
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

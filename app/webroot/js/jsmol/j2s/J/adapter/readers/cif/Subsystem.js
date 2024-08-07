@@ -60,7 +60,7 @@ uc_nu[0] = vu43[0];
 for (var i = 0; i < 3; i++) uc_nu[i + 1] = JU.V3.new3(a[i][0], a[i][1], a[i][2]);
 
 uc_nu = JU.SimpleUnitCell.getReciprocal(uc_nu, null, 1);
-this.symmetry = (this.msRdr.cr.getInterface("JS.Symmetry")).getUnitCell(uc_nu, false, null);
+(this.symmetry = this.msRdr.cr.asc.newFileSymmetry()).getUnitCell(uc_nu, false, null);
 this.modMatrices =  Clazz.newArray(-1, [sigma_nu, tFactor]);
 if (!setOperators) return;
 this.isFinalized = true;
@@ -116,4 +116,4 @@ function(){
 return "Subsystem " + this.code + "\n" + this.w;
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

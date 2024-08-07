@@ -90,7 +90,7 @@ this.bsForPass2.set(i);
 Clazz.defineMethod(c$, "getMultipleBondSettings", 
 function(isPymol){
 this.useBananas = (this.vwr.getBoolean(603979886) && !isPymol);
-this.multipleBondSpacing = (isPymol ? 0.15 : this.vwr.getFloat(570425370));
+this.multipleBondSpacing = (isPymol ? 0.26 : this.vwr.getFloat(570425370));
 this.multipleBondRadiusFactor = (isPymol ? 0.4 : this.vwr.getFloat(570425369));
 this.bondsPerp = (this.useBananas || this.multipleBondSpacing > 0 && this.multipleBondRadiusFactor < 0);
 if (this.useBananas) this.multipleBondSpacing = (this.multipleBondSpacing < 0 ? -this.multipleBondSpacing * 0.4 : this.multipleBondSpacing);
@@ -410,4 +410,4 @@ this.g3d.setC(this.colixB);
 this.g3d.fillHermite(5, w, w, w, this.pointT, this.pointT2, this.pointT3, this.pointT3);
 }, "JM.Atom,JM.Atom,JU.V3,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Wed Jul 24 13:47:37 CDT 2024

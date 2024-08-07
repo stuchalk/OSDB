@@ -114,7 +114,7 @@ this.bsAddedHydrogens.setBits(ac, ac + nH);
 var isHetero = this.ms.at[iFirst].isHetero();
 var xyz = JU.P3.new3(NaN, NaN, NaN);
 var a = this.ms.at[iFirst];
-for (var i = 0; i < nH; i++) this.ms.addAtom(a.mi, a.group, 1, "H", null, 0, a.getSeqID(), 0, xyz, NaN, null, 0, 0, 1, 0, null, isHetero, 0, null, NaN).$delete(null);
+for (var i = 0; i < nH; i++) this.ms.addAtom(a.mi, a.group, 1, "H", null, 0, a.getSeqID(), 0, xyz, NaN, null, 0, 0, 1, 0, null, isHetero, false, 0, null, NaN).$delete(null);
 
 }, "J.api.JmolAdapter,~N,~N");
 Clazz.defineMethod(c$, "getBondInfo", 
@@ -689,4 +689,4 @@ c$.argbsShapely =  Clazz.newIntArray(-1, [0xFFFF00FF, 0xFF00007C, 0xFFFF7C70, 0x
 {
 {
 }}});
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

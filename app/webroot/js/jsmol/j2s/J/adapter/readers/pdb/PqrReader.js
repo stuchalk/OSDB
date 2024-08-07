@@ -13,4 +13,4 @@ atom.partialCharge = this.parseFloatStr(tokens[pt++]);
 atom.radius = J.adapter.readers.pdb.PdbReader.fixRadius(this.parseFloatStr(tokens[pt]));
 }}, "J.adapter.smarter.Atom");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

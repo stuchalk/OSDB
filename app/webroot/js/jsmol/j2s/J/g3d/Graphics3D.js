@@ -152,6 +152,7 @@ this.colixCurrent = 0;
 this.$haveTranslucentObjects = this.wasScreened = false;
 this.pixel = this.pixel0;
 this.pixel.bgcolor = this.bgcolor;
+this.contrastColix = JU.C.getBgContrast(this.bgcolor);
 this.translucentCoverOnly = !translucentMode;
 if (this.pbuf == null) {
 this.platform.allocateBuffers(this.windowWidth, this.windowHeight, this.antialiasThisFrame, isImageWrite);
@@ -1201,4 +1202,4 @@ return ((argb & 0xC0C0C0) == 0 ? argb | 0x040404 : argb);
 c$.sort = null;
 c$.nullShadeIndex = 50;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

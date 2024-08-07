@@ -23,7 +23,7 @@ Clazz.prepareFields (c$, function(){
 this.paletteID = J.c.PAL.CPK.id;
 });
 Clazz.overrideMethod(c$, "setAtom", 
-function(modelIndex, atomIndex, xyz, radius, atomSymmetry, atomSite, atomicAndIsotopeNumber, formalCharge, isHetero){
+function(modelIndex, atomIndex, xyz, radius, atomSymmetry, atomSite, atomicAndIsotopeNumber, formalCharge, isHetero, isNegDisorder){
 this.mi = modelIndex;
 this.atomSymmetry = atomSymmetry;
 this.atomSite = atomSite;
@@ -34,7 +34,7 @@ if (formalCharge != 0 && formalCharge != -2147483648) this.setFormalCharge(forma
 this.userDefinedVanDerWaalRadius = radius;
 if (xyz != null) this.setT(xyz);
 return this;
-}, "~N,~N,JU.P3,~N,JU.BS,~N,~N,~N,~B");
+}, "~N,~N,JU.P3,~N,JU.BS,~N,~N,~N,~B,~B");
 Clazz.defineMethod(c$, "setShapeVisibility", 
 function(flag, isVisible){
 if (isVisible) this.shapeVisibilityFlags |= flag;
@@ -202,6 +202,14 @@ this.formalChargeAndFlags = (this.formalChargeAndFlags & 15) | ((charge == -2147
 Clazz.defineMethod(c$, "setVibrationVector", 
 function(){
 this.formalChargeAndFlags |= 1;
+});
+Clazz.defineMethod(c$, "setNegativeDisorder", 
+function(){
+this.formalChargeAndFlags |= 4;
+});
+Clazz.defineMethod(c$, "isNegativeDisorder", 
+function(){
+return ((this.formalChargeAndFlags & 4) != 0);
 });
 Clazz.overrideMethod(c$, "getFormalCharge", 
 function(){
@@ -461,7 +469,7 @@ var pt = nOps;
 var n = (cellRange == null ? 1 : cellRange.length);
 var bs = (isAll ? null :  new JU.BS());
 for (var i = 0; i < n; i++) for (var j = 0; j < nOps; j++) if (this.atomSymmetry.get(pt++)) if (isAll) {
-str += "," + (j + 1) + cellRange[i];
+str += "," + (j + 1) + (cellRange == null ? 555 : cellRange[i]);
 } else {
 bs.set(j + 1);
 }
@@ -936,13 +944,13 @@ case 1111490582:
 return this.getVib('3');
 case 1312817669:
 return this.getVolume(vwr, J.c.VDW.AUTO);
-case 1145047051:
+case 1145047050:
 case 1145047053:
 case 1145045006:
 case 1145047052:
 case 1145047055:
 case 1145045008:
-case 1145047050:
+case 1145047049:
 var v3 = this.atomPropertyTuple(vwr, tokWhat, ptTemp);
 return (v3 == null ? -1 : v3.length());
 }
@@ -982,8 +990,11 @@ case 1086324752:
 return this.getCIPChirality(true);
 case 1086324753:
 return this.getCIPChiralityRule();
+case 1140850705:
 case 1086324754:
-return this.getWyckoffPosition();
+return this.getWyckoffPosition(false);
+case 1086324755:
+return this.getWyckoffPosition(true);
 case 1086324744:
 return this.getGroup1('?');
 case 1086324747:
@@ -1005,6 +1016,8 @@ case 1287653388:
 s = vwr.shm.getShapePropertyIndex(5, "label", this.i);
 if (s == null) s = "";
 return s;
+case 1145045003:
+return vwr.getSymStatic().staticToRationalXYZ(this.getFractionalCoordPt(!vwr.g.legacyJavaFloat, false, null), " ");
 case 1639976963:
 return this.group.getProteinStructureType().getBioStructureTypeName(false);
 case 1237320707:
@@ -1021,18 +1034,21 @@ return this.getSymmetryOperatorList(true);
 return "";
 }, "JV.Viewer,~N");
 Clazz.defineMethod(c$, "getWyckoffPosition", 
-function(){
+function(withMultiplicity){
 var ms = this.group.chain.model.ms;
 var a = ms.getBasisAtom(this.i, true);
 var id = a.getSeqID();
 if (id != 0) {
-return "" + String.fromCharCode(id);
+var m = id >> 16;
+var c = String.fromCharCode(id & 0xFF);
+return (withMultiplicity ? "" + m : "") + c;
 }var sym = this.getUnitCell();
 var s;
-if (sym == null || (s = sym.getWyckoffPosition(ms.vwr, this, null)) == null) return "?";
-ms.setAtomSeqID(this.i, 0 + (s.charAt(0)).charCodeAt(0));
-return s;
-});
+if (sym == null || (s = sym.getWyckoffPosition(ms.vwr, this, "M")) == null) {
+s = "0?";
+}ms.setAtomSeqID(this.i, (JU.PT.parseInt(s) << 16) + (s.charAt(s.length - 1)).charCodeAt(0));
+return (withMultiplicity ? s : s.substring(s.length - 1));
+}, "~B");
 Clazz.overrideMethod(c$, "getCIPChirality", 
 function(doCalculate){
 var flags = (this.formalChargeAndFlags & 496) >> 4;
@@ -1064,7 +1080,7 @@ function(vwr, tok, ptTemp){
 switch (tok) {
 case 1073742329:
 return JU.P3.newP(this);
-case 1145047051:
+case 1145047050:
 return this.getFractionalCoordPt(!vwr.g.legacyJavaFloat, false, ptTemp);
 case 1145047053:
 return this.getFractionalCoordPt(!vwr.g.legacyJavaFloat, false, ptTemp);
@@ -1077,7 +1093,7 @@ return this.getVibrationVector();
 case 1145045008:
 var ms = this.getModulation();
 return (ms == null ? null : ms.getV3());
-case 1145047050:
+case 1145047049:
 return this;
 case 1765808134:
 return JU.CU.colorPtFromInt(this.group.chain.model.ms.vwr.gdata.getColorArgbOrGray(this.colixAtom), ptTemp);
@@ -1141,4 +1157,4 @@ return 0;
 });
 c$.MAD_GLOBAL = 32200;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

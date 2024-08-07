@@ -4,8 +4,9 @@ var c$ = Clazz.decorateAsClass(function(){
 this.widthUnitVector = null;
 this.heightUnitVector = null;
 Clazz.instantialize(this, arguments);}, JM, "Sheet", JM.ProteinStructure);
-Clazz.overrideConstructor(c$, 
+Clazz.makeConstructor(c$, 
 function(apolymer, monomerIndex, monomerCount, subtype){
+Clazz.superConstructor (this, JM.Sheet, []);
 this.incrementID();
 this.setupPS(apolymer, J.c.STR.SHEET, monomerIndex, monomerCount);
 this.subtype = subtype;
@@ -68,4 +69,4 @@ ptC.ave(vW, vH);
 ptC.sub2(pt, ptC);
 }, "~N,~N,JU.P3,JU.V3,JU.V3,JU.P3,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

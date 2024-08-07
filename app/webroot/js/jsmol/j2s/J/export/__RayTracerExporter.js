@@ -136,4 +136,4 @@ if (radius < 1) radius = 1;
 this.outputEllipsoid(center, radius, coef, colix);
 }, "JU.P3,~A,~N,~N,~N,~N,~N,JU.M3,~A,JU.M4,~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

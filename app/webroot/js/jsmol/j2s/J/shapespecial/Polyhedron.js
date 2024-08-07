@@ -181,7 +181,7 @@ var pts =  new Array(nv);
 for (var i = 0; i < nv; i++) pts[i] = JU.P3.newP(this.vertices[i]);
 
 info.put("vertices", pts);
-info.put("elemNos", this.getElemNos());
+info.put("elemNos", this.getElemNos(true));
 if (this.id == null) {
 info.put("atomIndex", Integer.$valueOf(this.centralAtom.i));
 } else {
@@ -208,7 +208,7 @@ var names =  new Array(this.nVertices);
 var indices =  Clazz.newIntArray (this.nVertices, 0);
 for (var i = this.nVertices; --i >= 0; ) {
 var pt = this.vertices[i];
-var isNode = Clazz.instanceOf(pt,"JU.Node");
+var isNode = Clazz.instanceOf(pt,"JM.Atom");
 names[i] = (isNode ? (pt).getAtomName() : Clazz.instanceOf(pt,"JU.Point3fi") ? JU.Elements.elementSymbolFromNumber((pt).sD) : "");
 indices[i] = (isNode ? (pt).getIndex() : -1);
 }
@@ -260,16 +260,27 @@ if (!isState) info.put("normals", n);
 info.put("triangles", JU.AU.arrayCopyII(this.triangles, this.triangles.length));
 }return info;
 }, "JV.Viewer,~S");
+Clazz.defineMethod(c$, "setPointScale", 
+function(scale){
+this.pointScale = scale;
+this.elemNos = null;
+}, "~N");
 Clazz.defineMethod(c$, "getElemNos", 
-function(){
-if (this.elemNos == null) {
-this.elemNos =  Clazz.newIntArray (this.nVertices, 0);
+function(forInfo){
+if (forInfo) {
+var a =  Clazz.newIntArray (this.nVertices, 0);
 for (var i = 0; i < this.nVertices; i++) {
 var pt = this.vertices[i];
-this.elemNos[i] = (Clazz.instanceOf(pt,"JU.Node") ? (pt).getElementNumber() : Clazz.instanceOf(pt,"JU.Point3fi") ? (pt).sD : -2);
+a[i] = (Clazz.instanceOf(pt,"JM.Atom") ? (pt).getElementNumber() : Clazz.instanceOf(pt,"JU.Point3fi") ? (pt).sD : -2);
 }
-}return this.elemNos;
-});
+return a;
+}if (this.elemNos == null) this.elemNos =  Clazz.newIntArray (this.nVertices, 0);
+for (var i = 0; i < this.nVertices; i++) {
+var pt = this.vertices[i];
+this.elemNos[i] = (Clazz.instanceOf(pt,"JM.Atom") ? (pt).getAtomicAndIsotopeNumber() : Clazz.instanceOf(pt,"JU.Point3fi") ? (pt).sD : -2);
+}
+return this.elemNos;
+}, "~B");
 Clazz.defineMethod(c$, "getSymmetry", 
 function(vwr, withPointGroup){
 if (this.id == null) {
@@ -292,10 +303,10 @@ if (this.pointGroup == null) {
 var pts =  new Array(this.nVertices);
 for (var i = pts.length; --i >= 0; ) pts[i] = this.vertices[i];
 
-this.pointGroup = vwr.getSymTemp().setPointGroup(null, null, pts, null, false, vwr.getFloat(570425382), vwr.getFloat(570425384), pts.length, true);
+this.pointGroup = vwr.getSymTemp().setPointGroup(vwr, null, null, pts, null, false, vwr.getFloat(570425382), vwr.getFloat(570425384), pts.length, true);
 for (var i = pts.length; --i >= 0; ) pts[i] = JU.P3.newP(this.vertices[i]);
 
-this.pointGroupFamily = vwr.getSymTemp().setPointGroup(null, null, pts, null, false, vwr.getFloat(570425382), vwr.getFloat(570425384), pts.length, true);
+this.pointGroupFamily = vwr.getSymTemp().setPointGroup(vwr, null, null, pts, null, false, vwr.getFloat(570425382), vwr.getFloat(570425384), pts.length, true);
 }return (this.center == null ? this.centralAtom : this.center) + "    \t" + this.pointGroup.getPointGroupName() + "\t" + this.pointGroupFamily.getPointGroupName();
 }, "JV.Viewer,~B");
 Clazz.defineMethod(c$, "getVolume", 
@@ -387,4 +398,4 @@ if (this.scale != 1) sb.append("; scale:" + this.scale);
 sb.append("\n");
 }, "JU.SB");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

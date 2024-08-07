@@ -1,5 +1,5 @@
 Clazz.declarePackage("J.render");
-Clazz.load(["J.render.CageRenderer", "JU.P3"], "J.render.AxesRenderer", null, function(){
+Clazz.load(["J.render.CageRenderer", "JU.P3"], "J.render.AxesRenderer", ["JV.JC"], function(){
 var c$ = Clazz.decorateAsClass(function(){
 this.originScreen = null;
 this.colixes = null;
@@ -26,8 +26,8 @@ if (isXY ? this.exportType == 1 : this.tm.isNavigating() && this.vwr.getBoolean(
 var modelIndex = this.vwr.am.cmi;
 if (this.ms.isJmolDataFrameForModel(modelIndex) && !this.ms.getJmolFrameType(modelIndex).equals("plot data")) return false;
 var isUnitCell = (this.vwr.g.axesMode == 603979808);
-var unitcell = null;
-if (isUnitCell && (unitcell = this.vwr.getCurrentUnitCell()) != null && modelIndex < 0) return false;
+var unitcell = (isUnitCell ? this.vwr.getCurrentUnitCell() : null);
+if (isUnitCell && (unitcell == null || modelIndex < 0)) return false;
 this.imageFontScaling = this.vwr.imageFontScaling;
 if (this.vwr.areAxesTainted()) axes.reinitShape();
 this.font3d = this.vwr.gdata.getFont3DScaled(axes.font3d, this.imageFontScaling);
@@ -117,11 +117,11 @@ this.colixes[1] = this.vwr.getObjectColix(2);
 this.colixes[2] = this.vwr.getObjectColix(3);
 var showOrigin = (!isXY && nPoints == 3 && (scale == 2 || isUnitCell));
 for (var i = nPoints; --i >= 0; ) {
-if (labels2 != null && i >= labels2.length || checkAxisType && !axisType.contains(J.render.AxesRenderer.axesTypes[i]) || this.exportType != 1 && (Math.abs(xCenter - this.p3Screens[i].x) + Math.abs(yCenter - this.p3Screens[i].y) <= 2) && (!(showOrigin = false))) {
+if (labels2 != null && i >= labels2.length || checkAxisType && !axisType.contains(JV.JC.axesTypes[i]) || this.exportType != 1 && (Math.abs(xCenter - this.p3Screens[i].x) + Math.abs(yCenter - this.p3Screens[i].y) <= 2) && (!(showOrigin = false))) {
 continue;
 }this.colix = this.colixes[i % 3];
 this.g3d.setC(this.colix);
-var label = (labels2 != null ? labels2.substring(i, i + 1) : axes.labels == null ? J.render.AxesRenderer.axisLabels[i + labelPtr] : i < axes.labels.length ? axes.labels[i] : null);
+var label = (labels2 != null ? labels2.substring(i, i + 1) : axes.labels == null ? JV.JC.axisLabels[i + labelPtr] : i < axes.labels.length ? axes.labels[i] : null);
 if (label != null && label.length > 0) this.renderLabel(label, this.p3Screens[i].x, this.p3Screens[i].y, this.p3Screens[i].z, xCenter, yCenter);
 if (drawTicks) {
 this.tickInfo = axes.tickInfos[(i % 3) + 1];
@@ -157,7 +157,5 @@ y += dy;
 var yStrBaseline = Math.floor(y + strAscent / 2);
 this.g3d.drawString(str, this.font3d, Clazz.doubleToInt(xStrBaseline), Clazz.doubleToInt(yStrBaseline), Clazz.floatToInt(z), Clazz.floatToInt(z), 0);
 }, "~S,~N,~N,~N,~N,~N");
-c$.axisLabels =  Clazz.newArray(-1, ["+X", "+Y", "+Z", null, null, null, "a", "b", "c", "X", "Y", "Z", null, null, null, "X", null, "Z", null, "(Y)", null]);
-c$.axesTypes =  Clazz.newArray(-1, ["a", "b", "c", "x", "y", "z"]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

@@ -398,4 +398,4 @@ c$.ring5OffsetIndexes =  Clazz.newByteArray(-1, [3, 9, 10, 11, 7]);
 c$.riboseOffsetIndexes =  Clazz.newByteArray(-1, [25, 26, 22, 27, 28, 21, 29, 19, 0]);
 c$.heavyAtomIndexes =  Clazz.newByteArray(-1, [3, 1, 4, 5, 6, 7, 11, 10, 9, 16, 14, 8, 12, 17, 13]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

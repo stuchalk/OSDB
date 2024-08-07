@@ -4,6 +4,9 @@ var c$ = Clazz.decorateAsClass(function(){
 this.sfacElementSymbols = null;
 this.isCmdf = false;
 this.tokens = null;
+this.altloc = '\0';
+this.negDisorder = false;
+this.isCentroSymmetric = false;
 this.haveXYZ = false;
 Clazz.instantialize(this, arguments);}, J.adapter.readers.xtal, "ShelxReader", J.adapter.smarter.AtomSetCollectionReader);
 Clazz.overrideMethod(c$, "initializeReader", 
@@ -30,7 +33,7 @@ return true;
 this.isCmdf = true;
 return true;
 }if (!this.doProcessLines || lineLength < 3) return true;
-if (";ZERR;DISP;UNIT;LAUE;REM;MORE;TIME;HKLF;OMIT;SHEL;BASF;TWIN;EXTI;SWAT;HOPE;MERG;SPEC;RESI;MOVE;ANIS;AFIX;HFIX;FRAG;FEND;EXYZ;EXTI;EADP;EQIV;CONN;PART;BIND;FREE;DFIX;DANG;BUMP;SAME;SADI;CHIV;FLAT;DELU;SIMU;DEFS;ISOR;NCSY;SUMP;L.S.;CGLS;BLOC;DAMP;STIR;WGHT;FVAR;BOND;CONF;MPLA;RTAB;HTAB;LIST;ACTA;SIZE;TEMP;WPDB;FMAP;GRID;PLAN;MOLE;".indexOf(";" + command + ";") >= 0) return true;
+if (";ZERR;DISP;UNIT;LAUE;REM;MORE;TIME;HKLF;OMIT;SHEL;BASF;TWIN;EXTI;SWAT;HOPE;MERG;SPEC;RESI;MOVE;ANIS;AFIX;HFIX;FRAG;FEND;EXYZ;EXTI;EADP;EQIV;CONN;BIND;FREE;DFIX;DANG;BUMP;SAME;SADI;CHIV;FLAT;DELU;SIMU;DEFS;ISOR;NCSY;SUMP;L.S.;CGLS;BLOC;DAMP;STIR;WGHT;FVAR;BOND;CONF;MPLA;RTAB;HTAB;LIST;ACTA;SIZE;TEMP;WPDB;FMAP;GRID;PLAN;MOLE;".indexOf(";" + command + ";") >= 0) return true;
 for (var i = J.adapter.readers.xtal.ShelxReader.supportedRecordTypes.length; --i >= 0; ) if (command.equals(J.adapter.readers.xtal.ShelxReader.supportedRecordTypes[i])) {
 this.processSupportedRecord(i);
 return true;
@@ -42,7 +45,7 @@ Clazz.defineMethod(c$, "processSupportedRecord",
 function(recordIndex){
 switch (recordIndex) {
 case 0:
-case 8:
+case 9:
 break;
 case 1:
 this.cell();
@@ -66,11 +69,23 @@ case 7:
 this.isCmdf = true;
 this.processCmdfAtoms();
 break;
+case 8:
+this.processPartRecord();
+break;
 }
 }, "~N");
+Clazz.defineMethod(c$, "processPartRecord", 
+function(){
+var part = this.parseIntStr(this.tokens[1]);
+this.altloc = String.fromCharCode(part == 0 ? 0 : 48 + Math.abs(part));
+if (part < 0) this.negDisorder = true;
+});
 Clazz.defineMethod(c$, "parseLattRecord", 
 function(){
-this.asc.getXSymmetry().setLatticeParameter(this.parseIntStr(this.tokens[1]));
+var latt = this.parseIntStr(this.tokens[1]);
+this.isCentroSymmetric = (latt > 0);
+if (latt == 1 || latt == -1) return;
+this.asc.getXSymmetry().setLatticeParameter(latt);
 });
 Clazz.defineMethod(c$, "parseSymmRecord", 
 function(){
@@ -131,14 +146,15 @@ function(){
 var x = NaN;
 var y = NaN;
 var z = NaN;
+var occ = 1;
 var elementIndex = -1;
 var atomName = null;
 try {
 atomName = this.tokens[0];
-elementIndex = this.parseIntStr(this.tokens[1]) - 1;
-x = this.parseFloatStr(this.tokens[2]);
-y = this.parseFloatStr(this.tokens[3]);
-z = this.parseFloatStr(this.tokens[4]);
+x = this.parsePrecision(this.tokens[2]) % 10;
+y = this.parsePrecision(this.tokens[3]) % 10;
+z = this.parsePrecision(this.tokens[4]) % 10;
+occ = this.parseFloatStr(this.tokens[5]) % 10;
 } catch (e) {
 if (Clazz.exceptionOf(e, Exception)){
 } else {
@@ -150,8 +166,15 @@ JU.Logger.error("skipping line " + this.line);
 return;
 }var atom = this.asc.addNewAtom();
 atom.atomName = atomName;
-if (this.sfacElementSymbols != null && elementIndex >= 0 && elementIndex < this.sfacElementSymbols.length) atom.elementSymbol = this.sfacElementSymbols[elementIndex];
-this.setAtomCoordXYZ(atom, x, y, z);
+atom.foccupancy = occ;
+var isQPeak = atomName.startsWith("Q");
+if (isQPeak) {
+atom.elementSymbol = "Xx";
+} else if (this.sfacElementSymbols != null && elementIndex >= 0 && elementIndex < this.sfacElementSymbols.length) {
+atom.elementSymbol = this.sfacElementSymbols[elementIndex];
+}this.setAtomCoordXYZ(atom, x, y, z);
+atom.altLoc = this.altloc;
+atom.isNegDisorder = this.negDisorder;
 if (this.tokens.length == 12) {
 var data =  Clazz.newFloatArray (8, 0);
 data[0] = this.parseFloatStr(this.tokens[6]);
@@ -193,6 +216,16 @@ if (length > 2) return false;
 var chSecond = str.charAt(1);
 return J.adapter.smarter.Atom.isValidSymNoCase(chFirst, chSecond);
 }, "~S");
-c$.supportedRecordTypes =  Clazz.newArray(-1, ["TITL", "CELL", "SPGR", "SFAC", "LATT", "SYMM", "NOTE", "ATOM", "END"]);
+Clazz.overrideMethod(c$, "applySymmetryAndSetTrajectory", 
+function(){
+if (this.isCentroSymmetric && !this.ignoreFileSymmetryOperators) {
+if (!this.haveXYZ) {
+this.setSymmetryOperator("x,y,z");
+}this.asc.getXSymmetry().getSymmetry().addInversion();
+this.isCentroSymmetric = false;
+this.haveXYZ = false;
+}this.applySymTrajASCR();
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+c$.supportedRecordTypes =  Clazz.newArray(-1, ["TITL", "CELL", "SPGR", "SFAC", "LATT", "SYMM", "NOTE", "ATOM", "PART", "END"]);
+});
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

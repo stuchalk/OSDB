@@ -22,6 +22,10 @@ Clazz.defineMethod(c$, "invArg",
 function(){
 this.error(22);
 });
+Clazz.defineMethod(c$, "invArgStr", 
+function(msg){
+this.errorOrWarn(22, msg, null, null, false);
+}, "~S");
 Clazz.defineMethod(c$, "bad", 
 function(){
 this.error(2);
@@ -290,4 +294,4 @@ if (this.errorMessage == null) this.errorMessage = J.i18n.GT.$("script ERROR: ")
 this.errorMessage += err;
 }, "~S");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

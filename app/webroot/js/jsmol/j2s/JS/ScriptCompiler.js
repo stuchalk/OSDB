@@ -152,6 +152,8 @@ this.isStateScript = (this.ichToken >= 0 && this.ichToken < 10);
 if (this.isStateScript) {
 this.ptSemi = this.script.indexOf(";", this.ichToken);
 if (this.ptSemi >= this.ichToken) JS.ScriptManager.setStateScriptVersion(this.vwr, this.script.substring(this.ichToken + "# Jmol state version ".length, this.ptSemi).trim());
+} else {
+this.haveENDIF = (this.script.indexOf("endif") >= 0);
 }this.cchScript = this.script.length;
 main : while (true) {
 this.vFunctionStack =  new JU.Lst();
@@ -294,7 +296,7 @@ if (this.lookingAtString(true)) {
 this.addTokenToPrefix(this.setCommand(JS.T.tokenScript));
 this.cchToken = 0;
 continue;
-}if (this.lookingAtImpliedString(true, true, true)) this.ichEnd = this.ichToken + this.cchToken;
+}if (this.lookingAtImpliedString(true, true, true, false)) this.ichEnd = this.ichToken + this.cchToken;
 }return this.commandExpected();
 }return this.errorStr(19, this.script.substring(this.ichToken, this.ichToken + 1));
 }
@@ -810,11 +812,11 @@ if ((bs = this.lookingAtBitset()) != null) {
 this.addTokenToPrefix(JS.T.o(10, bs));
 return 2;
 }}
-if (!this.iHaveQuotedString && this.lookingAtImpliedString(this.tokCommand == 134222350, this.tokCommand == 134223363, this.nTokens > 1 || this.tokCommand != 134222850 && this.tokCommand != 4124)) {
+if (!this.iHaveQuotedString && this.lookingAtImpliedString(this.tokCommand == 134222350, this.tokCommand == 134223363, this.nTokens > 1 || this.tokCommand != 134222850 && this.tokCommand != 4124, false)) {
 var str = this.script.substring(this.ichToken, this.ichToken + this.cchToken);
 if (this.tokCommand == 134222850) {
 if (str.startsWith("javascript:")) {
-this.lookingAtImpliedString(true, true, true);
+this.lookingAtImpliedString(true, true, true, false);
 str = this.script.substring(this.ichToken, this.ichToken + this.cchToken);
 } else if (str.toUpperCase().indexOf(".PUSH(") >= 0) {
 this.cchToken = 0;
@@ -832,13 +834,21 @@ if (iident == -2147483648 || Math.abs(iident) < 1000) this.addTokenToPrefix(JS.T
  else this.addTokenToPrefix(JS.T.i(iident));
 return 2;
 }break;
+case 603983903:
+if (this.nTokens == 2 && this.lastToken.tok == 134217764) {
+if (this.lookingAtImpliedString(false, false, false, true)) {
+if (this.script.charAt(this.ichToken + this.cchToken - 1) == ';') --this.cchToken;
+var s = this.script.substring(this.ichToken, this.ichToken + this.cchToken);
+this.addTokenToPrefix(JS.T.o(4, s));
+return 2;
+}}break;
 case 134221856:
 if (this.nTokens == 2 && this.lastToken.tok == 4115) this.iHaveQuotedString = true;
 if (!this.iHaveQuotedString) {
 if (this.script.charAt(this.ichToken) == '@') {
 this.iHaveQuotedString = true;
 return 0;
-}if (this.lookingAtImpliedString(true, true, true)) {
+}if (this.lookingAtImpliedString(true, true, true, false)) {
 var str = this.script.substring(this.ichToken, this.ichToken + this.cchToken);
 var pt = str.indexOf(" as ");
 if (pt > 0) str = str.substring(0, this.cchToken = pt);
@@ -849,7 +859,7 @@ return 2;
 }}}break;
 }
 this.implicitString = new Boolean (this.implicitString & (this.nTokens == 1)).valueOf();
-if (this.implicitString && !((this.tokCommand == 134222850 || this.tokCommand == 4124) && this.iHaveQuotedString) && this.lookingAtImpliedString(true, true, true)) {
+if (this.implicitString && !((this.tokCommand == 134222850 || this.tokCommand == 4124) && this.iHaveQuotedString) && this.lookingAtImpliedString(true, true, true, false)) {
 var str = this.script.substring(this.ichToken, this.ichToken + this.cchToken);
 if (this.tokCommand == 1825200146 && JU.PT.isOneOf(str.toLowerCase(), ";on;off;hide;display;")) this.addTokenToPrefix(JS.T.getTokenFromName(str.toLowerCase()));
  else this.addTokenToPrefix(JS.T.o(4, str));
@@ -977,7 +987,10 @@ return 0;
 }return 2;
 case 268441601:
 case 268441602:
-if (this.afterWhite == this.ichToken || this.afterMath == this.ichToken) this.theToken = JS.T.tv(this.theToken.tok, -1, this.theToken.value);
+if (this.nTokens == 0) {
+this.tokInitialPlusPlus = this.theToken.tok;
+return 2;
+}if (this.afterWhite == this.ichToken || this.afterMath == this.ichToken) this.theToken = JS.T.tv(this.theToken.tok, -1, this.theToken.value);
 if (!this.isNewSet && this.nTokens == 1) this.checkNewSetCommand();
 if (this.isNewSet && this.parenCount == 0 && this.bracketCount == 0 && this.ichToken <= this.setEqualPt) {
 this.tokenizePlusPlus(tok, false);
@@ -1103,8 +1116,8 @@ this.addTokenToPrefix(JS.T.i(1));
 }, "~N,~B");
 Clazz.defineMethod(c$, "checkNewSetCommand", 
 function(){
-var name = this.ltoken.get(0).value.toString();
-if (!this.isContextVariable(name.toLowerCase())) return false;
+var name = (this.nTokens == 0 ? "" : this.ltoken.get(0).value.toString());
+if (this.nTokens > 0 && !this.isContextVariable(name.toLowerCase())) return false;
 var t = this.setNewSetCommand(false, name);
 this.setCommand(JS.T.tokenSet);
 this.ltoken.add(0, this.tokenCommand);
@@ -1800,7 +1813,7 @@ this.cchToken = ichT - this.ichToken;
 return true;
 }, "~B");
 Clazz.defineMethod(c$, "lookingAtImpliedString", 
-function(allowSpace, allowEquals, allowSptParen){
+function(allowSpace, allowEquals, allowSptParen, allowSemicolon){
 var ichT = this.ichToken;
 var ch = this.script.charAt(ichT);
 var isID = (this.lastToken.tok == 1073741974);
@@ -1812,8 +1825,13 @@ var ptSpace = -1;
 var ptLastChar = -1;
 var isOK = true;
 var parenpt = 0;
-while (isOK && !this.eol(ch = this.charAt(ichT))) {
+while (isOK && (!this.eol(ch = this.charAt(ichT)) || allowSemicolon && ch == ';')) {
 switch ((ch).charCodeAt(0)) {
+case 59:
+if (ichT + 5 > this.cchScript || ichT + 2 < this.cchScript && (".01234567890-".indexOf(this.script.charAt(ichT + 1)) < 0 || this.script.charAt(ichT + 2) == '-')) {
+isOK = false;
+continue;
+}break;
 case 40:
 if (!allowSptParen) {
 if (this.tokCommand == 4124 || ichT >= 5 && (this.script.substring(ichT - 4, ichT).equals(".spt") || this.script.substring(ichT - 4, ichT).equals(".png") || this.script.substring(ichT - 5, ichT).equals(".pngj"))) {
@@ -1842,12 +1860,14 @@ ptLastChar = ichT;
 }
 ++ichT;
 }
-if (allowSpace) ichT = ptLastChar + 1;
+if (isVariable && (ptSpace < 0 || ptSpace > ptLastChar)) {
+return false;
+}if (allowSpace) ichT = ptLastChar + 1;
  else if (ptSpace > 0) ichT = ptSpace;
 if (isVariable && (!allowSpace || ptSpace < 0 && parenpt <= 0 && ichT - this.ichToken > 1)) {
 return false;
 }return (this.cchToken = ichT - this.ichToken) > 0;
-}, "~B,~B,~B");
+}, "~B,~B,~B,~B");
 Clazz.defineMethod(c$, "lookingAtExponential", 
 function(){
 if (this.ichToken == this.cchScript) return null;
@@ -2088,4 +2108,4 @@ JU.Logger.error(this.errorMessage);
 }return false;
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

@@ -1,8 +1,9 @@
 Clazz.declarePackage("JM");
 Clazz.load(["JM.ProteinStructure"], "JM.Helix", ["JU.Measure", "$.P3", "$.V3", "J.c.STR"], function(){
 var c$ = Clazz.declareType(JM, "Helix", JM.ProteinStructure);
-Clazz.overrideConstructor(c$, 
+Clazz.makeConstructor(c$, 
 function(apolymer, monomerIndex, monomerCount, subtype){
+Clazz.superConstructor (this, JM.Helix, []);
 this.setupPS(apolymer, J.c.STR.HELIX, monomerIndex, monomerCount);
 this.subtype = subtype;
 }, "JM.AlphaPolymer,~N,~N,J.c.STR");
@@ -19,4 +20,4 @@ this.axisB = JU.P3.newP(points[this.nRes]);
 JU.Measure.projectOntoAxis(this.axisB, this.axisA, this.axisUnitVector, this.vectorProjection);
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

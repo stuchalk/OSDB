@@ -70,6 +70,26 @@ default:
 return 0;
 }
 }, "~S");
+c$.fixOptimadeCall = Clazz.defineMethod(c$, "fixOptimadeCall", 
+function(url){
+var pt = url.indexOf("response_fields=") + 16;
+var a = ",chemical_formula_descriptive,dimension_types,lattice_vectors,cartesian_site_positions,species_at_sites,species,";
+if (pt < 16) {
+var ptQ = url.indexOf("?");
+url += (ptQ < 0 ? "?" : "&") + "response_fields=" + a.substring(1, a.length - 1);
+} else {
+var fields = "," + url.substring(pt, (url + "&").indexOf('&', pt)) + ",";
+var flen = fields.length;
+for (var i = 0, b = 0; i >= 0; i = b) {
+b = a.indexOf(',', i + 1);
+if (b < 0) break;
+var k = a.substring(i, b + 1);
+if (fields.indexOf(k) < 0) {
+fields += k.substring(1);
+}}
+url = url.substring(0, pt) + fields.substring(1, fields.length - 1) + url.substring(pt + flen - 2);
+}return url;
+}, "~S");
 c$.resolveDataBase = Clazz.defineMethod(c$, "resolveDataBase", 
 function(database, id, format){
 if (format == null) {
@@ -95,26 +115,6 @@ var isHttp = (name != null && name.indexOf("http") >= 0);
 var newname = (name == null || !isHttp ? name : name.indexOf("http://www.rcsb.org/pdb/files/") == 0 ? JV.JC.resolveDataBase(name.indexOf("/ligand/") >= 0 ? "ligand" : "pdb", name.substring(name.lastIndexOf("/") + 1), null) : name.indexOf("http://www.ebi") == 0 || name.indexOf("http://rruff") == 0 || name.indexOf("http://pubchem") == 0 || name.indexOf("http://cactus") == 0 || name.indexOf("http://www.materialsproject") == 0 ? "https://" + name.substring(7) : name.indexOf("optimade") > 0 ? JV.JC.fixOptimadeCall(name) : name);
 if (newname !== name) JU.Logger.info("JC.fixProtocol " + name + " --> " + newname);
 return newname;
-}, "~S");
-c$.fixOptimadeCall = Clazz.defineMethod(c$, "fixOptimadeCall", 
-function(url){
-var pt = url.indexOf("response_fields=") + 16;
-var a = ",chemical_formula_descriptive,dimension_types,lattice_vectors,cartesian_site_positions,species_at_sites,species,";
-if (pt < 16) {
-var ptQ = url.indexOf("?");
-url += (ptQ < 0 ? "?" : "&") + "response_fields=" + a.substring(1, a.length - 1);
-} else {
-var fields = "," + url.substring(pt, (url + "&").indexOf('&', pt)) + ",";
-var flen = fields.length;
-for (var i = 0, b = 0; i >= 0; i = b) {
-b = a.indexOf(',', i + 1);
-if (b < 0) break;
-var k = a.substring(i, b + 1);
-if (fields.indexOf(k) < 0) {
-fields += k.substring(1);
-}}
-url = url.substring(0, pt) + fields.substring(1, fields.length - 1) + url.substring(pt + flen - 2);
-}return url;
 }, "~S");
 c$.embedScript = Clazz.defineMethod(c$, "embedScript", 
 function(s){
@@ -291,6 +291,10 @@ c$.getBoolName = Clazz.defineMethod(c$, "getBoolName",
 function(g){
 return JV.JC.globalBooleans[g];
 }, "~N");
+c$.isSpaceGroupInfoKey = Clazz.defineMethod(c$, "isSpaceGroupInfoKey", 
+function(key){
+return (key.indexOf("nitCell") >= 0 || key.equals("coordinatesAreFractional") || key.startsWith("spaceGroup") || key.indexOf("ymmet") >= 0 || key.startsWith("lattice") || key.startsWith("intlTable"));
+}, "~S");
 c$.getMenuScript = Clazz.defineMethod(c$, "getMenuScript", 
 function(type){
 if (type === "openPDB") {
@@ -299,8 +303,10 @@ return "var x__id__ = _modelTitle; if (x__id__.length != 4) { x__id__ = '1crn'};
 return "var x__id__ = _smilesString; if (!x__id__) { x__id__ = 'tylenol'};x__id__ = prompt('" + J.i18n.GT.$("Enter the name or identifier (SMILES, InChI, CAS) of a compound. Preface with \":\" to load from PubChem; otherwise Jmol will use the NCI/NIH Resolver.") + "',x__id__);if (!x__id__) { quit }; load @{(x__id__[1]==':' ? x__id__ : '$' + x__id__)}";
 }return null;
 }, "~S");
+c$.axisLabels =  Clazz.newArray(-1, ["+X", "+Y", "+Z", null, null, null, "a", "b", "c", "X", "Y", "Z", null, null, null, "X", null, "Z", null, "(Y)", null]);
+c$.axesTypes =  Clazz.newArray(-1, ["a", "b", "c", "x", "y", "z"]);
 c$.ruleNames =  Clazz.newArray(-1, ["", "1a", "1b", "2", "3", "4a", "4b", "4c", "5", "6"]);
-c$.databaseArray =  Clazz.newArray(-1, ["aflowbin", "http://aflowlib.mems.duke.edu/users/jmolers/binary_new/%FILE.aflow_binary", "aflowlib", "https://www.aflowlib.org/prototype-encyclopedia/CIF/%FILE.cif", "aflowpro", "$aflowlib", "ams", "'https://rruff.geo.arizona.edu/AMS/viewJmol.php?'+(0+'%file'==0? 'mineral':('%file'.length==7? 'amcsd':'id'))+'=%file&action=showcif#_DOCACHE_'", "dssr", "http://dssr-jmol.x3dna.org/report.php?id=%FILE&opts=--json=ebi", "dssrModel", "http://dssr-jmol.x3dna.org/report.php?POST?opts=--json=ebi&model=", "iucr", "http://scripts.iucr.org/cgi-bin/sendcif_yard?%FILE", "cod", "http://www.crystallography.net/cod/cif/%c1/%c2%c3/%c4%c5/%FILE.cif", "nmr", "https://www.nmrdb.org/new_predictor?POST?molfile=", "nmrdb", "https://www.nmrdb.org/service/predictor?POST?molfile=", "nmrdb13", "https://www.nmrdb.org/service/jsmol13c?POST?molfile=", "magndata", "http://webbdcrista1.ehu.es/magndata/mcif/%FILE.mcif", "rna3d", "http://rna.bgsu.edu/rna3dhub/%TYPE/download/%FILE", "mmtf", "https://mmtf.rcsb.org/v1.0/full/%FILE", "bcif", "https://models.rcsb.org/%file.bcif", "chebi", "https://www.ebi.ac.uk/chebi/saveStructure.do?defaultImage=true&chebiId=%file%2D%", "ligand", "https://files.rcsb.org/ligands/download/%FILE.cif", "mp", "https://www.materialsproject.org/materials/mp-%FILE/cif#_DOCACHE_", "nci", "https://cactus.nci.nih.gov/chemical/structure/", "pdb", "https://files.rcsb.org/download/%FILE.pdb", "pdb0", "https://files.rcsb.org/download/%FILE.pdb", "pdbe", "https://www.ebi.ac.uk/pdbe/entry-files/download/%FILE.cif", "pdbe2", "https://www.ebi.ac.uk/pdbe/static/entry/%FILE_updated.cif", "pubchem", "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/%FILE/SDF?record_type=3d", "map", "https://www.ebi.ac.uk/pdbe/api/%TYPE/%FILE?pretty=false&metadata=true", "pdbemap", "https://www.ebi.ac.uk/pdbe/coordinates/files/%file.ccp4", "pdbemapdiff", "https://www.ebi.ac.uk/pdbe/coordinates/files/%file_diff.ccp4", "pdbemapserver", "https://www.ebi.ac.uk/pdbe/densities/x-ray/%file/box/0,0,0/0,0,0?detail=6&space=cartesian&encoding=bcif", "pdbemapdiffserver", "https://www.ebi.ac.uk/pdbe/densities/x-ray/%file/box/0,0,0/0,0,0?detail=6&space=cartesian&encoding=bcif&diff=1", "emdbmap", "https://www.ebi.ac.uk/pdbe/densities/emd/emd-%file/cell?detail=6&space=cartesian&encoding=bcif", "emdbquery", "https://www.ebi.ac.uk/emdb/api/search/fitted_pdbs:%file?fl=emdb_id,map_contour_level_value&wt=csv", "emdbmapserver", "https://www.ebi.ac.uk/pdbe/densities/emd/emd-%file/box/0,0,0/0,0,0?detail=6&space=cartesian&encoding=bcif", "xxxresolverResolver", "https://chemapps.stolaf.edu/resolver", "smiles2d", "https://cirx.chemicalcreatures.com/chemical/structure/%FILE/file?format=sdf&get3d=false", "smiles3d", "https://cirx.chemicalcreatures.com/chemical/structure/%FILE/file?format=sdf&get3d=true"]);
+c$.databaseArray =  Clazz.newArray(-1, ["itatable", "https://www.cryst.ehu.es/cgi-bin/cryst/programs/nph-getgen?gnum=$FILE&what=gp&list=Standard%2FDefault+Setting", "itadiagram", "https://onlinelibrary.wiley.com/iucr/itc/Ac/ch2o3v0001/sgtable2o3o%FILE", "aflowbin", "http://aflowlib.mems.duke.edu/users/jmolers/binary_new/%FILE.aflow_binary", "aflowlib", "https://aflow.org/p/%FILE.cif", "aflowpro", "$aflowlib", "ams", "'https://rruff.geo.arizona.edu/AMS/viewJmol.php?'+(0+'%file'==0? 'mineral':('%file'.length==7? 'amcsd':'id'))+'=%file&action=showcif#_DOCACHE_'", "dssr", "http://dssr-jmol.x3dna.org/report.php?id=%FILE&opts=--json=ebi", "dssrModel", "http://dssr-jmol.x3dna.org/report.php?POST?opts=--json=ebi&model=", "iucr", "http://scripts.iucr.org/cgi-bin/sendcif_yard?%FILE", "cod", "http://www.crystallography.net/cod/cif/%c1/%c2%c3/%c4%c5/%FILE.cif", "nmr", "https://www.nmrdb.org/new_predictor?POST?molfile=", "nmrdb", "https://www.nmrdb.org/service/predictor?POST?molfile=", "nmrdb13", "https://www.nmrdb.org/service/jsmol13c?POST?molfile=", "magndata", "http://webbdcrista1.ehu.es/magndata/mcif/%FILE.mcif", "rna3d", "http://rna.bgsu.edu/rna3dhub/%TYPE/download/%FILE", "mmtf", "https://mmtf.rcsb.org/v1.0/full/%FILE", "bcif", "https://models.rcsb.org/%file.bcif", "chebi", "https://www.ebi.ac.uk/chebi/saveStructure.do?defaultImage=true&chebiId=%file%2D%", "ligand", "https://files.rcsb.org/ligands/download/%FILE.cif", "mp", "https://www.materialsproject.org/materials/mp-%FILE/cif#_DOCACHE_", "nci", "https://cactus.nci.nih.gov/chemical/structure/", "pdb", "https://files.rcsb.org/download/%FILE.pdb", "pdb0", "https://files.rcsb.org/download/%FILE.pdb", "pdbe", "https://www.ebi.ac.uk/pdbe/entry-files/download/%FILE.cif", "pdbe2", "https://www.ebi.ac.uk/pdbe/static/entry/%FILE_updated.cif", "pubchem", "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/%FILE/SDF?record_type=3d", "map", "https://www.ebi.ac.uk/pdbe/api/%TYPE/%FILE?pretty=false&metadata=true", "pdbemap", "https://www.ebi.ac.uk/pdbe/coordinates/files/%file.ccp4", "pdbemapdiff", "https://www.ebi.ac.uk/pdbe/coordinates/files/%file_diff.ccp4", "pdbemapserver", "https://www.ebi.ac.uk/pdbe/densities/x-ray/%file/box/0,0,0/0,0,0?detail=6&space=cartesian&encoding=bcif", "pdbemapdiffserver", "https://www.ebi.ac.uk/pdbe/densities/x-ray/%file/box/0,0,0/0,0,0?detail=6&space=cartesian&encoding=bcif&diff=1", "emdbmap", "https://www.ebi.ac.uk/pdbe/densities/emd/emd-%file/cell?detail=6&space=cartesian&encoding=bcif", "emdbquery", "https://www.ebi.ac.uk/emdb/api/search/fitted_pdbs:%file?fl=emdb_id,map_contour_level_value&wt=csv", "emdbmapserver", "https://www.ebi.ac.uk/pdbe/densities/emd/emd-%file/box/0,0,0/0,0,0?detail=6&space=cartesian&encoding=bcif", "xxxresolverResolver", "https://chemapps.stolaf.edu/resolver", "smiles2d", "https://cirx.chemicalcreatures.com/chemical/structure/%FILE/file?format=sdf&get3d=false", "smiles3d", "https://cirx.chemicalcreatures.com/chemical/structure/%FILE/file?format=sdf&get3d=true"]);
 c$.databases =  new java.util.Hashtable();
 {
 for (var i = 0; i < JV.JC.databaseArray.length; i += 2) {
@@ -309,8 +315,7 @@ if (target.charAt(0) == '$') {
 target = JV.JC.databases.get(target.substring(1));
 }JV.JC.databases.put(JV.JC.databaseArray[i].toLowerCase(), target);
 }
-}c$.macros =  Clazz.newArray(-1, ["aflow", "https://chemapps.stolaf.edu/jmol/macros/AFLOW.spt", "AFLOW macros", "bz", "https://chemapps.stolaf.edu/jmol/macros/bz.spt", "Brillouin Zone/Wigner-Seitz macros", "topology", "https://chemapps.stolaf.edu/jmol/macros/topology.spt", "Topology CIF macros", "topond", "https://chemapps.stolaf.edu/jmol/macros/topond.spt", "CRYSTAL/TOPOND macros", "crystal", "https://chemapps.stolaf.edu/jmol/macros/crystal.spt", "CRYSTAL macros"]);
-c$.majorVersion = null;
+}c$.majorVersion = null;
 {
 var tmpVersion = null;
 var tmpDate = null;
@@ -363,10 +368,10 @@ c$.axisNY = JU.V3.new3(0, -1, 0);
 c$.axisNZ = JU.V3.new3(0, 0, -1);
 c$.unitAxisVectors =  Clazz.newArray(-1, [JV.JC.axisX, JV.JC.axisY, JV.JC.axisZ, JV.JC.axisNX, JV.JC.axisNY, JV.JC.axisNZ]);
 c$.altArgbsCpk =  Clazz.newIntArray(-1, [0xFFFF1493, 0xFFBFA6A6, 0xFFFFFF30, 0xFF57178F, 0xFFFFFFC0, 0xFFFFFFA0, 0xFFD8D8D8, 0xFF505050, 0xFF404040, 0xFF105050]);
-c$.argbsFormalCharge =  Clazz.newIntArray(-1, [0xFFFF0000, 0xFFFF4040, 0xFFFF8080, 0xFFFFC0C0, 0xFFFFFFFF, 0xFFD8D8FF, 0xFFB4B4FF, 0xFF9090FF, 0xFF6C6CFF, 0xFF4848FF, 0xFF2424FF, 0xFF0000FF]);
-c$.argbsRwbScale =  Clazz.newIntArray(-1, [0xFFFF0000, 0xFFFF1010, 0xFFFF2020, 0xFFFF3030, 0xFFFF4040, 0xFFFF5050, 0xFFFF6060, 0xFFFF7070, 0xFFFF8080, 0xFFFF9090, 0xFFFFA0A0, 0xFFFFB0B0, 0xFFFFC0C0, 0xFFFFD0D0, 0xFFFFE0E0, 0xFFFFFFFF, 0xFFE0E0FF, 0xFFD0D0FF, 0xFFC0C0FF, 0xFFB0B0FF, 0xFFA0A0FF, 0xFF9090FF, 0xFF8080FF, 0xFF7070FF, 0xFF6060FF, 0xFF5050FF, 0xFF4040FF, 0xFF3030FF, 0xFF2020FF, 0xFF1010FF, 0xFF0000FF]);
 c$.FORMAL_CHARGE_COLIX_RED = JU.Elements.elementSymbols.length + JV.JC.altArgbsCpk.length;
+c$.argbsFormalCharge =  Clazz.newIntArray(-1, [0xFFFF0000, 0xFFFF4040, 0xFFFF8080, 0xFFFFC0C0, 0xFFFFFFFF, 0xFFD8D8FF, 0xFFB4B4FF, 0xFF9090FF, 0xFF6C6CFF, 0xFF4848FF, 0xFF2424FF, 0xFF0000FF]);
 c$.PARTIAL_CHARGE_COLIX_RED = JV.JC.FORMAL_CHARGE_COLIX_RED + JV.JC.argbsFormalCharge.length;
+c$.argbsRwbScale =  Clazz.newIntArray(-1, [0xFFFF0000, 0xFFFF1010, 0xFFFF2020, 0xFFFF3030, 0xFFFF4040, 0xFFFF5050, 0xFFFF6060, 0xFFFF7070, 0xFFFF8080, 0xFFFF9090, 0xFFFFA0A0, 0xFFFFB0B0, 0xFFFFC0C0, 0xFFFFD0D0, 0xFFFFE0E0, 0xFFFFFFFF, 0xFFE0E0FF, 0xFFD0D0FF, 0xFFC0C0FF, 0xFFB0B0FF, 0xFFA0A0FF, 0xFF9090FF, 0xFF8080FF, 0xFF7070FF, 0xFF6060FF, 0xFF5050FF, 0xFF4040FF, 0xFF3030FF, 0xFF2020FF, 0xFF1010FF, 0xFF0000FF]);
 c$.PARTIAL_CHARGE_RANGE_SIZE = JV.JC.argbsRwbScale.length;
 c$.argbsRoygbScale =  Clazz.newIntArray(-1, [0xFFFF0000, 0xFFFF2000, 0xFFFF4000, 0xFFFF6000, 0xFFFF8000, 0xFFFFA000, 0xFFFFC000, 0xFFFFE000, 0xFFFFF000, 0xFFFFFF00, 0xFFF0F000, 0xFFE0FF00, 0xFFC0FF00, 0xFFA0FF00, 0xFF80FF00, 0xFF60FF00, 0xFF40FF00, 0xFF20FF00, 0xFF00FF00, 0xFF00FF20, 0xFF00FF40, 0xFF00FF60, 0xFF00FF80, 0xFF00FFA0, 0xFF00FFC0, 0xFF00FFE0, 0xFF00FFFF, 0xFF00E0FF, 0xFF00C0FF, 0xFF00A0FF, 0xFF0080FF, 0xFF0060FF, 0xFF0040FF, 0xFF0020FF, 0xFF0000FF]);
 c$.predefinedVariable =  Clazz.newArray(-1, ["@_1H _H & !(_2H,_3H)", "@_12C _C & !(_13C,_14C)", "@_14N _N & !(_15N)", "@solvent water, (_g>=45 & _g<48)", "@ligand _g=0|!(_g<46,protein,nucleic,water)", "@turn structure=1", "@sheet structure=2", "@helix structure=3", "@helix310 substructure=7", "@helixalpha substructure=8", "@helixpi substructure=9", "@bulges within(dssr,'bulges')", "@coaxStacks within(dssr,'coaxStacks')", "@hairpins within(dssr,'hairpins')", "@hbonds within(dssr,'hbonds')", "@helices within(dssr,'helices')", "@iloops within(dssr,'iloops')", "@isoCanonPairs within(dssr,'isoCanonPairs')", "@junctions within(dssr,'junctions')", "@kissingLoops within(dssr,'kissingLoops')", "@multiplets within(dssr,'multiplets')", "@nonStack within(dssr,'nonStack')", "@nts within(dssr,'nts')", "@pairs within(dssr,'pairs')", "@ssSegments within(dssr,'ssSegments')", "@stacks within(dssr,'stacks')", "@stems within(dssr,'stems')"]);
@@ -380,4 +385,4 @@ c$.hAlignNames =  Clazz.newArray(-1, ["", "left", "center", "right"]);
 c$.READER_NOT_FOUND = "File reader was not found:";
 c$.globalBooleans =  Clazz.newArray(-1, ["someModelsHaveFractionalCoordinates", "someModelsHaveSymmetry", "someModelsHaveUnitcells", "someModelsHaveCONECT", "isPDB", "someModelsHaveDomains", "someModelsHaveValidations", "isSupercell", "someModelsHaveAromaticBonds", "someModelsAreModulated"]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

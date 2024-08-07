@@ -1,0 +1,137 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Jmol Point Group Explorer</title>
+<script type="text/javascript" src="../JSmol.min.js"></script>
+<script type="text/javascript" src="../js/Jmol2.js"></script>
+<script type="text/javascript" src="models.js"></script>
+<script type="text/javascript" src="jpge.js"></script>
+</head>
+<body onload="pageLoaded()">
+
+<table><tr>
+<td align=center valign=top style="width:170px">
+<img src=strip2.png />
+<h3><a href=index.htm style="text-decoration:none">Jmol Point Group Explorer</a></h3>
+<div id=loading style="display:none">
+
+<script type="text/javascript">
+jmolSetButtonCssClass('" style="width:160px')
+jmolHtml("<h3>display options</h3>")
+jmolCheckbox([function(){toggleQuizMode(1)}], [function() {toggleQuizMode(0)}], "Quiz Mode", quizMode, "cbquizmode")
+jmolBr()
+jmolButton([function(){getRandomModel(1)}],"Quiz me!", "btnquizme")
+jmolBr()
+jmolHtml("<div id=quizcount></div>");
+jmolBr()
+jmolButton([toggleSymmetry],"toggle symmetry")
+jmolBr()
+jmolButton("draw off; draw ID '*a_*' on","axes only")
+jmolBr()
+jmolButton("draw off; draw ID '*p_*' on","planes only")
+jmolBr()
+jmolBr()
+jmolButton("reset","reset orientation")
+jmolBr()
+jmolBr()
+jmolButton("backgroundcolor = (backgroundcolor = '[x000000]' ? 'white' : 'black');bgcolor=backgroundColor","switch background")
+jmolBr()
+jmolButton("zshade = !zshade","toggle fog")
+jmolBr()
+jmolBr()
+jmolBr()
+jmolBr()
+</script>
+</div>
+Questions? Suggestions?<br>
+<a target=_blank href=https://stolaf.edu/people/hansonr>Bob Hanson</a>
+<br>
+<br>
+This page is part of jsmol.zip in the<br>
+<a target=_blank href=https://sourceforge.net/projects/jmol/files>Jmol distribution</a>
+<br>
+<br>
+See also <a target=_blank href=https://symotter.org/challenge>Symmetry@Otterbein</a><br>for a full range of symmetry-related activities and resources.
+</td>
+<td align=center valign=top>
+
+<script type="text/javascript">
+jmolApplet(["600","600"], spt +';background white;bgcolor=backgroundColor;set errorCallback "errorCallback";set loadstructcallback "loadstructCallback";set pickCallback "pickCallback";set zoomlarge false;set antialiasdisplay;' + defaultScript)
+jmolHtml("<div id=addremove style='visibility:hidden'>")
+jmolSetButtonCssClass('" style="width:110px')
+jmolButton([function(){addRemove('CnSn',true)}],"add axis")
+jmolButton([function(){addRemove('Cs',true)}],"add plane")
+jmolSetButtonCssClass('" style="width:160px')
+jmolButton([function(){addRemove('Ci',true)}],"add inversion center")
+jmolSetButtonCssClass('" style="width:110px')
+jmolButton([function(){checkAnswer(true)}],"I know!")
+jmolButton([function(){checkAnswer(false)}],"I give up!")
+jmolBr()
+jmolHtml("</div>")
+
+jmolSetButtonCssClass('" style="width:100px')
+//jmolBr()
+//jmolCommandInput()
+
+
+</script>
+</td><td align=center>
+<script type="text/javascript">
+jmolSetButtonCssClass('" style="width:160px')
+jmolHtml("<h3>model options</h3>")
+jmolLink([search],"Search")
+jmolBr()
+jmolBr();
+document.write(groupSelectHtml)
+jmolBr();
+jmolHtml("<div id=modelselectdiv>");
+document.write(modelSelectHtml)
+jmolHtml("</div>");
+</script>
+<div id='syminfo'></div>
+
+<div id=note style="display:none;width:250px">
+</div>
+<br>
+ <script type="text/javascript">
+/*
+jmolButton("if (!cod) { cod = ''};var x = prompt('Enter a Crystallographic Open Database id',cod);if (x=='null') { quit }; cod = x; load @{'=cod/'+cod} 1","Load COD")
+jmolButton("script ?.spt","Load SCRIPT")
+jmolBr()model
+*/
+jmolBr()
+jmolButton("prompt 'Just drop any MOL file into the app, then click on \"Toggle Symmetry\"'","Drop File")
+jmolBr()
+jmolButton("load file \"?\" 1","Load File")
+jmolBr()
+jmolButton("var x = prompt('Enter the name of a compound, SMILES, or other identifier for the Chemical Identifier Resolver at NCI','');if (x=='null') { quit }; load @{'$'+x} 1;javascript report(x)","NCI/CADD")
+jmolBr()
+jmolButton("var x = prompt('Enter the name of a compound at PubChem','');if (x=='null') { quit }; load @{':'+x} 1;javascript report(x)","PubChem")
+jmolBr()
+jmolButton("if (!url) { url = ''};var x = prompt('Enter a URL for a structure file',url);if (x=='null') { quit }; url = x; load @url 1;javascript report('')","Load URL")
+jmolBr()
+jmolBr()
+jmolButton("var f = '?' + modelTitleNoSubs + '.mol';write FILE @f","Save FILE")
+jmolBr()
+jmolButton("var f = '?' + modelTitleNoSubs + '.png';write @f as PNGJ","Save PNG+Jmol")
+jmolHtml("<h3>3D printing options</h3>")
+jmolButton("var scale = 0+prompt('What scale would  you like?',(exportScale == 0 ? '10.0' : exportScale));if (scale)set exportScale @scale;","Set Scale")
+jmolBr()
+jmolButton("save state o; set echo off;axes labels '' '' '';refresh;var f = '?' + modelTitleNoSubs + '.wrl';write @f;restore state o","Save VRML")
+jmolBr()
+jmolButton("save state o; set echo off;axes labels '' '' '';refresh;var f = '?' + modelTitleNoSubs + '.x3d';write @f;restore state o","Save X3D")
+jmolBr()
+jmolButton("var f = '?' + modelTitleNoSubs + '.stl';write @f","Save STL")
+
+jmolBr()
+jmolBr()
+jmolButton("console")
+
+</script>
+
+</td></tr>
+</table>
+<div id=thislink></div>
+
+</body>
+</html>

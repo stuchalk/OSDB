@@ -155,6 +155,6 @@ Clazz.defineMethod(c$, "getXPixel",
 function(){
 return Clazz.doubleToInt((this.px0 + this.px1) / 2);
 });
-c$.nullPeakInfo =  new JSV.common.PeakInfo();
+c$.nullPeakInfo = null;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

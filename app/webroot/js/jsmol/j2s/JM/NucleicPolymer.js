@@ -5,8 +5,7 @@ this.isDssrSet = false;
 Clazz.instantialize(this, arguments);}, JM, "NucleicPolymer", JM.PhosphorusPolymer);
 Clazz.makeConstructor(c$, 
 function(monomers){
-this.set(monomers);
-this.hasStructure = true;
+Clazz.superConstructor(this, JM.NucleicPolymer, [monomers]);
 this.type = 2;
 this.hasWingPoints = true;
 }, "~A");
@@ -86,4 +85,4 @@ return 1;
 }, "JU.Lst,JM.Atom,JM.Atom");
 c$.htGroup1 = null;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

@@ -187,17 +187,7 @@ var center = null;
 if (this.checkToken(i)) {
 switch (this.getToken(i).tok) {
 case 1814695966:
-center =  new JU.P3();
-var uc = this.vwr.getCurrentUnitCell();
-if (uc != null) {
-var pts = uc.getUnitCellVerticesNoOffset();
-var off = uc.getCartesianOffset();
-for (var j = 0; j < 8; j++) {
-center.add(pts[j]);
-center.add(off);
-}
-}center.scale(0.125);
-break;
+return this.getUnitCellCenter();
 case 1073742330:
 var id = this.objectNameParameter(++i);
 var index = -2147483648;
@@ -221,6 +211,20 @@ break;
 }if (center == null) this.error(11);
 return center;
 }, "~N,~N,~A");
+Clazz.defineMethod(c$, "getUnitCellCenter", 
+function(){
+var center =  new JU.P3();
+var uc = this.vwr.getCurrentUnitCell();
+if (uc != null) {
+var pts = uc.getUnitCellVerticesNoOffset();
+var off = uc.getCartesianOffset();
+for (var j = 0; j < 8; j++) {
+center.add(pts[j]);
+center.add(off);
+}
+}center.scale(0.125);
+return center;
+});
 Clazz.defineMethod(c$, "planeParameter", 
 function(i, isBest){
 var vTemp =  new JU.V3();
@@ -1000,7 +1004,7 @@ this.invArg();
 }
 if (this.tokAt(++index) == 1073742333) {
 tickInfo =  new JM.TickInfo(null);
-tickInfo.type = str;
+tickInfo.type = str.charAt(0);
 this.iToken = index;
 return tickInfo;
 }tickInfo =  new JM.TickInfo(this.getPointOrPlane(index, 19));
@@ -1008,10 +1012,10 @@ if (this.coordinatesAreFractional || this.tokAt(this.iToken + 1) == 1814695966) 
 tickInfo.scale = JU.P3.new3(NaN, NaN, NaN);
 allowScale = false;
 }if (this.tokAt(this.iToken + 1) == 1814695966) this.iToken++;
-tickInfo.type = str;
+tickInfo.type = str.charAt(0);
 if (this.tokAt(this.iToken + 1) == 1287653388) tickInfo.tickLabelFormats = this.stringParameterSet(this.iToken + 2);
 if (!allowScale) return tickInfo;
-if (this.tokAt(this.iToken + 1) == 536875009) {
+if (this.tokAt(this.iToken + 1) == 536875059) {
 if (this.isFloatParameter(this.iToken + 2)) {
 var f = this.floatParameter(this.iToken + 2);
 tickInfo.scale = JU.P3.new3(f, f, f);
@@ -1137,4 +1141,4 @@ return (--n < 0 || n >= params.length ? null : (params[n] = JS.SV.getVariable(pa
 return (n == -2147483648 ? v : --n < 0 || n >= list.size() ? JS.SV.newV(7,  new JU.Lst()) : list.get(n));
 }, "~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

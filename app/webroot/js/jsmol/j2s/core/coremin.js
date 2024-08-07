@@ -147,7 +147,7 @@ this.isQuick = (ff.indexOf("2D") >= 0 || (flags & 8) == 8);
 this.modelkitMinimizing = (bsBasis != null && this.vwr.getModelkitPropertySafely("minimizing") === Boolean.TRUE);
 if (bsBasis != null) {
 if (bsFixed == null) bsFixed =  new JU.BS();
-bsFixed.or(this.vwr.getMotionFixedAtoms(bsBasis.nextSetBit(0)));
+this.vwr.getMotionFixedAtoms(null, bsFixed);
 bsBasis.andNot(bsFixed);
 bsFixed.or(bsSelected);
 bsFixed.andNot(bsBasis);
@@ -636,7 +636,7 @@ return "[minimizer " + this.id + " step " + (this.pFF == null ? 0 : this.pFF.get
 });
 c$.staticID = 0;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM");
 (function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -669,7 +669,7 @@ var d = i & 0x7F;
 return (type < 0 ? type + ": " : "") + (a < 10 ? "  " : " ") + a + (b < 10 ? "  " : " ") + b + (c < 10 ? "  " : " ") + c + (d > 120 ? "" : (d < 10 ? "  " : " ") + d);
 }, "Integer");
 })();
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM");
 Clazz_load(["JM.MinObject"], "JM.MinAngle", null, function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -684,7 +684,7 @@ Clazz_superConstructor (this, JM.MinAngle, []);
 this.data = data;
 }, "~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM");
 Clazz_load(["JU.BS", "$.Lst"], "JM.MinAtom", null, function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -764,7 +764,7 @@ if (this.hCount < 0) this.hCount = this.atom.getCovalentHydrogenCount();
 return this.hCount;
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM");
 Clazz_load(["JM.MinObject"], "JM.MinBond", null, function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -789,7 +789,7 @@ function(index){
 return this.data[this.data[0] == index ? 1 : 0];
 }, "~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM");
 Clazz_load(["JM.MinObject"], "JM.MinTorsion", null, function(){
 var c$ = Clazz_declareType(JM, "MinTorsion", JM.MinObject);
@@ -799,7 +799,7 @@ Clazz_superConstructor (this, JM.MinTorsion, []);
 this.data = data;
 }, "~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM");
 Clazz_load(null, "JM.Util", ["java.util.Random"], function(){
 var c$ = Clazz_declareType(JM, "Util", null);
@@ -1069,7 +1069,7 @@ k.scale(-1);
 return theta;
 }, "JU.V3d,JU.V3d,JU.V3d,JU.V3d");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 (function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -1097,7 +1097,7 @@ this.descr = descr;
 this.smartsCode = smartsCode;
 }, "~N,~N,~N,~N,~N,~S,~S");
 })();
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(null, "JM.FF.ForceField", ["JU.PT", "JM.Util", "JU.Logger", "JV.FileManager", "$.Viewer"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -1376,7 +1376,7 @@ function(n){
 this.nth = n;
 }, "~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JM.FF.ForceField"], "JM.FF.ForceFieldMMFF", ["java.util.Hashtable", "JU.AU", "$.BS", "$.Lst", "$.PT", "JM.MinObject", "JM.FF.AtomType", "$.CalculationsMMFF", "JU.BSUtil", "$.Elements", "$.Escape", "$.Logger", "JV.JmolAsyncException"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -2546,7 +2546,7 @@ c$.types =  Clazz_newIntArray(-1, [0, 1, 34, 5, 546, 3, 13, 21, 37, 9, 17]);
 c$.sbMap =  Clazz_newIntArray(-1, [0, 1, 3, 5, 4, 6, 8, 9, 11]);
 c$.equivalentTypes =  Clazz_newIntArray(-1, [1, 1, 2, 1, 3, 1, 4, 1, 5, 5, 6, 6, 7, 6, 8, 8, 9, 8, 10, 8, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 15, 17, 15, 18, 15, 19, 19, 1, 1, 21, 5, 22, 1, 23, 5, 24, 5, 25, 25, 26, 25, 28, 5, 28, 5, 29, 5, 2, 1, 31, 31, 7, 6, 21, 5, 8, 8, 6, 6, 36, 5, 2, 1, 9, 8, 10, 8, 10, 8, 3, 1, 42, 8, 10, 8, 16, 15, 10, 8, 9, 8, 42, 8, 9, 8, 6, 6, 21, 5, 7, 6, 21, 5, 42, 8, 9, 8, 10, 8, 10, 8, 2, 1, 10, 8, 6, 6, 4, 1, 42, 8, 10, 8, 2, 1, 2, 1, 9, 8, 9, 8, 9, 8, 8, 8, 9, 8, 70, 70, 5, 5, 16, 15, 18, 15, 17, 15, 26, 25, 9, 8, 12, 12, 2, 1, 9, 8, 2, 1, 10, 8, 9, 8]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JM.FF.ForceField", "JS.T"], "JM.FF.ForceFieldUFF", ["java.util.Hashtable", "JU.BS", "$.Lst", "$.PT", "JM.FF.CalculationsUFF", "$.FFParam", "JU.Elements", "$.Logger", "JV.JmolAsyncException"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -2753,7 +2753,7 @@ c$.uff2DParams = null;
 c$.uffParams = null;
 c$.tokenTypes =  Clazz_newArray(-1, [ Clazz_newArray(-1, [JS.T.tokenExpressionBegin, JS.T.n(268440324, 1094715402), JS.T.i(0), JS.T.tokenExpressionEnd]),  Clazz_newArray(-1, [JS.T.tokenExpressionBegin, JS.T.n(268440324, 1094715402), JS.T.i(0), JS.T.tokenAnd, JS.T.n(268440324, 1631586315), JS.T.i(0), JS.T.tokenExpressionEnd]),  Clazz_newArray(-1, [JS.T.tokenExpressionBegin, JS.T.n(268440324, 1094715402), JS.T.i(0), JS.T.tokenAnd, JS.T.tokenConnected, JS.T.tokenLeftParen, JS.T.i(0), JS.T.tokenRightParen, JS.T.tokenExpressionEnd]),  Clazz_newArray(-1, [JS.T.tokenExpressionBegin, JS.T.o(1073741824, "flatring"), JS.T.tokenExpressionEnd]),  Clazz_newArray(-1, [JS.T.tokenExpressionBegin, JS.T.n(268440324, 1094715402), JS.T.i(0), JS.T.tokenAnd, JS.T.tokenLeftParen, JS.T.tokenConnected, JS.T.tokenLeftParen, JS.T.i(1), JS.T.tokenComma, JS.T.o(4, "triple"), JS.T.tokenRightParen, JS.T.tokenOr, JS.T.tokenConnected, JS.T.tokenLeftParen, JS.T.i(2), JS.T.tokenComma, JS.T.o(4, "double"), JS.T.tokenRightParen, JS.T.tokenRightParen, JS.T.tokenExpressionEnd]),  Clazz_newArray(-1, [JS.T.tokenExpressionBegin, JS.T.n(268440324, 1094715402), JS.T.i(0), JS.T.tokenAnd, JS.T.o(134217736, "connected"), JS.T.tokenLeftParen, JS.T.i(1), JS.T.tokenComma, JS.T.o(4, "double"), JS.T.tokenRightParen, JS.T.tokenExpressionEnd]),  Clazz_newArray(-1, [JS.T.tokenExpressionBegin, JS.T.n(268440324, 1094715402), JS.T.i(0), JS.T.tokenAnd, JS.T.tokenLeftParen, JS.T.n(268440325, 1094715402), JS.T.i(6), JS.T.tokenOr, JS.T.n(268440325, 1631586315), JS.T.i(0), JS.T.tokenRightParen, JS.T.tokenAnd, JS.T.tokenConnected, JS.T.tokenLeftParen, JS.T.i(3), JS.T.tokenRightParen, JS.T.tokenAnd, JS.T.tokenConnected, JS.T.tokenLeftParen, JS.T.tokenConnected, JS.T.tokenLeftParen, JS.T.o(4, "double"), JS.T.tokenRightParen, JS.T.tokenRightParen, JS.T.tokenExpressionEnd])]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 (function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -2809,7 +2809,7 @@ function(n){
 return this.calcs.ff.minimizer.isLoggable(this.iData, n);
 }, "~N");
 })();
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JU.AU", "$.SB", "$.V3d"], "JM.FF.Calculations", ["JU.Lst", "$.PT", "JM.Util"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -3235,7 +3235,7 @@ function(i){
 return false;
 }, "~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JM.FF.Calculations"], "JM.FF.CalculationsMMFF", ["JU.Lst", "$.PT", "JM.MinObject", "JM.FF.MMFFAngleCalc", "$.MMFFDistanceCalc", "$.MMFFESCalc", "$.MMFFOOPCalc", "$.MMFFSBCalc", "$.MMFFTorsionCalc", "$.MMFFVDWCalc"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -3374,7 +3374,7 @@ return this.getDebugLineC(iType, c);
 }
 }, "~N,JM.FF.Calculation");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JM.FF.Calculations"], "JM.FF.CalculationsUFF", ["JU.Lst", "JM.FF.UFFAngleCalc", "$.UFFDistanceCalc", "$.UFFOOPCalc", "$.UFFTorsionCalc", "$.UFFVDWCalc"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -3480,7 +3480,7 @@ function(o){
 return null;
 }, "JM.MinObject");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JM.FF.Calculation"], "JM.FF.MMFFAngleCalc", null, function(){
 var c$ = Clazz_declareType(JM.FF, "MMFFAngleCalc", JM.FF.Calculation);
@@ -3509,7 +3509,7 @@ if (this.calcs.logging) this.calcs.appendLogData(this.calcs.getDebugLine(1, this
 return this.energy;
 }, "~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JM.FF.Calculation"], "JM.FF.MMFFDistanceCalc", null, function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -3541,7 +3541,7 @@ this.calcs.addForces(this, 2);
 return this.energy;
 }, "~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JM.FF.Calculation"], "JM.FF.MMFFESCalc", null, function(){
 var c$ = Clazz_declareType(JM.FF, "MMFFESCalc", JM.FF.Calculation);
@@ -3564,7 +3564,7 @@ this.calcs.addForces(this, 2);
 return this.energy;
 }, "~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JM.FF.Calculation"], "JM.FF.MMFFOOPCalc", null, function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -3601,7 +3601,7 @@ this.calcs.addForces(this, 4);
 return this.energy;
 }, "~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JM.FF.Calculation"], "JM.FF.MMFFSBCalc", null, function(){
 var c$ = Clazz_declareType(JM.FF, "MMFFSBCalc", JM.FF.Calculation);
@@ -3641,7 +3641,7 @@ this.calcs.addForces(this, 2);
 }return this.energy;
 }, "~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JM.FF.Calculation"], "JM.FF.MMFFTorsionCalc", null, function(){
 var c$ = Clazz_declareType(JM.FF, "MMFFTorsionCalc", JM.FF.Calculation);
@@ -3671,7 +3671,7 @@ this.calcs.addForces(this, 4);
 return this.energy;
 }, "~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JM.FF.Calculation"], "JM.FF.MMFFVDWCalc", null, function(){
 var c$ = Clazz_declareType(JM.FF, "MMFFVDWCalc", JM.FF.Calculation);
@@ -3720,7 +3720,7 @@ this.calcs.addForces(this, 2);
 return this.energy;
 }, "~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JM.FF.Calculation"], "JM.FF.UFFAngleCalc", ["JM.FF.CalculationsUFF"], function(){
 var c$ = Clazz_declareType(JM.FF, "UFFAngleCalc", JM.FF.Calculation);
@@ -3816,7 +3816,7 @@ this.calcs.addForces(this, 3);
 return this.energy;
 }, "~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JM.FF.Calculation"], "JM.FF.UFFDistanceCalc", ["JM.FF.CalculationsUFF"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -3846,7 +3846,7 @@ this.calcs.addForces(this, 2);
 return this.energy;
 }, "~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JM.FF.Calculation"], "JM.FF.UFFOOPCalc", null, function(){
 var c$ = Clazz_declareType(JM.FF, "UFFOOPCalc", JM.FF.Calculation);
@@ -3916,7 +3916,7 @@ this.calcs.addForces(this, 4);
 return this.energy;
 }, "~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JM.FF.Calculation"], "JM.FF.UFFTorsionCalc", ["JM.Util"], function(){
 var c$ = Clazz_declareType(JM.FF, "UFFTorsionCalc", JM.FF.Calculation);
@@ -4015,7 +4015,7 @@ this.calcs.addForces(this, 4);
 return this.energy;
 }, "~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 Clazz_load(["JM.FF.Calculation"], "JM.FF.UFFVDWCalc", null, function(){
 var c$ = Clazz_declareType(JM.FF, "UFFVDWCalc", JM.FF.Calculation);
@@ -4063,7 +4063,7 @@ this.calcs.addForces(this, 2);
 return this.energy;
 }, "~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM.FF");
 (function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -4072,7 +4072,7 @@ this.dVal = null;
 this.sVal = null;
 Clazz_instantialize(this, arguments);}, JM.FF, "FFParam", null);
 })();
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM");
 Clazz_load(["J.thread.JmolThread"], "JM.MinimizationThread", ["JU.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -4124,7 +4124,7 @@ function(e){
 if (this.minimizer.minimizationOn()) JU.Logger.error(e.toString());
 }, "Exception");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JM");
 (function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -4154,7 +4154,7 @@ break;
 }
 }, "~N,JU.BS,~A");
 })();
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 })(Clazz
 ,Clazz.getClassName
 ,Clazz.newLongArray

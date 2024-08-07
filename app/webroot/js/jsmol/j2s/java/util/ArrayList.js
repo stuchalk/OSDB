@@ -5,6 +5,16 @@ this.lastIndex = 0;
 this.array = null;
 Clazz.instantialize(this, arguments);}, java.util, "ArrayList", java.util.AbstractList, [java.util.List, Cloneable, java.io.Serializable, java.util.RandomAccess]);
 Clazz.makeConstructor(c$, 
+function(){
+Clazz.superConstructor (this, java.util.ArrayList, []);
+this.setCapacity(0);
+});
+Clazz.makeConstructor(c$, 
+function(capacity){
+Clazz.superConstructor (this, java.util.ArrayList, []);
+this.setCapacity(capacity);
+}, "~N");
+Clazz.makeConstructor(c$, 
 function(collection){
 this.firstIndex = this.lastIndex = 0;
 var n = -1;
@@ -357,7 +367,7 @@ function(contents){
 var size = this.size();
 if (contents == null || size > contents.length) {
 {
-return this.array.slice(firstIndex, firstIndex + size);
+return this.array.slice(this.firstIndex, this.firstIndex + size);
 }}System.arraycopy(this.array, this.firstIndex, contents, 0, size);
 if (size < contents.length) {
 contents[size] = null;
@@ -373,4 +383,4 @@ this.firstIndex = 0;
 this.lastIndex = this.array.length;
 });
 });
-;//5.0.1-v2 Thu Feb 08 09:49:36 CST 2024
+;//5.0.1-v2 Sat Apr 06 02:44:31 CDT 2024

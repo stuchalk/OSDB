@@ -1,5 +1,5 @@
 Clazz.declarePackage("J.render");
-Clazz.load(["J.render.ShapeRenderer"], "J.render.FrankRenderer", ["JV.Viewer"], function(){
+Clazz.load(["J.render.ShapeRenderer"], "J.render.FrankRenderer", ["J.shape.Frank", "JV.Viewer"], function(){
 var c$ = Clazz.declareType(J.render, "FrankRenderer", J.render.ShapeRenderer);
 Clazz.overrideMethod(c$, "render", 
 function(){
@@ -14,7 +14,7 @@ var imageFontScaling = this.vwr.imageFontScaling;
 frank.getFont(imageFontScaling);
 var dx = Clazz.floatToInt(frank.frankWidth + 4 * imageFontScaling);
 var dy = frank.frankDescent;
-this.g3d.drawStringNoSlab(frank.frankString, frank.font3d, this.vwr.gdata.width - dx, this.vwr.gdata.height - dy, 0, 0);
+this.g3d.drawStringNoSlab(J.shape.Frank.frankString, frank.font3d, this.vwr.gdata.width - dx, this.vwr.gdata.height - dy, 0, 0);
 var kit = (modelKitMode ? this.vwr.getModelkit(false) : null);
 if (modelKitMode && !kit.isHidden()) {
 this.g3d.setC(12);
@@ -35,4 +35,4 @@ this.g3d.fillTextRect(0, h << 1, 0, 0, w, h);
 }}}return false;
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

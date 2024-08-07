@@ -332,11 +332,13 @@ function(){
 var info = this.modelSet0.getModelSetAuxiliaryInfo(null);
 var mergeGroup3Lists = info.get("group3Lists");
 var mergeGroup3Counts = info.get("group3Counts");
+var nLists = (mergeGroup3Lists == null ? 0 : mergeGroup3Lists.length);
 if (mergeGroup3Lists != null) {
 for (var i = 0; i < this.baseModelCount; i++) {
+if (i < nLists) {
 this.group3Lists[i + 1] = mergeGroup3Lists[i + 1];
 this.group3Counts[i + 1] = mergeGroup3Counts[i + 1];
-this.structuresDefinedInFile.set(i);
+}this.structuresDefinedInFile.set(i);
 }
 this.group3Lists[0] = mergeGroup3Lists[0];
 this.group3Counts[0] = mergeGroup3Counts[0];
@@ -507,12 +509,12 @@ addH = isPdbThisModel && this.doAddPDBHydrogens;
 if (this.jbr != null) this.jbr.setHaveHsAlready(false);
 }var group3 = iterAtom.getGroup3();
 var chainID = iterAtom.getChainID();
-if (this.jbr != null) this.checkNewGroup(adapter, chainID, group3, iterAtom.getSequenceNumber(), iterAtom.getInsertionCode(), addH, isLegacyHAddition);
+this.checkNewGroup(adapter, chainID, group3, iterAtom.getSequenceNumber(), iterAtom.getInsertionCode(), addH, isLegacyHAddition);
 var isotope = iterAtom.getElementNumber();
 if (addH && JU.Elements.getElementNumber(isotope) == 1) this.jbr.setHaveHsAlready(true);
 var name = iterAtom.getAtomName();
 var charge = (addH ? this.getPdbCharge(group3, name) : iterAtom.getFormalCharge());
-var atom = this.addAtom(isPdbThisModel, iterAtom.getSymmetry(), iterAtom.getAtomSite() + siteBase, isotope, name, charge, iterAtom.getPartialCharge(), iterAtom.getTensors(), iterAtom.getOccupancy(), iterAtom.getBfactor(), iterAtom.getXYZ(), iterAtom.getIsHetero(), iterAtom.getSerial(), iterAtom.getSeqID(), group3, iterAtom.getVib(), iterAtom.getAltLoc(), iterAtom.getRadius(), iterAtom.getBondRadius());
+var atom = this.addAtom(isPdbThisModel, iterAtom.getSymmetry(), iterAtom.getAtomSite() + siteBase, isotope, name, charge, iterAtom.getPartialCharge(), iterAtom.getTensors(), iterAtom.getOccupancy(), iterAtom.getBfactor(), iterAtom.getXYZ(), iterAtom.getIsHetero(), iterAtom.getIsNegDisorder(), iterAtom.getSerial(), iterAtom.getSeqID(), group3, iterAtom.getVib(), iterAtom.getAltLoc(), iterAtom.getRadius(), iterAtom.getBondRadius());
 if (haveBonds) this.htAtomMap.put(iterAtom.getUniqueID(), atom);
 }
 if (this.groupCount > 0 && addH) {
@@ -526,7 +528,7 @@ if (atoms[i] != null && atoms[i].mi > iLast) {
 iLast = atoms[i].mi;
 var m = models[iLast];
 m.firstAtomIndex = i;
-m.isOrderly = (m.act == m.bsAtoms.length());
+m.isOrderly = (m.act == m.bsAtoms.length() - i);
 var vdwtype = this.ms.getDefaultVdwType(iLast);
 if (vdwtype !== vdwtypeLast) {
 JU.Logger.info("Default Van der Waals type for model" + " set to " + vdwtype.getVdwLabel());
@@ -574,7 +576,7 @@ function(group3, name){
 return (group3.equals("ARG") && name.equals("NH1") || group3.equals("LYS") && name.equals("NZ") || group3.equals("HIS") && name.equals("ND1") ? 1 : 0);
 }, "~S,~S");
 Clazz.defineMethod(c$, "addAtom", 
-function(isPDB, atomSymmetry, atomSite, atomicAndIsotopeNumber, atomName, formalCharge, partialCharge, tensors, occupancy, bfactor, xyz, isHetero, atomSerial, atomSeqID, group3, vib, alternateLocationID, radius, bondRadius){
+function(isPDB, atomSymmetry, atomSite, atomicAndIsotopeNumber, atomName, formalCharge, partialCharge, tensors, occupancy, bfactor, xyz, isHetero, isNegDisorder, atomSerial, atomSeqID, group3, vib, alternateLocationID, radius, bondRadius){
 var specialAtomID = 0;
 var atomType = null;
 if (atomName != null) {
@@ -586,10 +588,10 @@ atomName = atomName.substring(0, i);
 if (atomName.indexOf('*') >= 0) atomName = atomName.$replace('*', '\'');
 specialAtomID = this.vwr.getJBR().lookupSpecialAtomID(atomName);
 if (specialAtomID == 2 && "CA".equalsIgnoreCase(group3)) specialAtomID = 0;
-}}var atom = this.ms.addAtom(this.iModel, this.nullGroup, atomicAndIsotopeNumber, atomName, atomType, atomSerial, atomSeqID, atomSite, xyz, radius, vib, formalCharge, partialCharge, occupancy, bfactor, tensors, isHetero, specialAtomID, atomSymmetry, bondRadius);
+}}var atom = this.ms.addAtom(this.iModel, this.nullGroup, atomicAndIsotopeNumber, atomName, atomType, atomSerial, atomSeqID, atomSite, xyz, radius, vib, formalCharge, partialCharge, occupancy, bfactor, tensors, isHetero, isNegDisorder, specialAtomID, atomSymmetry, bondRadius);
 atom.altloc = alternateLocationID;
 return atom;
-}, "~B,JU.BS,~N,~N,~S,~N,~N,JU.Lst,~N,~N,JU.P3,~B,~N,~N,~S,JU.V3,~S,~N,~N");
+}, "~B,JU.BS,~N,~N,~S,~N,~N,JU.Lst,~N,~N,JU.P3,~B,~B,~N,~N,~S,JU.V3,~S,~N,~N");
 Clazz.defineMethod(c$, "checkNewGroup", 
 function(adapter, chainID, group3, groupSequenceNumber, groupInsertionCode, addH, isLegacyHAddition){
 if (chainID != this.currentChainID) {
@@ -688,13 +690,13 @@ this.ms.haveUnitCells = true;
 for (var i = 0, pt = 0; i < this.ms.mc; i++) {
 if (haveMergeCells && i < this.baseModelCount) {
 this.ms.unitCells[i] = this.modelSet0.unitCells[i];
-} else {
+} else if (this.ms.getModelAuxiliaryInfo(i).get("spaceGroupIndex") != null) {
 this.ms.unitCells[i] = J.api.Interface.getSymmetry(this.vwr, "file");
 var notionalCell = null;
 if (this.isTrajectory) {
 var lst = this.ms.getInfoM("unitCells");
 if (lst != null) notionalCell = lst.get(pt++);
-}this.ms.unitCells[i].setSymmetryInfo(i, this.ms.getModelAuxiliaryInfo(i), notionalCell);
+}(this.ms.unitCells[i]).setSymmetryInfoFromFile(this.ms, i, notionalCell);
 }}
 }if (this.appendNew && this.ms.someModelsHaveSymmetry) {
 this.ms.getAtoms(1088421903, null);
@@ -739,7 +741,7 @@ bsExclude = (this.ms.getInfoM(JV.JC.getBoolName(3)) == null ? null :  new JU.BS(
 if (bsExclude != null) this.ms.setPdbConectBonding(this.baseAtomIndex, this.baseModelIndex, bsExclude);
 }var symmetryAlreadyAppliedToBonds = this.vwr.getBoolean(603979794);
 var doAutoBond = this.vwr.getBoolean(603979798);
-var forceAutoBond = this.vwr.getBoolean(603979847);
+var forceAutoBond = this.vwr.getBoolean(603979848);
 var bs = null;
 var autoBonding = false;
 if (!this.noAutoBond) for (var i = this.baseModelIndex; i < modelCount; i++) {
@@ -999,7 +1001,7 @@ var loadAllData = (JU.BSUtil.cardinalityOf(bsSelected) == vwr.ms.ac);
 for (var iterAtom = adapter.getAtomIterator(asc); iterAtom.hasNext(); ) {
 var xyz = iterAtom.getXYZ();
 if (Float.isNaN(xyz.x + xyz.y + xyz.z)) continue;
-if (tokType == 1145047050) {
+if (tokType == 1145047049) {
 i = bsSelected.nextSetBit(i + 1);
 if (i < 0) break;
 n++;
@@ -1041,7 +1043,7 @@ var vibName = adapter.getAtomSetName(asc, 0);
 JU.Logger.info("_vibrationName = " + vibName);
 vwr.setStringProperty("_vibrationName", vibName);
 break;
-case 1145047050:
+case 1145047049:
 JU.Logger.info(n + " atom positions read");
 modelSet.recalculateLeadMidpointsAndWingVectors(-1);
 if (n == modelSet.ac) return "boundbox {*};reset";
@@ -1050,4 +1052,4 @@ break;
 return null;
 }, "JV.Viewer,JM.ModelSet,~N,~O,JU.BS");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

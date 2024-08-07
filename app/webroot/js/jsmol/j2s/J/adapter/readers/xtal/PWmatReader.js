@@ -211,4 +211,4 @@ if (!this.haveMagnetic && this.asc.ac > 0) {
 this.setProperties("pwm_magnetic",  Clazz.newFloatArray (this.asc.ac, 0), this.nAtoms);
 }});
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

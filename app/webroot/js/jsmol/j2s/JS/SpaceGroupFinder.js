@@ -1,162 +1,273 @@
 Clazz.declarePackage("JS");
-Clazz.load(["JU.P3"], "JS.SpaceGroupFinder", ["JU.BS", "$.Lst", "$.PT", "JS.SpaceGroup", "$.Symmetry", "$.SymmetryOperation", "$.UnitCell", "JU.BSUtil", "JV.FileManager"], function(){
+Clazz.load(["JU.P3"], "JS.SpaceGroupFinder", ["JU.BS", "$.Lst", "$.M4", "$.PT", "JS.SpaceGroup", "$.Symmetry", "$.SymmetryOperation", "$.UnitCell", "JU.BSUtil", "JV.FileManager"], function(){
 var c$ = Clazz.decorateAsClass(function(){
+this.vwr = null;
+this.uc = null;
+this.sg = null;
+this.cartesians = null;
 this.atoms = null;
 this.nAtoms = 0;
-this.pt = null;
+this.xyzList = null;
+this.unitCellParams = null;
 this.slop = 0;
+this.isAssign = false;
+this.isUnknown = false;
+this.$checkSupercell = false;
+this.isSupercell = false;
+this.asString = false;
+this.bsPoints0 = null;
+this.bsAtoms = null;
+this.targets = null;
+this.origin = null;
+this.oabc = null;
+this.scaling = null;
+this.pTemp = null;
+this.isg = 0;
 if (!Clazz.isClassDefined("JS.SpaceGroupFinder.SGAtom")) {
 JS.SpaceGroupFinder.$SpaceGroupFinder$SGAtom$ ();
 }
 Clazz.instantialize(this, arguments);}, JS, "SpaceGroupFinder", null);
 Clazz.prepareFields (c$, function(){
-this.pt =  new JU.P3();
+this.pTemp =  new JU.P3();
 });
 Clazz.makeConstructor(c$, 
 function(){
 });
 Clazz.defineMethod(c$, "findSpaceGroup", 
-function(vwr, atoms0, xyzList, unitCellParams, origin, uc, asString, isAssign, checkSupercell){
-var slop = uc.getPrecision();
-this.slop = (!Float.isNaN(slop) ? slop : unitCellParams != null ? unitCellParams[26] : true ? 1.0E-12 : 1.0E-4);
-var oabc = null;
-var cartesians = vwr.ms.at;
-var isg = 0;
-var bsGroups =  new JU.BS();
-var bsOps =  new JU.BS();
-var bsAtoms = null;
-var bsPoints0 =  new JU.BS();
-if (xyzList == null || isAssign) {
-bsAtoms = JU.BSUtil.copy(atoms0);
-this.nAtoms = bsAtoms.cardinality();
-}var targets = JU.BS.newN(this.nAtoms);
-var n = 0;
-var nChecked = 0;
-var scaling = JU.P3.new3(1, 1, 1);
-var sg = null;
-var setNew = (isAssign && xyzList != null && this.nAtoms == 0 && (uc.getSpaceGroup() == null || "P1".equals((uc.getSpaceGroup()).getName())));
+function(vwr, atoms0, xyzList0, unitCellParams, origin, oabc0, uci, flags){
+this.vwr = vwr;
+this.xyzList = xyzList0;
+this.unitCellParams = unitCellParams;
+this.origin = origin;
+this.oabc = oabc0;
+this.uc = uci;
+this.isAssign = ((flags & 2) != 0);
+this.$checkSupercell = ((flags & 8) != 0);
+this.asString = ((flags & 1) != 0);
+var setFromScratch = ((flags & 4) != 0);
+var slop0 = this.uc.getPrecision();
+this.slop = (!Double.isNaN(slop0) ? slop0 : unitCellParams != null && unitCellParams.length > 26 ? unitCellParams[26] : false ? 1.0E-12 : 1.0E-4);
+this.cartesians = vwr.ms.at;
+this.bsPoints0 =  new JU.BS();
+if (this.xyzList == null || this.isAssign) {
+this.bsAtoms = JU.BSUtil.copy(atoms0);
+this.nAtoms = this.bsAtoms.cardinality();
+}this.targets = JU.BS.newN(this.nAtoms);
+this.scaling = JU.P3.new3(1, 1, 1);
 var name;
 var basis;
-if (xyzList != null && xyzList.toUpperCase().startsWith("ITA/")) {
-xyzList = JU.PT.rep(xyzList.substring(4), " ", "");
-var isJmolCode = (xyzList.indexOf(":") > 0);
-var pt = xyzList.indexOf(".");
-if (!isJmolCode && pt < 0 && JU.PT.parseInt(xyzList) != -2147483648) xyzList += ".1";
+this.isUnknown = true;
+var isITA = (this.xyzList != null && this.xyzList.toUpperCase().startsWith("ITA/"));
+var isHall = (this.xyzList != null && !isITA && (this.xyzList.startsWith("[") || this.xyzList.startsWith("Hall:")));
+if (isITA || this.isAssign && isHall) {
+this.isUnknown = false;
+if (isITA) {
+this.xyzList = JU.PT.rep(this.xyzList.substring(4), " ", "");
+} else if (this.xyzList.startsWith("Hall:")) {
+this.xyzList = this.xyzList.substring(5);
+} else {
+this.xyzList = JU.PT.replaceAllCharacters(this.xyzList, "[]", "");
+}this.sg = this.setITA(isHall);
+if (this.sg == null) return null;
+name = this.sg.getName();
+} else if (this.oabc != null || isHall) {
+name = this.xyzList;
+this.sg = JS.SpaceGroup.createSpaceGroupN(name);
+this.isUnknown = (this.sg == null);
+if (isHall && !this.isUnknown) return this.sg.dumpInfoObj();
+} else if (JS.SpaceGroup.isXYZList(this.xyzList)) {
+this.sg = JS.SpaceGroup.findSpaceGroupFromXYZ(this.xyzList);
+if (this.sg != null) return this.sg.dumpInfoObj();
+}if (setFromScratch) {
+if (this.sg == null && (this.sg = JS.SpaceGroup.determineSpaceGroupNA(this.xyzList, unitCellParams)) == null && (this.sg = JS.SpaceGroup.createSpaceGroupN(this.xyzList)) == null) return null;
+basis =  new JU.BS();
+name = this.sg.asString();
+if (this.oabc == null) {
+var userDefined = (unitCellParams.length == 6);
+this.uc = JS.SpaceGroupFinder.setSpaceGroupAndUnitCell(this.sg, unitCellParams, null, userDefined);
+this.oabc = this.uc.getUnitCellVectors();
+if (origin != null) this.oabc[0].setT(origin);
+} else {
+this.uc = JS.SpaceGroupFinder.setSpaceGroupAndUnitCell(this.sg, null, this.oabc, false);
+this.uc.transformUnitCell(uci.replaceTransformMatrix(null));
+}} else {
+var ret = this.findGroupByOperations();
+if (!this.isAssign || !(Clazz.instanceOf(ret,"JS.SpaceGroup"))) return ret;
+this.sg = ret;
+name = this.sg.asString();
+basis = JU.BSUtil.copy(this.bsAtoms);
+for (var i = this.targets.nextSetBit(0); i >= 0; i = this.targets.nextSetBit(i + 1)) basis.clear(this.atoms[i].index);
+
+var nb = basis.cardinality();
+var msg = name + (atoms0 == null || nb == 0 ? "" : "\nbasis is " + nb + " atom" + (nb == 1 ? "" : "s") + ": " + basis);
+System.out.println("SpaceGroupFinder: " + msg);
+if (this.asString) return msg;
+}var map = this.sg.dumpInfoObj();
+if (this.uc != null) System.out.println("unitcell is " + this.uc.getUnitCellInfo(true));
+if (!this.isAssign) {
+var bs1 = JU.BS.copy(this.bsPoints0);
+bs1.andNot(this.targets);
+this.dumpBasis(JS.SpaceGroupFinder.bsGroupOps[this.isg], bs1, this.bsPoints0);
+}map.put("name", name);
+map.put("basis", basis);
+if (this.isSupercell) map.put("supercell", this.scaling);
+this.oabc[1].scale(1 / this.scaling.x);
+this.oabc[2].scale(1 / this.scaling.y);
+this.oabc[3].scale(1 / this.scaling.z);
+map.put("unitcell", this.oabc);
+if (this.isAssign) map.put("sg", this.sg);
+return map;
+}, "JV.Viewer,JU.BS,~S,~A,JU.T3,~A,J.api.SymmetryInterface,~N");
+Clazz.defineMethod(c$, "setITA", 
+function(isHall){
+var name = null;
 var sgdata = null;
-var o = uc.getSpaceGroupJSON(vwr, "ITA", xyzList, 0);
+var pt = this.xyzList.lastIndexOf(":");
+var hasTransform = (pt > 0 && this.xyzList.indexOf(",") > pt);
+var isJmolCode = (pt > 0 && !hasTransform);
+var transform = null;
+var clegId = null;
+if (hasTransform) {
+name = transform = this.uc.staticCleanTransform(this.xyzList.substring(pt + 1));
+this.xyzList = this.xyzList.substring(0, pt);
+clegId = this.xyzList + ":" + transform;
+if (transform.equals("a,b,c")) {
+transform = null;
+hasTransform = false;
+}}pt = this.xyzList.indexOf(".");
+if (pt > 0 && (hasTransform || isJmolCode)) {
+this.xyzList = this.xyzList.substring(0, pt);
+pt = -1;
+}var itano = this.xyzList;
+var isITADotSetting = (pt > 0);
+if (!isJmolCode && !isHall && !hasTransform && !isITADotSetting && JU.PT.parseInt(itano) != -2147483648) this.xyzList += ".1";
+var genPos;
+var setting = null;
+var itaIndex = this.xyzList;
+if (isHall) {
+genPos = this.uc.getSpaceGroupInfoObj("nameToXYZList", "Hall:" + this.xyzList, false, false);
+if (genPos == null) return null;
+} else {
+name = (hasTransform ? transform : itaIndex);
+this.sg = JS.SpaceGroup.getSpaceGroupFromJmolClegOrITA(hasTransform ? clegId : itaIndex);
+var o = this.uc.getSpaceGroupJSON(this.vwr, "ITA", itaIndex, 0);
 if (o == null || (typeof(o)=='string')) {
 return null;
 }sgdata = o;
-if (isJmolCode) {
-name = xyzList;
+if (isJmolCode || hasTransform) {
 var its = sgdata.get("its");
-sgdata = null;
 if (its == null) return null;
+sgdata = null;
 for (var i = 0, c = its.size(); i < c; i++) {
-var setting = its.get(i);
-if (name.equals(setting.get("itaFull"))) {
+setting = its.get(i);
+if (name.equals(setting.get(hasTransform ? "trm" : "jmolId"))) {
 sgdata = setting;
 break;
 }}
-if (sgdata == null) return null;
+if (sgdata == null || !sgdata.containsKey("jmolId")) {
+if (isJmolCode) {
+return null;
+}setting = null;
+if (sgdata != null) transform = sgdata.get("trm");
+hasTransform = true;
+sgdata = its.get(0);
 } else {
-name = sgdata.get("itaFull");
-}var isKnown = (name.indexOf("?") < 0);
-var genPos = sgdata.get("gp");
-xyzList = "";
-for (var i = 0, c = genPos.size(); i < c; i++) xyzList += ";" + genPos.get(i);
-
-xyzList = xyzList.substring(1);
-sg = JS.SpaceGroup.createSpaceGroupN(xyzList);
-sg.intlTableNumber = name;
-var sgjmol = null;
-if (isKnown) {
-sgjmol = JS.SpaceGroup.determineSpaceGroupNA(name, null);
-if (sgjmol != null) {
-sg = sgjmol.cloneInfoTo(sg);
+setting = null;
+hasTransform = false;
+transform = null;
+}} else {
+name = sgdata.get("jmolId");
+}genPos = sgdata.get("gp");
+}if (this.sg != null && transform == null) {
+this.sg = JS.SpaceGroup.createITASpaceGroup(genPos, this.sg);
+return this.sg;
+}this.sg = JS.SpaceGroup.transformSpaceGroup(null, this.sg, genPos, (hasTransform ? transform : null), (hasTransform ?  new JU.M4() : null));
+if (this.sg == null) return null;
+name = "";
+if (this.sg.itaNumber.equals("0")) {
+if (transform == null) {
+transform = sgdata.get("trm");
+var hm = sgdata.get("hm");
+this.sg.setHMSymbol(hm);
 } else {
-sg.setIntlTableNumberFull(name);
-}}if (sgjmol == null) {
-var u = sgdata.get("u");
-var tr = sgdata.get("tm");
-sg.intlTableNumberExt = JU.PT.rep(u, " ", "") + ";" + sgdata.get("sg") + "(" + tr + ")";
-var axis = u.toLowerCase().charAt(0);
-if (JS.UnitCell.isHexagonalSG(JU.PT.parseInt(sg.intlTableNumber), null) && axis != 'r') axis = 'h';
-switch ((axis).charCodeAt(0)) {
-case 97:
-case 98:
-case 99:
-case 114:
-case 104:
-sg.axisChoice = axis;
-break;
-}
-}}var isSupercell = false;
-if (setNew) {
-if (sg == null && (sg = JS.SpaceGroup.determineSpaceGroupNA(xyzList, unitCellParams)) == null && (sg = JS.SpaceGroup.createSpaceGroupN(xyzList)) == null) return null;
-uc = this.createCompatibleUnitCell(sg, unitCellParams);
-basis =  new JU.BS();
-name = sg.asString();
-oabc = uc.getUnitCellVectors();
-if (origin != null) oabc[0].setT(origin);
-} else {
+this.sg.setITATableNames(null, itano, null, transform);
+}name = null;
+System.out.println("SpaceGroupFinder: new setting: " + this.sg.asString());
+}return this.sg;
+}, "~B");
+Clazz.defineMethod(c$, "findGroupByOperations", 
+function(){
+var bsOps =  new JU.BS();
+var bsGroups =  new JU.BS();
+var n = 0;
+var nChecked = 0;
 try {
-if (JS.SpaceGroupFinder.bsOpGroups == null) JS.SpaceGroupFinder.loadData(vwr, this);
-if (xyzList != null) {
-var ret = this.getGroupsWithOps(xyzList, unitCellParams, isAssign);
-if (!isAssign || ret == null) return ret;
-sg = ret;
-uc.setUnitCellFromParams(unitCellParams, false, slop);
-}oabc = uc.getUnitCellVectors();
-uc = uc.getUnitCellMultiplied();
-if (origin != null) {
-oabc[0].setT(origin);
-uc.setOffsetPt(origin);
-}this.filterGroups(bsGroups, uc.getUnitCellParams());
-this.atoms =  new Array(bsAtoms.cardinality());
-System.out.println("bsAtoms = " + bsAtoms);
-for (var p = 0, i = bsAtoms.nextSetBit(0); i >= 0; i = bsAtoms.nextSetBit(i + 1), p++) {
-var a = cartesians[i];
+if (this.isUnknown) {
+if (JS.SpaceGroupFinder.bsOpGroups == null) JS.SpaceGroupFinder.loadData(this.vwr, this);
+} else {
+bsGroups.set(0);
+}if (this.xyzList != null) {
+if (this.isUnknown) {
+var ret = this.getGroupsWithOps(this.xyzList, this.unitCellParams, this.isAssign);
+if (!this.isAssign || ret == null) return ret;
+this.sg = ret;
+}if (this.oabc == null) this.uc.setUnitCellFromParams(this.unitCellParams, false, this.slop);
+}var uc0 = this.uc;
+if (this.oabc == null) {
+this.oabc = this.uc.getUnitCellVectors();
+this.uc = this.uc.getUnitCellMultiplied();
+if (this.origin != null && !this.origin.equals(this.uc.getCartesianOffset())) {
+this.oabc[0].setT(this.origin);
+this.uc.setCartesianOffset(this.origin);
+}} else {
+this.uc.getUnitCell(this.oabc, false, "finder");
+}if (this.isUnknown) this.filterGroups(bsGroups, this.uc.getUnitCellParams());
+ else if (this.nAtoms == 0) {
+return this.sg;
+}if (this.bsAtoms != null) {
+this.atoms =  new Array(this.bsAtoms.cardinality());
+System.out.println("bsAtoms = " + this.bsAtoms);
+for (var p = 0, i = this.bsAtoms.nextSetBit(0); i >= 0; i = this.bsAtoms.nextSetBit(i + 1), p++) {
+var a = this.cartesians[i];
 var type = a.getAtomicAndIsotopeNumber();
-(this.atoms[p] = Clazz.innerTypeInstance(JS.SpaceGroupFinder.SGAtom, this, null, type, i, a.getAtomName(), a.getOccupancy100())).setT(this.toFractional(a, uc));
+(this.atoms[p] = Clazz.innerTypeInstance(JS.SpaceGroupFinder.SGAtom, this, null, type, i, a.getAtomName(), a.getOccupancy100())).setT(this.toFractional(a, this.uc));
 }
-var bsPoints = JU.BSUtil.newBitSet2(0, this.nAtoms);
-var uc0 = uc;
+}var bsPoints = JU.BSUtil.newBitSet2(0, this.nAtoms);
 this.nAtoms = bsPoints.cardinality();
-uc0 = uc;
+uc0 = this.uc;
 if (this.nAtoms > 0) {
 for (var i = bsPoints.nextSetBit(0); i >= 0; i = bsPoints.nextSetBit(i + 1)) {
-uc.unitize(this.atoms[i]);
+this.uc.unitize(this.atoms[i]);
 }
 this.removeDuplicates(bsPoints);
-if (checkSupercell) {
-uc = this.checkSupercell(vwr, uc, bsPoints, 1, scaling);
-uc = this.checkSupercell(vwr, uc, bsPoints, 2, scaling);
-uc = this.checkSupercell(vwr, uc, bsPoints, 3, scaling);
-isSupercell = (uc !== uc0);
-if (isSupercell) {
-if (scaling.x != 1) System.out.println("supercell found; a scaled by 1/" + scaling.x);
-if (scaling.y != 1) System.out.println("supercell found; b scaled by 1/" + scaling.y);
-if (scaling.z != 1) System.out.println("supercell found; c scaled by 1/" + scaling.z);
+if (this.$checkSupercell) {
+this.uc = this.checkSupercell(this.vwr, this.uc, bsPoints, 1, this.scaling);
+this.uc = this.checkSupercell(this.vwr, this.uc, bsPoints, 2, this.scaling);
+this.uc = this.checkSupercell(this.vwr, this.uc, bsPoints, 3, this.scaling);
+this.isSupercell = (this.uc !== uc0);
+if (this.isSupercell) {
+if (this.scaling.x != 1) System.out.println("supercell found; a scaled by 1/" + this.scaling.x);
+if (this.scaling.y != 1) System.out.println("supercell found; b scaled by 1/" + this.scaling.y);
+if (this.scaling.z != 1) System.out.println("supercell found; c scaled by 1/" + this.scaling.z);
 }}}n = bsPoints.cardinality();
-bsAtoms =  new JU.BS();
+this.bsAtoms =  new JU.BS();
 var newAtoms =  new Array(n);
 for (var p = 0, i = bsPoints.nextSetBit(0); i >= 0; i = bsPoints.nextSetBit(i + 1)) {
 var a = this.atoms[i];
 newAtoms[p++] = a;
-if (isSupercell) {
-a.setT(this.toFractional(cartesians[a.index], uc));
-uc.unitize(a);
-}}
+if (this.isSupercell) {
+a.setT(this.toFractional(this.cartesians[a.index], this.uc));
+this.uc.unitize(a);
+}this.bsAtoms.set(this.atoms[i].index);
+}
 this.atoms = newAtoms;
 this.nAtoms = n;
-System.out.println("bsAtoms(within cell) = " + bsAtoms);
 bsPoints.clearAll();
 bsPoints.setBits(0, this.nAtoms);
-bsPoints0 = JU.BS.copy(bsPoints);
+this.bsPoints0 = JU.BS.copy(bsPoints);
 var temp1 = JU.BS.newN(JS.SpaceGroupFinder.OP_COUNT);
 var targeted = JU.BS.newN(this.nAtoms);
-bsOps.setBits(1, sg == null ? JS.SpaceGroupFinder.OP_COUNT : sg.getOperationCount());
+bsOps.setBits(1, this.sg == null ? JS.SpaceGroupFinder.OP_COUNT : this.sg.getOperationCount());
 if (this.nAtoms == 0) {
 bsGroups.clearBits(1, JS.SpaceGroupFinder.GROUP_COUNT);
 bsOps.clearAll();
@@ -165,34 +276,33 @@ var opsChecked = JU.BS.newN(JS.SpaceGroupFinder.OP_COUNT);
 opsChecked.set(0);
 var hasC1 = false;
 for (var iop = bsOps.nextSetBit(1); iop > 0 && !bsGroups.isEmpty(); iop = bsOps.nextSetBit(iop + 1)) {
-var op = (sg == null ? JS.SpaceGroupFinder.getOp(iop) : sg.getOperation(iop));
-if (sg == null) {
+var op = (this.sg == null ? JS.SpaceGroupFinder.getOp(iop) : this.sg.getOperation(iop));
+if (this.sg == null) {
 System.out.println("\nChecking operation " + iop + " " + JS.SpaceGroupFinder.opXYZ[iop]);
 System.out.println("bsGroups = " + bsGroups);
 System.out.println("bsOps = " + bsOps);
 nChecked++;
 }var isOK = true;
 bsPoints.clearAll();
-bsPoints.or(bsPoints0);
+bsPoints.or(this.bsPoints0);
 targeted.clearAll();
 for (var i = bsPoints.nextSetBit(0); i >= 0; i = bsPoints.nextSetBit(i + 1)) {
 bsPoints.clear(i);
-var j = this.findEquiv(uc, iop, op, i, bsPoints, this.pt, true);
-if (j < 0 && sg == null) {
-System.out.println("failed op " + iop + " for atom " + i + " " + this.atoms[i].name + " " + this.atoms[i] + " looking for " + this.pt + "\n" + op);
+var j = this.findEquiv(this.uc, iop, op, i, bsPoints, this.pTemp, true);
+if (j < 0 && this.sg == null) {
+System.out.println("failed op " + iop + " for atom " + i + " " + this.atoms[i].name + " " + this.atoms[i] + " looking for " + this.pTemp + "\n" + op);
 isOK = false;
 break;
 }if (j >= 0 && i != j) {
 targeted.set(j);
 }}
-if (sg == null) {
+if (this.sg == null) {
 var myGroups = JS.SpaceGroupFinder.bsOpGroups[iop];
 bsOps.clear(iop);
 opsChecked.set(iop);
 if (isOK) {
-System.out.println("OK!");
 if (iop == 1) hasC1 = true;
-targets.or(targeted);
+this.targets.or(targeted);
 bsGroups.and(myGroups);
 temp1.setBits(1, JS.SpaceGroupFinder.OP_COUNT);
 for (var i = bsGroups.nextSetBit(0); i >= 0; i = bsGroups.nextSetBit(i + 1)) {
@@ -208,32 +318,32 @@ temp1.or(JS.SpaceGroupFinder.bsGroupOps[i]);
 }
 bsOps.and(temp1);
 }} else {
-targets.or(targeted);
+this.targets.or(targeted);
 }}
-if (sg == null) {
+if (this.sg == null) {
 n = bsGroups.cardinality();
 if (n == 0) {
 bsGroups.set(hasC1 ? 1 : 0);
 n = 1;
-if (hasC1 && !asString) {
+if (hasC1 && !this.asString) {
 uncheckedOps.clearAll();
 uncheckedOps.set(1);
 opsChecked.clearAll();
-targets.clearAll();
-bsPoints.or(bsPoints0);
-}}isg = bsGroups.nextSetBit(0);
+this.targets.clearAll();
+bsPoints.or(this.bsPoints0);
+}}this.isg = bsGroups.nextSetBit(0);
 if (n == 1) {
-if (isg > 0) {
-opsChecked.and(JS.SpaceGroupFinder.bsGroupOps[isg]);
-uncheckedOps.and(JS.SpaceGroupFinder.bsGroupOps[isg]);
+if (this.isg > 0) {
+opsChecked.and(JS.SpaceGroupFinder.bsGroupOps[this.isg]);
+uncheckedOps.and(JS.SpaceGroupFinder.bsGroupOps[this.isg]);
 uncheckedOps.andNot(opsChecked);
-uncheckedOps.or(JS.SpaceGroupFinder.bsGroupOps[isg]);
+uncheckedOps.or(JS.SpaceGroupFinder.bsGroupOps[this.isg]);
 uncheckedOps.clear(0);
-bsPoints.or(bsPoints0);
-bsPoints.andNot(targets);
-if (!this.checkBasis(uc, uncheckedOps, bsPoints, targets)) {
-isg = 0;
-}}if (isg == 0) targets.clearAll();
+bsPoints.or(this.bsPoints0);
+bsPoints.andNot(this.targets);
+if (!this.checkBasis(this.uc, uncheckedOps, bsPoints, this.targets)) {
+this.isg = 0;
+}}if (this.isg == 0) this.targets.clearAll();
 }}} catch (e) {
 if (Clazz.exceptionOf(e, Exception)){
 e.printStackTrace();
@@ -242,44 +352,28 @@ bsGroups.clearAll();
 throw e;
 }
 }
-if (sg == null) {
+if (this.sg == null) {
 System.out.println("checked " + nChecked + " operations; now " + n + " " + bsGroups + " " + bsOps);
 for (var i = bsGroups.nextSetBit(0); i >= 0; i = bsGroups.nextSetBit(i + 1)) {
 System.out.println(JS.SpaceGroup.nameToGroup.get(JS.SpaceGroupFinder.groupNames[i]));
 }
 if (n != 1) return null;
-sg = JS.SpaceGroup.nameToGroup.get(JS.SpaceGroupFinder.groupNames[isg]);
-}name = sg.asString();
-basis = JU.BSUtil.copy(bsAtoms);
-for (var i = targets.nextSetBit(0); i >= 0; i = targets.nextSetBit(i + 1)) basis.clear(this.atoms[i].index);
-
-var nb = basis.cardinality();
-var msg = name + "\nbasis is " + nb + " atom" + (nb == 1 ? "" : "s") + ": " + basis;
-System.out.println(msg);
-if (asString) return msg;
-}var map = sg.dumpInfoObj();
-System.out.println("unitcell is " + uc.getUnitCellInfo(true));
-var bs1 = JU.BS.copy(bsPoints0);
-bs1.andNot(targets);
-if (!isAssign) this.dumpBasis(JS.SpaceGroupFinder.bsGroupOps[isg], bs1, bsPoints0);
-map.put("name", name);
-map.put("basis", basis);
-if (isSupercell) map.put("supercell", scaling);
-oabc[1].scale(1 / scaling.x);
-oabc[2].scale(1 / scaling.y);
-oabc[3].scale(1 / scaling.z);
-map.put("unitcell", oabc);
-if (isAssign) map.put("sg", sg);
-return map;
-}, "JV.Viewer,JU.BS,~S,~A,JU.T3,J.api.SymmetryInterface,~B,~B,~B");
-Clazz.defineMethod(c$, "createCompatibleUnitCell", 
-function(sg, params){
-var newParams =  Clazz.newFloatArray (6, 0);
-JS.UnitCell.createCompatibleUnitCell(sg, params, newParams, false);
-var sym =  new JS.Symmetry().setUnitCellFromParams(newParams, false, NaN);
+this.sg = JS.SpaceGroup.nameToGroup.get(JS.SpaceGroupFinder.groupNames[this.isg]);
+}return this.sg;
+});
+c$.setSpaceGroupAndUnitCell = Clazz.defineMethod(c$, "setSpaceGroupAndUnitCell", 
+function(sg, params, oabc, allowSame){
+var sym =  new JS.Symmetry();
 sym.setSpaceGroupTo(sg);
-return sym;
-}, "JS.SpaceGroup,~A");
+if (oabc == null) {
+var newParams =  Clazz.newFloatArray (6, 0);
+if (!JS.UnitCell.createCompatibleUnitCell(sg, params, newParams, allowSame)) {
+newParams = params;
+}sym.setUnitCellFromParams(newParams, false, NaN);
+} else {
+sym.getUnitCell(oabc, false, "modelkit");
+}return sym;
+}, "JS.SpaceGroup,~A,~A,~B");
 Clazz.defineMethod(c$, "removeDuplicates", 
 function(bs){
 for (var i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1)) {
@@ -306,7 +400,7 @@ for (var iop = uncheckedOps.nextSetBit(0); iop >= 0; iop = uncheckedOps.nextSetB
 bs.or(bsPoints);
 var op = JS.SpaceGroupFinder.getOp(iop);
 for (var i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1)) {
-var j = this.findEquiv(uc, -1, op, i, bs, this.pt, false);
+var j = this.findEquiv(uc, -1, op, i, bs, this.pTemp, false);
 if (j < 0) return false;
 if (i != j) {
 j = Math.max(i, j);
@@ -369,6 +463,8 @@ return Math.abs(d) < 0.001;
 }, "~N");
 c$.scanTo = Clazz.defineMethod(c$, "scanTo", 
 function(i, num){
+num = "000" + num;
+num = num.substring(num.length - 3);
 for (; ; i++) {
 if (JS.SpaceGroupFinder.groupNames[i].startsWith(num)) break;
 }
@@ -381,12 +477,15 @@ if (unitCellParams == null) {
 groups.setBits(0, JS.SpaceGroupFinder.GROUP_COUNT);
 } else {
 this.filterGroups(groups, unitCellParams);
-}var sg = null;
+}var sgo = null;
 if (!JS.SpaceGroup.isXYZList(xyzList)) {
-sg = JS.SpaceGroup.determineSpaceGroupNA(xyzList, unitCellParams);
-if (sg == null) return null;
-sg.checkHallOperators();
-for (var i = 0; i < JS.SpaceGroupFinder.GROUP_COUNT; i++) if (JS.SpaceGroupFinder.groupNames[i].equals(sg.intlTableNumberFull)) return (groups.get(i) ? sg : null);
+sgo = JS.SpaceGroup.determineSpaceGroupNA(xyzList, unitCellParams);
+if (sgo == null) return null;
+sgo.checkHallOperators();
+var tableNo = ("00" + sgo.jmolId);
+var pt = tableNo.indexOf(":");
+tableNo = tableNo.substring((pt < 0 ? tableNo.length : pt) - 3);
+for (var i = 0; i < JS.SpaceGroupFinder.GROUP_COUNT; i++) if (JS.SpaceGroupFinder.groupNames[i].equals(tableNo)) return (groups.get(i) ? sgo : null);
 
 return null;
 }var isEqual = xyzList.indexOf("&") < 0 || isAssign;
@@ -420,9 +519,9 @@ return ret;
 }, "~S,~A,~B");
 Clazz.defineMethod(c$, "toFractional", 
 function(a, uc){
-this.pt.setT(a);
-uc.toFractional(this.pt, false);
-return this.pt;
+this.pTemp.setT(a);
+uc.toFractional(this.pTemp, false);
+return this.pTemp;
 }, "JM.Atom,J.api.SymmetryInterface");
 c$.getOp = Clazz.defineMethod(c$, "getOp", 
 function(iop){
@@ -447,17 +546,17 @@ var b;
 var f;
 for (var j = bsPoints.nextSetBit(0); j >= 0; j = bsPoints.nextSetBit(j + 1)) {
 if (j == i || (b = this.atoms[j]).typeAndOcc != type) continue;
-this.pt.sub2(b, a);
+this.pTemp.sub2(b, a);
 switch (abc) {
 case 1:
-if (this.approx0(f = this.pt.x) || !this.approx0(this.pt.y) || !this.approx0(this.pt.z)) continue;
+if (this.approx0(f = this.pTemp.x) || !this.approx0(this.pTemp.y) || !this.approx0(this.pTemp.z)) continue;
 break;
 case 2:
-if (this.approx0(f = this.pt.y) || !this.approx0(this.pt.x) || !this.approx0(this.pt.z)) continue;
+if (this.approx0(f = this.pTemp.y) || !this.approx0(this.pTemp.x) || !this.approx0(this.pTemp.z)) continue;
 break;
 default:
 case 3:
-if (this.approx0(f = this.pt.z) || !this.approx0(this.pt.x) || !this.approx0(this.pt.y)) continue;
+if (this.approx0(f = this.pTemp.z) || !this.approx0(this.pTemp.x) || !this.approx0(this.pTemp.y)) continue;
 break;
 }
 var n = this.approxInt(1 / f);
@@ -487,7 +586,7 @@ case 3:
 scaling.z = n;
 break;
 }
-uc = vwr.getSymTemp().getUnitCell(oabc, false, "scaled");
+(uc =  new JS.Symmetry()).getUnitCell(oabc, false, "scaled");
 var f = 0;
 for (var i = bsPoints.nextSetBit(0); i >= 0; i = bsPoints.nextSetBit(i + 1)) {
 switch (abc) {
@@ -507,14 +606,14 @@ bsPoints.clear(i);
 }}
 nAtoms = bsPoints.cardinality();
 return uc;
-}, "JV.Viewer,J.api.SymmetryInterface,JU.BS,~N,JU.P3");
+}, "JV.Viewer,JS.Symmetry,JU.BS,~N,JU.P3");
 Clazz.defineMethod(c$, "approx0", 
 function(f){
 return (Math.abs(f) < this.slop);
 }, "~N");
 Clazz.defineMethod(c$, "approxInt", 
 function(finv){
-var i = Clazz.doubleToInt(finv + this.slop);
+var i = Clazz.floatToInt(finv + this.slop);
 return (this.approx0(finv - i) ? i : 0);
 }, "~N");
 Clazz.defineMethod(c$, "findEquiv", 
@@ -564,8 +663,9 @@ for (var j = 0; j < JS.SpaceGroupFinder.GROUP_COUNT; j++) JS.SpaceGroupFinder.bs
 
 for (var i = 0; i < JS.SpaceGroupFinder.OP_COUNT; i++) {
 var m = map[i];
+var n = m.length;
 JS.SpaceGroupFinder.bsOpGroups[i] = JU.BS.newN(JS.SpaceGroupFinder.GROUP_COUNT);
-for (var j = 0; j < JS.SpaceGroupFinder.GROUP_COUNT; j++) {
+for (var j = 0; j < n; j++) {
 if (m.charAt(j) == '1') {
 JS.SpaceGroupFinder.bsGroupOps[j].set(i);
 JS.SpaceGroupFinder.bsOpGroups[i].set(j);
@@ -634,4 +734,4 @@ c$.opXYZ = null;
 c$.ops = null;
 c$.rdr = null;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

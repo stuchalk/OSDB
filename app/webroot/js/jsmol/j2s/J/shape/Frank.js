@@ -1,7 +1,6 @@
 Clazz.declarePackage("J.shape");
 Clazz.load(["J.shape.Shape"], "J.shape.Frank", ["J.i18n.GT", "JV.Viewer"], function(){
 var c$ = Clazz.decorateAsClass(function(){
-this.frankString = "Jmol";
 this.currentMetricsFont3d = null;
 this.baseFont3d = null;
 this.frankWidth = 0;
@@ -18,6 +17,8 @@ Clazz.overrideMethod(c$, "initShape",
 function(){
 this.myType = "frank";
 this.baseFont3d = this.font3d = this.vwr.gdata.getFont3DFSS("SansSerif", "Plain", 16);
+if (JV.Viewer.isJS || JV.Viewer.isSwingJS) J.shape.Frank.frankString = "JSmol";
+ else if (false) J.shape.Frank.frankString = "JmolD";
 this.calcMetrics();
 });
 Clazz.overrideMethod(c$, "setProperty", 
@@ -43,11 +44,9 @@ return true;
 }, "~N,~N,JU.BS");
 Clazz.defineMethod(c$, "calcMetrics", 
 function(){
-if (JV.Viewer.isJS) this.frankString = "JSmol";
- else if (this.vwr.isSignedApplet) this.frankString = "Jmol_S";
 if (this.font3d === this.currentMetricsFont3d) return;
 this.currentMetricsFont3d = this.font3d;
-this.frankWidth = this.font3d.stringWidth(this.frankString);
+this.frankWidth = this.font3d.stringWidth(J.shape.Frank.frankString);
 this.frankDescent = this.font3d.getDescent();
 this.frankAscent = this.font3d.getAscent();
 });
@@ -62,5 +61,6 @@ Clazz.overrideMethod(c$, "getShapeState",
 function(){
 return null;
 });
+c$.frankString = "Jmol";
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

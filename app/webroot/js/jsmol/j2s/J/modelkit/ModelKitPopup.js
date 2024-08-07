@@ -188,7 +188,7 @@ return;
 Clazz.overrideMethod(c$, "getScriptForCallback", 
 function(source, id, script){
 if (script.startsWith("mk")) {
-this.modelkit.processXtalClick(id, script);
+this.modelkit.clickProcessXtal(id, script);
 script = null;
 }return script;
 }, "J.api.SC,~S,~S");
@@ -218,4 +218,4 @@ this.updatingForShow = false;
 }, "~S");
 c$.bundle =  new J.modelkit.ModelKitPopupResourceBundle(null, null);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

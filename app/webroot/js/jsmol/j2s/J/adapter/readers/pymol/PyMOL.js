@@ -3,12 +3,12 @@ Clazz.load(["java.util.Hashtable"], "J.adapter.readers.pymol.PyMOL", ["JU.Logger
 var c$ = Clazz.declareType(J.adapter.readers.pymol, "PyMOL", null);
 c$.getRGB = Clazz.defineMethod(c$, "getRGB", 
 function(color){
+if ((color & 0xFF000000) != 0) return color;
 if (J.adapter.readers.pymol.PyMOL.moreColors != null) {
 var key = Integer.$valueOf(color);
 var c = J.adapter.readers.pymol.PyMOL.moreColors.get(key);
 if (c != null) return c.intValue();
-}if (color < J.adapter.readers.pymol.PyMOL.colors.length) return (J.adapter.readers.pymol.PyMOL.colors[color]);
-return 0;
+}return (color < J.adapter.readers.pymol.PyMOL.colors.length ? J.adapter.readers.pymol.PyMOL.colors[color] : color);
 }, "~N");
 c$.addColor = Clazz.defineMethod(c$, "addColor", 
 function(id, value){
@@ -47,6 +47,7 @@ case 111:
 case 529:
 case 19:
 return 1;
+case 420:
 case 172:
 case 571:
 case 666:
@@ -59,7 +60,6 @@ case 180:
 case 143:
 case 338:
 case 49:
-case 64:
 case 441:
 case 118:
 case 581:
@@ -68,12 +68,16 @@ case 23:
 case 20:
 case 237:
 case 203:
+case 276:
 case 344:
+case 64:
 return 0;
 case 92:
 return 0.2;
 case 96:
 return 1.4;
+case 277:
+return 1.0;
 case 65:
 return 0.25;
 case 192:
@@ -126,7 +130,7 @@ c$.getDefaultSettingPt = Clazz.defineMethod(c$, "getDefaultSettingPt",
 function(i, pymolVersion, pt){
 switch (i) {
 case 471:
-pt.set(0, 0, 0.75);
+pt.set(0, 0, 1.75);
 break;
 default:
 JU.Logger.error("PyMOL " + pymolVersion + " default point setting not found: " + i);
@@ -187,6 +191,13 @@ for (var i = 0; i < va.length; ) varray[va[i++]] = va[i++];
 
 }return varray;
 }, "~N");
+c$.fixAllZeroLabelPosition = Clazz.defineMethod(c$, "fixAllZeroLabelPosition", 
+function(labelPos){
+for (var i = 0; i < 7; i++) {
+if (labelPos[i] != 0) return labelPos;
+}
+return null;
+}, "~A");
 c$.REP_LIST =  Clazz.newArray(-1, ["sticks", "spheres", "surface", "labels", "nb_spheres", "cartoon", "ribbon", "lines", "mesh", "dots", "dashes", "nonbonded", "cell", "cgo", "callback", "extent", "slice", "angles", "dihedrals", "ellipsoid", "volume"]);
 c$.FLAG_exfoliate = 0x01000000;
 c$.FLAG_ignore = 0x02000000;
@@ -205,4 +216,4 @@ c$.v176b =  Clazz.newIntArray(-1, [0, 32, 1, 0, 2, 4, 3, 8, 4, 12, 5, 16, 6, 26]
 c$.v177b =  Clazz.newIntArray(-1, [0, 24, 1, 0, 2, 4, 4, 8, 5, 12, 3, 20, 6, 23]);
 c$.v181b =  Clazz.newIntArray(-1, [0, 20, 1, 0, 2, 4, 4, 8, 5, 12, 3, 16, 6, 18]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Fri Jul 26 07:31:06 CDT 2024

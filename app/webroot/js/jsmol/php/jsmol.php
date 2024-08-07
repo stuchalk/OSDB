@@ -2,6 +2,10 @@
 
 // jsmol.php
 // Bob Hanson hansonr@stolaf.edu 1/11/2013
+// 2024.06.04 removing CORS header -- allowing .htaccess to take care of this for the PHP file itself
+// 2024.04.16 reinstating CORS header for NON-chemapps files
+// 2024.04.10 switching to default binary
+// 2024.04.06 removing ajax access header added 2024.02.06 -- already have .htaccess in site/
 // 2024.02.06 adjusted content type
 // 2024.02.05 fixing missing utf-8 header
 // 10 NOV 2018 -- print($output) should be echo($output) to prevent trailing \r\n
@@ -15,6 +19,18 @@
 // 7 Sep 2013 -- adding PHP error handling
 //
 //////// note to administrators:
+//
+// the command:
+//
+// header('Access-Control-Allow-Origin: *');
+//
+// is disabled below due to $addAccessHeader = false. 
+// That is because a .htaccess flag file is in the path of the /site/ subdirectory at St. Olaf and contains
+//   Header set Access-Control-Allow-Origin "*"
+// Newer brower versions reject AJAX when multiple headers exist. 
+// Enable this only if your server does not implement .htaccess
+// Multiple headers can be seen in the browser network report showing "*,*" instead of just "*"
+// -BH 2024.04.06
 //
 // from http://us3.php.net/file_get_contents: 
 //
@@ -103,6 +119,8 @@ $output = "";
 $isBinary = false;
 $isJS = false;
 $filename = "";
+$isChemapps = false;
+$addAccessHeader = false; // needs to be true if server does not implement .htaccess 
 
 if ($call == "getInfoFromDatabase") {
   // TODO: add PDBe annotation business here
@@ -141,6 +159,7 @@ if ($call == "getInfoFromDatabase") {
 } else if ($call == "getRawDataFromDatabase") {
 	$isBinary = (strpos($query, ".gz") !== false);
 	$isJS = (strpos($query, '.js') !== false);
+	$isChemapps = (strpos($query, 'stolaf.edu') !== false);
 	if ($database != "_")
 		$query = $database.$query;
 	if (strpos(strtolower($query), 'https://') !== 0 && strpos(strtolower($query), 'http://') !== 0) {
@@ -188,17 +207,19 @@ ob_start();
       header('Pragma: public');
   	}
    } else {
-  	header('Access-Control-Allow-Origin: *');
+	if ($addAccessHeader) {
+  	  header('Access-Control-Allow-Origin: *');
+	}
   	if ($isBinary) {
   		header('Content-Type: text/plain; charset=x-user-defined');
   	} else if ($isJS) {
   		header('Content-Type: text/javascript; charset=utf-8');
     	} else if (strpos($output, '<html') !== false) {
       		header('Content-type: text/html; charset=utf-8');
-    	} else if (strpos($output, '{') !== false) {
+    	} else if (strpos($output, '{') === 0) {
   		header('Content-Type: application/json');
 	} else {
-      		header('Content-type: text/plain; charset=utf-8');
+      		header('Content-type: text/plain; charset=x-user-defined');
   	}
    }
    if ($encoding == "base64") {

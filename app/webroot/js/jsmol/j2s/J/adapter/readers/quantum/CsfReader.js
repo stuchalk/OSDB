@@ -409,4 +409,4 @@ c$.vibFieldMap =  Clazz.newByteArray(-1, [-1, 1, 2, 3]);
 c$.moFields =  Clazz.newArray(-1, ["ID", "eig_val", "mo_occ", "eig_vec", "eig_vec_compressed", "coef_indices", "bfxn_ang", "sto_exp", "contractions", "gto_exp", "shell"]);
 c$.moFieldMap =  Clazz.newByteArray(-1, [-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

@@ -132,4 +132,4 @@ return v;
 c$.fullCubePolygon =  Clazz.newArray(-1, [ Clazz.newIntArray(-1, [0, 4, 5, 3]),  Clazz.newIntArray(-1, [5, 1, 0, 3]),  Clazz.newIntArray(-1, [1, 5, 6, 2]),  Clazz.newIntArray(-1, [6, 2, 1, 3]),  Clazz.newIntArray(-1, [2, 6, 7, 2]),  Clazz.newIntArray(-1, [7, 3, 2, 3]),  Clazz.newIntArray(-1, [3, 7, 4, 2]),  Clazz.newIntArray(-1, [4, 0, 3, 2]),  Clazz.newIntArray(-1, [6, 5, 4, 0]),  Clazz.newIntArray(-1, [4, 7, 6, 0]),  Clazz.newIntArray(-1, [0, 1, 2, 0]),  Clazz.newIntArray(-1, [2, 3, 0, 0])]);
 c$.fullCubeCorners =  Clazz.newArray(-1, [ Clazz.newIntArray(-1, [1, 4, 3, 3267]),  Clazz.newIntArray(-1, [0, 2, 5, 3087]),  Clazz.newIntArray(-1, [1, 3, 6, 3132]),  Clazz.newIntArray(-1, [2, 0, 7, 3312]),  Clazz.newIntArray(-1, [0, 5, 7, 963]),  Clazz.newIntArray(-1, [1, 6, 4, 783]),  Clazz.newIntArray(-1, [2, 7, 5, 828]),  Clazz.newIntArray(-1, [3, 4, 6, 1008])]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

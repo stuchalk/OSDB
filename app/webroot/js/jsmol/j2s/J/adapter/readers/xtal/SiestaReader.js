@@ -21,7 +21,7 @@ this.doApplySymmetry = true;
 });
 Clazz.overrideMethod(c$, "checkLine", 
 function(){
-if (this.line.length == 0 || this.line.charAt(0) == '#' || this.line.indexOf(' ') < 0) return true;
+if (this.line.length == 0 || this.line.charAt(0) == '#' || this.line.indexOf(' ') < 0 && this.line.indexOf('\t') < 0) return true;
 switch (this.state) {
 case 0:
 if (this.line.indexOf("Dump of input data file") >= 0) {
@@ -203,4 +203,4 @@ this.asc.setInfo("Energy", energy);
 this.asc.setAtomSetName("Energy = " + energy + " eV");
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

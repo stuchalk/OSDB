@@ -255,5 +255,9 @@ Clazz.defineMethod(c$, "setSize",
 function(size){
 this.size = Clazz.floatToInt(size * 1000);
 }, "~N");
+Clazz.defineMethod(c$, "toString", 
+function(){
+return "[JmolObject " + this.id + " " + (this.bsAtoms == null ? "" : this.bsAtoms.cardinality() + " atoms") + "]";
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+});
+;//5.0.1-v2 Fri Jul 26 07:56:23 CDT 2024

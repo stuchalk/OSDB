@@ -7,13 +7,32 @@ this.allowMopacDCoef = false;
 Clazz.instantialize(this, arguments);}, J.adapter.readers.quantum, "MopacSlaterReader", J.adapter.readers.quantum.SlaterReader);
 Clazz.defineMethod(c$, "scaleSlater", 
 function(ex, ey, ez, er, zeta){
+var el = Math.abs(ex + ey + ez);
+switch (el) {
+case 0:
+return J.adapter.readers.quantum.MopacSlaterReader.getSlaterConstSSpherical(er + 1, Math.abs(zeta));
+case 1:
+return J.adapter.readers.quantum.MopacSlaterReader.getSlaterConstPSpherical(er + 2, Math.abs(zeta));
+}
 if (ex >= 0 && ey >= 0) {
 return Clazz.superCall(this, J.adapter.readers.quantum.MopacSlaterReader, "scaleSlater", [ex, ey, ez, er, zeta]);
-}var el = Math.abs(ex + ey + ez);
-if (el == 3) {
+}if (el == 3) {
 return 0;
-}return J.adapter.readers.quantum.SlaterReader.getSlaterConstDSpherical(el + er + 1, Math.abs(zeta), ex, ey);
+}return J.adapter.readers.quantum.MopacSlaterReader.getSlaterConstDSpherical(el + er + 1, Math.abs(zeta), ex, ey);
 }, "~N,~N,~N,~N,~N");
+c$.getSlaterConstDSpherical = Clazz.defineMethod(c$, "getSlaterConstDSpherical", 
+function(n, zeta, ex, ey){
+return J.adapter.readers.quantum.SlaterReader.fact(15 / (ex < 0 ? 12 : ey < 0 ? 4 : 1), zeta, n);
+}, "~N,~N,~N,~N");
+c$.getSlaterConstSSpherical = Clazz.defineMethod(c$, "getSlaterConstSSpherical", 
+function(n, zeta){
+return Math.pow(2 * zeta, n + 0.5) * Math.sqrt(0.07957747154594767 / J.adapter.readers.quantum.SlaterReader.fact_2n[n]);
+}, "~N,~N");
+c$.getSlaterConstPSpherical = Clazz.defineMethod(c$, "getSlaterConstPSpherical", 
+function(n, zeta){
+var f = J.adapter.readers.quantum.SlaterReader.fact_2n[n] / 3;
+return Math.pow(2 * zeta, n + 0.5) * Math.sqrt(0.07957747154594767 / f);
+}, "~N,~N");
 Clazz.defineMethod(c$, "setMOData", 
 function(clearOrbitals){
 if (!this.allowNoOrbitals && this.orbitals.size() == 0) return;
@@ -93,7 +112,8 @@ function(iAtom, atomicNumber, type, zeta, coef){
 var pt = "S Px Py Pz  Dx2-y2Dxz Dz2 Dyz Dxy".indexOf(type);
 switch (pt) {
 case 0:
-this.addSlater(iAtom + 1, 0, 0, 0, J.adapter.readers.quantum.MopacSlaterReader.getNPQs(atomicNumber) - 1, zeta, coef);
+var sd = this.addSlater(iAtom + 1, 0, 0, 0, J.adapter.readers.quantum.MopacSlaterReader.getNPQs(atomicNumber) - 1, zeta, coef);
+sd.elemNo = atomicNumber;
 return;
 case 2:
 case 5:
@@ -161,4 +181,4 @@ c$._PM6_C =  Clazz.newFloatArray(-1, [-1, 1.268641, -2, 3.313204, 3.657133, -3, 
 c$._PM7_C =  Clazz.newFloatArray(-1, [-1, 1.260237, -2, 3.313204, 3.657133, -3, 0.804974, 6.02753, -4, 1.036199, 1.764629, -5, 1.560481, 1.449712, -6, 1.942244, 1.708723, -7, 2.354344, 2.028288, -8, 5.972309, 2.349017, -9, 6.07003, 2.930631, -10, 6.000148, 3.834528, -11, 1.666701, 1.397571, -12, 1.170297, 1.840439, -13, 1.232599, 1.219336, 1.617502, -14, 1.433994, 1.671776, 1.221915, -15, 2.257933, 1.555172, 1.235995, -16, 2.046153, 1.807678, 3.510309, -17, 2.223076, 2.264466, 0.949994, -18, 6.000272, 5.94917, -19, 5.422018, 1.471023, -20, 1.477988, 2.220194, -21, 1.794897, 2.174934, 5.99286, -22, 1.448579, 1.940695, 1.093648, -23, 6.051795, 2.249871, 1.087345, -24, 2.838413, 1.37956, 1.188729, -25, 1.66644, 2.078735, 2.89707, -26, 1.157576, 2.737621, 1.860792, -27, 1.789441, 1.531664, 1.951497, -28, 1.70834, 2.000099, 5.698724, -29, 1.735325, 3.219976, 6.013523, -30, 1.56014, 1.915631, -31, 1.913326, 1.811217, -32, 2.762845, 1.531131, -33, 3.21385, 1.628384, 3.314358, -34, 2.75113, 1.901764, -35, 3.72548, 2.242318, 1.591034, -36, 1.312248, 4.491371, -37, 1.314831, 6.015581, -38, 2.092264, 3.314082, -39, 1.605083, 2.131069, 6.021645, -40, 1.373517, 1.141705, 1.618769, -41, 2.761686, 5.999062, 1.611677, -42, 1.595399, 1.426575, 1.787748, -43, 2.104672, 2.669984, 3.030496, -44, 1.605646, 4.58082, 1.244578, -45, 1.591465, 4.546046, 2.685918, -46, 5.790768, 2.169788, 1.327661, -47, 1.793032, 2.528721, 3.524808, -48, 3.670047, 1.857036, -49, 1.902085, 1.940127, -50, 1.959238, 1.976146, -51, 1.9986, 1.887062, 1.475516, -52, 3.024819, 2.598283, -53, 3.316202, 2.449124, 1.716121, -54, 3.208788, 2.727979, -55, 1.776064, 6.02531, -56, 1.75049, 1.968788, -57, 3.398968, 1.811983, 1.894574, -71, 2.327039, 6.000335, 1.208414, -72, 2.854938, 3.079458, 2.067146, -73, 4.116264, 3.380936, 1.755408, -74, 3.881177, 2.044717, 1.928901, -75, 2.452162, 1.583194, 2.414839, -76, 3.094808, 2.845232, 1.986395, -77, 1.924564, 3.510744, 2.437796, -78, 2.922551, 0.725689, 2.158085, -79, 1.904923, 2.408005, 4.377691, -80, 2.575831, 1.955505, -81, 1.903342, 2.838647, 5.015677, -82, 4.706006, 2.591455, -83, 5.465413, 2.037481, 2.8554, -85, -87, -90, 1.435306, 1.435306, -97, -98, 2, -100, -101, -102, 4, -103, -104, -105]);
 c$._RM1_C =  Clazz.newFloatArray(-1, [-1, 1.0826737, -6, 1.850188, 1.7683009, -7, 2.3744716, 1.9781257, -8, 3.1793691, 2.5536191, -9, 4.4033791, 2.6484156, -15, 2.1224012, 1.7432795, -16, 2.1334431, 1.8746065, -17, 3.8649107, 1.8959314, -35, 5.7315721, 2.0314758, -53, 2.5300375, 2.3173868, -57, 1.272677, 1.423276, 1.410369, -58, 1.281028, 1.425366, 1.412866, -59, 1.538039, 1.581647, 1.374904, -60, 1.45829, 1.570516, 1.513561, -61, 1.065536, 1.846925, 1.424049, -62, 1.293914, 1.738656, 1.521378, -63, 1.350342, 1.733714, 1.494122, -64, 1.272776, 1.908122, 1.515905, -65, 1.210052, 1.921514, 1.528123, -66, 1.295275, 1.912107, 1.413397, -67, 1.33055, 1.779559, 1.536524, -68, 1.347757, 1.806481, 1.466189, -69, 1.369147, 1.674365, 1.714394, -70, 1.239808, 1.849144, 1.485378, -71, 1.425302, 1.790353, 1.642603, -102, 4, 0.3]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

@@ -69,7 +69,7 @@ for (var i = vertices.length; --i >= 0; ) this.screens3f[i] =  new JU.P3();
 
 }var sc = this.screens3f;
 var planes = p.triangles;
-var elemNos = (p.pointScale > 0 ? p.getElemNos() : null);
+var elemNos = (p.pointScale > 0 ? p.getElemNos(false) : null);
 for (var i = vertices.length; --i >= 0; ) {
 var atom = (Clazz.instanceOf(vertices[i],"JM.Atom") ? vertices[i] : null);
 var v = sc[i];
@@ -80,7 +80,7 @@ this.scrVib = this.tm.transformPtVib(atom, this.ms.vibrations[atom.i]);
 v.set(this.scrVib.x, this.scrVib.y, this.scrVib.z);
 } else {
 this.tm.transformPt3f(atom, v);
-}if (elemNos != null && i < elemNos.length && this.g3d.setC(elemNos[i] < 0 ? colix : this.vwr.cm.setElementArgb(elemNos[i], 2147483647))) {
+}if (elemNos != null && i < elemNos.length && this.g3d.setC(elemNos[i] < 0 ? colix : this.vwr.cm.getElementColix(elemNos[i]))) {
 this.g3d.fillSphereBits(Clazz.floatToInt(this.tm.scaleToScreen(Clazz.floatToInt(v.z), Clazz.floatToInt(p.pointScale * 1000))), v);
 this.g3d.setC(colix);
 }if (this.showNumbers) {
@@ -132,4 +132,4 @@ if ((edgeMask & 2) == 2) this.g3d.fillCylinderBits(3, d, b, c);
 if ((edgeMask & 4) == 4) this.g3d.fillCylinderBits(3, d, a, c);
 }}, "~N,JU.P3,JU.P3,JU.P3,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

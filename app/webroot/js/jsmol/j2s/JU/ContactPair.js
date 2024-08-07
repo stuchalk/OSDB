@@ -81,4 +81,4 @@ function(){
 return "type=" + JS.T.nameOf(this.contactType) + " " + this.myAtoms[0] + " " + this.myAtoms[1] + " dAB=" + this.d + " score=" + this.score + " chord=" + this.chord + " volume=" + this.volume;
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

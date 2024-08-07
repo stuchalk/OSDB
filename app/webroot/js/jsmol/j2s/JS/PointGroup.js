@@ -20,6 +20,7 @@ this.cosTolerance = 0.99;
 this.name = "C_1?";
 this.principalAxis = null;
 this.principalPlane = null;
+this.convention = 0;
 this.vTemp = null;
 this.centerAtomIndex = -1;
 this.haveInversionCenter = false;
@@ -31,6 +32,7 @@ this.bsAtoms = null;
 this.haveVibration = false;
 this.localEnvOnly = false;
 this.$isLinear = false;
+this.sppa = 0;
 this.maxAtoms = 250;
 this.maxElement = 0;
 this.eCounts = null;
@@ -45,19 +47,24 @@ this.axes =  new Array(JS.PointGroup.maxAxis);
 this.vTemp =  new JU.V3();
 });
 Clazz.makeConstructor(c$, 
-function(){
-});
+function(isHM){
+this.convention = (isHM ? 1 : 0);
+}, "~B");
 Clazz.defineMethod(c$, "getName", 
 function(){
-return this.name;
+return this.getConventionalName(this.name);
 });
 Clazz.defineMethod(c$, "getHermannMauguinName", 
 function(){
 return JS.PointGroup.getHMfromSFName(this.name);
 });
+Clazz.defineMethod(c$, "getConventionalName", 
+function(name){
+return (this.convention == 1 ? JS.PointGroup.getHMfromSFName(name) : name);
+}, "~S");
 c$.getPointGroup = Clazz.defineMethod(c$, "getPointGroup", 
-function(pgLast, center, atomset, bsAtoms, haveVibration, distanceTolerance, linearTolerance, maxAtoms, localEnvOnly){
-var pg =  new JS.PointGroup();
+function(pgLast, center, atomset, bsAtoms, haveVibration, distanceTolerance, linearTolerance, maxAtoms, localEnvOnly, isHM, sppa){
+var pg =  new JS.PointGroup(isHM);
 if (distanceTolerance <= 0) {
 distanceTolerance = 0.01;
 }if (linearTolerance <= 0) {
@@ -72,13 +79,14 @@ pg.bsAtoms = (pg.isAtoms ? bsAtoms : JU.BSUtil.newBitSet2(0, atomset.length));
 pg.haveVibration = haveVibration;
 pg.center = center;
 pg.localEnvOnly = localEnvOnly;
+pg.sppa = sppa;
 if (JU.Logger.debugging) pgLast = null;
 return (pg.set(pgLast, atomset) ? pg : pgLast);
-}, "JS.PointGroup,JU.T3,~A,JU.BS,~B,~N,~N,~N,~B");
+}, "JS.PointGroup,JU.T3,~A,JU.BS,~B,~N,~N,~N,~B,~B,~N");
 Clazz.defineMethod(c$, "isEqual", 
 function(pg){
 if (pg == null) return false;
-if (this.linearTolerance != pg.linearTolerance || this.distanceTolerance != pg.distanceTolerance || this.nAtoms != pg.nAtoms || this.localEnvOnly != pg.localEnvOnly || this.haveVibration != pg.haveVibration || this.bsAtoms == null ? pg.bsAtoms != null : !this.bsAtoms.equals(pg.bsAtoms)) return false;
+if (this.convention != pg.convention || this.linearTolerance != pg.linearTolerance || this.distanceTolerance != pg.distanceTolerance || this.nAtoms != pg.nAtoms || this.localEnvOnly != pg.localEnvOnly || this.haveVibration != pg.haveVibration || this.bsAtoms == null ? pg.bsAtoms != null : !this.bsAtoms.equals(pg.bsAtoms)) return false;
 for (var i = 0; i < this.nAtoms; i++) {
 if (this.elements[i] != pg.elements[i] || !this.points[i].equals(pg.points[i])) return false;
 }
@@ -194,7 +202,6 @@ Clazz.defineMethod(c$, "setPrincipalAxis",
 function(n, nPlanes){
 var principalPlane = this.setPrincipalPlane(n, nPlanes);
 if (nPlanes == 0 && n < 14 || this.nAxes[n] == 1) {
-if (nPlanes > 0 && n < 14) n = 14 + Clazz.doubleToInt(n / 2);
 return this.axes[n][0];
 }if (principalPlane == null) return null;
 for (var i = 0; i < this.nAxes[16]; i++) if (this.isParallel(principalPlane.normalOrAxis, this.axes[16][i].normalOrAxis)) {
@@ -392,7 +399,7 @@ vs[n++].scale(-1);
 for (var i = vs.length; --i >= 2; ) for (var j = i; --j >= 1; ) for (var k = j; --k >= 0; ) {
 v3.add2(vs[i], vs[j]);
 v3.add(vs[k]);
-if (v3.length() < 1.0) continue;
+if (v3.length() < 1) continue;
 this.checkAxisOrder(17, v3, this.center);
 }
 
@@ -596,14 +603,14 @@ for (var i = 1; i < JS.PointGroup.maxAxis; i++) for (var j = this.nAxes[i]; --j 
 
 
 var sb =  new JU.SB().append("# ").appendI(this.nAtoms).append(" atoms\n");
-var hmName = JS.PointGroup.getHMfromSFName(this.name);
+var name = this.getConventionalName(this.name);
 if (asDraw) {
 drawID = "draw " + drawID;
 var haveType = (type != null && type.length > 0);
 this.drawType = type = (haveType ? type : "");
 this.drawIndex = index;
-var anyProperAxis = (type.equalsIgnoreCase("Cn"));
-var anyImproperAxis = (type.equalsIgnoreCase("Sn"));
+var anyProperAxis = (type.equalsIgnoreCase(this.getConventionalName("Cn")));
+var anyImproperAxis = (type.equalsIgnoreCase(this.getConventionalName("Sn")));
 sb.append("set perspectivedepth off;\n");
 var m = "_" + modelIndex + "_";
 if (!haveType) sb.append(drawID + "pg0").append(m).append("* delete;draw pgva").append(m).append("* delete;draw pgvp").append(m).append("* delete;");
@@ -612,22 +619,22 @@ var offset = 0.1;
 for (var i = 2; i < JS.PointGroup.maxAxis; i++) {
 if (i == 14) offset = 0.1;
 if (this.nAxes[i] == 0) continue;
-var label = (!this.$isLinear ? this.axes[i][0].getLabel() : "C_infinity");
+var sglabel = (!this.$isLinear ? this.axes[i][0].getLabel(false) : "C_infinity");
+var label = (!this.$isLinear ? this.axes[i][0].getLabel(true) : "C_infinity");
 offset += 0.25;
-var scale = scaleFactor * this.radius + offset;
+var scale = scaleFactor * 1.05 * this.radius + offset * 80 / this.sppa;
 var isProper = (i >= 14);
 if (!haveType || type.equalsIgnoreCase(label) || anyProperAxis && isProper || anyImproperAxis && !isProper) for (var j = 0; j < this.nAxes[i]; j++) {
 if (index > 0 && j + 1 != index) continue;
 op = this.axes[i][j];
 v.add2(op.normalOrAxis, this.center);
-if (op.type == 2) scale = -scale;
-sb.append(drawID + "pgva").append(m).append(label).append("_").appendI(j + 1).append(" width 0.05 scale ").appendF(scale).append(" ").append(JU.Escape.eP(v));
+sb.append(drawID + "pgva").append(m).append(sglabel).append("_").appendI(j + 1).append(" width 0.05 scale ").appendF(op.type == 2 ? -scale : scale).append(" ").append(JU.Escape.eP(v));
 v.scaleAdd2(-2, op.normalOrAxis, v);
 var isPA = (!this.$isLinear && this.principalAxis != null && op.index == this.principalAxis.index);
-sb.append(JU.Escape.eP(v)).append("\"").append(label).append(isPA ? "*" : "").append("\" color ").append(isPA ? "red" : op.type == 2 ? "blue" : "orange").append(";\n");
+sb.append(JU.Escape.eP(v)).append("\"").append(label).append(isPA ? "" : "").append("\" color ").append(isPA ? "red" : op.type == 2 ? "blue" : "orange").append(";\n");
 }
 }
-if (!haveType || type.equalsIgnoreCase("Cs")) {
+if (!haveType || type.equalsIgnoreCase(this.getConventionalName("Cs"))) {
 for (var j = 0; j < this.nAxes[0]; j++) {
 if (index > 0 && j + 1 != index) continue;
 op = this.axes[0][j];
@@ -641,15 +648,15 @@ sb.append(JU.Escape.eP(v));
 v.add3(0.011, 0.012, 0.013);
 sb.append(JU.Escape.eP(v)).append("{0 360 0.5} color ").append(this.principalPlane != null && op.index == this.principalPlane.index ? "red" : "blue").append(";\n");
 }
-}var name = this.name + "(" + hmName + ")";
-sb.append("# name=").append(name);
-sb.append(", nCi=").appendI(this.haveInversionCenter ? 1 : 0);
-sb.append(", nCs=").appendI(this.nAxes[0]);
-sb.append(", nCn=").appendI(nType[1][0]);
-sb.append(", nSn=").appendI(nType[2][0]);
+}sb.append("# name=").append(name);
+sb.append(", n" + this.getConventionalName("Ci") + "=").appendI(this.haveInversionCenter ? 1 : 0);
+sb.append(", n" + this.getConventionalName("Cs") + "=").appendI(this.nAxes[0]);
+sb.append(", n" + this.getConventionalName("Cn") + "=").appendI(nType[1][0]);
+sb.append(", n" + this.getConventionalName("Sn") + "=").appendI(nType[2][0]);
 sb.append(": ");
 for (var i = JS.PointGroup.maxAxis; --i >= 2; ) if (this.nAxes[i] > 0) {
-sb.append(" n").append(i < 14 ? "S" : "C").appendI(i % 14);
+var axisName = this.getConventionalName((i < 14 ? "S" : "C") + (i % 14));
+sb.append(" n").append(axisName);
 sb.append("=").appendI(this.nAxes[i]);
 }
 sb.append(";\n");
@@ -660,7 +667,7 @@ return this.drawInfo;
 }var n = 0;
 var nTotal = 1;
 var nElements = 0;
-var ctype = (this.haveInversionCenter ? "Ci" : "center");
+var ctype = (this.haveInversionCenter ? this.getConventionalName("Ci") : "center");
 if (this.haveInversionCenter) {
 nTotal++;
 nElements++;
@@ -670,13 +677,14 @@ this.info.put(ctype, this.center);
 if (this.haveInversionCenter) this.info.put("center", this.center);
 this.info.put(ctype, this.center);
 }} else {
-sb.append("\n\n").append(this.name).append("\t").append(ctype).append("\t").append(JU.Escape.eP(this.center));
+sb.append("\n\n").append(name).append("\t").append(ctype).append("\t").append(JU.Escape.eP(this.center));
 }for (var i = JS.PointGroup.maxAxis; --i >= 0; ) {
 if (this.nAxes[i] > 0) {
 n = JS.PointGroup.nUnique[i];
-var label = this.axes[i][0].getLabel();
-if (asInfo) this.info.put("n" + label, Integer.$valueOf(this.nAxes[i]));
- else sb.append("\n\n").append(this.name).append("\tn").append(label).append("\t").appendI(this.nAxes[i]).append("\t").appendI(n);
+var label = this.axes[i][0].getLabel(true);
+var sglabel = this.axes[i][0].getLabel(false);
+if (asInfo) this.info.put("n" + sglabel, Integer.$valueOf(this.nAxes[i]));
+ else sb.append("\n\n").append(name).append("\tn").append(label).append("\t").appendI(this.nAxes[i]).append("\t").appendI(n);
 n *= this.nAxes[i];
 nTotal += n;
 nElements += this.nAxes[i];
@@ -689,32 +697,32 @@ if (asInfo) {
 vinfo.addLast(aop.normalOrAxis);
 minfo.addLast(aop.getM3());
 } else {
-sb.append("\n").append(this.name).append("\t").append(label).append("_").appendI(j + 1).append("\t").appendO(aop.normalOrAxis);
+sb.append("\n").append(name).append("\t").append(sglabel).append("_").appendI(j + 1).append("\t").appendO(aop.normalOrAxis);
 }}
 if (asInfo) {
-this.info.put(label, vinfo);
-this.info.put(label + "_m", minfo);
+this.info.put(sglabel, vinfo);
+this.info.put(sglabel + "_m", minfo);
 }}}
 if (!asInfo) {
 sb.append("\n");
-sb.append("\n").append(this.name).append("\ttype\tnElements\tnUnique");
-sb.append("\n").append(this.name).append("\tE\t  1\t  1");
+sb.append("\n").append(name).append("\ttype\tnElements\tnUnique");
+sb.append("\n").append(name).append("\t" + this.getConventionalName("E") + "\t  1\t  1");
 n = (this.haveInversionCenter ? 1 : 0);
-sb.append("\n").append(this.name).append("\tCi\t  ").appendI(n).append("\t  ").appendI(n);
-sb.append("\n").append(this.name).append("\tCs\t");
+sb.append("\n").append(name).append("\t" + this.getConventionalName("Ci") + "\t  ").appendI(n).append("\t  ").appendI(n);
+sb.append("\n").append(name).append("\t" + this.getConventionalName("Cs") + "\t");
 JU.PT.rightJustify(sb, "    ", this.nAxes[0] + "\t");
 JU.PT.rightJustify(sb, "    ", this.nAxes[0] + "\n");
-sb.append(this.name).append("\tCn\t");
+sb.append(name).append("\t" + this.getConventionalName("Cn") + "\t");
 JU.PT.rightJustify(sb, "    ", nType[1][0] + "\t");
 JU.PT.rightJustify(sb, "    ", nType[1][1] + "\n");
-sb.append(this.name).append("\tSn\t");
+sb.append(name).append("\t" + this.getConventionalName("Sn") + "\t");
 JU.PT.rightJustify(sb, "    ", nType[2][0] + "\t");
 JU.PT.rightJustify(sb, "    ", nType[2][1] + "\n");
-sb.append(this.name).append("\t\tTOTAL\t");
+sb.append(name).append("\t\tTOTAL\t");
 JU.PT.rightJustify(sb, "    ", nTotal + "\n");
 return (this.textInfo = sb.toString());
 }this.info.put("name", this.name);
-this.info.put("hmName", hmName);
+this.info.put("hmName", this.getHermannMauguinName());
 this.info.put("nAtoms", Integer.$valueOf(this.nAtoms));
 this.info.put("nTotal", Integer.$valueOf(nTotal));
 this.info.put("nElements", Integer.$valueOf(nElements));
@@ -740,25 +748,35 @@ function(name){
 if (JS.PointGroup.htSFToHM == null) {
 JS.PointGroup.htSFToHM =  new java.util.Hashtable();
 var syms = JS.PointGroup.SF2HM;
+JS.PointGroup.addNames("E", "1");
+JS.PointGroup.addNames("Ci", "-1");
+JS.PointGroup.addNames("Cn", "n");
+JS.PointGroup.addNames("Sn", "-n");
 for (var i = 0; i < syms.length; i++) {
 var list = syms[i].$plit(",");
 var sym = list[0];
 if (list.length == 2) {
-JS.PointGroup.htSFToHM.put(sym, list[1]);
+JS.PointGroup.addNames(sym, list[1]);
 continue;
 }var type = sym.substring(0, 1);
 var ext = sym.substring(2, sym.length);
 for (var n = 1; n < 13; n++) {
 var val = list[n];
 if (val.length > 0) {
-JS.PointGroup.htSFToHM.put(type + n + ext, val);
+JS.PointGroup.addNames(type + n + ext, val);
 System.out.println(type + n + ext + "\t" + val);
 }}
 if (list.length == 14) {
-JS.PointGroup.htSFToHM.put(type + "\u0221e" + ext, list[13]);
+JS.PointGroup.addNames(type + "\u221e" + ext, list[13]);
 }}
-}return JS.PointGroup.htSFToHM.get(name);
+}var hm = JS.PointGroup.htSFToHM.get(name);
+return (hm == null ? name : hm);
 }, "~S");
+c$.addNames = Clazz.defineMethod(c$, "addNames", 
+function(sch, hm){
+JS.PointGroup.htSFToHM.put(sch, hm);
+JS.PointGroup.htSFToHM.put(hm, sch);
+}, "~S,~S");
 c$.$PointGroup$Operation$ = function(){
 /*if4*/;(function(){
 var c$ = Clazz.decorateAsClass(function(){
@@ -796,16 +814,21 @@ this.normalOrAxis = JU.Quat.newVA(v, 180).getNormal();
 if (JU.Logger.debugging) JU.Logger.debug("new operation -- plane " + this.normalOrAxis);
 }, "JU.V3");
 Clazz.defineMethod(c$, "getLabel", 
-function(){
+function(conventional){
+var s;
 switch (this.type) {
 case 0:
-return "Cs";
+s = "Cs";
+break;
 case 2:
-return "S" + this.order;
+s = "S" + this.order;
+break;
 default:
-return "C" + this.order;
+s = "C" + this.order;
+break;
 }
-});
+return (conventional ? this.b$["JS.PointGroup"].getConventionalName(s) : s);
+}, "~B");
 Clazz.defineMethod(c$, "getM3", 
 function(){
 if (this.mat != null) return this.mat;
@@ -824,6 +847,10 @@ Clazz.defineMethod(c$, "approx0",
 function(v){
 return (v > 1e-15 || v < -1.0E-15 ? v : 0);
 }, "~N");
+Clazz.overrideMethod(c$, "toString", 
+function(){
+return this.getLabel(false) + " " + this.normalOrAxis;
+});
 /*eoif4*/})();
 };
 c$.axesMaxN =  Clazz.newIntArray(-1, [15, 0, 0, 1, 3, 1, 10, 0, 1, 0, 6, 0, 1, 0, 0, 0, 15, 10, 6, 6, 10, 0, 1]);
@@ -831,7 +858,7 @@ c$.nUnique =  Clazz.newIntArray(-1, [1, 0, 0, 2, 2, 4, 2, 0, 4, 0, 4, 0, 4, 0, 0
 c$.maxAxis = JS.PointGroup.axesMaxN.length;
 c$.typeNames =  Clazz.newArray(-1, ["plane", "proper axis", "improper axis", "center of inversion"]);
 c$.mInv = JU.M3.newA9( Clazz.newFloatArray(-1, [-1, 0, 0, 0, -1, 0, 0, 0, -1]));
-c$.SF2HM = ("Cn,1,2,3,4,5,6,7,8,9,10,11,12|Cnv,m,2m,3m,4mm,5m,6mm,7m,8mm,9m,10mm,11m,12mm,\u221em|Sn,,-1,,-4,,-3,,-8,,-5,,(-12)|Cnh,m,2/m,-6,4/m,-10,6/m,-14,8/m,-18,10/m,-22,12/m|Dn,,222,32,422,52,622,72,822,92,(10)22,(11)2,(12)22|Dnd,,-42m,-3m,-82m,-5m,(-12)2m,-7m,(-16)2m,-9m,(-20)2m,(-11)m,(-24)2m|Dnh,,mmm,-6m2,4/mmm,(-10)m2,6/mmm,(-14)m2,8/mmm,(-18)m2,10/mmm,(-22)m2,12/mmm,\u221e/mm|Ci,-1|Cs,m|T,23|Th,m-3|Td,-43m|O,432|Oh,m-3m").$plit("\\|");
+c$.SF2HM = ("Cn,1,2,3,4,5,6,7,8,9,10,11,12|Cnv,m,2m,3m,4mm,5m,6mm,7m,8mm,9m,10mm,11m,12mm,\u221em|Sn,,-1,-6,-4,(-10),-3,(-14),-8,(-18),-5,(-22),(-12)|Cnh,m,2/m,-6,4/m,-10,6/m,-14,8/m,-18,10/m,-22,12/m|Dn,,222,32,422,52,622,72,822,92,(10)22,(11)2,(12)22|Dnd,,-42m,-3m,-82m,-5m,(-12)2m,-7m,(-16)2m,-9m,(-20)2m,(-11)m,(-24)2m|Dnh,,mmm,-6m2,4/mmm,(-10)m2,6/mmm,(-14)m2,8/mmm,(-18)m2,10/mmm,(-22)m2,12/mmm,\u221e/mm|Ci,-1|Cs,m|T,23|Th,m-3|Td,-43m|O,432|Oh,m-3m").$plit("\\|");
 c$.htSFToHM = null;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

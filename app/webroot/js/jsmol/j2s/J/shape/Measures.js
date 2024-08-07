@@ -158,7 +158,7 @@ return;
 }if ("clear" === propertyName) {
 this.clear();
 return;
-}if ("deleteAtoms" === propertyName) {
+}if ("atomsDeleted" === propertyName) {
 for (var i = this.measurementCount; --i >= 0; ) {
 out : for (var iatom = bsAtoms.nextSetBit(0); iatom >= 0; iatom = bsAtoms.nextSetBit(iatom + 1)) {
 mt = this.measurements.get(i);
@@ -553,4 +553,4 @@ m.isVisible = true;
 }
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

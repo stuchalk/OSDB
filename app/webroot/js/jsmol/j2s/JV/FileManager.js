@@ -484,7 +484,9 @@ return false;
 data[1] = "java.io. Security exception: cannot read file " + data[0];
 return false;
 }try {
-return JU.Rdr.readAllAsString(t, nBytesMax, allowBinary, data, 1);
+if (Clazz.instanceOf(t,"java.io.BufferedInputStream")) {
+if (name.toUpperCase().endsWith(".PNG") || JV.FileManager.isEmbeddable(name)) t = JU.Rdr.getBufferedReader(t, null);
+}return JU.Rdr.readAllAsString(t, nBytesMax, allowBinary, data, 1);
 } catch (e) {
 if (Clazz.exceptionOf(e, Exception)){
 return false;
@@ -1008,4 +1010,4 @@ return this.vwr.getJzt().isZipStream(br);
 c$.SIMULATION_PROTOCOL = "http://SIMULATION/";
 c$.scriptFilePrefixes =  Clazz.newArray(-1, ["/*file*/\"", "FILE0=\"", "FILE1=\""]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

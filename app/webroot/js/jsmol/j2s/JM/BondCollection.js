@@ -61,6 +61,24 @@ return n;
 Clazz.defineMethod(c$, "getBondsForSelectedAtoms", 
 function(bsAtoms, bondSelectionModeOr){
 var bs =  new JU.BS();
+var n = bsAtoms.cardinality();
+switch (n) {
+case 0:
+return bs;
+case 1:
+case 2:
+var a = this.at[bsAtoms.nextSetBit(0)];
+var b = (n == 2 ? this.at[bsAtoms.nextSetBit(a.i + 1)] : null);
+if (n == 1 || bondSelectionModeOr) {
+for (var i = a.getBondCount(); --i >= 0; ) bs.set(a.bonds[i].index);
+
+if (b != null) for (var i = b.getBondCount(); --i >= 0; ) bs.set(b.bonds[i].index);
+
+} else {
+var bond = a.getBond(b);
+if (bond != null) bs.set(bond.index);
+}return bs;
+}
 for (var iBond = 0; iBond < this.bondCount; ++iBond) {
 var bond = this.bo[iBond];
 var isSelected1 = bsAtoms.get(bond.atom1.i);
@@ -508,5 +526,12 @@ if (this.at[i] == null || n < min || n > max) bsResult.clear(i);
 }
 return bsResult;
 }, "~N,~N,~N,JU.BS");
+Clazz.defineMethod(c$, "addConnectedHAtoms", 
+function(atom, bsAtoms){
+if (atom.bonds != null) for (var i = atom.bonds.length; --i >= 0; ) {
+var atom2 = atom.bonds[i].getOtherAtom(atom);
+if (atom2.getElementNumber() == 1) bsAtoms.set(atom2.i);
+}
+}, "JM.Atom,JU.BS");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

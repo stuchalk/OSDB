@@ -322,7 +322,7 @@ if (id != null && (count == 12 || xyz != null && this.symmetry != null)) {
 JU.Logger.info((isNCS ? "noncrystallographic symmetry operator " : "assembly operator ") + id + " " + xyz);
 var m4 =  new JU.M4();
 if (count != 12) {
-this.symmetry.getMatrixFromString(xyz, m, false, 0);
+this.symmetry.getMatrixFromString(xyz, m);
 m[3] *= this.symmetry.getUnitCellInfoType(0) / 12;
 m[7] *= this.symmetry.getUnitCellInfoType(1) / 12;
 m[11] *= this.symmetry.getUnitCellInfoType(2) / 12;
@@ -650,4 +650,4 @@ c$.structSiteFields =  Clazz.newArray(-1, ["*_site_id", "*_auth_comp_id", "*_aut
 c$.structConnFields =  Clazz.newArray(-1, ["*_ptnr1_auth_asym_id", "*_ptnr1_auth_seq_id", "*_ptnr1_auth_comp_id", "*_ptnr1_label_atom_id", "*_pdbx_ptnr1_label_alt_id", "*_ptnr1_symmetry", "*_ptnr2_auth_asym_id", "*_ptnr2_auth_seq_id", "*_ptnr2_auth_comp_id", "*_ptnr2_label_atom_id", "*_pdbx_ptnr2_label_alt_id", "*_ptnr2_symmetry", "*_conn_type_id", "*_pdbx_value_order"]);
 c$.chemCompBondFields =  Clazz.newArray(-1, ["*_comp_id", "*_atom_id_1", "*_atom_id_2", "*_value_order", "*_pdbx_aromatic_flag"]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

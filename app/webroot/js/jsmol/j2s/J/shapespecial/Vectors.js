@@ -21,4 +21,4 @@ Clazz.superCall(this, J.shapespecial.Vectors, "setSizeRD2", [i, rd, isVisible]);
 if (rd != null && rd.factorType === J.atomdata.RadiusData.EnumType.SCREEN) this.mads[i] = -this.mads[i];
 }, "~N,J.atomdata.RadiusData,~B");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

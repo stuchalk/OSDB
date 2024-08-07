@@ -373,7 +373,7 @@ var sb =  new JU.SB();
 var sep = '[';
 var n = Math.min(o.length, 20);
 for (var i = 0; i < n; i++) {
-sb.appendC(sep).appendD(o[i]);
+sb.appendC(sep).appendF(o[i]);
 sep = ',';
 }
 if (n < o.length) sb.append("...").appendI(o.length);
@@ -382,4 +382,4 @@ return sb.toString();
 }, "~A");
 c$.temp = null;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

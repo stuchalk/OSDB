@@ -17,6 +17,7 @@ Clazz.makeConstructor(c$,
 function(){
 Clazz.superConstructor(this, J["export"]._StlExporter);
 this.useTable = null;
+this.lineWidthMad = 20;
 this.noColor = true;
 this.isDebug = JU.Logger.debugging;
 if (!this.isDebug) {
@@ -143,4 +144,4 @@ if (this.isDebug) this.out.append(" " + f);
  else this.oc.writeInt(Float.floatToIntBits(f));
 }, "~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

@@ -293,7 +293,7 @@ Clazz.defineMethod(c$, "setScaling",
 function(){
 this.isActive = true;
 if (this.bsSizeSet == null) this.bsSizeSet = JU.BS.newN(this.ms.ac);
-this.isScaled = this.vwr.getBoolean(603979845);
+this.isScaled = this.vwr.getBoolean(603979847);
 this.scalePixelsPerMicron = (this.isScaled ? this.vwr.getScalePixelsPerAngstrom(false) * 10000 : 0);
 });
 Clazz.defineMethod(c$, "setPymolLabel", 
@@ -519,4 +519,4 @@ if (JU.C.isColixTranslucent(colix)) colix = JU.C.getColixTranslucent3(colix, fal
 }, "~N,JM.Atom,~B");
 c$.nullToken =  Clazz.newArray(-1, [null]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

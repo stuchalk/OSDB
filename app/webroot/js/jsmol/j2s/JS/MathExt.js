@@ -36,6 +36,8 @@ case 268437504:
 if (args.length == 0) mp.wasX = false;
 case 1275068418:
 return this.evaluateArray(mp, args, tok == 1275068418 && op.tok == 268442113);
+case 134217766:
+return this.evaluateMatrix(mp, args);
 case 134217765:
 return this.evaluateCallbackParam(mp, args);
 case 134217731:
@@ -140,6 +142,62 @@ return this.evaluateWrite(mp, args);
 }
 return false;
 }, "JS.ScriptMathProcessor,JS.T,~A,~N");
+Clazz.defineMethod(c$, "evaluateMatrix", 
+function(mp, args){
+var n = args.length;
+var m4 = null;
+var retType = (n > 0 && args[n - 1].tok == 4 ? args[n - 1].value : null);
+var asABC = "abc".equalsIgnoreCase(retType);
+var asXYZ = "xyz".equalsIgnoreCase(retType);
+var a = null;
+if (asABC || asXYZ) n--;
+switch (n) {
+case 0:
+m4 =  new JU.M4();
+m4.setIdentity();
+break;
+case 1:
+switch (args[0].tok) {
+case 12:
+m4 = args[0].value;
+break;
+case 4:
+m4 = this.vwr.getSymTemp().convertTransform(args[0].value, null);
+break;
+case 7:
+a = JS.SV.flistValue(args[0], 0);
+break;
+}
+break;
+case 3:
+case 4:
+if (args[0].tok == 7) {
+a =  Clazz.newFloatArray (n == 3 ? 9 : 16, 0);
+for (var p = 0, i = 0; i < n; i++) {
+var row = JS.SV.flistValue(args[i], 0);
+for (var j = 0; j < n; j++) a[p++] = row[j];
+
+}
+break;
+}}
+if (a != null) {
+switch (a.length) {
+case 9:
+return mp.addXObj(JU.M3.newA9(a));
+case 16:
+m4 = JU.M4.newA16(a);
+break;
+default:
+return false;
+}
+}if (m4 != null) {
+if (asABC) {
+return mp.addXStr(this.vwr.getSymStatic().staticGetTransformABC(m4, false));
+}if (asXYZ) {
+return mp.addXStr(this.vwr.getSymStatic().staticConvertOperation("", m4));
+}return mp.addXM4(m4);
+}return false;
+}, "JS.ScriptMathProcessor,~A");
 Clazz.defineMethod(c$, "evaluateCallbackParam", 
 function(mp, args){
 return mp.addX(this.e.getCallbackParameter(args.length == 0 ? -2147483648 : args[0].asInt()));
@@ -147,29 +205,78 @@ return mp.addX(this.e.getCallbackParameter(args.length == 0 ? -2147483648 : args
 Clazz.defineMethod(c$, "evaluateSpacegroup", 
 function(mp, args){
 var unitCellParams = null;
-switch (args.length) {
-case 0:
-return mp.addXObj(this.vwr.getSymTemp().getSpaceGroupInfo(this.vwr.ms, null, this.vwr.am.cmi, true, null));
+var n = args.length;
+if (n == 0) return mp.addXObj(this.vwr.getSymTemp().getSpaceGroupInfo(this.vwr.ms, null, this.vwr.am.cmi, true, null));
+var isSubgroups = (n > 1);
+for (var i = n; isSubgroups && --i >= 0; ) {
+if (args[i].tok != 2) {
+isSubgroups = false;
+}}
+var xyzList = args[0].asString();
+var mode = (args[args.length - 1].tok == 4 ? args[args.length - 1].value : null);
+if (isSubgroups || "subgroups".equals(mode)) {
+var sym;
+var itaFrom = -2147483648;
+var itaTo = -2147483648;
+var index1 = -2147483648;
+var index2 = -2147483648;
+switch (isSubgroups ? n + 1 : n) {
+case 5:
+index2 = args[3].intValue;
+if (index2 < 0) return false;
+case 4:
+index1 = args[2].intValue;
+if (index1 < 0) return false;
+case 3:
+itaTo = args[1].intValue;
+if (itaTo < 0) return false;
 case 2:
+itaFrom = args[0].intValue;
+if (itaFrom < 0) return false;
+case 1:
+default:
+if (itaFrom == -2147483648) {
+sym = this.vwr.getCurrentUnitCell();
+itaFrom = JU.PT.parseInt(sym.getIntTableNumber());
+if (itaFrom < 1) return false;
+} else {
+sym = this.vwr.getSymTemp();
+}break;
+}
+return mp.addXObj(sym.getSubgroupJSON(this.vwr, itaFrom, itaTo, index1, index2));
+}switch (n) {
+default:
+return false;
+case 2:
+if (args[1].tok == 4) {
+mode = args[1].value;
+} else {
 unitCellParams = JS.SV.flistValue(args[1], 0);
 if (unitCellParams == null || unitCellParams.length != 6) return false;
 unitCellParams = JU.SimpleUnitCell.newParams(unitCellParams, NaN);
-case 1:
-if (args[0].tok == 4) {
-var xyzList = args[0].asString();
-if (xyzList.toUpperCase().startsWith("ITA/")) {
-return mp.addXObj(this.vwr.getSymTemp().getSpaceGroupJSON(this.vwr, "ITA", xyzList.substring(4), 0));
-}if (xyzList.toUpperCase().startsWith("AFLOW/")) {
+}case 1:
+var itaNo = (args[0].tok == 2 ? args[0].intValue : n == 1 ? -2147483648 : 0);
+if ("settings".equalsIgnoreCase(mode)) {
+if (itaNo == 0) return false;
+return mp.addXObj((itaNo == -2147483648 ? this.vwr.getCurrentUnitCell() : this.vwr.getSymTemp()).getSpaceGroupJSON(this.vwr, mode.toLowerCase(), null, itaNo));
+}if (itaNo > 0 || args[0].tok == 4) {
+if (xyzList.toUpperCase().startsWith("AFLOW/")) {
 return mp.addXObj(this.vwr.getSymTemp().getSpaceGroupJSON(this.vwr, "AFLOW", xyzList.substring(6), 0));
-}if (xyzList.indexOf("x") < 0 && unitCellParams == null) return mp.addXObj(this.vwr.getSymTemp().getSpaceGroupInfoObj(xyzList, null, true, false));
-return mp.addXObj(this.vwr.findSpaceGroup(null, xyzList, unitCellParams, null, true, false, false));
-}var atoms = JS.SV.getBitSet(args[0], true);
-if (atoms == null) {
-return mp.addXObj(this.vwr.getSymTemp().getSpaceGroupInfoObj("" + args[0].asString(), unitCellParams, true, false));
-}return mp.addXObj(this.vwr.findSpaceGroup(atoms, null, unitCellParams, null, true, false, false));
-default:
-return false;
+}if (xyzList.startsWith("Hall:") || xyzList.indexOf("x") >= 0 || unitCellParams != null) {
+return mp.addXObj(this.vwr.findSpaceGroup(null, null, xyzList, unitCellParams, null, null, 1));
+}if (itaNo > 0 || !xyzList.endsWith(":") && !Double.isNaN(JU.PT.parseFloat(xyzList))) xyzList = "ITA/" + xyzList;
+if ("setting".equalsIgnoreCase(xyzList)) {
+var sym = this.vwr.getOperativeSymmetry();
+return mp.addXObj(sym == null ? null : sym.getSpaceGroupJSON(this.vwr, "settings", null, -2147483648));
+}if (xyzList.toUpperCase().startsWith("ITA/")) {
+return mp.addXObj(this.vwr.getSymTemp().getSpaceGroupJSON(this.vwr, "ITA", xyzList.substring(4), 0));
+}} else {
+var atoms = JS.SV.getBitSet(args[0], true);
+if (atoms != null) {
+return mp.addXObj(this.vwr.findSpaceGroup(null, atoms, null, unitCellParams, null, null, 1));
+}}break;
 }
+return mp.addXObj(this.vwr.getSymTemp().getSpaceGroupInfoObj(xyzList, unitCellParams, true, false));
 }, "JS.ScriptMathProcessor,~A");
 Clazz.defineMethod(c$, "evaluatePointGroup", 
 function(mp, args, isAtomProperty){
@@ -238,7 +345,7 @@ pts =  new Array(lst.size());
 for (var i = pts.length; --i >= 0; ) pts[i] = lst.get(i);
 
 center =  new JU.P3();
-}}var pointGroup = this.vwr.getSymTemp().setPointGroup(null, center, (pts == null ? this.vwr.ms.at : pts), bsAtoms, false, distanceTolerance < 0 ? this.vwr.getFloat(570425382) : distanceTolerance, linearTolerance < 0 ? this.vwr.getFloat(570425384) : linearTolerance, (bsAtoms == null ? pts.length : bsAtoms.cardinality()), true);
+}}var pointGroup = this.vwr.getSymTemp().setPointGroup(this.vwr, null, center, (pts == null ? this.vwr.ms.at : pts), bsAtoms, false, distanceTolerance < 0 ? this.vwr.getFloat(570425382) : distanceTolerance, linearTolerance < 0 ? this.vwr.getFloat(570425384) : linearTolerance, (bsAtoms == null ? pts.length : bsAtoms.cardinality()), true);
 return mp.addXMap(pointGroup.getPointGroupInfo(-1, null, true, null, 0, 1));
 }, "JS.ScriptMathProcessor,~A,~B");
 Clazz.defineMethod(c$, "evaluateUnitCell", 
@@ -254,6 +361,7 @@ scale = args[lastParam].asFloat();
 lastParam--;
 break;
 }
+var normalize = false;
 var tok0 = (lastParam < 0 ? 0 : args[0].tok);
 var ucnew = null;
 var uc = null;
@@ -262,6 +370,19 @@ switch (tok0) {
 case 7:
 uc = args[0].getList();
 break;
+case 12:
+switch (lastParam > 1 ? 1073741936 : lastParam < 1 ? 0 : args[1].tok) {
+default:
+case 1073741936:
+return false;
+case 0:
+case 1073742334:
+break;
+case 1073742335:
+normalize = true;
+break;
+}
+return mp.addXStr(this.vwr.getSymStatic().staticGetTransformABC(args[0].value, normalize));
 case 4:
 arg0 = args[0].asString();
 if (tok == 1814695966) {
@@ -270,8 +391,14 @@ ucnew =  new Array(4);
 for (var i = 0; i < 4; i++) ucnew[i] =  new JU.P3();
 
 JU.SimpleUnitCell.setAbc(arg0, null, ucnew);
-} else if (arg0.indexOf(",") >= 0) {
-return mp.addXObj(this.vwr.getV0abc(-1, arg0));
+} else if (arg0.indexOf(",") >= 0 || arg0.equals("r")) {
+var asMatrix = (args.length == 2 && JS.SV.bValue(args[1]));
+var ret;
+if (asMatrix) {
+ret = this.vwr.getSymTemp().convertTransform(arg0, null);
+} else {
+ret = this.vwr.getV0abc(-1, arg0);
+}return mp.addXObj(ret);
 }}break;
 }
 if (tok == 1812599299) {
@@ -307,7 +434,7 @@ default:
 return false;
 }
 } else {
-ucnew[0] = JS.SV.ptValue(args[0]);
+ucnew[0] = JU.P3.newP(JS.SV.ptValue(args[0]));
 switch (lastParam) {
 case 3:
 for (var i = 1; i < 4; i++) (ucnew[i] = JU.P3.newP(JS.SV.ptValue(args[i]))).sub(ucnew[0]);
@@ -316,7 +443,7 @@ break;
 case 1:
 var l = args[1].getList();
 if (l != null && l.size() == 3) {
-for (var i = 0; i < 3; i++) ucnew[i + 1] = JS.SV.ptValue(l.get(i));
+for (var i = 0; i < 3; i++) ucnew[i + 1] = JU.P3.newP(JS.SV.ptValue(l.get(i)));
 
 break;
 }default:
@@ -1084,7 +1211,7 @@ return mp.addXInt(!allMappings && len > 0 ? 1 : len);
 case 10:
 var bs = x1.value;
 if (sFind.equalsIgnoreCase("spacegroup")) {
-return mp.addXObj(this.vwr.findSpaceGroup(bs, null, null, null, false, false, "parent".equals(flags.toLowerCase())));
+return mp.addXObj(this.vwr.findSpaceGroup(null, bs, null, null, null, null, ("parent".equals(flags.toLowerCase()) ? 8 : 0)));
 }if (sFind.equalsIgnoreCase("crystalClass")) {
 var n = bs.nextSetBit(0);
 var bsNew = null;
@@ -2403,10 +2530,10 @@ function(mp, args, isProperty){
 var narg = args.length;
 var o = null;
 if (args.length == 2 && args[0].tok == 4 && args[1].tok == 4 && (args[1].value).equalsIgnoreCase("matrix")) {
-o = this.vwr.getSymTemp().convertOperation(args[0].value, null);
+o = this.vwr.getSymStatic().staticConvertOperation(args[0].value, null);
 return (o != null && mp.addXObj(o));
 }if (args.length == 2 && args[0].tok == 12 && args[1].tok == 4 && (args[1].value).equalsIgnoreCase("xyz")) {
-o = this.vwr.getSymTemp().convertOperation("", args[0].value);
+o = this.vwr.getSymStatic().staticConvertOperation("", args[0].value);
 return (o != null && mp.addXObj(o));
 }var x1 = (isProperty ? mp.getX() : null);
 var isPoint = false;
@@ -2421,22 +2548,35 @@ for (var i = 0, n = ops.length; i < n; i++) lst.addLast(JU.PT.split(ops[i], "\t"
 
 return mp.addXList(lst);
 }var xyz = null;
-var invariant = false;
-var isWyckoff = false;
+var tok = 0;
 var iOp = -2147483648;
 var apt = 0;
 var pt2 = null;
 var bs1 = null;
+var isWyckoff = false;
 switch (args[0].tok) {
 case 4:
 xyz = JS.SV.sValue(args[0]);
-if (xyz != null) {
-if (xyz.equalsIgnoreCase("count")) {
+switch (xyz == null ? "" : xyz.toLowerCase()) {
+case "count":
 var sym = this.vwr.getOperativeSymmetry();
 return (narg != 1 ? false : mp.addXInt(sym == null ? 0 : sym.getSpaceGroupOperationCount()));
-}invariant = xyz.equalsIgnoreCase("invariant");
-isWyckoff = xyz.equalsIgnoreCase("wyckoff");
-}apt++;
+case "":
+tok = 0;
+break;
+case "invariant":
+tok = 36868;
+break;
+case "wyckoff":
+tok = 1086324754;
+isWyckoff = true;
+break;
+case "wyckoffm":
+tok = 1086324755;
+isWyckoff = true;
+break;
+}
+apt++;
 break;
 case 12:
 xyz = args[0].escape();
@@ -2469,9 +2609,9 @@ pt2 = pt1;
 pt1 = JU.P3.newP(this.vwr.ms.at[bs1.nextSetBit(0)]);
 }var nth = (pt2 != null && args.length > apt && iOp == -2147483648 && args[apt].tok == 2 ? args[apt].intValue : -1);
 if (nth >= 0) apt++;
-if (iOp == -2147483648 && !invariant) iOp = 0;
+if (iOp == -2147483648 && tok != 36868) iOp = 0;
 var map = null;
-if (!isWyckoff && !invariant && xyz != null && xyz.indexOf(",") < 0) {
+if (tok == 0 && xyz != null && xyz.indexOf(",") < 0) {
 if (apt == narg) {
 map = this.vwr.ms.getPointGroupInfo(null);
 } else if (args[apt].tok == 6) {
@@ -2532,10 +2672,12 @@ throw e;
 }
 }
 return false;
-}var desc = (narg == apt ? (isWyckoff ? "" : invariant ? "id" : pt2 != null ? "all" : pt1 != null ? "point" : "matrix") : JS.SV.sValue(args[apt++]));
+}var desc = (narg == apt ? (isWyckoff ? "" : tok == 36868 ? "id" : pt2 != null ? "all" : pt1 != null ? "point" : "matrix") : JS.SV.sValue(args[apt++]));
 var haveAtom = ((!isWyckoff || isProperty) && bsAtoms != null && !bsAtoms.isEmpty());
 var iatom = (haveAtom ? bsAtoms.nextSetBit(0) : -1);
 if (isWyckoff) {
+while (desc.length > 0 && JU.PT.isDigit(desc.charAt(0))) desc = desc.substring(1);
+
 var pt = (haveAtom ? this.vwr.ms.getAtom(iatom) : pt1);
 if (pt == null) {
 switch (desc) {
@@ -2548,15 +2690,15 @@ if (desc.length == 1) desc += "*";
  else return false;
 }
 }if (desc.length == 0 || desc.equalsIgnoreCase("label")) desc = null;
-var letter = (desc == null ? null : desc.endsWith("*") || desc.equalsIgnoreCase("coord") || desc.equalsIgnoreCase("coords") ? desc : desc.substring(0, 1));
+var letter = (desc == null ? (tok == 1086324755 ? "" : null) : desc.endsWith("*") || desc.equalsIgnoreCase("coord") || desc.equalsIgnoreCase("coords") ? desc : desc.substring(0, 1));
 var sym = this.vwr.getOperativeSymmetry();
-return mp.addXObj(sym == null ? null : sym.getWyckoffPosition(this.vwr, pt, letter));
+return mp.addXObj(sym == null ? null : sym.getWyckoffPosition(this.vwr, pt, (letter == null ? (tok == 1086324755 ? "M" : null) : (tok == 1086324755 ? "M" : "") + letter)));
 }desc = desc.toLowerCase();
-if (invariant || desc.equals("invariant") && isProperty) {
+if (tok == 36868 || desc.equals("invariant") && isProperty) {
 if (haveAtom && pt1 == null) pt1 = this.vwr.ms.at[iatom];
 haveAtom = (pt1 != null);
 if (iatom < 0) iatom = this.vwr.getThisModelAtoms().nextSetBit(0);
-}if (invariant && iOp == -2147483648) {
+}if (tok == 36868 && iOp == -2147483648) {
 var ret = null;
 var sym = this.vwr.getCurrentUnitCell();
 if (pt1 != null) {
@@ -3129,4 +3271,4 @@ if (bs.equals(bsA)) bsB.andNot(bsA);
 c$.nan = Float.$valueOf(NaN);
 c$.t0 = System.currentTimeMillis();
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

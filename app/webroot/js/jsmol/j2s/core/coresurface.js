@@ -190,6 +190,10 @@ this.setShapeProperty(shapeID, "set", data);
 if (translucentLevel != 3.4028235E38) this.e.setShapeTranslucency(shapeID, "", "translucent", translucentLevel, bs);
 if (intScale != 0) {
 this.setShapeProperty(shapeID, "scale", Integer.$valueOf(intScale));
+}if (iptDisplayProperty < 0) {
+iptDisplayProperty = -1 - iptDisplayProperty;
+this.setShapeProperty(shapeID, "token", Integer.$valueOf(1073742018));
+this.setShapeProperty(shapeID, "token", Integer.$valueOf(1073742046));
 }if (iptDisplayProperty > 0) {
 if (!this.e.setMeshDisplayProperty(shapeID, iptDisplayProperty, 0)) this.invArg();
 }}, "~N,~N,~N,~N,~B,~O,~N,JU.BS");
@@ -241,7 +245,7 @@ for (var i = bs.nextSetBit(0), pt = 0; i >= 0; i = bs.nextSetBit(i + 1)) p[pt++]
 return p;
 }, "JU.BS");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["JS.ScriptExt"], "JS.IsoExt", ["JU.AU", "$.BS", "$.Lst", "$.M4", "$.Measure", "$.P3", "$.PT", "$.Quat", "$.SB", "$.V3", "J.api.Interface", "J.atomdata.RadiusData", "J.c.VDW", "JS.SV", "$.ScriptEval", "$.ScriptInterruption", "$.T", "JU.BSUtil", "$.BoxInfo", "$.C", "$.Escape", "$.Logger", "$.Parser", "$.TempArray", "$.Triangulator", "JV.JC"], function(){
 var c$ = Clazz_declareType(JS, "IsoExt", JS.ScriptExt);
@@ -441,6 +445,7 @@ var iConnect = 0;
 var iArray = -1;
 var iOn = -1;
 var isBest = false;
+var meshNoFill = false;
 var tok = 0;
 var lattice = null;
 for (var i = eval.iToken; i < this.slen; ++i) {
@@ -478,11 +483,15 @@ default:
 this.invArg();
 }
 break;
+case 1611272194:
+if (!this.chk) this.vwr.getModelkit(false).drawAxes(thisId, swidth);
+return;
 case 1073741994:
 case 1814695966:
 case 1812599299:
 lattice = null;
 var uc = null;
+var ucLattice = null;
 var bs = null;
 switch (tok) {
 case 1812599299:
@@ -515,11 +524,28 @@ if (isBest) this.invArg();
 if (eval.isArrayParameter(i + 1)) {
 uc = this.vwr.getSymTemp().getUnitCell(eval.getPointArray(i + 1, -1, false), false, null);
 i = eval.iToken;
+} else {
+switch (this.tokAt(i + 1)) {
+case 4:
+var tr = this.stringParameter(i + 1);
+if (tr.length > 0 && (uc = this.vwr.getCurrentUnitCell()) != null) {
+uc = this.vwr.getSymTemp().getUnitCell(uc.getV0abc(tr, null), false, "draw");
+}i = eval.iToken;
+break;
+case 8:
+case 1073742332:
+ucLattice = eval.getFractionalPoint(i + 1);
+i = eval.iToken;
+break;
+}
 }if (this.tokAt(i + 1) == 1073741994) {
 if (tokIntersectBox == 1814695966) tokIntersectBox = 1073741994;
 ++i;
 lattice = eval.checkHKL(eval.getPointOrPlane(++i, 3));
 i = eval.iToken;
+}if (this.tokAt(i + 1) == 1611272194) {
+if (ucLattice == null) ucLattice = JU.P3.new3(555, 555, 1);
+i++;
 }break;
 }
 if (this.chk) break;
@@ -529,7 +555,10 @@ uc = this.vwr.getSymTemp().getUnitCell(this.vwr.getOrientation(1814695966, "arra
 }} else if (isBest) {
 uc = this.vwr.getSymTemp().getUnitCell(this.vwr.getOrientation(1814695966, "array", null, pts), false, null);
 } else if (tok == 1814695966 && uc == null) {
-uc = this.vwr.getCurrentUnitCell();
+if (ucLattice != null) {
+this.vwr.getModelkit(false).drawUnitCell(thisId, ucLattice, swidth);
+return;
+}uc = this.vwr.getCurrentUnitCell();
 }if (lattice == null) {
 pts = this.getBoxPoints(uc != null ? 1814695966 : tok, uc, bs, intScale / 100);
 } else {
@@ -553,6 +582,7 @@ v.addLast(null);
 }propertyValue = v;
 havePoints = true;
 intScale = 0;
+meshNoFill = true;
 break;
 }if (this.tokAt(i + 1) == 1073742335) {
 iOn = ++i;
@@ -653,7 +683,7 @@ center = eval.centerParameter(++i, null);
 i = eval.iToken + 1;
 }}var type;
 switch (this.tokAt(i)) {
-case 536875009:
+case 536875059:
 type = "";
 break;
 case 1111490563:
@@ -688,7 +718,7 @@ var scale = (intScale == 0 ? 1 : intScale / 100);
 var index = 0;
 if (type.length > 0) {
 if (this.isFloatParameter(++i)) index = this.intParameter(i++);
-}if (this.tokAt(i) == 536875009) scale = this.floatParameter(++i);
+}if (this.tokAt(i) == 536875059) scale = this.floatParameter(++i);
 if (!this.chk) eval.runScript(this.vwr.ms.getPointGroupAsString(this.vwr.bsA(), type, index, scale, pts, center, thisId == null ? "" : thisId));
 return;
 case 4106:
@@ -775,6 +805,7 @@ if (nTriangles < 0) isPoints = true;
 break;
 default:
 if (polygons == null && !isPoints && !this.chk) polygons = (J.api.Interface.getInterface("JU.MeshCapper", this.vwr, "script")).set(null).triangulatePolygon(points, -1);
+break;
 }
 if (polygons == null && !isPoints) {
 polygons = JU.AU.newInt2(nTriangles);
@@ -811,7 +842,7 @@ case 4:
 xyz = this.stringParameter(i);
 break;
 case 12:
-xyz = JS.SV.sValue(this.getToken(i));
+xyz = this.vwr.getSymStatic().convertTransform("xyz", this.getToken(i).value);
 break;
 case 2:
 default:
@@ -846,7 +877,8 @@ i++;
 target = this.getPoint3f(i + 1, false);
 options = 1073742066;
 i = eval.iToken;
-}}
+}break;
+}
 } else if (this.tokAt(i + 1) == 1073742327) {
 nth = -2;
 eval.iToken = ++i;
@@ -861,16 +893,12 @@ var s = "";
 var iatom = (bsAtoms != null ? bsAtoms.nextSetBit(0) : -1);
 if (bsAtoms == null && this.vwr.am.cmi >= 0) bsAtoms = this.vwr.getModelUndeletedAtomsBitSet(this.vwr.am.cmi);
 if (bsAtoms != null) {
-s = null;
-if (options != 0) {
-var o = this.vwr.getSymmetryInfo(iatom, xyz, iSym, trans, center, target, 134217751, null, intScale / 100, nth, options, opList);
-if (Clazz_instanceOf(o,"JU.P3")) target = o;
- else s = "";
-}if (thisId == null) thisId = (isSymop ? "sym" : "sg");
-if (s == null) s = this.vwr.getSymmetryInfo(iatom, xyz, iSym, trans, center, target, 135176, thisId, intScale / 100, nth, options, opList);
-s = "draw ID " + (isSymop ? "sg" : "sym") + "* delete;" + s;
-s = "draw ID " + thisId + "* delete;" + s + ";draw *;";
-}eval.runBufferedSafely(s.length > 0 ? s : "draw ID \"" + thisId + "*\" delete", eval.outputBuffer);
+s = this.vwr.getModelkit(false).drawSymmetry(thisId, isSymop, iatom, xyz, iSym, trans, center, target, intScale, nth, options, opList, false);
+if (s == null) return;
+if (isSymop && Clazz_instanceOf(target,"JM.Atom") && Clazz_instanceOf(center,"JM.Atom")) {
+if (eval.fullCommand.indexOf("#quiet") >= 0) s = JU.PT.rep(s, "print", "#print");
+s += "\nmodelkit set atomset " + JU.PT.esc(thisId + "|" + (center).i + "|" + (target).i + "|" + eval.fullCommand) + ";";
+}}eval.runBufferedSafely(s.length > 0 ? s : "draw ID \"" + thisId + "*\" delete", eval.outputBuffer);
 return;
 case 4115:
 isFrame = true;
@@ -982,7 +1010,7 @@ propertyValue = Integer.$valueOf(this.intParameter(i));
 } else {
 intScale = this.intParameter(i);
 }break;
-case 536875009:
+case 536875059:
 intScale = Math.round(this.floatParameter(++i) * (this.getToken(i).tok == 2 ? 1 : 100));
 continue;
 case 1073741974:
@@ -1091,9 +1119,12 @@ this.setShapeProperty(22, "points", Integer.$valueOf(intScale));
 isInitialized = true;
 intScale = 0;
 }if (havePoints && isWild) this.invArg();
-if (propertyName != null) this.setShapeProperty(22, propertyName, propertyValue);
-}
-this.finalizeObject(22, colorArgb[0], translucentLevel, intScale, havePoints, connections, iptDisplayProperty, null);
+if (propertyName != null) {
+this.setShapeProperty(22, propertyName, propertyValue);
+}}
+if (meshNoFill) {
+iptDisplayProperty = -1 - iptDisplayProperty;
+}this.finalizeObject(22, colorArgb[0], translucentLevel, intScale, havePoints, connections, iptDisplayProperty, null);
 });
 Clazz_defineMethod(c$, "mo", 
 function(isInitOnly, iShape){
@@ -1204,7 +1235,7 @@ this.addShapeProperty(propertyList, "randomSeed", this.tokAt(i + 2) == 2 ? Integ
 propertyName = "monteCarloCount";
 propertyValue = Integer.$valueOf(this.intParameter(i + 1));
 break;
-case 536875009:
+case 536875059:
 propertyName = "scale";
 propertyValue = Float.$valueOf(this.floatParameter(i + 1));
 break;
@@ -1891,7 +1922,7 @@ propertyValue = eval.planeParameter(i, isBest);
 i = eval.iToken;
 sbCommand.append(" plane ").append(JU.Escape.eP4(propertyValue));
 break;
-case 536875009:
+case 536875059:
 propertyName = "scale";
 propertyValue = Float.$valueOf(this.floatParameter(++i));
 sbCommand.append(" scale ").appendO(propertyValue);
@@ -2880,7 +2911,7 @@ propertyName = "selectType";
 propertyValue = this.paramAsStr(++i);
 if (propertyValue.equals("spacefill")) propertyValue = "cpk";
 }break;
-case 536875009:
+case 536875059:
 propertyName = "scale";
 propertyValue = Float.$valueOf(this.floatParameter(++i));
 break;
@@ -3157,7 +3188,7 @@ var ai =  Clazz_newIntArray(-1, [i, this.slen]);
 if (!eval.getShapePropertyData(23, "data",  Clazz_newArray(-1, [this.st, ai, data, this.vwr]))) this.invArg();
 i = ai[0];
 continue;
-case 536875009:
+case 536875059:
 if (++i >= this.slen) this.error(34);
 switch (this.getToken(i).tok) {
 case 2:
@@ -3551,7 +3582,7 @@ return null;
 }
 }, "~N,J.api.SymmetryInterface,JU.BS,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JU");
 Clazz_load(["JU.TriangleData"], "JU.Triangulator", ["JU.AU", "$.BS", "$.Lst", "$.Measure", "$.P3", "$.P4", "$.V3"], function(){
 var c$ = Clazz_declareType(JU, "Triangulator", JU.TriangleData);
@@ -3686,7 +3717,7 @@ return v;
 c$.fullCubePolygon =  Clazz_newArray(-1, [ Clazz_newIntArray(-1, [0, 4, 5, 3]),  Clazz_newIntArray(-1, [5, 1, 0, 3]),  Clazz_newIntArray(-1, [1, 5, 6, 2]),  Clazz_newIntArray(-1, [6, 2, 1, 3]),  Clazz_newIntArray(-1, [2, 6, 7, 2]),  Clazz_newIntArray(-1, [7, 3, 2, 3]),  Clazz_newIntArray(-1, [3, 7, 4, 2]),  Clazz_newIntArray(-1, [4, 0, 3, 2]),  Clazz_newIntArray(-1, [6, 5, 4, 0]),  Clazz_newIntArray(-1, [4, 7, 6, 0]),  Clazz_newIntArray(-1, [0, 1, 2, 0]),  Clazz_newIntArray(-1, [2, 3, 0, 0])]);
 c$.fullCubeCorners =  Clazz_newArray(-1, [ Clazz_newIntArray(-1, [1, 4, 3, 3267]),  Clazz_newIntArray(-1, [0, 2, 5, 3087]),  Clazz_newIntArray(-1, [1, 3, 6, 3132]),  Clazz_newIntArray(-1, [2, 0, 7, 3312]),  Clazz_newIntArray(-1, [0, 5, 7, 963]),  Clazz_newIntArray(-1, [1, 6, 4, 783]),  Clazz_newIntArray(-1, [2, 7, 5, 828]),  Clazz_newIntArray(-1, [3, 4, 6, 1008])]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JU");
 Clazz_load(["JU.P3i"], "JU.TriangleData", null, function(){
 var c$ = Clazz_declareType(JU, "TriangleData", null);
@@ -3695,13 +3726,13 @@ c$.cubeVertexOffsets =  Clazz_newArray(-1, [JU.P3i.new3(0, 0, 0), JU.P3i.new3(1,
 c$.edgeVertexes =  Clazz_newByteArray(-1, [0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7]);
 c$.triangleTable2 =  Clazz_newArray(-1, [null,  Clazz_newByteArray(-1, [0, 8, 3, 7]),  Clazz_newByteArray(-1, [0, 1, 9, 7]),  Clazz_newByteArray(-1, [1, 8, 3, 6, 9, 8, 1, 5]),  Clazz_newByteArray(-1, [1, 2, 10, 7]),  Clazz_newByteArray(-1, [0, 8, 3, 7, 1, 2, 10, 7]),  Clazz_newByteArray(-1, [9, 2, 10, 6, 0, 2, 9, 5]),  Clazz_newByteArray(-1, [2, 8, 3, 6, 2, 10, 8, 1, 10, 9, 8, 3]),  Clazz_newByteArray(-1, [3, 11, 2, 7]),  Clazz_newByteArray(-1, [0, 11, 2, 6, 8, 11, 0, 5]),  Clazz_newByteArray(-1, [1, 9, 0, 7, 2, 3, 11, 7]),  Clazz_newByteArray(-1, [1, 11, 2, 6, 1, 9, 11, 1, 9, 8, 11, 3]),  Clazz_newByteArray(-1, [3, 10, 1, 6, 11, 10, 3, 5]),  Clazz_newByteArray(-1, [0, 10, 1, 6, 0, 8, 10, 1, 8, 11, 10, 3]),  Clazz_newByteArray(-1, [3, 9, 0, 6, 3, 11, 9, 1, 11, 10, 9, 3]),  Clazz_newByteArray(-1, [9, 8, 10, 5, 10, 8, 11, 6]),  Clazz_newByteArray(-1, [4, 7, 8, 7]),  Clazz_newByteArray(-1, [4, 3, 0, 6, 7, 3, 4, 5]),  Clazz_newByteArray(-1, [0, 1, 9, 7, 8, 4, 7, 7]),  Clazz_newByteArray(-1, [4, 1, 9, 6, 4, 7, 1, 1, 7, 3, 1, 3]),  Clazz_newByteArray(-1, [1, 2, 10, 7, 8, 4, 7, 7]),  Clazz_newByteArray(-1, [3, 4, 7, 6, 3, 0, 4, 3, 1, 2, 10, 7]),  Clazz_newByteArray(-1, [9, 2, 10, 6, 9, 0, 2, 3, 8, 4, 7, 7]),  Clazz_newByteArray(-1, [2, 10, 9, 3, 2, 9, 7, 0, 2, 7, 3, 6, 7, 9, 4, 6]),  Clazz_newByteArray(-1, [8, 4, 7, 7, 3, 11, 2, 7]),  Clazz_newByteArray(-1, [11, 4, 7, 6, 11, 2, 4, 1, 2, 0, 4, 3]),  Clazz_newByteArray(-1, [9, 0, 1, 7, 8, 4, 7, 7, 2, 3, 11, 7]),  Clazz_newByteArray(-1, [4, 7, 11, 3, 9, 4, 11, 1, 9, 11, 2, 2, 9, 2, 1, 6]),  Clazz_newByteArray(-1, [3, 10, 1, 6, 3, 11, 10, 3, 7, 8, 4, 7]),  Clazz_newByteArray(-1, [1, 11, 10, 6, 1, 4, 11, 0, 1, 0, 4, 3, 7, 11, 4, 5]),  Clazz_newByteArray(-1, [4, 7, 8, 7, 9, 0, 11, 1, 9, 11, 10, 6, 11, 0, 3, 6]),  Clazz_newByteArray(-1, [4, 7, 11, 3, 4, 11, 9, 4, 9, 11, 10, 6]),  Clazz_newByteArray(-1, [9, 5, 4, 7]),  Clazz_newByteArray(-1, [9, 5, 4, 7, 0, 8, 3, 7]),  Clazz_newByteArray(-1, [0, 5, 4, 6, 1, 5, 0, 5]),  Clazz_newByteArray(-1, [8, 5, 4, 6, 8, 3, 5, 1, 3, 1, 5, 3]),  Clazz_newByteArray(-1, [1, 2, 10, 7, 9, 5, 4, 7]),  Clazz_newByteArray(-1, [3, 0, 8, 7, 1, 2, 10, 7, 4, 9, 5, 7]),  Clazz_newByteArray(-1, [5, 2, 10, 6, 5, 4, 2, 1, 4, 0, 2, 3]),  Clazz_newByteArray(-1, [2, 10, 5, 3, 3, 2, 5, 1, 3, 5, 4, 2, 3, 4, 8, 6]),  Clazz_newByteArray(-1, [9, 5, 4, 7, 2, 3, 11, 7]),  Clazz_newByteArray(-1, [0, 11, 2, 6, 0, 8, 11, 3, 4, 9, 5, 7]),  Clazz_newByteArray(-1, [0, 5, 4, 6, 0, 1, 5, 3, 2, 3, 11, 7]),  Clazz_newByteArray(-1, [2, 1, 5, 3, 2, 5, 8, 0, 2, 8, 11, 6, 4, 8, 5, 5]),  Clazz_newByteArray(-1, [10, 3, 11, 6, 10, 1, 3, 3, 9, 5, 4, 7]),  Clazz_newByteArray(-1, [4, 9, 5, 7, 0, 8, 1, 5, 8, 10, 1, 2, 8, 11, 10, 3]),  Clazz_newByteArray(-1, [5, 4, 0, 3, 5, 0, 11, 0, 5, 11, 10, 6, 11, 0, 3, 6]),  Clazz_newByteArray(-1, [5, 4, 8, 3, 5, 8, 10, 4, 10, 8, 11, 6]),  Clazz_newByteArray(-1, [9, 7, 8, 6, 5, 7, 9, 5]),  Clazz_newByteArray(-1, [9, 3, 0, 6, 9, 5, 3, 1, 5, 7, 3, 3]),  Clazz_newByteArray(-1, [0, 7, 8, 6, 0, 1, 7, 1, 1, 5, 7, 3]),  Clazz_newByteArray(-1, [1, 5, 3, 5, 3, 5, 7, 6]),  Clazz_newByteArray(-1, [9, 7, 8, 6, 9, 5, 7, 3, 10, 1, 2, 7]),  Clazz_newByteArray(-1, [10, 1, 2, 7, 9, 5, 0, 5, 5, 3, 0, 2, 5, 7, 3, 3]),  Clazz_newByteArray(-1, [8, 0, 2, 3, 8, 2, 5, 0, 8, 5, 7, 6, 10, 5, 2, 5]),  Clazz_newByteArray(-1, [2, 10, 5, 3, 2, 5, 3, 4, 3, 5, 7, 6]),  Clazz_newByteArray(-1, [7, 9, 5, 6, 7, 8, 9, 3, 3, 11, 2, 7]),  Clazz_newByteArray(-1, [9, 5, 7, 3, 9, 7, 2, 0, 9, 2, 0, 6, 2, 7, 11, 6]),  Clazz_newByteArray(-1, [2, 3, 11, 7, 0, 1, 8, 5, 1, 7, 8, 2, 1, 5, 7, 3]),  Clazz_newByteArray(-1, [11, 2, 1, 3, 11, 1, 7, 4, 7, 1, 5, 6]),  Clazz_newByteArray(-1, [9, 5, 8, 5, 8, 5, 7, 6, 10, 1, 3, 3, 10, 3, 11, 6]),  Clazz_newByteArray(-1, [5, 7, 0, 1, 5, 0, 9, 6, 7, 11, 0, 1, 1, 0, 10, 5, 11, 10, 0, 1]),  Clazz_newByteArray(-1, [11, 10, 0, 1, 11, 0, 3, 6, 10, 5, 0, 1, 8, 0, 7, 5, 5, 7, 0, 1]),  Clazz_newByteArray(-1, [11, 10, 5, 3, 7, 11, 5, 5]),  Clazz_newByteArray(-1, [10, 6, 5, 7]),  Clazz_newByteArray(-1, [0, 8, 3, 7, 5, 10, 6, 7]),  Clazz_newByteArray(-1, [9, 0, 1, 7, 5, 10, 6, 7]),  Clazz_newByteArray(-1, [1, 8, 3, 6, 1, 9, 8, 3, 5, 10, 6, 7]),  Clazz_newByteArray(-1, [1, 6, 5, 6, 2, 6, 1, 5]),  Clazz_newByteArray(-1, [1, 6, 5, 6, 1, 2, 6, 3, 3, 0, 8, 7]),  Clazz_newByteArray(-1, [9, 6, 5, 6, 9, 0, 6, 1, 0, 2, 6, 3]),  Clazz_newByteArray(-1, [5, 9, 8, 3, 5, 8, 2, 0, 5, 2, 6, 6, 3, 2, 8, 5]),  Clazz_newByteArray(-1, [2, 3, 11, 7, 10, 6, 5, 7]),  Clazz_newByteArray(-1, [11, 0, 8, 6, 11, 2, 0, 3, 10, 6, 5, 7]),  Clazz_newByteArray(-1, [0, 1, 9, 7, 2, 3, 11, 7, 5, 10, 6, 7]),  Clazz_newByteArray(-1, [5, 10, 6, 7, 1, 9, 2, 5, 9, 11, 2, 2, 9, 8, 11, 3]),  Clazz_newByteArray(-1, [6, 3, 11, 6, 6, 5, 3, 1, 5, 1, 3, 3]),  Clazz_newByteArray(-1, [0, 8, 11, 3, 0, 11, 5, 0, 0, 5, 1, 6, 5, 11, 6, 6]),  Clazz_newByteArray(-1, [3, 11, 6, 3, 0, 3, 6, 1, 0, 6, 5, 2, 0, 5, 9, 6]),  Clazz_newByteArray(-1, [6, 5, 9, 3, 6, 9, 11, 4, 11, 9, 8, 6]),  Clazz_newByteArray(-1, [5, 10, 6, 7, 4, 7, 8, 7]),  Clazz_newByteArray(-1, [4, 3, 0, 6, 4, 7, 3, 3, 6, 5, 10, 7]),  Clazz_newByteArray(-1, [1, 9, 0, 7, 5, 10, 6, 7, 8, 4, 7, 7]),  Clazz_newByteArray(-1, [10, 6, 5, 7, 1, 9, 7, 1, 1, 7, 3, 6, 7, 9, 4, 6]),  Clazz_newByteArray(-1, [6, 1, 2, 6, 6, 5, 1, 3, 4, 7, 8, 7]),  Clazz_newByteArray(-1, [1, 2, 5, 5, 5, 2, 6, 6, 3, 0, 4, 3, 3, 4, 7, 6]),  Clazz_newByteArray(-1, [8, 4, 7, 7, 9, 0, 5, 5, 0, 6, 5, 2, 0, 2, 6, 3]),  Clazz_newByteArray(-1, [7, 3, 9, 1, 7, 9, 4, 6, 3, 2, 9, 1, 5, 9, 6, 5, 2, 6, 9, 1]),  Clazz_newByteArray(-1, [3, 11, 2, 7, 7, 8, 4, 7, 10, 6, 5, 7]),  Clazz_newByteArray(-1, [5, 10, 6, 7, 4, 7, 2, 1, 4, 2, 0, 6, 2, 7, 11, 6]),  Clazz_newByteArray(-1, [0, 1, 9, 7, 4, 7, 8, 7, 2, 3, 11, 7, 5, 10, 6, 7]),  Clazz_newByteArray(-1, [9, 2, 1, 6, 9, 11, 2, 2, 9, 4, 11, 1, 7, 11, 4, 5, 5, 10, 6, 7]),  Clazz_newByteArray(-1, [8, 4, 7, 7, 3, 11, 5, 1, 3, 5, 1, 6, 5, 11, 6, 6]),  Clazz_newByteArray(-1, [5, 1, 11, 1, 5, 11, 6, 6, 1, 0, 11, 1, 7, 11, 4, 5, 0, 4, 11, 1]),  Clazz_newByteArray(-1, [0, 5, 9, 6, 0, 6, 5, 2, 0, 3, 6, 1, 11, 6, 3, 5, 8, 4, 7, 7]),  Clazz_newByteArray(-1, [6, 5, 9, 3, 6, 9, 11, 4, 4, 7, 9, 5, 7, 11, 9, 1]),  Clazz_newByteArray(-1, [10, 4, 9, 6, 6, 4, 10, 5]),  Clazz_newByteArray(-1, [4, 10, 6, 6, 4, 9, 10, 3, 0, 8, 3, 7]),  Clazz_newByteArray(-1, [10, 0, 1, 6, 10, 6, 0, 1, 6, 4, 0, 3]),  Clazz_newByteArray(-1, [8, 3, 1, 3, 8, 1, 6, 0, 8, 6, 4, 6, 6, 1, 10, 6]),  Clazz_newByteArray(-1, [1, 4, 9, 6, 1, 2, 4, 1, 2, 6, 4, 3]),  Clazz_newByteArray(-1, [3, 0, 8, 7, 1, 2, 9, 5, 2, 4, 9, 2, 2, 6, 4, 3]),  Clazz_newByteArray(-1, [0, 2, 4, 5, 4, 2, 6, 6]),  Clazz_newByteArray(-1, [8, 3, 2, 3, 8, 2, 4, 4, 4, 2, 6, 6]),  Clazz_newByteArray(-1, [10, 4, 9, 6, 10, 6, 4, 3, 11, 2, 3, 7]),  Clazz_newByteArray(-1, [0, 8, 2, 5, 2, 8, 11, 6, 4, 9, 10, 3, 4, 10, 6, 6]),  Clazz_newByteArray(-1, [3, 11, 2, 7, 0, 1, 6, 1, 0, 6, 4, 6, 6, 1, 10, 6]),  Clazz_newByteArray(-1, [6, 4, 1, 1, 6, 1, 10, 6, 4, 8, 1, 1, 2, 1, 11, 5, 8, 11, 1, 1]),  Clazz_newByteArray(-1, [9, 6, 4, 6, 9, 3, 6, 0, 9, 1, 3, 3, 11, 6, 3, 5]),  Clazz_newByteArray(-1, [8, 11, 1, 1, 8, 1, 0, 6, 11, 6, 1, 1, 9, 1, 4, 5, 6, 4, 1, 1]),  Clazz_newByteArray(-1, [3, 11, 6, 3, 3, 6, 0, 4, 0, 6, 4, 6]),  Clazz_newByteArray(-1, [6, 4, 8, 3, 11, 6, 8, 5]),  Clazz_newByteArray(-1, [7, 10, 6, 6, 7, 8, 10, 1, 8, 9, 10, 3]),  Clazz_newByteArray(-1, [0, 7, 3, 6, 0, 10, 7, 0, 0, 9, 10, 3, 6, 7, 10, 5]),  Clazz_newByteArray(-1, [10, 6, 7, 3, 1, 10, 7, 1, 1, 7, 8, 2, 1, 8, 0, 6]),  Clazz_newByteArray(-1, [10, 6, 7, 3, 10, 7, 1, 4, 1, 7, 3, 6]),  Clazz_newByteArray(-1, [1, 2, 6, 3, 1, 6, 8, 0, 1, 8, 9, 6, 8, 6, 7, 6]),  Clazz_newByteArray(-1, [2, 6, 9, 1, 2, 9, 1, 6, 6, 7, 9, 1, 0, 9, 3, 5, 7, 3, 9, 1]),  Clazz_newByteArray(-1, [7, 8, 0, 3, 7, 0, 6, 4, 6, 0, 2, 6]),  Clazz_newByteArray(-1, [7, 3, 2, 3, 6, 7, 2, 5]),  Clazz_newByteArray(-1, [2, 3, 11, 7, 10, 6, 8, 1, 10, 8, 9, 6, 8, 6, 7, 6]),  Clazz_newByteArray(-1, [2, 0, 7, 1, 2, 7, 11, 6, 0, 9, 7, 1, 6, 7, 10, 5, 9, 10, 7, 1]),  Clazz_newByteArray(-1, [1, 8, 0, 6, 1, 7, 8, 2, 1, 10, 7, 1, 6, 7, 10, 5, 2, 3, 11, 7]),  Clazz_newByteArray(-1, [11, 2, 1, 3, 11, 1, 7, 4, 10, 6, 1, 5, 6, 7, 1, 1]),  Clazz_newByteArray(-1, [8, 9, 6, 1, 8, 6, 7, 6, 9, 1, 6, 1, 11, 6, 3, 5, 1, 3, 6, 1]),  Clazz_newByteArray(-1, [0, 9, 1, 7, 11, 6, 7, 7]),  Clazz_newByteArray(-1, [7, 8, 0, 3, 7, 0, 6, 4, 3, 11, 0, 5, 11, 6, 0, 1]),  Clazz_newByteArray(-1, [7, 11, 6, 7]),  Clazz_newByteArray(-1, [7, 6, 11, 7]),  Clazz_newByteArray(-1, [3, 0, 8, 7, 11, 7, 6, 7]),  Clazz_newByteArray(-1, [0, 1, 9, 7, 11, 7, 6, 7]),  Clazz_newByteArray(-1, [8, 1, 9, 6, 8, 3, 1, 3, 11, 7, 6, 7]),  Clazz_newByteArray(-1, [10, 1, 2, 7, 6, 11, 7, 7]),  Clazz_newByteArray(-1, [1, 2, 10, 7, 3, 0, 8, 7, 6, 11, 7, 7]),  Clazz_newByteArray(-1, [2, 9, 0, 6, 2, 10, 9, 3, 6, 11, 7, 7]),  Clazz_newByteArray(-1, [6, 11, 7, 7, 2, 10, 3, 5, 10, 8, 3, 2, 10, 9, 8, 3]),  Clazz_newByteArray(-1, [7, 2, 3, 6, 6, 2, 7, 5]),  Clazz_newByteArray(-1, [7, 0, 8, 6, 7, 6, 0, 1, 6, 2, 0, 3]),  Clazz_newByteArray(-1, [2, 7, 6, 6, 2, 3, 7, 3, 0, 1, 9, 7]),  Clazz_newByteArray(-1, [1, 6, 2, 6, 1, 8, 6, 0, 1, 9, 8, 3, 8, 7, 6, 3]),  Clazz_newByteArray(-1, [10, 7, 6, 6, 10, 1, 7, 1, 1, 3, 7, 3]),  Clazz_newByteArray(-1, [10, 7, 6, 6, 1, 7, 10, 4, 1, 8, 7, 2, 1, 0, 8, 3]),  Clazz_newByteArray(-1, [0, 3, 7, 3, 0, 7, 10, 0, 0, 10, 9, 6, 6, 10, 7, 5]),  Clazz_newByteArray(-1, [7, 6, 10, 3, 7, 10, 8, 4, 8, 10, 9, 6]),  Clazz_newByteArray(-1, [6, 8, 4, 6, 11, 8, 6, 5]),  Clazz_newByteArray(-1, [3, 6, 11, 6, 3, 0, 6, 1, 0, 4, 6, 3]),  Clazz_newByteArray(-1, [8, 6, 11, 6, 8, 4, 6, 3, 9, 0, 1, 7]),  Clazz_newByteArray(-1, [9, 4, 6, 3, 9, 6, 3, 0, 9, 3, 1, 6, 11, 3, 6, 5]),  Clazz_newByteArray(-1, [6, 8, 4, 6, 6, 11, 8, 3, 2, 10, 1, 7]),  Clazz_newByteArray(-1, [1, 2, 10, 7, 3, 0, 11, 5, 0, 6, 11, 2, 0, 4, 6, 3]),  Clazz_newByteArray(-1, [4, 11, 8, 6, 4, 6, 11, 3, 0, 2, 9, 5, 2, 10, 9, 3]),  Clazz_newByteArray(-1, [10, 9, 3, 1, 10, 3, 2, 6, 9, 4, 3, 1, 11, 3, 6, 5, 4, 6, 3, 1]),  Clazz_newByteArray(-1, [8, 2, 3, 6, 8, 4, 2, 1, 4, 6, 2, 3]),  Clazz_newByteArray(-1, [0, 4, 2, 5, 4, 6, 2, 3]),  Clazz_newByteArray(-1, [1, 9, 0, 7, 2, 3, 4, 1, 2, 4, 6, 6, 4, 3, 8, 6]),  Clazz_newByteArray(-1, [1, 9, 4, 3, 1, 4, 2, 4, 2, 4, 6, 6]),  Clazz_newByteArray(-1, [8, 1, 3, 6, 8, 6, 1, 0, 8, 4, 6, 3, 6, 10, 1, 3]),  Clazz_newByteArray(-1, [10, 1, 0, 3, 10, 0, 6, 4, 6, 0, 4, 6]),  Clazz_newByteArray(-1, [4, 6, 3, 1, 4, 3, 8, 6, 6, 10, 3, 1, 0, 3, 9, 5, 10, 9, 3, 1]),  Clazz_newByteArray(-1, [10, 9, 4, 3, 6, 10, 4, 5]),  Clazz_newByteArray(-1, [4, 9, 5, 7, 7, 6, 11, 7]),  Clazz_newByteArray(-1, [0, 8, 3, 7, 4, 9, 5, 7, 11, 7, 6, 7]),  Clazz_newByteArray(-1, [5, 0, 1, 6, 5, 4, 0, 3, 7, 6, 11, 7]),  Clazz_newByteArray(-1, [11, 7, 6, 7, 8, 3, 4, 5, 3, 5, 4, 2, 3, 1, 5, 3]),  Clazz_newByteArray(-1, [9, 5, 4, 7, 10, 1, 2, 7, 7, 6, 11, 7]),  Clazz_newByteArray(-1, [6, 11, 7, 7, 1, 2, 10, 7, 0, 8, 3, 7, 4, 9, 5, 7]),  Clazz_newByteArray(-1, [7, 6, 11, 7, 5, 4, 10, 5, 4, 2, 10, 2, 4, 0, 2, 3]),  Clazz_newByteArray(-1, [3, 4, 8, 6, 3, 5, 4, 2, 3, 2, 5, 1, 10, 5, 2, 5, 11, 7, 6, 7]),  Clazz_newByteArray(-1, [7, 2, 3, 6, 7, 6, 2, 3, 5, 4, 9, 7]),  Clazz_newByteArray(-1, [9, 5, 4, 7, 0, 8, 6, 1, 0, 6, 2, 6, 6, 8, 7, 6]),  Clazz_newByteArray(-1, [3, 6, 2, 6, 3, 7, 6, 3, 1, 5, 0, 5, 5, 4, 0, 3]),  Clazz_newByteArray(-1, [6, 2, 8, 1, 6, 8, 7, 6, 2, 1, 8, 1, 4, 8, 5, 5, 1, 5, 8, 1]),  Clazz_newByteArray(-1, [9, 5, 4, 7, 10, 1, 6, 5, 1, 7, 6, 2, 1, 3, 7, 3]),  Clazz_newByteArray(-1, [1, 6, 10, 6, 1, 7, 6, 2, 1, 0, 7, 1, 8, 7, 0, 5, 9, 5, 4, 7]),  Clazz_newByteArray(-1, [4, 0, 10, 1, 4, 10, 5, 6, 0, 3, 10, 1, 6, 10, 7, 5, 3, 7, 10, 1]),  Clazz_newByteArray(-1, [7, 6, 10, 3, 7, 10, 8, 4, 5, 4, 10, 5, 4, 8, 10, 1]),  Clazz_newByteArray(-1, [6, 9, 5, 6, 6, 11, 9, 1, 11, 8, 9, 3]),  Clazz_newByteArray(-1, [3, 6, 11, 6, 0, 6, 3, 4, 0, 5, 6, 2, 0, 9, 5, 3]),  Clazz_newByteArray(-1, [0, 11, 8, 6, 0, 5, 11, 0, 0, 1, 5, 3, 5, 6, 11, 3]),  Clazz_newByteArray(-1, [6, 11, 3, 3, 6, 3, 5, 4, 5, 3, 1, 6]),  Clazz_newByteArray(-1, [1, 2, 10, 7, 9, 5, 11, 1, 9, 11, 8, 6, 11, 5, 6, 6]),  Clazz_newByteArray(-1, [0, 11, 3, 6, 0, 6, 11, 2, 0, 9, 6, 1, 5, 6, 9, 5, 1, 2, 10, 7]),  Clazz_newByteArray(-1, [11, 8, 5, 1, 11, 5, 6, 6, 8, 0, 5, 1, 10, 5, 2, 5, 0, 2, 5, 1]),  Clazz_newByteArray(-1, [6, 11, 3, 3, 6, 3, 5, 4, 2, 10, 3, 5, 10, 5, 3, 1]),  Clazz_newByteArray(-1, [5, 8, 9, 6, 5, 2, 8, 0, 5, 6, 2, 3, 3, 8, 2, 5]),  Clazz_newByteArray(-1, [9, 5, 6, 3, 9, 6, 0, 4, 0, 6, 2, 6]),  Clazz_newByteArray(-1, [1, 5, 8, 1, 1, 8, 0, 6, 5, 6, 8, 1, 3, 8, 2, 5, 6, 2, 8, 1]),  Clazz_newByteArray(-1, [1, 5, 6, 3, 2, 1, 6, 5]),  Clazz_newByteArray(-1, [1, 3, 6, 1, 1, 6, 10, 6, 3, 8, 6, 1, 5, 6, 9, 5, 8, 9, 6, 1]),  Clazz_newByteArray(-1, [10, 1, 0, 3, 10, 0, 6, 4, 9, 5, 0, 5, 5, 6, 0, 1]),  Clazz_newByteArray(-1, [0, 3, 8, 7, 5, 6, 10, 7]),  Clazz_newByteArray(-1, [10, 5, 6, 7]),  Clazz_newByteArray(-1, [11, 5, 10, 6, 7, 5, 11, 5]),  Clazz_newByteArray(-1, [11, 5, 10, 6, 11, 7, 5, 3, 8, 3, 0, 7]),  Clazz_newByteArray(-1, [5, 11, 7, 6, 5, 10, 11, 3, 1, 9, 0, 7]),  Clazz_newByteArray(-1, [10, 7, 5, 6, 10, 11, 7, 3, 9, 8, 1, 5, 8, 3, 1, 3]),  Clazz_newByteArray(-1, [11, 1, 2, 6, 11, 7, 1, 1, 7, 5, 1, 3]),  Clazz_newByteArray(-1, [0, 8, 3, 7, 1, 2, 7, 1, 1, 7, 5, 6, 7, 2, 11, 6]),  Clazz_newByteArray(-1, [9, 7, 5, 6, 9, 2, 7, 0, 9, 0, 2, 3, 2, 11, 7, 3]),  Clazz_newByteArray(-1, [7, 5, 2, 1, 7, 2, 11, 6, 5, 9, 2, 1, 3, 2, 8, 5, 9, 8, 2, 1]),  Clazz_newByteArray(-1, [2, 5, 10, 6, 2, 3, 5, 1, 3, 7, 5, 3]),  Clazz_newByteArray(-1, [8, 2, 0, 6, 8, 5, 2, 0, 8, 7, 5, 3, 10, 2, 5, 5]),  Clazz_newByteArray(-1, [9, 0, 1, 7, 5, 10, 3, 1, 5, 3, 7, 6, 3, 10, 2, 6]),  Clazz_newByteArray(-1, [9, 8, 2, 1, 9, 2, 1, 6, 8, 7, 2, 1, 10, 2, 5, 5, 7, 5, 2, 1]),  Clazz_newByteArray(-1, [1, 3, 5, 5, 3, 7, 5, 3]),  Clazz_newByteArray(-1, [0, 8, 7, 3, 0, 7, 1, 4, 1, 7, 5, 6]),  Clazz_newByteArray(-1, [9, 0, 3, 3, 9, 3, 5, 4, 5, 3, 7, 6]),  Clazz_newByteArray(-1, [9, 8, 7, 3, 5, 9, 7, 5]),  Clazz_newByteArray(-1, [5, 8, 4, 6, 5, 10, 8, 1, 10, 11, 8, 3]),  Clazz_newByteArray(-1, [5, 0, 4, 6, 5, 11, 0, 0, 5, 10, 11, 3, 11, 3, 0, 3]),  Clazz_newByteArray(-1, [0, 1, 9, 7, 8, 4, 10, 1, 8, 10, 11, 6, 10, 4, 5, 6]),  Clazz_newByteArray(-1, [10, 11, 4, 1, 10, 4, 5, 6, 11, 3, 4, 1, 9, 4, 1, 5, 3, 1, 4, 1]),  Clazz_newByteArray(-1, [2, 5, 1, 6, 2, 8, 5, 0, 2, 11, 8, 3, 4, 5, 8, 5]),  Clazz_newByteArray(-1, [0, 4, 11, 1, 0, 11, 3, 6, 4, 5, 11, 1, 2, 11, 1, 5, 5, 1, 11, 1]),  Clazz_newByteArray(-1, [0, 2, 5, 1, 0, 5, 9, 6, 2, 11, 5, 1, 4, 5, 8, 5, 11, 8, 5, 1]),  Clazz_newByteArray(-1, [9, 4, 5, 7, 2, 11, 3, 7]),  Clazz_newByteArray(-1, [2, 5, 10, 6, 3, 5, 2, 4, 3, 4, 5, 2, 3, 8, 4, 3]),  Clazz_newByteArray(-1, [5, 10, 2, 3, 5, 2, 4, 4, 4, 2, 0, 6]),  Clazz_newByteArray(-1, [3, 10, 2, 6, 3, 5, 10, 2, 3, 8, 5, 1, 4, 5, 8, 5, 0, 1, 9, 7]),  Clazz_newByteArray(-1, [5, 10, 2, 3, 5, 2, 4, 4, 1, 9, 2, 5, 9, 4, 2, 1]),  Clazz_newByteArray(-1, [8, 4, 5, 3, 8, 5, 3, 4, 3, 5, 1, 6]),  Clazz_newByteArray(-1, [0, 4, 5, 3, 1, 0, 5, 5]),  Clazz_newByteArray(-1, [8, 4, 5, 3, 8, 5, 3, 4, 9, 0, 5, 5, 0, 3, 5, 1]),  Clazz_newByteArray(-1, [9, 4, 5, 7]),  Clazz_newByteArray(-1, [4, 11, 7, 6, 4, 9, 11, 1, 9, 10, 11, 3]),  Clazz_newByteArray(-1, [0, 8, 3, 7, 4, 9, 7, 5, 9, 11, 7, 2, 9, 10, 11, 3]),  Clazz_newByteArray(-1, [1, 10, 11, 3, 1, 11, 4, 0, 1, 4, 0, 6, 7, 4, 11, 5]),  Clazz_newByteArray(-1, [3, 1, 4, 1, 3, 4, 8, 6, 1, 10, 4, 1, 7, 4, 11, 5, 10, 11, 4, 1]),  Clazz_newByteArray(-1, [4, 11, 7, 6, 9, 11, 4, 4, 9, 2, 11, 2, 9, 1, 2, 3]),  Clazz_newByteArray(-1, [9, 7, 4, 6, 9, 11, 7, 2, 9, 1, 11, 1, 2, 11, 1, 5, 0, 8, 3, 7]),  Clazz_newByteArray(-1, [11, 7, 4, 3, 11, 4, 2, 4, 2, 4, 0, 6]),  Clazz_newByteArray(-1, [11, 7, 4, 3, 11, 4, 2, 4, 8, 3, 4, 5, 3, 2, 4, 1]),  Clazz_newByteArray(-1, [2, 9, 10, 6, 2, 7, 9, 0, 2, 3, 7, 3, 7, 4, 9, 3]),  Clazz_newByteArray(-1, [9, 10, 7, 1, 9, 7, 4, 6, 10, 2, 7, 1, 8, 7, 0, 5, 2, 0, 7, 1]),  Clazz_newByteArray(-1, [3, 7, 10, 1, 3, 10, 2, 6, 7, 4, 10, 1, 1, 10, 0, 5, 4, 0, 10, 1]),  Clazz_newByteArray(-1, [1, 10, 2, 7, 8, 7, 4, 7]),  Clazz_newByteArray(-1, [4, 9, 1, 3, 4, 1, 7, 4, 7, 1, 3, 6]),  Clazz_newByteArray(-1, [4, 9, 1, 3, 4, 1, 7, 4, 0, 8, 1, 5, 8, 7, 1, 1]),  Clazz_newByteArray(-1, [4, 0, 3, 3, 7, 4, 3, 5]),  Clazz_newByteArray(-1, [4, 8, 7, 7]),  Clazz_newByteArray(-1, [9, 10, 8, 5, 10, 11, 8, 3]),  Clazz_newByteArray(-1, [3, 0, 9, 3, 3, 9, 11, 4, 11, 9, 10, 6]),  Clazz_newByteArray(-1, [0, 1, 10, 3, 0, 10, 8, 4, 8, 10, 11, 6]),  Clazz_newByteArray(-1, [3, 1, 10, 3, 11, 3, 10, 5]),  Clazz_newByteArray(-1, [1, 2, 11, 3, 1, 11, 9, 4, 9, 11, 8, 6]),  Clazz_newByteArray(-1, [3, 0, 9, 3, 3, 9, 11, 4, 1, 2, 9, 5, 2, 11, 9, 1]),  Clazz_newByteArray(-1, [0, 2, 11, 3, 8, 0, 11, 5]),  Clazz_newByteArray(-1, [3, 2, 11, 7]),  Clazz_newByteArray(-1, [2, 3, 8, 3, 2, 8, 10, 4, 10, 8, 9, 6]),  Clazz_newByteArray(-1, [9, 10, 2, 3, 0, 9, 2, 5]),  Clazz_newByteArray(-1, [2, 3, 8, 3, 2, 8, 10, 4, 0, 1, 8, 5, 1, 10, 8, 1]),  Clazz_newByteArray(-1, [1, 10, 2, 7]),  Clazz_newByteArray(-1, [1, 3, 8, 3, 9, 1, 8, 5]),  Clazz_newByteArray(-1, [0, 9, 1, 7]),  Clazz_newByteArray(-1, [0, 3, 8, 7]), null]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.api");
 Clazz_declareInterface(J.jvxl.api, "VertexDataServer");
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.api");
 Clazz_declareInterface(J.jvxl.api, "MeshDataServer", J.jvxl.api.VertexDataServer);
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.shapesurface");
 Clazz_load(["J.jvxl.api.MeshDataServer", "J.shape.MeshCollection", "JU.P3i", "$.P4"], "J.shapesurface.Isosurface", ["java.util.Hashtable", "JU.A4", "$.AU", "$.BS", "$.CU", "$.Lst", "$.M3", "$.M4", "$.P3", "$.PT", "$.Quat", "$.Rdr", "$.SB", "$.V3", "J.jvxl.data.JvxlCoder", "$.JvxlData", "$.MeshData", "J.jvxl.readers.SurfaceGenerator", "J.shape.Mesh", "J.shapesurface.IsosurfaceMesh", "JU.C", "$.Escape", "$.Logger", "$.TempArray", "JV.JC", "$.Viewer"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -3902,7 +3933,7 @@ if (this.thisMesh != null) this.thisMesh.meshColix = this.meshColix;
 return;
 }if ("offset" === propertyName) {
 var offset = JU.P3.newP(value);
-if (offset.equals(JV.JC.center)) offset = null;
+if (offset.lengthSquared() == 0) offset = null;
 if (this.thisMesh != null) {
 this.thisMesh.rotateTranslate(null, offset, true);
 this.thisMesh.altVertices = null;
@@ -5017,7 +5048,7 @@ function(mesh){
 return (mesh == null ? null : (mesh).getValidVertices(null));
 }, "J.shape.Mesh");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.data");
 Clazz_load(null, "J.jvxl.data.JvxlCoder", ["JU.BS", "$.Lst", "$.P3", "$.PT", "$.SB", "J.api.Interface", "J.jvxl.data.VolumeData", "JU.BSUtil", "$.C", "$.Escape", "$.Logger", "JV.Viewer"], function(){
 var c$ = Clazz_declareType(J.jvxl.data, "JvxlCoder", null);
@@ -5715,7 +5746,7 @@ if (sb.length() == 0) sb.append("Line 1\nLine 2\n");
 }, "J.jvxl.data.VolumeData,JU.SB");
 c$.haveXMLUtil = false;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.data");
 Clazz_load(["JU.M3", "$.P3", "$.V3"], "J.jvxl.data.VolumeData", ["java.util.Hashtable", "JU.SB", "JU.Escape", "$.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -6099,7 +6130,7 @@ v = this.lookupInterpolatedVoxelValue(this.ptTemp, false);
 return v0;
 }, "~N,JU.P3,JU.P3,~N,~N,JU.P3");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.data");
 Clazz_load(null, "J.jvxl.data.JvxlData", ["JU.SB", "J.jvxl.data.JvxlCoder"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -6261,7 +6292,7 @@ for (var i = 0, ipt = 0; i < vertexCount; i += vertexIncrement, ipt++) if (Float
 return String.copyValueOf(chars);
 }, "~S,~A,~N,~N,~S");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.data");
 Clazz_load(["JU.MeshSurface"], "J.jvxl.data.MeshData", ["java.util.Arrays", "JU.AU", "$.BS", "$.V3", "JU.BSUtil"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -6467,7 +6498,7 @@ return (o1.n > o2.n ? -1 : o1.n < o2.n ? 1 : 0);
 /*eoif4*/})();
 };
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.readers");
 Clazz_load(null, "J.jvxl.readers.XmlReader", ["JU.P3", "$.PT", "$.SB", "JU.Escape"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -6599,7 +6630,7 @@ if (this.line == null || this.line.indexOf("</") >= 0 && this.line.indexOf("</")
 return (this.line.indexOf("<" + name) >= 0);
 }, "~S");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.readers");
 Clazz_load(["JU.P3", "$.V3"], "J.jvxl.readers.SurfaceGenerator", ["JU.AU", "$.BS", "$.Measure", "$.P4", "$.PT", "$.Rdr", "$.SB", "J.jvxl.data.JvxlCoder", "$.JvxlData", "$.MeshData", "$.VolumeData", "J.jvxl.readers.Parameters", "$.SurfaceReader", "JU.Logger", "JV.FileManager"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -7465,7 +7496,7 @@ function(){
 return (this.surfaceReader.volumeData == null ? null : this.surfaceReader.volumeData.oabc);
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.readers");
 Clazz_load(null, "J.jvxl.readers.Parameters", ["java.util.Hashtable", "JU.A4", "$.Lst", "$.M3", "$.P3", "$.P4", "$.V3", "JU.Escape", "$.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -8014,7 +8045,7 @@ function(){
 return (this.thePlane != null || this.fullyLit);
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.readers");
 Clazz_load(["J.jvxl.api.VertexDataServer", "JU.P3"], "J.jvxl.readers.SurfaceReader", ["JU.AU", "$.BS", "J.jvxl.calc.MarchingCubes", "$.MarchingSquares", "J.jvxl.data.JvxlCoder", "$.MeshData", "JU.BoxInfo", "$.C", "$.ColorEncoder", "$.Escape", "$.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -8663,7 +8694,7 @@ return -1;
 });
 c$.colorPhases =  Clazz_newArray(-1, ["_orb", "x", "y", "z", "xy", "yz", "xz", "x2-y2", "z2"]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.calc");
 Clazz_load(["JU.TriangleData", "JU.BS", "$.P3", "$.SB", "$.V3"], "J.jvxl.calc.MarchingCubes", ["J.jvxl.data.JvxlCoder"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -9000,7 +9031,7 @@ c$.cubeVertexVectors =  Clazz_newArray(-1, [JU.V3.new3(0, 0, 0), JU.V3.new3(1, 0
 c$.edgeTypeTable =  Clazz_newIntArray(-1, [0, 2, 0, 2, 0, 2, 0, 2, 1, 1, 1, 1]);
 c$.insideMaskTable =  Clazz_newShortArray(-1, [0x0000, 0x0109, 0x0203, 0x030A, 0x0406, 0x050F, 0x0605, 0x070C, 0x080C, 0x0905, 0x0A0F, 0x0B06, 0x0C0A, 0x0D03, 0x0E09, 0x0F00, 0x0190, 0x0099, 0x0393, 0x029A, 0x0596, 0x049F, 0x0795, 0x069C, 0x099C, 0x0895, 0x0B9F, 0x0A96, 0x0D9A, 0x0C93, 0x0F99, 0x0E90, 0x0230, 0x0339, 0x0033, 0x013A, 0x0636, 0x073F, 0x0435, 0x053C, 0x0A3C, 0x0B35, 0x083F, 0x0936, 0x0E3A, 0x0F33, 0x0C39, 0x0D30, 0x03A0, 0x02A9, 0x01A3, 0x00AA, 0x07A6, 0x06AF, 0x05A5, 0x04AC, 0x0BAC, 0x0AA5, 0x09AF, 0x08A6, 0x0FAA, 0x0EA3, 0x0DA9, 0x0CA0, 0x0460, 0x0569, 0x0663, 0x076A, 0x0066, 0x016F, 0x0265, 0x036C, 0x0C6C, 0x0D65, 0x0E6F, 0x0F66, 0x086A, 0x0963, 0x0A69, 0x0B60, 0x05F0, 0x04F9, 0x07F3, 0x06FA, 0x01F6, 0x00FF, 0x03F5, 0x02FC, 0x0DFC, 0x0CF5, 0x0FFF, 0x0EF6, 0x09FA, 0x08F3, 0x0BF9, 0x0AF0, 0x0650, 0x0759, 0x0453, 0x055A, 0x0256, 0x035F, 0x0055, 0x015C, 0x0E5C, 0x0F55, 0x0C5F, 0x0D56, 0x0A5A, 0x0B53, 0x0859, 0x0950, 0x07C0, 0x06C9, 0x05C3, 0x04CA, 0x03C6, 0x02CF, 0x01C5, 0x00CC, 0x0FCC, 0x0EC5, 0x0DCF, 0x0CC6, 0x0BCA, 0x0AC3, 0x09C9, 0x08C0, 0x08C0, 0x09C9, 0x0AC3, 0x0BCA, 0x0CC6, 0x0DCF, 0x0EC5, 0x0FCC, 0x00CC, 0x01C5, 0x02CF, 0x03C6, 0x04CA, 0x05C3, 0x06C9, 0x07C0, 0x0950, 0x0859, 0x0B53, 0x0A5A, 0x0D56, 0x0C5F, 0x0F55, 0x0E5C, 0x015C, 0x0055, 0x035F, 0x0256, 0x055A, 0x0453, 0x0759, 0x0650, 0x0AF0, 0x0BF9, 0x08F3, 0x09FA, 0x0EF6, 0x0FFF, 0x0CF5, 0x0DFC, 0x02FC, 0x03F5, 0x00FF, 0x01F6, 0x06FA, 0x07F3, 0x04F9, 0x05F0, 0x0B60, 0x0A69, 0x0963, 0x086A, 0x0F66, 0x0E6F, 0x0D65, 0x0C6C, 0x036C, 0x0265, 0x016F, 0x0066, 0x076A, 0x0663, 0x0569, 0x0460, 0x0CA0, 0x0DA9, 0x0EA3, 0x0FAA, 0x08A6, 0x09AF, 0x0AA5, 0x0BAC, 0x04AC, 0x05A5, 0x06AF, 0x07A6, 0x00AA, 0x01A3, 0x02A9, 0x03A0, 0x0D30, 0x0C39, 0x0F33, 0x0E3A, 0x0936, 0x083F, 0x0B35, 0x0A3C, 0x053C, 0x0435, 0x073F, 0x0636, 0x013A, 0x0033, 0x0339, 0x0230, 0x0E90, 0x0F99, 0x0C93, 0x0D9A, 0x0A96, 0x0B9F, 0x0895, 0x099C, 0x069C, 0x0795, 0x049F, 0x0596, 0x029A, 0x0393, 0x0099, 0x0190, 0x0F00, 0x0E09, 0x0D03, 0x0C0A, 0x0B06, 0x0A0F, 0x0905, 0x080C, 0x070C, 0x0605, 0x050F, 0x0406, 0x030A, 0x0203, 0x0109, 0x0000]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.calc");
 Clazz_load(["JU.P3", "java.util.Hashtable"], "J.jvxl.calc.MarchingSquares", ["JU.AU", "JU.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -9241,7 +9272,7 @@ this.contourIndex = contourIndex;
 /*eoif4*/})();
 };
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.shapesurface");
 Clazz_load(["J.shape.Mesh"], "J.shapesurface.IsosurfaceMesh", ["java.util.Hashtable", "JU.AU", "$.BS", "$.CU", "$.Lst", "$.M4", "$.P3", "$.P3i", "$.PT", "$.SB", "$.V3", "J.api.Interface", "J.jvxl.data.JvxlCoder", "$.JvxlData", "JS.T", "JU.C", "$.ColorEncoder", "$.Logger", "$.SimpleUnitCell", "JV.Viewer"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -9950,7 +9981,7 @@ if (!thisSet.get(this.vertexSets[i])) bs.set(i);
 }
 }}, "JU.BS");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.readers");
 Clazz_load(["J.jvxl.readers.SurfaceReader"], "J.jvxl.readers.VolumeDataReader", ["JU.AU", "$.SB", "J.jvxl.data.JvxlCoder", "JU.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -10131,7 +10162,7 @@ Clazz_overrideMethod(c$, "closeReader",
 function(){
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.readers");
 Clazz_load(["J.jvxl.readers.VolumeDataReader", "JU.BS", "$.P3", "$.P3i", "J.atomdata.AtomData"], "J.jvxl.readers.AtomDataReader", ["java.util.Date", "JU.AU", "$.SB", "$.V3", "J.atomdata.RadiusData", "J.c.VDW", "J.jvxl.data.JvxlCoder", "JU.BSUtil", "$.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -10509,7 +10540,7 @@ if (this.isProgressive) this.thisPlane[ipt % this.yzCount] = value;
  else this.voxelData[i][j][k] = value;
 }, "~N,~N,~N,~N,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.readers");
 Clazz_load(["JU.P3", "J.jvxl.readers.AtomDataReader", "JU.P4", "$.V3"], "J.jvxl.readers.IsoSolventReader", ["java.util.Hashtable", "JU.BS", "$.Lst", "$.Measure", "J.jvxl.data.MeshData", "JU.BSUtil", "$.Logger", "$.MeshSurface", "$.TempArray"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -11142,7 +11173,7 @@ return this.ia + "_" + this.ib + "_" + this.ic + "_" + this.pS;
 };
 c$.testLinear = false;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.readers");
 Clazz_load(["J.jvxl.readers.SurfaceReader"], "J.jvxl.readers.SurfaceFileReader", ["JU.PT", "$.Rdr", "J.api.Interface"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -11282,7 +11313,7 @@ this.out.writeByteAsInt(0x0A);
 }}return this.line;
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.readers");
 Clazz_load(["J.jvxl.readers.SurfaceFileReader"], "J.jvxl.readers.VolumeFileReader", ["JU.AU", "$.PT", "$.SB", "J.api.Interface", "J.atomdata.AtomData", "JU.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -11693,7 +11724,7 @@ this.voxelCounts[2] = n;
 this.params.insideOut = !this.params.insideOut;
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.jvxl.readers");
 Clazz_load(["J.jvxl.readers.VolumeFileReader"], "J.jvxl.readers.JvxlXmlReader", ["java.util.Hashtable", "JU.AU", "$.BS", "$.CU", "$.Lst", "$.P3", "$.P4", "$.PT", "$.SB", "J.jvxl.data.JvxlCoder", "$.MeshData", "J.jvxl.readers.XmlReader", "J.shapesurface.IsosurfaceMesh", "JU.C", "$.ColorEncoder", "$.Escape", "$.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -12393,7 +12424,7 @@ this.meshData =  new J.jvxl.data.MeshData();
 }this.updateTriangles();
 }});
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.rendersurface");
 Clazz_load(["J.render.MeshRenderer"], "J.rendersurface.IsosurfaceRenderer", ["JU.V3", "JU.C", "$.Normix"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -12772,7 +12803,7 @@ this.g3d.drawLineAB(this.pt1f, this.pt2f);
 }}
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 })(Clazz
 ,Clazz.getClassName
 ,Clazz.newLongArray

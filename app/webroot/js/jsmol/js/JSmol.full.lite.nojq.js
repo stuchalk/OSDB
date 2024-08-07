@@ -296,6 +296,7 @@
 
 // see JSmolApi.js for public user-interface. All these are private functions
 
+// BH 2024.02.20 fixes dragging should not stop when mouse leaves applet
 // BH 2024.02.07 adding binary types BCIF 
 // BH 2023.01.19 Jmol._allowKeyboardFocus = true; can be set to false if page jumping is a problem.
 // BH 8/25/2022 fixes getFileData response "" from empty file returning "OK" instead of ""
@@ -2152,7 +2153,7 @@ Jmol = (function(document) {
 		Jmol.$bind(canvas, 'mouseout', function(ev) {
       if (doIgnore(ev))
         return true;
-      if (Jmol._mouseOwner && !Jmol._mouseOwner.mouseMove) 
+      if (Jmol._mouseOwner && !Jmol._mouseOwner.mouseMove && !Jmol._mouseOwner.isDragging) 
         Jmol._setMouseOwner(null);
 			if (canvas.applet._appletPanel)
 				canvas.applet._appletPanel.startHoverWatcher(false);

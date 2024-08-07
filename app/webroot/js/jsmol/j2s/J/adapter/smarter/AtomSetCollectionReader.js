@@ -97,6 +97,7 @@ this.baseBondIndex = 0;
 this.stateScriptVersionInt = 2147483647;
 this.isFinalized = false;
 this.noPack = false;
+this.isSUPERCELL = false;
 this.precision = 0;
 this.haveModel = false;
 this.previousSpaceGroup = null;
@@ -326,7 +327,7 @@ this.asc.setCurrentModelInfo(JV.JC.getBoolName(4), isPDB ? Boolean.TRUE : null);
 }, "~B");
 Clazz.defineMethod(c$, "finish", 
 function(){
-if (true != this.highprecision0) this.vwr.setBooleanPropertyTok("doubleprecision", 603979831, this.highprecision0);
+if (false != this.highprecision0) this.vwr.setBooleanPropertyTok("doubleprecision", 603979831, this.highprecision0);
 var s = this.htParams.get("loadState");
 this.asc.setInfo("loadState", s == null ? "" : s);
 s = this.htParams.get("smilesString");
@@ -388,8 +389,10 @@ this.forcePacked = true;
 var s = this.ptSupercell = o;
 if (s.length() != 1) {
 this.strSupercell = (Clazz.floatToInt(s.x)) + "a," + (Clazz.floatToInt(s.y)) + "b," + (Clazz.floatToInt(s.z)) + "c";
+this.isSUPERCELL = true;
 }} else if ((typeof(o)=='string')) {
 this.strSupercell = o;
+this.isSUPERCELL = true;
 }var ptFile = (this.htParams.containsKey("ptFile") ? (this.htParams.get("ptFile")).intValue() : -1);
 this.isTrajectory = this.htParams.containsKey("isTrajectory");
 if (ptFile > 0 && this.htParams.containsKey("firstLastSteps")) {
@@ -450,8 +453,12 @@ if (!this.filteredPrecision) {
 var pt = s.indexOf('.') + 1;
 if (pt >= 0) {
 var n = s.indexOf('(');
-this.precision = Math.max(this.precision, (n < 0 ? s.length : n) - pt);
-}}return this.parseFloatStr(s);
+if (n < 0) {
+this.precision = Math.max(this.precision, s.length - pt);
+} else {
+if (this.precision == 0) this.precision = n;
+this.precision = Math.min(this.precision, n - 1 - pt);
+}}}return this.parseFloatStr(s);
 }, "~S");
 Clazz.defineMethod(c$, "setLowPrecision", 
 function(){
@@ -660,7 +667,7 @@ Clazz.defineMethod(c$, "getSymmetry",
 function(){
 if (!this.iHaveUnitCell) return null;
 if (this.symmetry == null) {
-this.getNewSymmetry().setUnitCellFromParams(this.unitCellParams, false, this.cellSlop);
+(this.symmetry = this.asc.newFileSymmetry()).setUnitCellFromParams(this.unitCellParams, false, this.cellSlop);
 this.checkUnitCellOffset();
 }if (this.symmetry == null) this.iHaveUnitCell = false;
  else this.symmetry.setSpaceGroupName(this.sgName);
@@ -684,10 +691,6 @@ if (toFrac) for (var i = this.asc.ac; --i >= 0; ) this.symmetry.toFractional(a[i
 
 this.setFractionalCoordinates(toFrac);
 }, "~B");
-Clazz.defineMethod(c$, "getNewSymmetry", 
-function(){
-return this.symmetry = this.getInterface("JS.Symmetry");
-});
 Clazz.defineMethod(c$, "setFractionalCoordinates", 
 function(TF){
 this.iHaveFractionalCoordinates = this.fileCoordinatesAreFractional = TF;
@@ -1302,9 +1305,7 @@ function(andPack){
 if (andPack) this.doPackUnitCell = andPack;
 if (!this.doApplySymmetry) {
 this.doApplySymmetry = true;
-this.latticeCells[0] = 1;
-this.latticeCells[1] = 1;
-this.latticeCells[2] = 1;
+this.latticeCells[0] = this.latticeCells[1] = this.latticeCells[2] = 1;
 }}, "~B");
 Clazz.defineMethod(c$, "fixFloatA", 
 function(pts){
@@ -1321,4 +1322,4 @@ function(pt, prec){
 if (this.floatifyJavaDouble) JU.PT.fixPtFloats(pt, prec);
 }, "JU.P3,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

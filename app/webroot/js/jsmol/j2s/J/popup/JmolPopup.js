@@ -548,8 +548,7 @@ this.menuEnable(menu, false);
 if (!this.hasSymmetry || this.modelIndex < 0) return;
 var list = this.modelInfo.get("symmetryOperations");
 if (list == null) return;
-var cellRange = this.modelInfo.get("unitCellRange");
-var haveUnitCellRange = (cellRange != null);
+var enableSymop = (this.vwr.getOperativeSymmetry() != null);
 var subMenu = menu;
 var nmod = 25;
 var pt = (list.length > 25 ? 0 : -2147483648);
@@ -561,7 +560,7 @@ this.menuAddSubMenu(menu, subMenu);
 this.htMenus.put(id, subMenu);
 pt = 1;
 }var entryName = "symop=" + (i + 1) + " # " + list[i];
-this.menuEnable(this.menuCreateItem(subMenu, entryName, "SELECT symop=" + (i + 1), null), haveUnitCellRange);
+this.menuEnable(this.menuCreateItem(subMenu, entryName, "SELECT symop=" + (i + 1), null), enableSymop);
 }
 this.menuEnable(menu, true);
 });
@@ -710,4 +709,4 @@ if (name.indexOf("captureLooping") >= 0) info = (this.vwr.am.animationReplayMode
 return (info == null ? text : text.substring(0, pt) + " (" + info + ")");
 }, "~S,~S");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

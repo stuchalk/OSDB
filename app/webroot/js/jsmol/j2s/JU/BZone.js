@@ -507,4 +507,4 @@ System.out.println("draw id d" + i + " intersection unitcell hkl " + bp.hkl() + 
 c$.ptInner = JU.P3.new3(NaN, 0, 0);
 c$.bzColors =  Clazz.newArray(-1, ["red", "green", "skyblue", "orange", "yellow", "blue", "violet"]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

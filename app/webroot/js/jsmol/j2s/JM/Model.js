@@ -182,9 +182,8 @@ for (var i = 0; i < this.chainCount; ++i) this.chains[i].groups = JU.AU.arrayCop
 });
 Clazz.defineMethod(c$, "setSimpleCage", 
 function(ucell){
-this.simpleCage = ucell;
-if (ucell != null) {
+if ((this.simpleCage = ucell) != null) {
 this.auxiliaryInfo.put("unitCellParams", ucell.getUnitCellParams());
 }}, "J.api.SymmetryInterface");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

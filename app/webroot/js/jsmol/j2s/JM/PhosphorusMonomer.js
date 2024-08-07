@@ -77,4 +77,4 @@ return this.getHelixData2(tokType, qType, mStep);
 c$.phosphorusOffsets =  Clazz.newByteArray(-1, [0]);
 c$.MAX_ADJACENT_PHOSPHORUS_DISTANCE = 8.0;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

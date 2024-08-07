@@ -27,14 +27,15 @@ Clazz.instantialize(this, arguments);}, JM, "BioPolymer", null, JM.Structure);
 Clazz.prepareFields (c$, function(){
 this.unitVectorX = JU.V3.new3(1, 0, 0);
 });
-Clazz.defineMethod(c$, "set", 
-function(monomers){
+Clazz.makeConstructor(c$, 
+function(monomers, hasStructure){
 this.monomers = monomers;
+this.hasStructure = hasStructure;
 this.monomerCount = monomers.length;
 for (var i = this.monomerCount; --i >= 0; ) monomers[i].setBioPolymer(this, i);
 
 this.model = monomers[0].getModel();
-}, "~A");
+}, "~A,~B");
 Clazz.overrideMethod(c$, "setAtomBits", 
 function(bs){
 this.getRange(bs, true);
@@ -331,4 +332,4 @@ function(){
 return "[Polymer type " + this.type + " n=" + this.monomerCount + " " + (this.monomerCount > 0 ? this.monomers[0] + " " + this.monomers[this.monomerCount - 1] : "") + "]";
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

@@ -165,4 +165,4 @@ if (f.length == 3) this.g3d.fillTriangle3f(this.screenCorners[f[0]], this.screen
 c$.boxFaces =  Clazz.newArray(-1, [ Clazz.newIntArray(-1, [0, 1, 3, 2]),  Clazz.newIntArray(-1, [0, 2, 6, 4]),  Clazz.newIntArray(-1, [0, 4, 5, 1]),  Clazz.newIntArray(-1, [7, 5, 4, 6]),  Clazz.newIntArray(-1, [7, 6, 2, 3]),  Clazz.newIntArray(-1, [7, 3, 1, 5])]);
 c$.arrowHeadFaces =  Clazz.newArray(-1, [ Clazz.newIntArray(-1, [1, 0, 4]),  Clazz.newIntArray(-1, [2, 3, 5]),  Clazz.newIntArray(-1, [0, 1, 3, 2]),  Clazz.newIntArray(-1, [2, 5, 4, 0]),  Clazz.newIntArray(-1, [1, 4, 5, 3])]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

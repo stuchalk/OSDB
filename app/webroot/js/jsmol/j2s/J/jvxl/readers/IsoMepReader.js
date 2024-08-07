@@ -31,4 +31,4 @@ var m = J.api.Interface.getOption("quantum." + this.type + "Calculation", this.s
 m.calculate(this.volumeData, this.bsMySelected, this.atomData.xyz, this.atomData.atoms, this.params.theProperty, this.params.mep_calcType);
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

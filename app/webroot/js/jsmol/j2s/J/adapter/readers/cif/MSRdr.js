@@ -116,7 +116,7 @@ this.cr.asc.setInfo(JV.JC.getBoolName(9), Boolean.TRUE);
 this.symmetry = symmetry;
 this.setModulationForStructure(this.cr.asc.iSet, isPost);
 if (this.modDebug) JU.Logger.debugging = JU.Logger.debuggingHigh = false;
-}, "~B,J.api.SymmetryInterface");
+}, "~B,J.adapter.smarter.XtalSymmetry.FileSymmetry");
 Clazz.overrideMethod(c$, "finalizeModulation", 
 function(){
 if (!this.finalized && this.modDim > 0 && !this.modVib) {
@@ -151,7 +151,7 @@ if (!this.haveAtomMods) return;
 var n = this.cr.asc.ac;
 this.atoms = this.cr.asc.atoms;
 if (this.symmetry != null) this.nOps = this.symmetry.getSpaceGroupOperationCount();
-this.supercellSymmetry = this.cr.asc.getXSymmetry().symmetry;
+this.supercellSymmetry = this.cr.asc.getXSymmetry().getSymmetry();
 if (this.supercellSymmetry === this.symmetry) this.supercellSymmetry = null;
 this.iopLast = -1;
 var i0 = this.cr.asc.getLastAtomSetAtomIndex();
@@ -466,7 +466,7 @@ Clazz.overrideMethod(c$, "getAtomSymmetry",
 function(a, defaultSymmetry){
 var ss;
 return (this.htSubsystems == null || (ss = this.getSubsystem(a)) == null ? defaultSymmetry : ss.getSymmetry());
-}, "J.adapter.smarter.Atom,J.api.SymmetryInterface");
+}, "J.adapter.smarter.Atom,J.adapter.smarter.XtalSymmetry.FileSymmetry");
 Clazz.defineMethod(c$, "setSubsystem", 
 function(code, system){
 if (this.htSubsystems == null) this.htSubsystems =  new java.util.Hashtable();
@@ -525,7 +525,7 @@ if (minXYZ.z > pt2.z + slop) minXYZ.z = Clazz.doubleToInt(Math.floor(pt2.z)) - 1
 if (maxXYZ.x < pt2.x - slop) maxXYZ.x = Clazz.doubleToInt(Math.ceil(pt2.x)) + 1;
 if (maxXYZ.y < pt2.y - slop) maxXYZ.y = Clazz.doubleToInt(Math.ceil(pt2.y)) + 1;
 if (maxXYZ.z < pt2.z - slop) maxXYZ.z = Clazz.doubleToInt(Math.ceil(pt2.z)) + 1;
-}, "JU.P3,J.api.SymmetryInterface,JU.P3,JU.P3");
+}, "JU.P3,J.adapter.smarter.XtalSymmetry.FileSymmetry,JU.P3,JU.P3");
 Clazz.defineMethod(c$, "trimAtomSet", 
 function(){
 if (!this.cr.doApplySymmetry) return;
@@ -593,4 +593,4 @@ if (a != null) lattvecs.addLast(a);
 return true;
 }, "JU.Lst,~S");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

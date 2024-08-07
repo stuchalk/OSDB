@@ -70,14 +70,16 @@ this.Z2 =  Clazz.newFloatArray (nZ, 0);
 Clazz.defineMethod(c$, "setupCoordinates", 
 function(originXYZ, stepsXYZ, bsSelected, xyz, atoms, points, renumber){
 if (atoms == null) atoms = xyz;
+var range =  Clazz.newFloatArray(-1, [this.nX, this.nY, this.nZ]);
 if (points == null) {
 this.volume = 1;
 for (var i = 3; --i >= 0; ) {
 this.originBohr[i] = originXYZ[i] * this.unitFactor;
 this.stepBohr[i] = stepsXYZ[i] * this.unitFactor;
+range[i] = (stepsXYZ[i] * range[i]) * this.unitFactor / 1.8897161;
 this.volume *= this.stepBohr[i];
 }
-JU.Logger.info("QuantumCalculation:\n origin = " + JU.Escape.eAF(originXYZ) + "\n steps = " + JU.Escape.eAF(stepsXYZ) + "\n origin(Bohr)= " + JU.Escape.eAF(this.originBohr) + "\n steps(Bohr)= " + JU.Escape.eAF(this.stepBohr) + "\n counts= " + this.nX + " " + this.nY + " " + this.nZ);
+JU.Logger.info("QuantumCalculation:\n origin = " + JU.Escape.eAF(originXYZ) + "\n range (Ang) = " + JU.Escape.eAF(range) + "\n steps (Bohr)= " + JU.Escape.eAF(this.stepBohr) + "\n origin(Bohr)= " + JU.Escape.eAF(this.originBohr) + "\n steps = " + JU.Escape.eAF(this.stepBohr) + "\n counts= " + this.nX + " " + this.nY + " " + this.nZ);
 }if (atoms == null) return;
 this.qmAtoms =  new Array(renumber ? bsSelected.cardinality() : xyz.length);
 var isAll = (bsSelected == null);
@@ -151,4 +153,4 @@ this.yMax = this.zMax = (ix < 0 ? this.xMax : ix + 1);
 this.yMin = this.zMin = (ix < 0 ? 0 : ix);
 }, "~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

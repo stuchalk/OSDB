@@ -608,7 +608,7 @@ var p = vwr.getAdditionalHydrogens(JU.BSUtil.newAndSetBit(a.i), null, 4096);
 if (p.length == 1) {
 var vConnections =  new JU.Lst();
 vConnections.addLast(a);
-var b = vwr.ms.addAtom(a.mi, a.group, 1, "H3", null, 0, a.getSeqID(), 0, p[0], NaN, null, 0, 0, 1, 0, null, a.isHetero(), 0, null, NaN);
+var b = vwr.ms.addAtom(a.mi, a.group, 1, "H3", null, 0, a.getSeqID(), 0, p[0], NaN, null, 0, 0, 1, 0, null, a.isHetero(), false, 0, null, NaN);
 vwr.ms.bondAtoms(a, b, 1, vwr.ms.getDefaultMadFromOrder(1), null, 0, true, false);
 b.setMadAtom(vwr, vwr.rd);
 }break;
@@ -728,4 +728,4 @@ c$.alphaTypes =  Clazz.newArray(-1, ["alpha",  Clazz.newFloatArray(-1, [-65, -40
 c$.mutateScript = "try{\n  var a0 = {*}\n  var res0 = $RES0\n  load mutate $FNAME\n  var res1 = {!a0};var r1 = res1[1];var r0 = res1[0]\n  if ({r1 & within(group, r0)}){\n    var haveHs = ({_H & connected(res0)} != 0)\n    var rh = {_H} & res1;\n    if (!haveHs) {delete rh; res1 = res1 & !rh}\n    var sm = \'[*.N][*.CA][*.C][*.O]\'\n    var keyatoms = res1.find(sm)\n    var x = compare(res1,res0,sm,\'BONDS\')\n    if(x){\n      var allN = {*.N};var allCA = {*.cA};var allC = {*.C}; var allO = {*.O}; var allH = {*.H}\n      print \'mutating \' + res0[1].label(\'%n%r\') + \' to \' + $FNAME.trim(\'=\')\n      rotate branch @x\n;      compare @res1 @res0 SMARTS \'[*.N][*.CA][*.C]\' rotate translate 0\n      var c = {!res0 & connected(res0)}\n      var N2 = {allN & c}\n      var C0 = {allC & c}\n      {allN & res1}.xyz = {allN & res0}.xyz\n      {allCA & res1}.xyz = {allCA & res0}.xyz\n      {allC & res1}.xyz = {allC & res0}.xyz\n      if (N2) {allO & res1}.xyz = {allO & res0}.xyz\n      var NH = {_H & res0 && connected(allN)}\n      var angleH = ({*.H and res0} ? angle({allC and res0},{allCA and res0},{allN and res0},NH) : 1000)\n      delete res0\n      if (N2) {\n        delete (*.OXT,*.HXT) and res1\n        connect {N2} {keyatoms & *.C}\n      } else {\n        delete (*.HXT) and res1\n        {*.OXT & res1}.formalCharge = -1\n      }\n      var N1 = {allN & res1}\n      var H1 = {allH and res1}\n      var NH = {H1 & connected(N1)}\n      if (C0) {\n        switch (0 + NH) {\n        case 0:\n          break\n        case 1:\n          delete H1\n          break\n        default:\n          var CA1 = {allCA & res1}\n          x = angle({allC and res1},CA1,N1,NH)\n          rotate branch @CA1 @N1 @{angleH-x}\n          delete *.H2 and res1\n          delete *.H3 and res1\n          break\n        }\n        connect {C0} {keyatoms & allN}\n      }\n    }\n  }\n}catch(e){print e}\n";
 c$.pdbRecords =  Clazz.newArray(-1, ["ATOM  ", "MODEL ", "HETATM"]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

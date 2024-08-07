@@ -234,9 +234,10 @@ if (asLineOnly) g3d.drawLine(colixA, colixB, xA, yA, zA, xB, yB, zB);
 }, "J.api.JmolRendererInterface,~N,~N,~N,~N,~N,~N,~N,~N,~N,~N,~B");
 c$.dashes =  Clazz.newIntArray(-1, [12, 0, 0, 2, 5, 7, 10]);
 c$.hDashes =  Clazz.newIntArray(-1, [10, 7, 6, 1, 3, 4, 6, 7, 9]);
+c$.pymoldashes =  Clazz.newIntArray(-1, [30, 0, 0, 2, 4, 7, 9, 12, 14, 17, 19, 22, 24, 27, 30]);
 c$.ndots =  Clazz.newIntArray(-1, [0, 3, 1000]);
 c$.sixdots =  Clazz.newIntArray(-1, [12, 3, 6, 1, 3, 5, 7, 9, 11]);
 c$.fourdots =  Clazz.newIntArray(-1, [13, 3, 5, 2, 5, 8, 11]);
 c$.twodots =  Clazz.newIntArray(-1, [12, 3, 4, 3, 9]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

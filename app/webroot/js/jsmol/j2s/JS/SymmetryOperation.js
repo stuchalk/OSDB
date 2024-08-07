@@ -1,5 +1,5 @@
 Clazz.declarePackage("JS");
-Clazz.load(["JU.M4", "$.P3"], "JS.SymmetryOperation", ["java.util.Hashtable", "JU.Lst", "$.Matrix", "$.Measure", "$.P4", "$.PT", "$.SB", "$.V3", "JS.Symmetry", "JU.BoxInfo", "$.Logger", "$.Parser"], function(){
+Clazz.load(["JU.M4", "$.P3"], "JS.SymmetryOperation", ["java.util.Hashtable", "JU.Lst", "$.Matrix", "$.Measure", "$.P4", "$.PT", "$.SB", "$.V3", "JS.UnitCell", "JU.BoxInfo", "$.Logger", "$.Parser"], function(){
 var c$ = Clazz.decorateAsClass(function(){
 this.xyzOriginal = null;
 this.xyzCanonical = null;
@@ -12,13 +12,14 @@ this.info = null;
 this.opType = -1;
 this.opOrder = 0;
 this.opTrans = null;
+this.opGlide = null;
 this.opPoint = null;
 this.opPoint2 = null;
 this.opAxis = null;
 this.opPlane = null;
 this.opIsCCW = null;
 this.isIrrelevant = false;
-this.isCoincident = false;
+this.iCoincident = 0;
 this.myLabels = null;
 this.modDim = 0;
 this.linearRotTrans = null;
@@ -58,7 +59,7 @@ this.setMatrix(false);
 if (!op.isFinalized) this.doFinalize();
 }, "JS.SymmetryOperation,~N,~B");
 Clazz.defineMethod(c$, "getOpName", 
-function(planeMode){
+function(opMode){
 if (this.opType == -1) this.setOpTypeAndOrder();
 switch (this.opType) {
 case 0:
@@ -70,13 +71,13 @@ return "Rot" + this.opOrder + JS.SymmetryOperation.op48(this.opPoint) + JS.Symme
 case 4:
 return "Inv" + JS.SymmetryOperation.op48(this.opPoint);
 case 8:
-return (planeMode == 0 ? "" : "Plane") + this.opPlane;
+return (opMode == 0 ? "" : "Plane") + this.opPlane;
 case 3:
-return "Screw" + this.opOrder + JS.SymmetryOperation.op48(this.opPoint) + JS.SymmetryOperation.op48(this.opAxis) + JS.SymmetryOperation.op48(this.opTrans) + this.opIsCCW;
+return (opMode == 0 ? "S" + JS.SymmetryOperation.op48(this.opPoint) + JS.SymmetryOperation.op48(this.opAxis) : "Screw" + this.opOrder + JS.SymmetryOperation.op48(this.opPoint) + JS.SymmetryOperation.op48(this.opAxis) + JS.SymmetryOperation.op48(this.opTrans) + this.opIsCCW);
 case 6:
 return "Nbar" + this.opOrder + JS.SymmetryOperation.op48(this.opPoint) + JS.SymmetryOperation.op48(this.opAxis) + this.opIsCCW;
 case 9:
-return (planeMode == 0 ? "" : "Glide") + this.opPlane + (planeMode == 2 ? JS.SymmetryOperation.op48(this.opTrans) : "");
+return (opMode == 0 ? "" : "Glide") + this.opPlane + (opMode == 2 ? JS.SymmetryOperation.op48(this.opTrans) : "");
 }
 System.out.println("SymmetryOperation REJECTED TYPE FOR " + this);
 return "";
@@ -110,6 +111,7 @@ return "{" + JS.SymmetryOperation.opF(p.x) + " " + JS.SymmetryOperation.opF(p.y)
 }, "JU.T3");
 c$.opF = Clazz.defineMethod(c$, "opF", 
 function(x){
+if (x == 0) return "0";
 var neg = (x < 0);
 if (neg) {
 x = -x;
@@ -118,6 +120,7 @@ if (x >= 1) {
 n = Clazz.floatToInt(x);
 x -= n;
 }var n48 = Math.round(x * 48);
+if (JU.PT.approx(n48 / 48 - x, 1000) != 0) return "" + JU.PT.approx(x, 1000);
 var div;
 if (n48 % 48 == 0) {
 div = 1;
@@ -230,8 +233,8 @@ sb.append("[\t");
 for (var j = 0; j < 3; j++) sb.appendI(Clazz.floatToInt(r[j])).append("\t");
 
 var trans = r[3];
-if (trans != Clazz.floatToInt(trans)) trans = 12 * trans;
-sb.append(JS.SymmetryOperation.twelfthsOf(isCanonical ? JS.SymmetryOperation.normalizeTwelfths(trans / 12, 12, true) : Clazz.floatToInt(trans))).append("\t]\n");
+trans *= (trans == Clazz.floatToInt(trans) ? 4 : 48);
+sb.append(JS.SymmetryOperation.twelfthsOf(isCanonical ? JS.SymmetryOperation.normalizeTwelfths(trans / 48, 48, true) : Clazz.floatToInt(trans))).append("\t]\n");
 }
 return sb.toString();
 }, "JU.M4,~B");
@@ -633,8 +636,11 @@ var x = row[j];
 if (JS.SymmetryOperation.approx(x) != 0) {
 term += JS.SymmetryOperation.plusMinus(term, x, JS.SymmetryOperation.labelsXYZ[j + lpt], allowFractions);
 }}
-if ((is12ths ? row[3] : JS.SymmetryOperation.approx(row[3])) != 0) term += JS.SymmetryOperation.xyzFraction12((is12ths ? row[3] : row[3] * denom), denom, allPositive, halfOrLess);
-str += "," + term;
+if ((is12ths ? row[3] : JS.SymmetryOperation.approx(row[3])) != 0) {
+var f = JS.SymmetryOperation.xyzFraction12((is12ths ? row[3] : row[3] * denom), denom, allPositive, halfOrLess);
+if (term === "") f = (f.charAt(0) == '+' ? f.substring(1) : f);
+term += f;
+}str += "," + (term === "" ? "0" : term);
 }
 return str.substring(1);
 }, "JU.M4,~B,~B,~B,~B");
@@ -651,31 +657,10 @@ vRot[i] = JU.V3.newV(ptTemp);
 }
 return vRot;
 }, "~A,JS.UnitCell,JU.P3,JU.M3");
-Clazz.defineMethod(c$, "fcoord2", 
-function(p){
-if (this.divisor == 12) return JS.SymmetryOperation.fcoord(p);
-return this.fc2(Clazz.floatToInt(this.linearRotTrans[3])) + " " + this.fc2(Clazz.floatToInt(this.linearRotTrans[7])) + " " + this.fc2(Clazz.floatToInt(this.linearRotTrans[11]));
-}, "JU.T3");
-Clazz.defineMethod(c$, "fc2", 
-function(num){
-var denom = (num & 255);
-num = num >> 8;
-return (num == 0 ? "0" : num + "/" + denom);
-}, "~N");
 c$.fcoord = Clazz.defineMethod(c$, "fcoord", 
-function(p){
-return JS.SymmetryOperation.fc(p.x) + " " + JS.SymmetryOperation.fc(p.y) + " " + JS.SymmetryOperation.fc(p.z);
-}, "JU.T3");
-c$.fc = Clazz.defineMethod(c$, "fc", 
-function(x){
-var xabs = Math.abs(x);
-var m = (x < 0 ? "-" : "");
-var x24 = Clazz.floatToInt(JS.SymmetryOperation.approx(xabs * 24));
-if (x24 / 24 == Clazz.floatToInt(x24 / 24)) return m + (Clazz.doubleToInt(x24 / 24));
-if (x24 % 8 != 0) {
-return m + JS.SymmetryOperation.twelfthsOf(x24 >> 1);
-}return (x24 == 0 ? "0" : x24 == 24 ? m + "1" : m + (Clazz.doubleToInt(x24 / 8)) + "/3");
-}, "~N");
+function(p, sep){
+return JS.SymmetryOperation.opF(p.x) + sep + JS.SymmetryOperation.opF(p.y) + sep + JS.SymmetryOperation.opF(p.z);
+}, "JU.T3,~S");
 c$.approx = Clazz.defineMethod(c$, "approx", 
 function(f){
 return JU.PT.approx(f, 100);
@@ -695,7 +680,7 @@ s += ",";
 for (var j = 0; j < d; j++) {
 var r = ra[i][j];
 if (r != 0) {
-s += (r < 0 ? "-" : s.endsWith(",") ? "" : "+") + (Math.abs(r) == 1 ? "" : "" + Clazz.doubleToInt(Math.abs(r))) + "x" + (j + 1);
+s += (r < 0 ? "-" : s.endsWith(",") ? "" : "+") + (Math.abs(r) == 1 ? "" : "" + Math.abs(r)) + "x" + (j + 1);
 }}
 s += JS.SymmetryOperation.xyzFraction12(Clazz.doubleToInt(va[i][0] * (is12ths ? 1 : 12)), 12, false, true);
 }
@@ -759,21 +744,21 @@ if (this.xyzOriginal != null) this.info.put("xyzOriginal", this.xyzOriginal);
 }return this.info;
 });
 c$.normalizeOperationToCentroid = Clazz.defineMethod(c$, "normalizeOperationToCentroid", 
-function(dim, m, atoms, atomIndex, count){
-if (count <= 0) return;
+function(dim, m, fracPts, i0, n){
+if (n <= 0) return;
 var x = 0;
 var y = 0;
 var z = 0;
 if (JS.SymmetryOperation.atomTest == null) JS.SymmetryOperation.atomTest =  new JU.P3();
-for (var i = atomIndex, i2 = i + count; i < i2; i++) {
-JS.Symmetry.newPoint(m, atoms[i], 0, 0, 0, JS.SymmetryOperation.atomTest);
+for (var i = i0, i2 = i + n; i < i2; i++) {
+m.rotTrans2(fracPts[i], JS.SymmetryOperation.atomTest);
 x += JS.SymmetryOperation.atomTest.x;
 y += JS.SymmetryOperation.atomTest.y;
 z += JS.SymmetryOperation.atomTest.z;
 }
-x /= count;
-y /= count;
-z /= count;
+x /= n;
+y /= n;
+z /= n;
 while (x < -0.001 || x >= 1.001) {
 m.m03 += (x < 0 ? 1 : -1);
 x += (x < 0 ? 1 : -1);
@@ -834,7 +819,7 @@ Clazz.defineMethod(c$, "getOpTrans",
 function(){
 if (this.opType == -1) {
 this.setOpTypeAndOrder();
-}return this.opTrans;
+}return (this.opTrans == null ? (this.opTrans =  new JU.V3()) : this.opTrans);
 });
 c$.opGet3code = Clazz.defineMethod(c$, "opGet3code", 
 function(m){
@@ -938,7 +923,6 @@ this.opTrans =  new JU.V3();
 m4.getTranslation(this.opTrans);
 this.opTrans.scale(1 / order);
 var d = JS.SymmetryOperation.approx6(this.opTrans.length());
-var dmax = 1;
 this.opPoint =  new JU.P3();
 var v = null;
 var isOK = true;
@@ -987,14 +971,9 @@ isOK = JS.SymmetryOperation.checkOpPoint(p1sum);
 if (this.opPoint2 != null) {
 p1sum.scaleAdd2(0.5, this.opTrans, this.opPoint2);
 if (!JS.SymmetryOperation.checkOpPoint(p1sum)) this.opPoint2 = null;
-}}}if (v.dot(p1) < 0) {
+}if (v.dot(p1) < 0) {
 isOK = false;
-}if (d > 0 && this.opTrans.z == 0 && this.opTrans.lengthSquared() == 1.25) {
-dmax = 1.25;
-this.opIsLong = true;
-} else {
-dmax = 1.0;
-}break;
+}}}break;
 case 8:
 p1.sub(this.opTrans);
 p1.scale(0.5);
@@ -1011,23 +990,31 @@ p1.sub(this.opTrans);
 p1.scaleAdd2(0.5, px, p1);
 p1.scale(0.5);
 v =  new JU.V3();
-isOK = JS.SymmetryOperation.checkOpPlane(this.opPoint, p1, p2, this.opAxis, this.opPlane, v,  new JU.V3());
+isOK = JS.SymmetryOperation.checkOpPlane(this.opPoint, p1, p2, this.opPlane, v,  new JU.V3());
 JS.SymmetryOperation.opClean6(this.opPlane);
 if (JS.SymmetryOperation.approx6(this.opPlane.w) == 0) this.opPlane.w = 0;
 JS.SymmetryOperation.approx6Pt(this.opAxis);
 JS.SymmetryOperation.normalizePlane(this.opPlane);
-if (d > 0 && (this.opTrans.z == 0 && this.opTrans.lengthSquared() == 1.25 || this.opTrans.z == 0.5 && this.opTrans.lengthSquared() == 1.5)) {
+break;
+}
+if (d > 0) {
+JS.SymmetryOperation.opClean6(this.opTrans);
+var dmax = 1;
+if (this.opType == 8) {
+if (this.opTrans.z == 0 && this.opTrans.lengthSquared() == 1.25 || this.opTrans.z == 0.5 && this.opTrans.lengthSquared() == 1.5) {
 dmax = 1.25;
 this.opIsLong = true;
 } else {
 dmax = 0.78;
-}break;
-}
-if (d > 0) {
-JS.SymmetryOperation.opClean6(this.opTrans);
-if (this.opType == 8) {
+}this.opGlide = JU.V3.newV(this.opTrans);
+this.fixNegTrans(this.opGlide);
+if (this.opGlide.length() == 0) this.opGlide = null;
 if ((this.opTrans.x == 1 || this.opTrans.y == 1 || this.opTrans.z == 1) && this.m22 == -1) isOK = false;
-}this.opType |= 1;
+} else {
+if (this.opTrans.z == 0 && this.opTrans.lengthSquared() == 1.25) {
+dmax = 1.25;
+this.opIsLong = true;
+}}this.opType |= 1;
 if (Math.abs(JS.SymmetryOperation.approx(this.opTrans.x)) >= dmax || Math.abs(JS.SymmetryOperation.approx(this.opTrans.y)) >= dmax || Math.abs(JS.SymmetryOperation.approx(this.opTrans.z)) >= dmax) {
 isOK = false;
 }} else {
@@ -1035,6 +1022,12 @@ this.opTrans = null;
 }if (!isOK) {
 this.isIrrelevant = true;
 }});
+Clazz.defineMethod(c$, "fixNegTrans", 
+function(t){
+t.x = JS.SymmetryOperation.normHalf(t.x);
+t.y = JS.SymmetryOperation.normHalf(t.y);
+t.z = JS.SymmetryOperation.normHalf(t.z);
+}, "JU.V3");
 c$.normalizePlane = Clazz.defineMethod(c$, "normalizePlane", 
 function(plane){
 JS.SymmetryOperation.approx6Pt(plane);
@@ -1091,7 +1084,7 @@ function(p, a){
 return (a != 0 || JS.SymmetryOperation.approx(p) >= 0 && JS.SymmetryOperation.approx(p) <= 1);
 }, "~N,~N");
 c$.checkOpPlane = Clazz.defineMethod(c$, "checkOpPlane", 
-function(p1, p2, p3, v, plane, vtemp1, vtemp2){
+function(p1, p2, p3, plane, vtemp1, vtemp2){
 JU.Measure.getPlaneThroughPoints(p1, p2, p3, vtemp1, vtemp2, plane);
 var pts = JU.BoxInfo.unitCubePoints;
 var nPos = 0;
@@ -1111,30 +1104,33 @@ nNeg++;
 }
 }
 return !(nNeg == 8 || nPos == 8);
-}, "JU.P3,JU.P3,JU.P3,JU.V3,JU.P4,JU.V3,JU.V3");
+}, "JU.P3,JU.P3,JU.P3,JU.P4,JU.V3,JU.V3");
 c$.getAdditionalOperations = Clazz.defineMethod(c$, "getAdditionalOperations", 
 function(ops){
 var n = ops.length;
 var lst =  new JU.Lst();
 var xyzLst =  new JU.SB();
 var mapPlanes =  new java.util.Hashtable();
+var vTemp =  new JU.V3();
 for (var i = 0; i < n; i++) {
 var op = ops[i];
 lst.addLast(op);
 var s = op.getOpName(1);
 xyzLst.append(s).appendC(';');
-if ((op.getOpType() & 8) != 0) JS.SymmetryOperation.addPlaneMap(mapPlanes, op);
+if ((op.getOpType() & 8) != 0) JS.SymmetryOperation.addCoincidentMap(mapPlanes, op, 8, vTemp);
+ else if (op.getOpType() == 3) JS.SymmetryOperation.addCoincidentMap(mapPlanes, op, 3, null);
 }
 for (var i = 1; i < n; i++) {
-ops[i].addOps(xyzLst, lst, mapPlanes, n, i);
+ops[i].addOps(xyzLst, lst, mapPlanes, n, i, vTemp);
 }
 return lst.toArray( new Array(lst.size()));
 }, "~A");
 Clazz.defineMethod(c$, "addOps", 
-function(xyzList, lst, mapPlanes, n0, isym){
+function(xyzList, lst, mapCoincident, n0, isym, vTemp){
 var t0 =  new JU.V3();
 this.getTranslation(t0);
 var isPlane = ((this.getOpType() & 8) == 8);
+var isScrew = (this.getOpType() == 3);
 var t =  new JU.V3();
 var opTemp = null;
 for (var i = 3; --i >= -3; ) {
@@ -1142,35 +1138,73 @@ for (var j = 3; --j >= -3; ) {
 for (var k = 3; --k >= -3; ) {
 if (opTemp == null) opTemp =  new JS.SymmetryOperation(null, 0, false);
 t.set(i, j, k);
-if (this.checkOpSimilar(t)) continue;
+if (this.checkOpSimilar(t, vTemp)) continue;
 if (opTemp.opCheckAdd(this, t0, n0, t, xyzList, lst, isym + 1)) {
-if (isPlane) JS.SymmetryOperation.addPlaneMap(mapPlanes, opTemp);
+if (isPlane) JS.SymmetryOperation.addCoincidentMap(mapCoincident, opTemp, 8, vTemp);
+ else if (isScrew) JS.SymmetryOperation.addCoincidentMap(mapCoincident, opTemp, 3, null);
 opTemp = null;
 }}
 }
 }
-}, "JU.SB,JU.Lst,java.util.Map,~N,~N");
-c$.addPlaneMap = Clazz.defineMethod(c$, "addPlaneMap", 
-function(mapPlanes, op){
+}, "JU.SB,JU.Lst,java.util.Map,~N,~N,JU.V3");
+c$.addCoincidentMap = Clazz.defineMethod(c$, "addCoincidentMap", 
+function(mapCoincident, op, opType, vTemp){
+if (op.isIrrelevant) return;
 var s = op.getOpName(0);
-var l = mapPlanes.get(s);
-op.isCoincident = false;
-var havePlane = (op.opType == 8);
+var l = mapCoincident.get(s);
+op.iCoincident = 0;
+var isRotation = (opType == 3);
 if (l == null) {
-mapPlanes.put(s, l =  new JU.Lst());
-} else {
-var op0 = l.get(0);
-if (op0.isCoincident) {
-op.isCoincident = true;
-} else if (havePlane || (op0.opType == 8)) {
-op.isCoincident = true;
+mapCoincident.put(s, l =  new JU.Lst());
+} else if (isRotation) {
+if (op.opOrder == 6) {
 for (var i = l.size(); --i >= 0; ) {
-l.get(i).isCoincident = true;
+var op1 = l.get(i);
+if (!op1.isIrrelevant) switch (op1.opOrder) {
+case 3:
+op1.isIrrelevant = true;
+break;
+case 6:
+break;
 }
+}
+}op.iCoincident = 1;
+} else {
+var op0 = null;
+for (var i = l.size(); --i >= 0; ) {
+op0 = l.get(i);
+if (op.opGlide != null && op0.opGlide != null) {
+vTemp.sub2(op.opGlide, op0.opGlide);
+if (vTemp.lengthSquared() < 1e-6) {
+op.isIrrelevant = true;
+return;
+}vTemp.add2(op.opGlide, op0.opGlide);
+if (vTemp.lengthSquared() < 1e-6) {
+op.isIrrelevant = true;
+return;
+}vTemp.add2(op.opAxis, op0.opAxis);
+if (vTemp.lengthSquared() < 1e-6) {
+op.isIrrelevant = true;
+return;
+}} else if (op.opGlide == null && op0.opGlide == null) {
+vTemp.add2(op.opAxis, op0.opAxis);
+if (vTemp.lengthSquared() < 1e-6) {
+op.isIrrelevant = true;
+return;
+}vTemp.sub2(op.opAxis, op0.opAxis);
+if (vTemp.lengthSquared() < 1e-6) {
+op.isIrrelevant = true;
+return;
+}}}
+if (op0.iCoincident == 0) {
+op.iCoincident = 1;
+op0.iCoincident = -1;
+} else {
+op.iCoincident = -op0.iCoincident;
 }}l.addLast(op);
-}, "java.util.Map,JS.SymmetryOperation");
+}, "java.util.Map,JS.SymmetryOperation,~N,JU.V3");
 Clazz.defineMethod(c$, "checkOpSimilar", 
-function(t){
+function(t, vTemp){
 switch (this.getOpType() & -2) {
 default:
 return false;
@@ -1179,9 +1213,10 @@ return true;
 case 2:
 return (JS.SymmetryOperation.approx6(t.dot(this.opAxis) - t.length()) == 0);
 case 8:
-return (JS.SymmetryOperation.approx6(t.dot(this.opAxis)) == 0);
+vTemp.cross(t, this.opAxis);
+return (JS.SymmetryOperation.approx6(vTemp.length()) == 0 ? false : JS.SymmetryOperation.approx6(t.dot(this.opAxis)) == 0);
 }
-}, "JU.V3");
+}, "JU.V3,JU.V3");
 Clazz.defineMethod(c$, "opCheckAdd", 
 function(opThis, t0, n0, t, xyzList, lst, itno){
 this.setM4(opThis);
@@ -1190,15 +1225,15 @@ t1.add(t0);
 this.setTranslation(t1);
 this.isFinalized = true;
 this.setOpTypeAndOrder();
-if (!this.isIrrelevant && this.opType != 0 && this.opType != 1) {
+if (this.isIrrelevant || this.opType == 0 || this.opType == 1) return false;
 var s = this.getOpName(1) + ";";
-if (xyzList.indexOf(s) < 0) {
-xyzList.append(s);
+if ((this.opType & 8) == 0 && xyzList.indexOf(s) >= 0) {
+return false;
+}xyzList.append(s);
 lst.addLast(this);
 this.isFinalized = true;
 this.xyz = JS.SymmetryOperation.getXYZFromMatrix(this, false, false, false);
 return true;
-}}return false;
 }, "JS.SymmetryOperation,JU.V3,~N,JU.V3,JU.SB,JU.Lst,~N");
 c$.approx6Pt = Clazz.defineMethod(c$, "approx6Pt", 
 function(pt){
@@ -1252,18 +1287,113 @@ var fz = Math.abs(JS.SymmetryOperation.approx(ftrans.z * 12));
 if (fx == 9) fx = 3;
 if (fy == 9) fy = 3;
 if (fz == 9) fz = 3;
-if (fx != 0 && fy != 0 && fz != 0) {
-return (fx == 3 && fy == 3 && fz == 3 ? 'd' : fx == 6 && fy == 6 && fz == 6 ? 'n' : 'g');
-}if (fx != 0 && fy != 0 || fy != 0 && fz != 0 || fz != 0 && fx != 0) {
-if (fx == 3 && fy == 3 || fx == 3 && fz == 3 || fy == 3 && fz == 3) {
+var nonzero = 3;
+if (fx == 0) nonzero--;
+if (fy == 0) nonzero--;
+if (fz == 0) nonzero--;
+var sum = Clazz.floatToInt(fx + fy + fz);
+switch (nonzero) {
+default:
+case 1:
+return (fx != 0 ? 'a' : fy != 0 ? 'b' : 'c');
+case 2:
+switch (sum) {
+case 6:
 return 'd';
-}if (fx == 6 && fy == 6 || fx == 6 && fz == 6 || fy == 6 && fz == 6) {
-if (fx == 0 && ax1.x == 0 || fy == 0 && ax1.y == 0 || fz == 0 && ax1.z == 0) {
+case 12:
+var n = JU.P3.newP(ax1);
+n.normalize();
+if (JS.SymmetryOperation.approx(n.x + n.y + n.z) == 1) return 'n';
+}
+break;
+case 3:
+switch (sum) {
+case 9:
+return 'd';
+case 18:
+return 'n';
+}
+break;
+}
 return 'g';
-}return 'n';
-}return 'g';
-}return (fx != 0 ? 'a' : fy != 0 ? 'b' : 'c');
 }, "JU.T3,JU.T3");
+c$.rotateAndTranslatePoint = Clazz.defineMethod(c$, "rotateAndTranslatePoint", 
+function(m, src, ta, tb, tc, dest){
+m.rotTrans2(src, dest);
+dest.add3(ta, tb, tc);
+}, "JU.M4,JU.P3,~N,~N,~N,JU.P3");
+c$.transformStr = Clazz.defineMethod(c$, "transformStr", 
+function(xyz, trm, trmInv, t, v, centering, targetCentering, normalize, allowFractions){
+if (trmInv == null) {
+trmInv = JU.M4.newM4(trm);
+trmInv.invert();
+}if (t == null) t =  new JU.M4();
+if (v == null) v =  Clazz.newFloatArray (16, 0);
+var op = JS.SymmetryOperation.getMatrixFromXYZ(xyz, v, true);
+if (centering != null) op.add(centering);
+t.setM4(trmInv);
+t.mul(op);
+if (trm != null) t.mul(trm);
+if (targetCentering != null) op.add(targetCentering);
+if (normalize) {
+t.getColumn(3, v);
+for (var i = 0; i < 3; i++) {
+v[i] = v[i] % 1;
+}
+t.setColumnA(3, v);
+}return JS.SymmetryOperation.getXYZFromMatrixFrac(t, false, true, false, allowFractions);
+}, "~S,JU.M4,JU.M4,JU.M4,~A,JU.T3,JU.T3,~B,~B");
+c$.transformXyzT = Clazz.defineMethod(c$, "transformXyzT", 
+function(xyz, transform){
+return (JS.SymmetryOperation.transformStr(xyz, JS.UnitCell.toTrm(transform, null), null, null, null, null, null, true, false));
+}, "~S,~S");
+c$.stringToMatrix = Clazz.defineMethod(c$, "stringToMatrix", 
+function(xyz){
+var divisor = JS.SymmetryOperation.setDivisor(xyz);
+var a =  Clazz.newFloatArray (16, 0);
+JS.SymmetryOperation.getMatrixFromString(null, xyz, a, true, false, false);
+return JS.SymmetryOperation.div12(JU.M4.newA16(a), divisor);
+}, "~S");
+c$.getTransformABC = Clazz.defineMethod(c$, "getTransformABC", 
+function(transform, normalize){
+if (transform == null) return "a,b,c";
+var t = transform;
+var m = JU.M4.newM4(t);
+var tr =  new JU.V3();
+m.getTranslation(tr);
+tr.scale(-1);
+m.add(tr);
+m.transpose();
+var s = JS.SymmetryOperation.getXYZFromMatrixFrac(m, false, true, false, true).$replace('x', 'a').$replace('y', 'b').$replace('z', 'c');
+if (tr.lengthSquared() < 1e-12) return s;
+tr.scale(-1);
+return s + ";" + (normalize ? JS.SymmetryOperation.norm3(tr) : JS.SymmetryOperation.opF(tr.x) + "," + JS.SymmetryOperation.opF(tr.y) + "," + JS.SymmetryOperation.opF(tr.z));
+}, "~O,~B");
+c$.norm3 = Clazz.defineMethod(c$, "norm3", 
+function(tr){
+return JS.SymmetryOperation.norm(tr.x) + "," + JS.SymmetryOperation.norm(tr.y) + "," + JS.SymmetryOperation.norm(tr.z);
+}, "JU.T3");
+c$.norm = Clazz.defineMethod(c$, "norm", 
+function(d){
+return JS.SymmetryOperation.opF(JS.SymmetryOperation.normHalf(d));
+}, "~N");
+c$.normHalf = Clazz.defineMethod(c$, "normHalf", 
+function(d){
+while (d <= -0.5) {
+d += 1;
+}
+while (d > 0.5) {
+d -= 1;
+}
+return d;
+}, "~N");
+c$.toPoint = Clazz.defineMethod(c$, "toPoint", 
+function(xyz, p){
+if (p == null) p =  new JU.P3();
+var s = JU.PT.split(xyz, ",");
+p.set(JU.PT.parseFloatFraction(s[0]), JU.PT.parseFloatFraction(s[1]), JU.PT.parseFloatFraction(s[2]));
+return p;
+}, "~S,JU.P3");
 c$.atomTest = null;
 c$.twelfths =  Clazz.newArray(-1, ["0", "1/12", "1/6", "1/4", "1/3", "5/12", "1/2", "7/12", "2/3", "3/4", "5/6", "11/12"]);
 c$.labelsXYZ =  Clazz.newArray(-1, ["x", "y", "z"]);
@@ -1274,4 +1404,4 @@ c$.C3codes =  Clazz.newIntArray(-1, [0x031112, 0x121301, 0x130112, 0x021311, 0x1
 c$.xneg = null;
 c$.opPlanes = null;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

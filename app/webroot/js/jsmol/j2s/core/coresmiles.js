@@ -86,10 +86,10 @@ this.vNorm4 =  new JU.V3();
 this.bsTemp =  new JU.BS();
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.api");
 Clazz_declareInterface(J.api, "SmilesMatcherInterface");
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["J.api.SmilesMatcherInterface"], "JS.SmilesMatcher", ["JU.AU", "$.BS", "$.PT", "JS.InvalidSmilesException", "$.SmilesAtom", "$.SmilesBond", "$.SmilesGenerator", "$.SmilesParser", "$.SmilesSearch", "JU.BSUtil", "$.Elements", "$.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -494,7 +494,7 @@ throw e;
 return ret;
 }, "~S,~A,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["java.lang.Exception"], "JS.InvalidSmilesException", null, function(){
 var c$ = Clazz_declareType(JS, "InvalidSmilesException", Exception);
@@ -517,7 +517,7 @@ return JS.InvalidSmilesException.lastError;
 });
 c$.lastError = null;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["JU.JmolMolecule", "JU.BS", "$.Lst"], "JS.SmilesSearch", ["java.util.Hashtable", "JU.AU", "$.SB", "JS.InvalidSmilesException", "$.SmilesAromatic", "$.SmilesAtom", "$.SmilesBond", "$.SmilesMeasure", "$.SmilesParser", "$.SmilesStereo", "$.VTemp", "JU.BSUtil", "$.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -1684,7 +1684,7 @@ return false;
 });
 /*eoif3*/})();
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["java.util.Hashtable", "JU.BS", "JS.VTemp"], "JS.SmilesGenerator", ["JU.AU", "$.Lst", "$.SB", "JS.InvalidSmilesException", "$.SmilesAtom", "$.SmilesBond", "$.SmilesParser", "$.SmilesSearch", "$.SmilesStereo", "JU.BSUtil", "$.Elements", "$.JmolMolecule", "$.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -2547,7 +2547,7 @@ function(i0, i1){
 return Math.min(i0, i1) + "_" + Math.max(i0, i1);
 }, "~N,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(null, "JS.SmilesAromatic", ["java.util.Hashtable", "JU.BS", "$.Lst", "$.Measure", "$.V3", "JS.SmilesRing", "$.SmilesRingSet", "JU.BSUtil", "$.Logger"], function(){
 var c$ = Clazz_declareType(JS, "SmilesAromatic", null);
@@ -2811,7 +2811,7 @@ set.clear();
 }, "JU.Lst,~A,JU.Lst");
 c$.OS_PI_COUNTS =  Clazz_newArray(-1, [ Clazz_newIntArray(-1, [-2, 1, 0]),  Clazz_newIntArray(-1, [1, 2, 1, -1]),  Clazz_newIntArray(-1, [2, 1, 2, 1, 1]),  Clazz_newIntArray(-1, [2, 1]),  Clazz_newIntArray(-1, [-2, 1, 2, 1, -2]),  Clazz_newIntArray(-1, [2, 1, 2, 2])]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["JU.BS"], "JS.SmilesRing", null, function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -2845,7 +2845,7 @@ var j = e.getAtomIndex2();
 return (i < j ? i + "_" + j : j + "_" + i);
 }, "JU.Edge");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["JU.Lst", "$.BS"], "JS.SmilesRingSet", null, function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -2880,7 +2880,7 @@ for (var j = this.bs.nextSetBit(0); j >= 0; j = this.bs.nextSetBit(j + 1)) eCoun
 return eCount;
 }, "~A");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["JU.P3", "JU.Node"], "JS.SmilesAtom", ["JU.AU", "JU.Elements", "$.Logger", "JV.JC"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -3475,7 +3475,7 @@ function(i2, iA, iB){
 return null;
 }, "~N,~N,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["JU.Edge"], "JS.SmilesBond", ["JS.InvalidSmilesException"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -3714,7 +3714,7 @@ function(i){
 return (i == 1 ? this.atom2 : this.atom1);
 }, "~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(null, "JS.SmilesMeasure", ["JU.PT"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -3798,7 +3798,7 @@ for (var i = 0; i < this.type; i++) s += " " + (i >= this.nPoints ? "?" : "" + t
 return s;
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["java.util.Hashtable"], "JS.SmilesParser", ["JU.Lst", "$.PT", "$.SB", "JS.InvalidSmilesException", "$.SmilesAtom", "$.SmilesBond", "$.SmilesMeasure", "$.SmilesSearch", "$.SmilesStereo", "JU.Elements", "$.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -4731,7 +4731,7 @@ JS.SmilesParser.extractFlags(pattern, ret);
 return ret[0];
 }, "~S");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(null, "JS.SmilesExt", ["JU.AU", "$.BS", "$.Lst", "$.M4", "$.Measure", "$.P3", "J.api.Interface", "JU.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -4932,7 +4932,7 @@ J.api.Interface.getInterface("JU.Eigen", this.e.vwr, "script");
 return JU.Measure.getTransformMatrix4(ptsA, ptsB, m, null);
 }, "~N,~N,~B,JU.M4");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 })(Clazz
 ,Clazz.getClassName
 ,Clazz.newLongArray

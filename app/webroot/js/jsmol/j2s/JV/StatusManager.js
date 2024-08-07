@@ -318,8 +318,11 @@ return (this.isSynced && this.drivingSync && !this.syncDisabled);
 Clazz.defineMethod(c$, "setSync", 
 function(mouseCommand){
 if (this.syncingMouse) {
-if (mouseCommand != null) this.syncSend(mouseCommand, "*", 0);
-} else if (!this.syncingScripts) this.syncSend("!" + this.vwr.tm.getMoveToText(this.minSyncRepeatMs / 1000, false), "*", 0);
+if (mouseCommand != null) {
+var sJmol = this.getJmolScriptCallback(J.c.CBK.SYNC);
+if (sJmol != null) this.fireJmolScriptCallback(false, J.c.CBK.SYNC,  Clazz.newArray(-1, [sJmol, mouseCommand, "sending mouseSync"]), true);
+this.syncSend(mouseCommand, "*", 0);
+}} else if (!this.syncingScripts) this.syncSend("!" + this.vwr.tm.getMoveToText(this.minSyncRepeatMs / 1000, false), "*", 0);
 }, "~S");
 Clazz.defineMethod(c$, "setSyncDriver", 
 function(syncMode){
@@ -612,4 +615,4 @@ this.vwr.showString("error reading SYNC command: " + script, false);
 }, "~S");
 c$.MAXIMUM_QUEUE_LENGTH = 16;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

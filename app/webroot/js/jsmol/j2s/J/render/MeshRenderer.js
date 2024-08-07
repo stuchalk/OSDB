@@ -55,14 +55,15 @@ if (!this.setVariables()) return false;
 if (!this.doRender) return mesh.title != null;
 this.latticeOffset.set(0, 0, 0);
 if (mesh.modelIndex < 0 || mesh.lattice == null && mesh.symops == null) {
-for (var i = this.vertexCount; --i >= 0; ) if (this.vertices[i] != null) this.tm.transformPtScr(this.vertices[i], this.screens[i]);
-
 if (mesh.haveXyPoints) {
 for (var i = this.vertexCount; --i >= 0; ) if (this.vertices[i] != null) this.tm.transformPtScrT32D(this.vertices[i], this.p3Screens[i]);
 
 } else {
-for (var i = this.vertexCount; --i >= 0; ) if (this.vertices[i] != null) this.tm.transformPtScrT3(this.vertices[i], this.p3Screens[i]);
-
+for (var i = this.vertexCount; --i >= 0; ) {
+if (this.vertices[i] != null) {
+this.tm.transformPtScrT3(this.vertices[i], this.p3Screens[i]);
+this.tm.transformPtScr(this.vertices[i], this.screens[i]);
+}}
 }this.render2(this.isExport);
 } else {
 var vTemp =  new JU.P3();
@@ -347,4 +348,4 @@ this.mesh.normals = null;
 this.mesh.bsPolygons = null;
 }, "~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

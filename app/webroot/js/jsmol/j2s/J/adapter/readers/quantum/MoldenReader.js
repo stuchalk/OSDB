@@ -172,8 +172,6 @@ slater[0] = atomIndex + 1;
 slater[1] = type;
 slater[2] = gaussianPtr + 1;
 slater[3] = nPrimitives;
-var n = this.getDfCoefMaps()[type].length;
-this.nCoef += n;
 for (var ip = nPrimitives; --ip >= 0; ) {
 var primTokens = JU.PT.getTokens(this.rd());
 var nTokens = primTokens.length;
@@ -196,7 +194,6 @@ this.moData.put("shells", this.shells);
 this.moData.put("gaussians", garray);
 JU.Logger.info(this.shells.size() + " slater shells read");
 JU.Logger.info(garray.length + " gaussian primitives read");
-JU.Logger.info(this.nCoef + " MO coefficients expected for orbital type " + this.orbitalType);
 this.asc.setCurrentModelInfo("moData", this.moData);
 return false;
 });
@@ -207,6 +204,7 @@ while (this.checkOrbitalType(this.rd())) {
 if (this.orbitalType === "") {
 this.createLineBuffer();
 }this.fixOrbitalType();
+JU.Logger.info(this.nCoef + " MO coefficients expected for orbital type " + this.orbitalType);
 var tokens = this.getMoTokens(this.line);
 while (tokens != null && tokens.length > 0 && tokens[0].indexOf('[') < 0) {
 var mo =  new java.util.Hashtable();
@@ -404,4 +402,4 @@ for (var i = 0; i < this.modelAtomCount; i++) this.setAtomCoordScaled(atoms[i + 
 
 }, "~S,~B,~B");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

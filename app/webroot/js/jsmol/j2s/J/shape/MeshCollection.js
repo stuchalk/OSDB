@@ -141,6 +141,7 @@ var test = true;
 switch (tok) {
 case 1610625028:
 case 1073742335:
+case 1073742072:
 case 1073741958:
 case 1073741861:
 case 1073741964:
@@ -226,7 +227,12 @@ if (this.explicitID) this.previousMeshID = id;
 }, "~S");
 Clazz.defineMethod(c$, "setTokenProperty", 
 function(tokProp, bProp, testD){
-if (this.currentMesh == null) {
+if (tokProp == 1073742072) {
+if (this.meshCount == 0) return;
+for (var i = 0; i < this.meshCount; i++) this.meshes[i].visible = false;
+
+tokProp = 1073742335;
+}if (this.currentMesh == null) {
 var key = (this.explicitID && JU.PT.isWild(this.previousMeshID) ? this.previousMeshID : null);
 var list = this.getMeshList(key, false);
 for (var i = list.size(); --i >= 0; ) this.setMeshTokenProperty(list.get(i), tokProp, bProp, testD);
@@ -290,8 +296,9 @@ return true;
 }if (property === "checkID") {
 var key = data[0];
 var list = this.getMeshList(key, true);
-if (list.size() == 0) return false;
-data[1] = list.get(0).thisID;
+var m;
+if (list.size() == 0 || (m = list.get(0)) == null) return false;
+data[1] = m.thisID;
 return true;
 }if (property === "index") {
 var m = this.getMesh(data[0]);
@@ -313,10 +320,11 @@ var list =  new JU.Lst();
 if (key != null) key = (key.length == 0 ? null : key.toUpperCase());
 var isWild = JU.PT.isWild(key);
 var id;
-for (var i = this.meshCount; --i >= 0; ) if (key == null || (id = this.meshes[i].thisID.toUpperCase()).equals(key) || isWild && JU.PT.isMatch(id, key, true, true)) {
+for (var i = this.meshCount; --i >= 0; ) {
+if (key == null || (id = this.meshes[i].thisID.toUpperCase()).equals(key) || isWild && JU.PT.isMatch(id, key, true, true)) {
 list.addLast(this.meshes[i]);
 if (justOne) break;
-}
+}}
 return list;
 }, "~S,~B");
 Clazz.defineMethod(c$, "getPropMC", 
@@ -468,4 +476,4 @@ map.put("type", this.myType);
 }return map;
 }, "JU.T3,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

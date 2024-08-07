@@ -1,0 +1,438 @@
+/** test script snippets
+
+save orientation o
+zap
+modelkit spacegroup "P 2/m"
+//modelkit add N {0.45 0.47 0.45/1}
+modelkit spacegroup "P 2/m 1 1" unitcell "b,c,a"
+draw uc1 unitcell color red
+draw sp1 spacegroup all
+draw *rotvector1 color blue
+modelkit spacegroup "10" unitcell "!b,c,a"
+modelkit spacegroup "13" unitcell "a-c,b,2c;0,0,1/2"
+modelkit spacegroup "P 1 1 2/n" unitcell "a,-a-c,b;0-1,0" packed
+draw uc2 unitcell color yellow
+draw sp2 spacegroup all
+color property site
+restore orientation o
+
+pause "OK1"
+
+
+
+zap
+modelkit spacegroup "148"
+draw uc1 unitcell color red
+draw sp1 spacegroup all
+unitcell "r";
+modelkit spacegroup "148:r" 
+draw uc2 unitcell color yellow
+draw sp2 spacegroup all
+color property site
+
+pause "OK2"
+
+zap
+modelkit spacegroup "148"
+draw uc1 unitcell color red
+draw sp1 spacegroup all
+modelkit spacegroup "148:r" unitcell "r"
+draw uc2 unitcell color yellow
+draw sp2 spacegroup all
+color property site
+
+pause "OK3"
+
+zap
+modelkit spacegroup "148"
+print unitcell()
+print unitcell('r')
+draw points @{unitcell('r')}
+draw u1 unitcell
+unitcell rhombohedral
+show unitcell
+
+pause "OK4"
+
+zap
+modelkit spacegroup "148:h"
+modelkit add O
+draw u1 unitcell
+modelkit spacegroup "148:2/3a+1/3b+1/3c,-1/3a+1/3b+1/3c,-1/3a-2/3b+1/3c" unitcell "r" packed
+
+pause "OK5"
+
+zap
+modelkit spacegroup "148:h"
+modelkit add O
+draw u1 unitcell
+draw sg1 spacegroup all
+unitcell 'r'
+modelkit spacegroup "148:2/3a+1/3b+1/3c,-1/3a+1/3b+1/3c,-1/3a-2/3b+1/3c"
+draw u2 unitcell
+draw sg2 spacegroup all
+
+pause "OK6"
+
+
+zap
+modelkit spacegroup "P 2/m 1 1" 
+modelkit add N {0.45 0.47 0.45/1}
+unitcell on
+draw uc1 unitcell color red
+draw sp1 spacegroup all
+modelkit spacegroup "P 2/m" unitcell "!b,c,a;1,0,0" packed
+draw uc2 unitcell color yellow
+draw sp2 spacegroup all
+color property site
+
+pause "OK7"
+
+
+load =aflowlib/10.3 packed
+show spacegroup
+draw uc1 unitcell
+draw spacegroup all
+modelkit spacegroup "P 2/m 1 1"
+draw sp2 spacegroup all
+
+
+pause "OK8"
+
+
+zap
+modelkit spacegroup "P 2/m"
+modelkit add N {0.45 0.47 0.45/1}
+draw uc1 unitcell color red
+draw sp1 spacegroup all
+modelkit spacegroup "P 2/m 1 1" unitcell "b,c,a"
+draw uc2 unitcell color yellow
+draw sp2 spacegroup all
+color property site
+
+
+pause "OK9"
+
+zap
+modelkit spacegroup "P 2/m"
+modelkit add N {0.45 0.47 0.45/1}
+draw uc1 unitcell color red
+draw sp1 spacegroup all
+modelkit spacegroup "P 2/m 1 1"
+draw uc2 unitcell color yellow
+draw sp2 spacegroup all
+color property site
+
+pause "OK9b"
+
+zap
+modelkit spacegroup 4
+draw sp1 spacegroup all
+draw uc1 unitcell color red
+
+modelkit add P wyckoff "G"
+modelkit spacegroup "4:c,a,b;0,1/4,0" packed
+color property site
+draw sp2 spacegroup all
+draw uc2 unitcell color yellow
+
+pause "OK9c"
+
+
+zap
+modelkit spacegroup "4:c,a,b" packed
+modelkit add P wyckoff "G"
+color property site
+draw sp2 spacegroup all
+draw uc2 unitcell color yellow
+
+pause "OK9d"
+
+
+// nonstandard polar group offset
+zap
+modelkit spacegroup "4:c,a,b;0,1/4,0" packed
+modelkit add P wyckoff "G"
+color property site
+draw sp2 spacegroup all
+draw uc2 unitcell color yellow
+color property site
+
+pause "OK9e"
+
+zap
+modelkit spacegroup 4
+draw sp1 spacegroup all
+draw *vector1 color red
+draw uc1 unitcell color red
+modelkit spacegroup "4:c,a,b" packed
+modelkit add P wyckoff "G"
+color property site
+draw sp2 spacegroup all
+draw uc2 unitcell color yellow
+
+pause "OK11"
+
+
+zap
+modelkit spacegroup 4
+draw sp1 spacegroup all
+draw uc1 unitcell color red
+draw *vector1 color red
+modelkit add P wyckoff "G"
+modelkit spacegroup "4:c,a,b;0,1/4,0" packed
+color property site
+draw sp2 spacegroup all
+draw uc2 unitcell color yellow
+
+pause "OK12"
+
+
+zap
+modelkit spacegroup 18
+draw unitcell color red
+draw sg1 spacegroup all
+modelkit add P wyckoff "G"
+modelkit spacegroup "18>sub>4" packed
+color property site
+draw sg2 spacegroup all
+draw sg2* color translucent yellow
+
+pause "OK13"
+
+zap
+modelkit spacegroup 10
+draw unitcell color red
+draw sg1 spacegroup all
+modelkit add P wyckoff "G"
+modelkit spacegroup "10 > a-c,b,2c;0,0,1/2 > 13" packed
+color property site
+draw sg2 spacegroup all
+
+pause "OK14"
+
+
+pause "OK15"
+
+zap
+modelkit spacegroup 18
+draw unitcell color red
+draw sg1 spacegroup all
+modelkit add P wyckoff "G"
+modelkit spacegroup "18>sub>19" packed
+color property site
+draw sg2 spacegroup all
+draw sg2* color translucent yellow
+
+pause "OK16"
+
+
+zap
+modelkit spacegroup 155
+draw sp1 spacegroup all
+draw uc1 unitcell fill color translucent 0.9 red
+save state s1
+modelkit spacegroup "155>2/3a+1/3b-2/3c,b,c;1,0,0>5"
+draw uc2 unitcell
+draw sp2 spacegroup all
+background lightgray
+unitcell "!2/3a+1/3b-2/3c,b,c;1,0,0"
+
+modelkit spacegroup "155>-1/3a-2/3b-2/3c,a,c>5"
+draw uc3 unitcell
+draw sp3 spacegroup all
+unitcell "!-1/3a-2/3b-2/3c,a,c"
+
+modelkit spacegroup "155>-1/3a+1/3b-2/3c,-a-b,c;1,1,0>5"
+draw uc4 unitcell
+draw sp4 spacegroup all
+draw sp1* off
+modelkit spacegroup "5>!-1/3a+1/3b-2/3c,-a-b,c;1,1,0>155"
+
+set echo bottom left
+echo three conjugate-class subgroups of 155 >> 5
+//write c:\temp\bilbao\examples\conjClass-155-5.png as PNGJ
+
+
+pause "OK18"
+
+
+write c:/temp/t.cif
+load c:/temp/t.cif packed 0.5
+connect 4.1 .
+connect 4.1
+display connected and unitcell or connected(unitcell)
+
+
+zap
+modelkit spacegroup 154
+draw uc1 unitcell color red
+draw sp1 spacegroup all
+
+modelkit spacegroup "[p 32 2\" (0 0 4)]"
+draw uc2 unitcell
+draw sp2 spacegroup all
+// no?
+
+zap
+modelkit spacegroup 154
+draw uc1 unitcell color red
+draw sp1 spacegroup all
+
+modelkit spacegroup "154:a,b,c;0,0,-1/3"
+draw uc2 unitcell
+draw sp2 spacegroup all
+
+// ok
+
+zap
+modelkit spacegroup 154
+draw uc1 unitcell color red
+draw sp1 spacegroup all
+
+modelkit spacegroup "[p 32 2\"]:a,b,c;0,0,-1/3"
+draw uc2 unitcell
+draw sp2 spacegroup all
+
+//ok
+
+zap
+load =ams/quartz 1 packed
+draw uc1 unitcell color red
+draw sp1 spacegroup all
+
+modelkit spacegroup "154:a,b,c;0,0,-1/3"
+draw uc2 unitcell
+draw sp2 spacegroup all
+
+// ok
+
+    checkHallOperators();
+
+
+
+zap
+load =ams/quartz 1 packed
+draw uc1 unitcell color red
+draw sp1 spacegroup all
+
+modelkit spacegroup "[p 32 2\"]:a,b,c;0,0,-1/3"
+draw uc2 unitcell
+draw sp2 spacegroup all
+
+// OK
+
+zap
+load =ams/quartz 1 packed
+draw uc1 unitcell color red
+draw sp1 spacegroup all
+
+modelkit spacegroup "[p 32 2\" (0 0 4)]"
+draw uc2 unitcell
+draw sp2 spacegroup all
+
+//ok
+
+
+
+
+
+
+**/
+
+
+function showSetting(n,i) {
+	if (!i) { 
+		load orientation @{"=aflowlib/" + n} packed;  
+		var info = spacegroup("ITA/" + n);
+		print "nSettings=" +  info.n;
+		print info.its.select("(trm)");
+		showSetting(n,1); 
+	} else {
+		draw delete;
+		var sg = if(i.type == "string";"" + n + ":"+i;"" + n + "."+i);
+		modelkit spacegroup @sg packed;
+		draw ID @{"sg1"} spacegroup all;
+		center unitcell;
+		axes 0.1;
+		connect auto;
+		moveto axis c1;
+	}
+}
+
+//showSetting 20
+//showSetting 20 2
+
+
+function showSubgroup(i1, i2, p1,p2) {
+  if (!i2) {
+	print spacegroup(i1,0,"subgroups")
+	return;
+  }
+  var sub = "sub";
+  if (p2) {
+    sub = spacegroup(i1,i2,p1,p2);
+  } else if (p1.type == "string" && p1.length > 0) {
+    sub = p1;
+  } else {
+    sub = spacegroup(i1,i2,1,1);
+  }
+  if (sub[0] == "!") {
+	print "can't do that " + sub;
+	return;
+  }
+  var tr = "" + i1 + ">" + sub + ">" + i2;
+  save orientation o1
+  zap
+  set echo bottom left
+  echo @tr
+  modelkit spacegroup @i1
+  restore orientation o1
+  draw uc1 unitcell axes color red
+  draw sg1 spacegroup all  
+  modelkit add P wyckoff "G"
+  modelkit spacegroup @tr packed
+  color property site 
+  draw uc2 unitcell axes color yellow
+  draw sg2 spacegroup all
+  delay 2
+  for (var i = 0; i < 3; i++) {
+	delay 1
+	draw sg1* on
+	draw sg2* off
+	delay 1
+	draw sg1* off
+	draw sg2* on
+  }
+}
+
+
+
+//print spacegroup(18,4,2,"subgroups")
+
+
+function setSG(n) {
+	zap;modelkit spacegroup @n;
+	font axes 30;
+	unitcell 0.05;
+	axes 0.05;
+	modelkit add N;
+}
+
+
+//background white
+//capture "C:/temp/t.gif";
+//for (var i = 1; i <= 230; i++) {showSG(i);}
+
+
+
+print "ita/sg.spt"
+print "\nsetSG(n) : create space group n (1-230 or a key such as 125.2 or \"P321212\")"
+print "\nshowSubgroup(i1, i2, p1,p2) : shows the relationship between group i1 and subgroup 12"
+print "  p1 (optional) is the index (1-based) into the array of options for i1 >> i2"
+print "  p2 (optional) is the index (1-based) into the array of tranformation options t for i1 > t > i2"
+print "\nshowSubgroup(i1) : full listing of maximal subgroup data for group i1"
+print "showSubgroup(i1,i2): listing of all data for i1 >> i2"
+
+
+

@@ -58,12 +58,18 @@ if (this.isAll) {
 this.objects =  new java.util.Hashtable();
 this.isAll = false;
 this.currentObject = null;
-}if (this.currentObject == null) {
 return;
-}this.objects.remove(this.currentObject.target);
+}if (this.currentObject != null) {
+this.objects.remove(this.currentObject.target);
 this.currentObject = null;
-return;
-}if ("model" === propertyName) {
+} else if (this.thisID != null) {
+var e = this.objects.values().iterator();
+while (e.hasNext()) {
+var text = e.next();
+if (this.isAll || JU.PT.isMatch(text.target.toUpperCase(), this.thisID, true, true)) {
+e.remove();
+}}
+}}if ("model" === propertyName) {
 var modelIndex = (value).intValue();
 if (this.currentObject != null) {
 this.currentObject.modelIndex = modelIndex;
@@ -144,7 +150,7 @@ this.isAll = false;
 });
 Clazz.overrideMethod(c$, "setModelVisibilityFlags", 
 function(bsModels){
-if (!this.isHover) for (var t, $t = this.objects.values().iterator (); $t.hasNext()&& ((t = $t.next ()) || true);) t.visible = (t.modelIndex < 0 || bsModels.get(t.modelIndex));
+if (!this.isHover) for (var t, $t = this.objects.values().iterator (); $t.hasNext()&& ((t = $t.next ()) || true);) t.visible = (t.modelIndex < 0 || bsModels.get(t.modelIndex) && (!t.thisModelOnly || bsModels.cardinality() == 1 && t.modelIndex == this.vwr.am.cmi));
 
 }, "JU.BS");
 Clazz.overrideMethod(c$, "checkObjectClicked", 
@@ -182,4 +188,4 @@ if (haveScripts) this.vwr.setCursor(0);
 return false;
 }, "~N,~N,JU.BS");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

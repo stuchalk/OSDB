@@ -5,7 +5,7 @@ this.structureList = null;
 Clazz.instantialize(this, arguments);}, JM, "AminoPolymer", JM.AlphaPolymer);
 Clazz.makeConstructor(c$, 
 function(monomers, pt0){
-this.setPoly(monomers, pt0);
+Clazz.superConstructor(this, JM.AminoPolymer, [monomers, pt0]);
 this.type = 1;
 for (var i = 0; i < this.monomerCount; ++i) if (!(monomers[i]).hasOAtom()) return;
 
@@ -242,4 +242,4 @@ function(structureList){
 this.structureList = structureList;
 }, "java.util.Map");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

@@ -140,7 +140,7 @@ this.applyFromFields();
 });
 c$.posXY =  Clazz_newIntArray(-1, [-2147483648, 0]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JSV.dialog");
 Clazz_load(["JSV.dialog.JSVDialog"], "JSV.dialog.PeakListDialog", ["JSV.common.Annotation"], function(){
 var c$ = Clazz_declareType(JSV.dialog, "PeakListDialog", JSV.dialog.JSVDialog);
@@ -167,7 +167,7 @@ return this.callbackAD(id, msg);
 }, "~S,~S");
 c$.posXY =  Clazz_newIntArray(-1, [-2147483648, 0]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JSV.dialog");
 Clazz_load(["JSV.dialog.JSVDialog"], "JSV.dialog.MeasurementsDialog", ["JSV.common.Annotation"], function(){
 var c$ = Clazz_declareType(JSV.dialog, "MeasurementsDialog", JSV.dialog.JSVDialog);
@@ -189,7 +189,7 @@ return this.callbackAD(id, msg);
 }, "~S,~S");
 c$.posXY =  Clazz_newIntArray(-1, [-2147483648, 0]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JSV.dialog");
 Clazz_load(["JSV.dialog.JSVDialog"], "JSV.dialog.OverlayLegendDialog", ["JSV.common.Annotation"], function(){
 var c$ = Clazz_declareType(JSV.dialog, "OverlayLegendDialog", JSV.dialog.JSVDialog);
@@ -211,7 +211,7 @@ return false;
 }, "~S,~S");
 c$.posXY =  Clazz_newIntArray(-1, [-2147483648, 0]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JSV.dialog");
 Clazz_load(["JSV.dialog.JSVDialog"], "JSV.dialog.ViewsDialog", ["JU.Lst", "$.PT", "$.SB", "JSV.common.Annotation"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -379,7 +379,7 @@ this.apply( Clazz_newArray(-1, [this.dialog.getText(this.txt2)]));
 });
 c$.posXY =  Clazz_newIntArray(-1, [-2147483648, 0]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JSV.js2d");
 Clazz_load(["JSV.dialog.DialogManager"], "JSV.js2d.JsDialogManager", ["JU.PT", "JSV.js2d.DialogTableModel", "$.JsDialog", "JS.Dimension", "$.JDialog", "$.JEditorPane", "$.JLabel", "$.JScrollPane", "$.JTable"], function(){
 var c$ = Clazz_declareType(JSV.js2d, "JsDialogManager", JSV.dialog.DialogManager);
@@ -454,7 +454,7 @@ return;
 }this.processClick(eventId);
 }, "~S");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JSV.dialog");
 Clazz_load(null, "JSV.dialog.DialogManager", ["java.util.Hashtable", "JU.PT", "JSV.common.JSVFileManager", "$.JSViewer"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -551,7 +551,7 @@ function(title){
 return (title.length > 50 ? title.substring(0, 50) + "..." : title);
 }, "~S");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JSV.js2d");
 Clazz_load(["JS.AbstractTableModel"], "JSV.js2d.DialogTableModel", ["JU.CU"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -634,7 +634,7 @@ style += ";border:" + (isSelected ? 3 : 1) + "px solid #000";
 }}return " style='" + style + "'";
 }, "~S,~N,~N,~O,~B");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JSV.js2d");
 Clazz_load(["JSV.api.PlatformDialog", "JS.JDialog", "$.Insets"], "JSV.js2d.JsDialog", ["java.util.Hashtable", "JSV.common.Annotation", "JSV.js2d.DialogTableModel", "JS.Color", "$.Dimension", "$.FlowLayout", "$.GridBagConstraints", "$.GridBagLayout", "$.JButton", "$.JCheckBox", "$.JComboBox", "$.JLabel", "$.JPanel", "$.JScrollPane", "$.JSplitPane", "$.JTable", "$.JTextField"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -871,10 +871,10 @@ function(column){
 return this.tableCellAlignLeft ? 2 : column == 0 ? 0 : 4;
 }, "~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JSV.api");
 Clazz_declareInterface(JSV.api, "PlatformDialog");
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 })(Clazz
 ,Clazz.getClassName
 ,Clazz.newLongArray

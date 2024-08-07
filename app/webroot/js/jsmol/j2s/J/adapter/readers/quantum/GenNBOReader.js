@@ -550,7 +550,7 @@ this.filterMO();
 if (this.nOrbitals == 0) return;
 this.line = null;
 var pt = 0;
-for (var i = this.nOrbitals0, n = this.nOrbitals0 + this.nOrbitals; i < n; i++, pt++) {
+for (var i = this.nOrbitals0, n = this.nOrbitals0 + this.nNOs; i < n; i++, pt++) {
 if (pt == this.nNOs) {
 if (isNBO) {
 this.readNBO37Occupancies(pt);
@@ -614,4 +614,4 @@ c$.HC_LIST = "521   520   519   518   517   516   515   514   513   512   511   
 c$.IS_LIST = "651   652   653   654   655   656   657   658   659   660   661   662   663";
 c$.IC_LIST = "628   627   626   625   624   623   622   621   620   619   618   617   616   615   614   613   612   611   610   609   608   607   606   605   604   603   602   601";
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

@@ -63,18 +63,18 @@ var $t$;
 //var c$;
 Clazz_declarePackage("J.api");
 Clazz_declareInterface(J.api, "JmolParallelProcessor");
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.api");
 Clazz_declareInterface(J.api, "JmolScriptEvaluator");
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.api");
 Clazz_declareInterface(J.api, "JmolScriptFunction");
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.api");
 (function(){
 var c$ = Clazz_declareInterface(J.api, "JmolScriptManager");
 })();
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["J.thread.JmolThread"], "JS.CommandWatcherThread", ["JU.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -123,7 +123,7 @@ Clazz_overrideMethod(c$, "run1",
 function(mode){
 }, "~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["J.thread.JmolThread"], "JS.FileLoadThread", ["JV.Viewer"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -173,7 +173,7 @@ this.vwr.cachePut(this.vwr.fm.getFilePath(fileName, true, false), data);
 }this.run1(-2);
 }, "~S,~S,~O,~O");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["JS.ScriptTokenParser", "JU.Lst"], "JS.ScriptCompiler", ["java.util.Hashtable", "JU.AU", "$.BS", "$.PT", "$.SB", "J.api.Interface", "J.i18n.GT", "JM.BondSet", "$.Group", "JS.ContextToken", "$.SV", "$.ScriptContext", "$.ScriptError", "$.ScriptFlowContext", "$.ScriptFunction", "$.ScriptManager", "$.T", "JU.Edge", "$.Escape", "$.Logger", "JV.FileManager", "$.Viewer"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -328,6 +328,8 @@ this.isStateScript = (this.ichToken >= 0 && this.ichToken < 10);
 if (this.isStateScript) {
 this.ptSemi = this.script.indexOf(";", this.ichToken);
 if (this.ptSemi >= this.ichToken) JS.ScriptManager.setStateScriptVersion(this.vwr, this.script.substring(this.ichToken + "# Jmol state version ".length, this.ptSemi).trim());
+} else {
+this.haveENDIF = (this.script.indexOf("endif") >= 0);
 }this.cchScript = this.script.length;
 main : while (true) {
 this.vFunctionStack =  new JU.Lst();
@@ -470,7 +472,7 @@ if (this.lookingAtString(true)) {
 this.addTokenToPrefix(this.setCommand(JS.T.tokenScript));
 this.cchToken = 0;
 continue;
-}if (this.lookingAtImpliedString(true, true, true)) this.ichEnd = this.ichToken + this.cchToken;
+}if (this.lookingAtImpliedString(true, true, true, false)) this.ichEnd = this.ichToken + this.cchToken;
 }return this.commandExpected();
 }return this.errorStr(19, this.script.substring(this.ichToken, this.ichToken + 1));
 }
@@ -986,11 +988,11 @@ if ((bs = this.lookingAtBitset()) != null) {
 this.addTokenToPrefix(JS.T.o(10, bs));
 return 2;
 }}
-if (!this.iHaveQuotedString && this.lookingAtImpliedString(this.tokCommand == 134222350, this.tokCommand == 134223363, this.nTokens > 1 || this.tokCommand != 134222850 && this.tokCommand != 4124)) {
+if (!this.iHaveQuotedString && this.lookingAtImpliedString(this.tokCommand == 134222350, this.tokCommand == 134223363, this.nTokens > 1 || this.tokCommand != 134222850 && this.tokCommand != 4124, false)) {
 var str = this.script.substring(this.ichToken, this.ichToken + this.cchToken);
 if (this.tokCommand == 134222850) {
 if (str.startsWith("javascript:")) {
-this.lookingAtImpliedString(true, true, true);
+this.lookingAtImpliedString(true, true, true, false);
 str = this.script.substring(this.ichToken, this.ichToken + this.cchToken);
 } else if (str.toUpperCase().indexOf(".PUSH(") >= 0) {
 this.cchToken = 0;
@@ -1008,13 +1010,21 @@ if (iident == -2147483648 || Math.abs(iident) < 1000) this.addTokenToPrefix(JS.T
  else this.addTokenToPrefix(JS.T.i(iident));
 return 2;
 }break;
+case 603983903:
+if (this.nTokens == 2 && this.lastToken.tok == 134217764) {
+if (this.lookingAtImpliedString(false, false, false, true)) {
+if (this.script.charAt(this.ichToken + this.cchToken - 1) == ';') --this.cchToken;
+var s = this.script.substring(this.ichToken, this.ichToken + this.cchToken);
+this.addTokenToPrefix(JS.T.o(4, s));
+return 2;
+}}break;
 case 134221856:
 if (this.nTokens == 2 && this.lastToken.tok == 4115) this.iHaveQuotedString = true;
 if (!this.iHaveQuotedString) {
 if (this.script.charAt(this.ichToken) == '@') {
 this.iHaveQuotedString = true;
 return 0;
-}if (this.lookingAtImpliedString(true, true, true)) {
+}if (this.lookingAtImpliedString(true, true, true, false)) {
 var str = this.script.substring(this.ichToken, this.ichToken + this.cchToken);
 var pt = str.indexOf(" as ");
 if (pt > 0) str = str.substring(0, this.cchToken = pt);
@@ -1025,7 +1035,7 @@ return 2;
 }}}break;
 }
 this.implicitString = new Boolean (this.implicitString & (this.nTokens == 1)).valueOf();
-if (this.implicitString && !((this.tokCommand == 134222850 || this.tokCommand == 4124) && this.iHaveQuotedString) && this.lookingAtImpliedString(true, true, true)) {
+if (this.implicitString && !((this.tokCommand == 134222850 || this.tokCommand == 4124) && this.iHaveQuotedString) && this.lookingAtImpliedString(true, true, true, false)) {
 var str = this.script.substring(this.ichToken, this.ichToken + this.cchToken);
 if (this.tokCommand == 1825200146 && JU.PT.isOneOf(str.toLowerCase(), ";on;off;hide;display;")) this.addTokenToPrefix(JS.T.getTokenFromName(str.toLowerCase()));
  else this.addTokenToPrefix(JS.T.o(4, str));
@@ -1153,7 +1163,10 @@ return 0;
 }return 2;
 case 268441601:
 case 268441602:
-if (this.afterWhite == this.ichToken || this.afterMath == this.ichToken) this.theToken = JS.T.tv(this.theToken.tok, -1, this.theToken.value);
+if (this.nTokens == 0) {
+this.tokInitialPlusPlus = this.theToken.tok;
+return 2;
+}if (this.afterWhite == this.ichToken || this.afterMath == this.ichToken) this.theToken = JS.T.tv(this.theToken.tok, -1, this.theToken.value);
 if (!this.isNewSet && this.nTokens == 1) this.checkNewSetCommand();
 if (this.isNewSet && this.parenCount == 0 && this.bracketCount == 0 && this.ichToken <= this.setEqualPt) {
 this.tokenizePlusPlus(tok, false);
@@ -1279,8 +1292,8 @@ this.addTokenToPrefix(JS.T.i(1));
 }, "~N,~B");
 Clazz_defineMethod(c$, "checkNewSetCommand", 
 function(){
-var name = this.ltoken.get(0).value.toString();
-if (!this.isContextVariable(name.toLowerCase())) return false;
+var name = (this.nTokens == 0 ? "" : this.ltoken.get(0).value.toString());
+if (this.nTokens > 0 && !this.isContextVariable(name.toLowerCase())) return false;
 var t = this.setNewSetCommand(false, name);
 this.setCommand(JS.T.tokenSet);
 this.ltoken.add(0, this.tokenCommand);
@@ -1976,7 +1989,7 @@ this.cchToken = ichT - this.ichToken;
 return true;
 }, "~B");
 Clazz_defineMethod(c$, "lookingAtImpliedString", 
-function(allowSpace, allowEquals, allowSptParen){
+function(allowSpace, allowEquals, allowSptParen, allowSemicolon){
 var ichT = this.ichToken;
 var ch = this.script.charAt(ichT);
 var isID = (this.lastToken.tok == 1073741974);
@@ -1988,8 +2001,13 @@ var ptSpace = -1;
 var ptLastChar = -1;
 var isOK = true;
 var parenpt = 0;
-while (isOK && !this.eol(ch = this.charAt(ichT))) {
+while (isOK && (!this.eol(ch = this.charAt(ichT)) || allowSemicolon && ch == ';')) {
 switch ((ch).charCodeAt(0)) {
+case 59:
+if (ichT + 5 > this.cchScript || ichT + 2 < this.cchScript && (".01234567890-".indexOf(this.script.charAt(ichT + 1)) < 0 || this.script.charAt(ichT + 2) == '-')) {
+isOK = false;
+continue;
+}break;
 case 40:
 if (!allowSptParen) {
 if (this.tokCommand == 4124 || ichT >= 5 && (this.script.substring(ichT - 4, ichT).equals(".spt") || this.script.substring(ichT - 4, ichT).equals(".png") || this.script.substring(ichT - 5, ichT).equals(".pngj"))) {
@@ -2018,12 +2036,14 @@ ptLastChar = ichT;
 }
 ++ichT;
 }
-if (allowSpace) ichT = ptLastChar + 1;
+if (isVariable && (ptSpace < 0 || ptSpace > ptLastChar)) {
+return false;
+}if (allowSpace) ichT = ptLastChar + 1;
  else if (ptSpace > 0) ichT = ptSpace;
 if (isVariable && (!allowSpace || ptSpace < 0 && parenpt <= 0 && ichT - this.ichToken > 1)) {
 return false;
 }return (this.cchToken = ichT - this.ichToken) > 0;
-}, "~B,~B,~B");
+}, "~B,~B,~B,~B");
 Clazz_defineMethod(c$, "lookingAtExponential", 
 function(){
 if (this.ichToken == this.cchScript) return null;
@@ -2264,7 +2284,7 @@ JU.Logger.error(this.errorMessage);
 }return false;
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["J.thread.JmolThread"], "JS.ScriptDelayThread", null, function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -2316,7 +2336,7 @@ return;
 
 }, "~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["J.api.JmolScriptEvaluator"], "JS.ScriptError", ["JU.PT", "J.i18n.GT", "JS.ScriptException"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -2341,6 +2361,10 @@ Clazz_defineMethod(c$, "invArg",
 function(){
 this.error(22);
 });
+Clazz_defineMethod(c$, "invArgStr", 
+function(msg){
+this.errorOrWarn(22, msg, null, null, false);
+}, "~S");
 Clazz_defineMethod(c$, "bad", 
 function(){
 this.error(2);
@@ -2609,9 +2633,9 @@ if (this.errorMessage == null) this.errorMessage = J.i18n.GT.$("script ERROR: ")
 this.errorMessage += err;
 }, "~S");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
-Clazz_load(["JS.ScriptExpr"], "JS.ScriptEval", ["java.util.Arrays", "$.Hashtable", "JU.AU", "$.BArray", "$.BS", "$.Base64", "$.Lst", "$.M3", "$.M4", "$.Measure", "$.P3", "$.P4", "$.PT", "$.Quat", "$.SB", "$.V3", "J.api.Interface", "J.atomdata.RadiusData", "J.c.PAL", "$.STR", "$.VDW", "J.i18n.GT", "JM.BondSet", "$.Group", "$.Measurement", "JS.FileLoadThread", "$.SV", "$.ScriptCompiler", "$.ScriptContext", "$.ScriptDelayThread", "$.ScriptInterruption", "$.ScriptManager", "$.ScriptMathProcessor", "$.T", "JU.BSUtil", "$.BoxInfo", "$.ColorEncoder", "$.Edge", "$.Elements", "$.Escape", "$.Font", "$.Logger", "$.Parser", "$.SimpleUnitCell", "JV.ActionManager", "$.FileManager", "$.JC", "$.StateManager", "$.Viewer"], function(){
+Clazz_load(["JS.ScriptExpr"], "JS.ScriptEval", ["java.util.Arrays", "$.Hashtable", "JU.AU", "$.BArray", "$.BS", "$.Base64", "$.Lst", "$.M3", "$.M4", "$.Measure", "$.P3", "$.P4", "$.PT", "$.Quat", "$.SB", "$.V3", "J.api.Interface", "J.atomdata.RadiusData", "J.c.PAL", "$.STR", "$.VDW", "J.i18n.GT", "JM.BondSet", "$.Group", "$.Measurement", "JS.FileLoadThread", "$.SV", "$.ScriptCompiler", "$.ScriptContext", "$.ScriptDelayThread", "$.ScriptInterruption", "$.ScriptManager", "$.ScriptMathProcessor", "$.T", "JU.BSUtil", "$.ColorEncoder", "$.Edge", "$.Elements", "$.Escape", "$.Font", "$.Logger", "$.Parser", "$.SimpleUnitCell", "JV.ActionManager", "$.FileManager", "$.JC", "$.StateManager", "$.Viewer"], function(){
 var c$ = Clazz_decorateAsClass(function(){
 this.sm = null;
 this.isJS = false;
@@ -2789,7 +2813,7 @@ haveError = true;
 if (haveError || !this.isJS || !this.allowJSThreads || params != null) {
 this.vwr.setTainted(true);
 this.vwr.popHoldRepaint("CLEAR HOLD - executeCommands" + " " + (this.scriptLevel > 0 ? "\u0001## REPAINT_IGNORE ##" : ""));
-if (haveError) this.resumeViewer("exception");
+if (haveError) this.resumeViewer("exception", true);
 }this.timeEndExecution = System.currentTimeMillis();
 if (this.errorMessage == null && this.executionStopped) this.setErrorMessage("execution interrupted");
  else if (!this.tQuiet && reportCompletion) this.vwr.scriptStatus("Script completed");
@@ -2804,7 +2828,7 @@ function(sco){
 var sc = sco;
 this.setErrorMessage(null);
 if (this.executionStopped || sc == null || !sc.mustResumeEval) {
-this.resumeViewer("resumeEval");
+this.resumeViewer("resumeEval", this.executionStopped);
 return;
 }this.thisContext = sc;
 if (sc.scriptLevel > 0 && sc.why !== "getEvalContextAndHoldQueue") this.scriptLevel = sc.scriptLevel - 1;
@@ -2827,13 +2851,14 @@ break;
 this.pcResume = -1;
 }, "~O");
 Clazz_defineMethod(c$, "resumeViewer", 
-function(why){
+function(why, andStopQueue){
 this.vwr.setTainted(true);
 this.vwr.popHoldRepaint(why + (this.chk ? "\u0001## REPAINT_IGNORE ##" : ""));
 this.vwr.queueOnHold = false;
+if (andStopQueue) {
 this.vwr.clearScriptQueue();
 this.vwr.scm.queueThreadFinished(-1);
-}, "~S");
+}}, "~S,~B");
 Clazz_overrideMethod(c$, "runScript", 
 function(script){
 if (!this.vwr.isPreviewOnly) this.runScriptBuffer(script, this.outputBuffer, false);
@@ -2874,7 +2899,8 @@ return sc;
 c$.getContextTrace = Clazz_defineMethod(c$, "getContextTrace", 
 function(vwr, sc, sb, isTop){
 if (sb == null) sb =  new JU.SB();
-var pc = Math.min(sc.pc, sc.lineNumbers[sc.lineNumbers.length - 1]);
+if (sc.lineNumbers == null) System.out.println(sc);
+var pc = Math.min(sc.pc, (sc.lineNumbers == null ? sc.pc : sc.lineNumbers[sc.lineNumbers.length - 1]));
 sb.append(JS.ScriptError.getErrorLineMessage(sc.functionName, sc.scriptFileName, sc.lineNumbers[pc], pc, JS.ScriptEval.statementAsString(vwr, sc.statement, (isTop ? sc.iToken : 9999), false)));
 if (sc.parentContext != null) JS.ScriptEval.getContextTrace(vwr, sc.parentContext, sb, false);
 return sb;
@@ -3581,8 +3607,9 @@ while (this.thisContext != null && !this.thisContext.isTryCatch) this.popContext
 if (sx.message.indexOf(s) < 0) {
 sx.message += s;
 sx.untranslated += s;
-}this.resumeViewer(isThrown ? "throw context" : "scriptException");
-if (isThrown || this.thisContext != null || this.chk || msg.indexOf("NOTE: file recognized as a script file: ") >= 0) return;
+}var done = (isThrown || this.thisContext != null || this.chk || msg.indexOf("NOTE: file recognized as a script file: ") >= 0);
+this.resumeViewer(isThrown ? "throw context" : "scriptException", isThrown);
+if (done) return;
 this.isFuncReturn = false;
 JU.Logger.error("eval ERROR: " + s + "\n" + this.toString());
 if (this.vwr.autoExit) this.vwr.exitJmol();
@@ -3614,7 +3641,7 @@ if (i == 2 && setEquals) {
 if ((setEquals = (token.tok != 268440324)) || statement[0].intValue == 35) {
 sb.append(setEquals ? "= " : "== ");
 if (!setEquals) continue;
-}}if (iTok == i && token.tok != 1073742326) sb.append("<<<<");
+}}var tval = token.value;
 switch (token.tok) {
 case 1073742325:
 if (useBraces) sb.append("{");
@@ -3640,30 +3667,37 @@ useBraces = true;
 }break;
 case 1073742335:
 sb.append("true");
-continue;
+tval = null;
+break;
 case 1073742334:
 sb.append("false");
-continue;
+tval = null;
+break;
 case 1275082241:
 break;
 case 2:
 sb.appendI(token.intValue);
-continue;
+tval = null;
+break;
 case 8:
 case 9:
 case 10:
 sb.append(JS.SV.sValue(token));
-continue;
+tval = null;
+break;
 case 6:
 if (Boolean.TRUE === (token.value).get("$_BINARY_$")) {
 sb.append("<BINARY DATA>");
-continue;
+tval = null;
+break;
 }case 7:
 sb.append((token).escape());
-continue;
+tval = null;
+break;
 case 5:
 sb.appendC('^');
-continue;
+tval = null;
+break;
 case 1073742363:
 if (token.intValue != 2147483647) sb.appendI(token.intValue);
  else sb.append(JM.Group.getSeqcodeStringFor(JS.ScriptExpr.getSeqCode(token)));
@@ -3673,15 +3707,18 @@ sb.append(inBrace ? "-" : "- ");
 case 1073742362:
 if (token.intValue != 2147483647) sb.appendI(token.intValue);
  else sb.append(JM.Group.getSeqcodeStringFor(JS.ScriptExpr.getSeqCode(token)));
-continue;
+tval = null;
+break;
 case 1073742357:
 sb.append("*:");
 sb.append(vwr.getChainIDStr(token.intValue));
-continue;
+tval = null;
+break;
 case 1073742355:
 sb.append("*%");
 if (token.value != null) sb.append(token.value.toString());
-continue;
+tval = null;
+break;
 case 1073742358:
 sb.append("*/");
 case 1073742359:
@@ -3690,18 +3727,21 @@ if (token.intValue < 2147483647) {
 sb.append(JU.Escape.escapeModelFileNumber(token.intValue));
 } else {
 sb.append("" + token.value);
-}continue;
+}tval = null;
+break;
 case 1073742361:
 sb.appendC('[');
 var ptr = token.intValue * 6 + 1;
 sb.append(JM.Group.standardGroupList.substring(ptr, ptr + 3).trim());
 sb.appendC(']');
-continue;
+tval = null;
+break;
 case 1073742360:
 sb.appendC('[');
 sb.appendO(token.value);
 sb.appendC(']');
-continue;
+tval = null;
+break;
 case 1073742356:
 sb.append("*.");
 break;
@@ -3709,11 +3749,13 @@ case 1094713349:
 if (Clazz_instanceOf(token.value,"JU.P3")) {
 var pt = token.value;
 sb.append("cell=").append(JU.Escape.eP(pt));
-continue;
+tval = null;
+break;
 }break;
 case 4:
 sb.append("\"").appendO(token.value).append("\"");
-continue;
+tval = null;
+break;
 case 268440324:
 case 268440322:
 case 268440321:
@@ -3725,16 +3767,20 @@ sb.append(statement[++i].value).append(" ");
 } else if (token.intValue != 2147483647) sb.append(JS.T.nameOf(token.intValue)).append(" ");
 break;
 case 364558:
-continue;
+tval = null;
+break;
 case 102409:
 sb.append("end");
-continue;
+tval = null;
+break;
 default:
 if (JS.T.tokAttr(token.tok, 1073741824) || !doLogMessages) break;
 sb.appendC('\n').append(token.toString()).appendC('\n');
-continue;
+tval = null;
+break;
 }
-if (token.value != null) sb.append(token.value.toString());
+if (tval != null) sb.append(token.value.toString());
+if (iTok == i) sb.append("<<<<");
 }
 return sb.toString();
 }, "JV.Viewer,~A,~N,~B");
@@ -4224,7 +4270,7 @@ break;
 case 134256129:
 this.cmdPrompt();
 break;
-case 536875009:
+case 536875059:
 this.cmdScale(1);
 break;
 case 603984065:
@@ -4647,7 +4693,7 @@ if (!JU.PT.isOneOf(s, ";a;b;c;ab;ac;bc;abc;")) s = null;
 this.setShapeProperty(34, "type", s);
 this.checkLast(this.iToken);
 return;
-case 536875009:
+case 536875059:
 this.setFloatProperty("axesScale", this.floatParameter(this.checkLast(++index)));
 return;
 case 1825200146:
@@ -4746,7 +4792,7 @@ function(index){
 var tickInfo = this.tickParamAsStr(index, false, true, false);
 index = this.iToken + 1;
 var scale = 1;
-if (this.tokAt(index) == 536875009) {
+if (this.tokAt(index) == 536875059) {
 scale = this.floatParameter(++index);
 index++;
 if (index == this.slen) {
@@ -5412,10 +5458,10 @@ name = "fontsize";
 break;
 }this.bad();
 }
-var isScale = (this.tokAt(1) == 536875009);
+var isScale = (this.tokAt(1) == 536875059);
 if (shapeType == -1) shapeType = (isScale ? 31 : this.getShapeType(this.getToken(1).tok));
 if (shapeType == 5) {
-if (fontsize < 0 || fontsize >= 1 && (fontsize < 6 || fontsize > 63)) {
+if (fontsize == 0 || fontsize >= 1 && (fontsize < 6 || fontsize > 63)) {
 this.integerOutOfRange(6 - sizeAdjust, 63 - sizeAdjust);
 return;
 }if (!this.chk) this.setShapeProperty(5, "setDefaults", fontsize == 0 ? this.vwr.slm.noneSelected : Boolean.FALSE);
@@ -6173,15 +6219,16 @@ return this.iToken + 1;
 }, "~N,JU.SB,java.util.Map");
 Clazz_defineMethod(c$, "finalizeLoad", 
 function(isAppend, appendNew, isConcat, doOrient, nFiles, ac0, modelCount0, isData){
+var bs = JU.BSUtil.newBitSet2(isAppend ? ac0 : 0, this.vwr.ms.ac);
 if (isAppend && (appendNew || nFiles > 1)) {
 this.vwr.setAnimationRange(-1, -1);
 this.vwr.setCurrentModelIndex(modelCount0);
-}var msg;
+}this.vwr.setModelkitPropertySafely("updateatomkeys", bs);
+var msg;
 if (this.scriptLevel == 0 && !isAppend && (isConcat || nFiles < 2) && (msg = this.vwr.ms.getInfoM("modelLoadNote")) != null) {
 this.showString(msg);
 }var centroid = this.vwr.ms.getInfoM("centroidMinMax");
 if (JU.AU.isAI(centroid) && this.vwr.ms.ac > 0) {
-var bs = JU.BSUtil.newBitSet2(isAppend ? ac0 : 0, this.vwr.ms.ac);
 this.vwr.ms.setCentroid(bs, centroid);
 }var script = this.vwr.g.defaultLoadScript;
 msg = "";
@@ -7084,10 +7131,10 @@ degreesPerSecond = 0.01;
 ptsA = this.vwr.ms.getAtomPointVector(bsAtoms);
 ptsB = JU.Measure.transformPoints(ptsA, m4, points[0]);
 }if (bsAtoms != null && !isSpin && ptsB != null) {
-this.vwr.setAtomCoords(bsAtoms, 1145047050, ptsB);
+this.vwr.setAtomCoords(bsAtoms, 1145047049, ptsB);
 } else {
 if (requiresThread && !this.useThreads()) return;
-if (this.vwr.rotateAboutPointsInternal(this, points[0], points[1], rate, endDegrees, isSpin, bsAtoms, translation, ptsB, dihedralList, is4x4 ? m4 : null) && this.isJS && isSpin) throw  new JS.ScriptInterruption(this, "rotate", 1);
+if (this.vwr.rotateAboutPointsInternal(this, points[0], points[1], rate, endDegrees, isSpin, bsAtoms, translation, ptsB, dihedralList, is4x4 ? m4 : null, false) && this.isJS && isSpin) throw  new JS.ScriptInterruption(this, "rotate", 1);
 }}, "~B,~B");
 Clazz_defineMethod(c$, "cmdRestore", 
 function(){
@@ -7095,9 +7142,6 @@ if (this.slen > 1) {
 var saveName = this.optParameterAsString(2);
 var tok = this.tokAt(1);
 switch (tok) {
-case 1814695966:
-if (!this.chk) this.vwr.setModelCagePts(-1, null, null);
-return;
 case 1073742077:
 case 1073742132:
 case 1073742139:
@@ -7142,7 +7186,7 @@ if (this.chk) return;
 var script = this.vwr.stm.getSavedCoordinates(saveName);
 if (script == null) this.invArg();
 this.runScript(script);
-this.vwr.checkCoordinatesChanged();
+this.vwr.checkCoordinatesChanged(null);
 return;
 case 1073742140:
 if (!this.chk) this.vwr.stm.restoreSelection(saveName);
@@ -7532,7 +7576,7 @@ return;
 case 537022465:
 this.cmdSetEcho(0);
 return;
-case 536875009:
+case 536875059:
 this.cmdScale(2);
 return;
 case 1610612738:
@@ -7870,7 +7914,7 @@ this.setShapeProperty(31, propertyName == null ? "target" : propertyName, id);
 }}if (pt < this.slen) {
 if (isScale) {
 switch (this.tokAt(pt)) {
-case 536875009:
+case 536875059:
 case 4120:
 case 4:
 this.invArg();
@@ -7951,7 +7995,7 @@ pt++;
 case 1073742334:
 propertyName = "off";
 break;
-case 536875009:
+case 536875059:
 propertyName = "scale";
 propertyValue = Float.$valueOf(this.floatParameter(pt++));
 break;
@@ -8451,7 +8495,7 @@ switch (this.tokAt(1)) {
 case 1112152078:
 this.setIntProperty("vectorTrace", this.intParameterRange(2, 0, 20));
 return;
-case 536875009:
+case 536875059:
 if (!Float.isNaN(value = this.floatParameterRange(2, -100, 100))) this.setFloatProperty("vectorScale", value);
 return;
 case 64:
@@ -8481,7 +8525,7 @@ case 3:
 this.checkLength(2);
 period = this.floatParameter(1);
 break;
-case 536875009:
+case 536875059:
 if (!Float.isNaN(period = this.floatParameterRange(2, -100, 100))) this.setFloatProperty("vibrationScale", period);
 return;
 case 64:
@@ -8595,7 +8639,7 @@ if (this.isJS && floatSecondsTotal > 0 && this.vwr.g.waitForMoveTo) throw  new J
 }, "~B");
 Clazz_defineMethod(c$, "colorShape", 
 function(shapeType, index, isBackground){
-var isScale = (Math.abs(shapeType) == 536875009);
+var isScale = (Math.abs(shapeType) == 536875059);
 if (isScale) {
 shapeType = 31;
 } else if (shapeType < 0) {
@@ -9089,16 +9133,18 @@ case 1814695966:
 var uc = this.vwr.getCurrentUnitCell();
 if (uc == null) this.invArg();
 var pts = uc.getUnitCellVerticesNoOffset();
-var off = uc.getCartesianOffset();
-var pt =  new JU.P3();
-var bi =  new JU.BoxInfo();
+var center =  new JU.P3();
 for (var j = 0; j < 8; j++) {
-pt.add2(off, pts[j]);
-bi.addBoundBoxPoint(pt);
+center.add(pts[j]);
 }
-bi.setBbcage(1);
-r = bi.bbCorner0.distance(bi.bbCorner1) / 2;
+center.scale(0.125);
+r = 0;
+for (var j = 0; j < 8; j++) {
+var d = pts[j].distanceSquared(center);
+if (d > r) r = d;
+}
 if (r == 0) this.invArg();
+r = Math.sqrt(r);
 break;
 case 1073742330:
 var bbox = this.getObjectBoundingBox(this.objectNameParameter(ptCenter + 1));
@@ -9145,31 +9191,38 @@ return zoom;
 }, "~N,~N,JU.BS,~N");
 Clazz_defineMethod(c$, "setElementColor", 
 function(str, argb){
+var n = -1;
+var isSym = (str.charAt(0) == '_');
+out : while (true) {
+if (isSym) {
+str = str.substring(1);
+for (var i = JU.Elements.elementNumberMax; --i >= 0; ) {
+if (str.equalsIgnoreCase(JU.Elements.elementSymbolFromNumber(i))) {
+n = i;
+break out;
+}}
+for (var i = JU.Elements.altElementMax; --i >= 4; ) {
+if (str.equalsIgnoreCase(JU.Elements.altElementSymbolFromIndex(i)) || str.equalsIgnoreCase(JU.Elements.altIsotopeSymbolFromIndex(i))) {
+n = JU.Elements.altElementNumberFromIndex(i);
+break out;
+}}
+} else {
 for (var i = JU.Elements.elementNumberMax; --i >= 0; ) {
 if (str.equalsIgnoreCase(JU.Elements.elementNameFromNumber(i))) {
-if (!this.chk) this.vwr.setElementArgb(i, argb);
-return true;
+n = i;
+break out;
 }}
 for (var i = JU.Elements.altElementMax; --i >= 0; ) {
 if (str.equalsIgnoreCase(JU.Elements.altElementNameFromIndex(i))) {
-if (!this.chk) this.vwr.setElementArgb(JU.Elements.altElementNumberFromIndex(i), argb);
-return true;
+n = JU.Elements.altElementNumberFromIndex(i);
+break out;
 }}
-if (str.charAt(0) != '_') return false;
-for (var i = JU.Elements.elementNumberMax; --i >= 0; ) {
-if (str.equalsIgnoreCase("_" + JU.Elements.elementSymbolFromNumber(i))) {
-if (!this.chk) this.vwr.setElementArgb(i, argb);
-return true;
-}}
-for (var i = JU.Elements.altElementMax; --i >= 4; ) {
-if (str.equalsIgnoreCase("_" + JU.Elements.altElementSymbolFromIndex(i))) {
-if (!this.chk) this.vwr.setElementArgb(JU.Elements.altElementNumberFromIndex(i), argb);
-return true;
-}if (str.equalsIgnoreCase("_" + JU.Elements.altIsotopeSymbolFromIndex(i))) {
-if (!this.chk) this.vwr.setElementArgb(JU.Elements.altElementNumberFromIndex(i), argb);
-return true;
-}}
+}break;
+}
+if (this.chk || n < 0) {
 return false;
+}this.vwr.setElementArgb(n, argb);
+return true;
 }, "~S,~N");
 Clazz_defineMethod(c$, "setMeshDisplayProperty", 
 function(shape, i, tok){
@@ -9189,6 +9242,7 @@ return true;
 case 0:
 case 12291:
 case 1073742335:
+case 1073742072:
 case 1073742334:
 case 12294:
 case 2097194:
@@ -9306,6 +9360,7 @@ if (isWild) {
 switch (this.tokAt(i + 1)) {
 case 0:
 case 1073742335:
+case 1073742072:
 case 1073742334:
 case 2097192:
 case 2097194:
@@ -9446,7 +9501,7 @@ c$.commandHistoryLevelMax = 0;
 c$.contextDepthMax = 100;
 c$.scriptReportingLevel = 0;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 19:27:37 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["JS.ScriptParam"], "JS.ScriptExpr", ["java.util.Hashtable", "JU.BS", "$.CU", "$.Lst", "$.Measure", "$.P3", "$.PT", "$.SB", "J.api.Interface", "JM.AtomCollection", "$.BondSet", "$.Group", "$.ModelSet", "JS.SV", "$.ScriptMathProcessor", "$.T", "JU.BSUtil", "$.Edge", "$.Elements", "$.Escape"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -10018,7 +10073,7 @@ case 2097194:
 rpn.addXBs(JU.BSUtil.copy(this.vwr.slm.getHiddenSet()));
 break;
 case 12293:
-rpn.addXBs(this.vwr.getMotionFixedAtoms(-1));
+rpn.addXBs(this.vwr.getMotionFixedAtoms(null, null));
 break;
 case 2097192:
 rpn.addXBs(JU.BSUtil.copyInvert(this.vwr.slm.getHiddenSet(), ac));
@@ -10291,7 +10346,7 @@ i++;
 if (this.tokAt(i++) != 268436482) this.invArg();
 var v = this.parameterExpression(i, 0, null, false, true, -1, false, null, null, false);
 if (v.size() == 0) this.invArg();
-ht.put(key, v.get(0));
+ht.put(key, JS.SV.copySafely(v.get(0)));
 i = this.iToken;
 if (this.tokAt(i) != 268436992) break;
 }
@@ -10564,9 +10619,9 @@ var isString = false;
 switch (tok) {
 case 1275068446:
 return (this.vwr.getModelSetAuxiliaryInfoForAtoms(bs)).get("models");
-case 1145047050:
+case 1145047049:
 case 1145047055:
-case 1145047051:
+case 1145047050:
 case 1145047053:
 case 1145045008:
 case 1145045006:
@@ -10584,6 +10639,9 @@ break;
 case 1086324754:
 isInt = (tokenValue === "color");
 isString = !isInt;
+break;
+case 1145045003:
+isString = true;
 break;
 default:
 isInt = JS.T.tokAttr(tok, 1094713344) && !JS.T.tokAttr(tok, 1111490560);
@@ -10752,7 +10810,7 @@ case 1094713349:
 this.errorStr(45, JS.T.nameOf(tok));
 break;
 case 1086324754:
-iv = (atom.getWyckoffPosition().charAt(0)).charCodeAt(0);
+iv = (atom.getWyckoffPosition(false).charAt(0)).charCodeAt(0);
 switch (iv) {
 case 63:
 iv = 0;
@@ -10861,7 +10919,7 @@ default:
 sum += fv;
 }
 break;
-case 1145047050:
+case 1145047049:
 switch (minmaxtype) {
 case 1073742327:
 pt.ave(bond.atom1, bond.atom2);
@@ -11039,7 +11097,7 @@ var v = this.parameterExpression(pt, ptMax, key, true, true, -1, false, null, nu
 nv = v.size();
 if (nv == 0) this.invArg();
 if (this.chk || v.get(0).tok == 0) return null;
-var tv = JS.SV.selectItemVar(JS.SV.newS("").setv(v.get(nv - 1)));
+var tv = JS.SV.selectItemVar(JS.SV.copySafely(v.get(nv - 1)));
 if (nv > 1) {
 var sel = (nv > 2 ? v.get(1) : null);
 t = v.get(0);
@@ -11148,8 +11206,8 @@ if (tokenValue.tok == 7) {
 sv = (tokenValue).getList();
 if ((nValues = sv.size()) == 0) return;
 }switch (tok) {
+case 1145047049:
 case 1145047050:
-case 1145047051:
 case 1145047053:
 case 1145047055:
 switch (tokenValue.tok) {
@@ -11386,7 +11444,7 @@ var f = (this.privateFuncs == null ? null : this.privateFuncs.get(sf));
 return (f == null ? this.vwr.getFunction(sf) : f);
 }, "~S");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(null, "JS.ScriptFlowContext", ["JS.ScriptCompiler"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -11466,7 +11524,7 @@ function($function){
 this.$function = $function;
 }, "JS.ScriptFunction");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["J.api.JmolScriptFunction", "java.util.Hashtable", "JU.Lst"], "JS.ScriptFunction", ["JU.AU", "$.SB", "JS.SV", "$.T"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -11599,7 +11657,7 @@ function(){
 return this.tok;
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["JS.ScriptException"], "JS.ScriptInterruption", null, function(){
 var c$ = Clazz_declareType(JS, "ScriptInterruption", JS.ScriptException);
@@ -11609,7 +11667,7 @@ Clazz_superConstructor(this, JS.ScriptInterruption, [eval, why, "!", millis == -
 if (why.equals("delay")) eval.delayScript(millis);
 }, "JS.ScriptEval,~S,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["J.api.JmolScriptManager", "JU.Lst"], "JS.ScriptManager", ["java.util.Hashtable", "JU.AU", "$.PT", "$.Rdr", "$.SB", "J.api.Interface", "J.i18n.GT", "JS.ScriptQueueThread", "JU.Elements", "$.Logger", "JV.FileManager"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -11787,14 +11845,14 @@ this.startScriptQueue(true);
 }}});
 Clazz_overrideMethod(c$, "evalFile", 
 function(strFilename){
-var ptWait = strFilename.indexOf(" -noqueue");
-if (ptWait >= 0) {
-return this.evalStringWaitStatusQueued("String", "script " + JU.PT.esc(strFilename.substring(0, ptWait)), "", false, false);
-}return this.evalFileArgs(strFilename, null);
+return this.evalFileArgs(strFilename, null);
 }, "~S");
 Clazz_overrideMethod(c$, "evalFileArgs", 
 function(strFilename, args){
-return this.addScript("script " + JU.PT.esc(strFilename) + (args == null ? "" : "(" + args + ")"), null, false);
+var ptWait = strFilename.indexOf(" -noqueue");
+if (ptWait >= 0) {
+return this.evalStringWaitStatusQueued("String", "script " + JU.PT.esc(strFilename.substring(0, ptWait)), "", false, false);
+}return this.addScript("script " + JU.PT.esc(strFilename) + (args == null ? "" : "(" + args + ")"), null, false);
 }, "~S,~S");
 Clazz_overrideMethod(c$, "evalStringWaitStatusQueued", 
 function(returnType, strScript, statusList, isQuiet, isQueued){
@@ -11845,7 +11903,7 @@ function(strScript, isInsert){
 var str = strScript;
 var pt = str.indexOf("; ## GUI ##");
 if (pt >= 0) str = str.substring(0, pt);
- else if ((pt = str.indexOf("\u0001##")) >= 0) str = str.substring(0, pt);
+if ((pt = str.indexOf("\u0001##")) >= 0) str = str.substring(0, pt);
 if (this.checkResume(str)) return "script processing resumed";
 if (this.checkStepping(str)) return "script processing stepped";
 if (this.checkHalt(str, isInsert)) return "script execution halted";
@@ -12010,8 +12068,7 @@ cmd = JU.PT.rep(cmd, "%ALLOWCARTOONS", "" + pdbCartoons);
 if (cmd.toLowerCase().startsWith("zap") && (isCached || isAppend)) cmd = cmd.substring(3);
 if (isAppend) {
 cmd = JU.PT.rep(cmd, "load SYNC", "load append");
-}System.out.println("###\n" + cmd + "\n###");
-return;
+}return;
 }}if (cmd == null && !noScript && this.vwr.scriptEditorVisible) this.vwr.showEditor( Clazz_newArray(-1, [fname, this.vwr.getFileAsString3(fname, true, null)]));
  else cmd = (cmd == null ? "script " : cmd) + JU.PT.esc(fname);
 } finally {
@@ -12075,7 +12132,7 @@ vwr.stateScriptVersionInt = 2147483647;
 }, "JV.Viewer,~S");
 Clazz_overrideMethod(c$, "addHydrogensInline", 
 function(bsAtoms, vConnections, pts, htParams){
-var iatom = bsAtoms.nextSetBit(0);
+var iatom = (bsAtoms == null ? -1 : bsAtoms.nextSetBit(0));
 if (htParams == null) htParams =  new java.util.Hashtable();
 var modelIndex = (iatom < 0 ? this.vwr.am.cmi : this.vwr.ms.at[iatom].mi);
 if (modelIndex < 0) modelIndex = this.vwr.ms.mc - 1;
@@ -12096,10 +12153,15 @@ if (a != null) sbConnect.append(";  connect 0 100 ").append("({" + (atomIndex) +
 }
 var sb =  new JU.SB();
 sb.appendI(pts.length).append("\n").append("Viewer.AddHydrogens").append("#noautobond").append("\n");
-for (var i = 0; i < pts.length; i++) sb.append("H ").appendF(pts[i].x).append(" ").appendF(pts[i].y).append(" ").appendF(pts[i].z).append(" - - - - ").appendI(++atomno).appendC('\n');
+var sym = htParams.get("element");
+sym = (sym == null ? "H" : sym) + " ";
+for (var i = 0; i < pts.length; i++) sb.append(sym).appendF(pts[i].x).append(" ").appendF(pts[i].y).append(" ").appendF(pts[i].z).append(" - - - - ").appendI(++atomno).appendC('\n');
 
+var wasRefreshing = this.vwr.getBoolean(603979900);
+this.vwr.setBooleanProperty("refreshing", false);
 this.vwr.openStringInlineParamsAppend(sb.toString(), htParams, true);
 if (sbConnect.length() > 0) this.vwr.runScript(sbConnect.toString());
+this.vwr.setBooleanProperty("refreshing", wasRefreshing);
 var bsB = this.vwr.getModelUndeletedAtomsBitSet(modelIndex);
 bsB.andNot(bsA);
 this.vwr.g.appendNew = wasAppendNew;
@@ -12126,7 +12188,7 @@ this.evalStringWaitParamsStatusQueued(returnType, script, params, statusList, is
 }, "JU.Lst");
 c$.prevCovalentVersion = 0;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(null, "JS.ScriptMathProcessor", ["java.util.Hashtable", "JU.A4", "$.AU", "$.BS", "$.CU", "$.DF", "$.Lst", "$.M3", "$.M4", "$.P3", "$.P4", "$.PT", "$.Quat", "$.V3", "JM.BondSet", "JS.SV", "$.T", "JU.BSUtil", "$.Escape", "$.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -12546,13 +12608,22 @@ break;
 case 268438528:
 case 268438016:
 if (!this.wasSyntaxCheck && this.xPt < 0) return false;
-if (!this.wasSyntaxCheck && this.xStack[this.xPt].tok != 10 && this.xStack[this.xPt].tok != 7) {
+if (!this.wasSyntaxCheck) {
+switch (this.xStack[this.xPt].tok) {
+case 10:
+case 7:
+break;
+case 11:
+if (op.tok == 268438016) break;
+default:
 var tf = this.getX().asBoolean();
 this.addX(JS.SV.getBoolean(tf));
 if (tf == (op.tok == 268438016)) {
 this.chk = true;
 op = (op.tok == 268438016 ? JS.T.tokenOrTRUE : JS.T.tokenAndFALSE);
-}}this.wasX = false;
+}break;
+}
+}this.wasX = false;
 break;
 case 268441602:
 case 268441601:
@@ -12721,10 +12792,10 @@ case 268441602:
 x1 = x2;
 if (!this.chk) {
 if (this.ptx < this.pto) {
-x1 = JS.SV.newS("").setv(x2);
+x1 = JS.SV.copySafely(x2);
 }if (!x2.increment(op.tok == 268441602 ? 1 : -1)) return false;
 if (this.ptx > this.pto) {
-x1 = JS.SV.newS("").setv(x2);
+x1 = JS.SV.copySafely(x2);
 }}this.wasX = false;
 this.putX(x1);
 this.wasX = true;
@@ -12905,7 +12976,10 @@ if (bs == null) break;
 return this.addXBs(Clazz_instanceOf(x1.value,"JM.BondSet") ? JM.BondSet.newBS(bs) : bs);
 case 7:
 return this.addX(JS.SV.concatList(x1, x2, false));
-}
+case 11:
+if (x2.tok == 8) {
+return this.addXM4(JU.M4.newMV(x1.value, x2.value));
+}}
 return this.addXBool(x1.asBoolean() || x2.asBoolean());
 case 268438017:
 if (x1.tok == 10 && x2.tok == 10) {
@@ -13285,7 +13359,7 @@ if (bs.isEmpty() || Clazz_instanceOf(bs,"JM.BondSet")) break;
 if (bsRestrict != null) {
 bs = JU.BSUtil.copy(bs);
 bs.and(bsRestrict);
-}var o = (bs.isEmpty() ? null : this.eval.getBitsetProperty(bs, null, 1145047050, null, null, x.value, null, false, 2147483647, false));
+}var o = (bs.isEmpty() ? null : this.eval.getBitsetProperty(bs, null, 1145047049, null, null, x.value, null, false, 2147483647, false));
 return o;
 case 4:
 pt = JU.Escape.uP(JS.SV.sValue(x));
@@ -13395,17 +13469,19 @@ return this.addXFloat((x2.value).y);
 case 1111492611:
 case 1111492631:
 return this.addXFloat((x2.value).z);
-case 1145047050:
+case 1145047049:
 var pt = JU.P3.newP(x2.value);
 this.vwr.toCartesian(pt, false);
 return this.addXPt(pt);
 case 1111492612:
 case 1111492613:
 case 1111492614:
-case 1145047051:
+case 1145047050:
 var ptf = JU.P3.newP(x2.value);
 this.vwr.toFractional(ptf, false);
-return (op.intValue == 1145047051 ? this.addXPt(ptf) : this.addXFloat(op.intValue == 1111492612 ? ptf.x : op.intValue == 1111492613 ? ptf.y : ptf.z));
+return (op.intValue == 1145047050 ? this.addXPt(ptf) : this.addXFloat(op.intValue == 1111492612 ? ptf.x : op.intValue == 1111492613 ? ptf.y : ptf.z));
+case 1145045003:
+return this.addXStr(this.vwr.getSymStatic().staticToRationalXYZ(JU.P3.newP(x2.value), " "));
 case 1111492615:
 case 1111492616:
 case 1111492617:
@@ -13449,7 +13525,7 @@ return (isAtoms ? this.addXObj(val) : this.addXBs(JM.BondSet.newBS(val)));
 return false;
 }, "JS.T,JS.SV");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["JS.ScriptError"], "JS.ScriptParam", ["java.util.Hashtable", "JU.BS", "$.CU", "$.Lst", "$.Measure", "$.P3", "$.P4", "$.PT", "$.Quat", "$.SB", "$.V3", "JM.TickInfo", "JS.SV", "$.T", "JU.BSUtil", "$.Edge", "$.Escape", "$.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -13639,17 +13715,7 @@ var center = null;
 if (this.checkToken(i)) {
 switch (this.getToken(i).tok) {
 case 1814695966:
-center =  new JU.P3();
-var uc = this.vwr.getCurrentUnitCell();
-if (uc != null) {
-var pts = uc.getUnitCellVerticesNoOffset();
-var off = uc.getCartesianOffset();
-for (var j = 0; j < 8; j++) {
-center.add(pts[j]);
-center.add(off);
-}
-}center.scale(0.125);
-break;
+return this.getUnitCellCenter();
 case 1073742330:
 var id = this.objectNameParameter(++i);
 var index = -2147483648;
@@ -13673,6 +13739,20 @@ break;
 }if (center == null) this.error(11);
 return center;
 }, "~N,~N,~A");
+Clazz_defineMethod(c$, "getUnitCellCenter", 
+function(){
+var center =  new JU.P3();
+var uc = this.vwr.getCurrentUnitCell();
+if (uc != null) {
+var pts = uc.getUnitCellVerticesNoOffset();
+var off = uc.getCartesianOffset();
+for (var j = 0; j < 8; j++) {
+center.add(pts[j]);
+center.add(off);
+}
+}center.scale(0.125);
+return center;
+});
 Clazz_defineMethod(c$, "planeParameter", 
 function(i, isBest){
 var vTemp =  new JU.V3();
@@ -14452,7 +14532,7 @@ this.invArg();
 }
 if (this.tokAt(++index) == 1073742333) {
 tickInfo =  new JM.TickInfo(null);
-tickInfo.type = str;
+tickInfo.type = str.charAt(0);
 this.iToken = index;
 return tickInfo;
 }tickInfo =  new JM.TickInfo(this.getPointOrPlane(index, 19));
@@ -14460,10 +14540,10 @@ if (this.coordinatesAreFractional || this.tokAt(this.iToken + 1) == 1814695966) 
 tickInfo.scale = JU.P3.new3(NaN, NaN, NaN);
 allowScale = false;
 }if (this.tokAt(this.iToken + 1) == 1814695966) this.iToken++;
-tickInfo.type = str;
+tickInfo.type = str.charAt(0);
 if (this.tokAt(this.iToken + 1) == 1287653388) tickInfo.tickLabelFormats = this.stringParameterSet(this.iToken + 2);
 if (!allowScale) return tickInfo;
-if (this.tokAt(this.iToken + 1) == 536875009) {
+if (this.tokAt(this.iToken + 1) == 536875059) {
 if (this.isFloatParameter(this.iToken + 2)) {
 var f = this.floatParameter(this.iToken + 2);
 tickInfo.scale = JU.P3.new3(f, f, f);
@@ -14589,7 +14669,7 @@ return (--n < 0 || n >= params.length ? null : (params[n] = JS.SV.getVariable(pa
 return (n == -2147483648 ? v : --n < 0 || n >= list.size() ? JS.SV.newV(7,  new JU.Lst()) : list.get(n));
 }, "~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 (function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -14602,7 +14682,7 @@ this.processName = name;
 this.context = context;
 }, "~S,JS.ScriptContext");
 })();
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(null, "JS.ScriptProcessRunnable", ["JU.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -14646,7 +14726,7 @@ this.processLock.notifyAll();
 }}
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(["J.thread.JmolThread"], "JS.ScriptQueueThread", ["JU.Logger"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -14695,7 +14775,7 @@ return false;
 }return true;
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JS");
 Clazz_load(null, "JS.ScriptTokenParser", ["JU.Lst", "$.P3", "$.PT", "J.i18n.GT", "JS.T", "JU.Edge", "$.Logger", "$.SimpleUnitCell"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -15790,7 +15870,7 @@ this.errorMessageUntranslated = strUntranslated;
 return false;
 }, "~S,~S");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JV");
 Clazz_load(["JV.JmolStateCreator", "java.util.Hashtable"], "JV.StateCreator", ["java.util.Arrays", "$.Date", "JU.BS", "$.Lst", "$.P3", "$.PT", "$.SB", "J.c.PAL", "$.STR", "$.VDW", "JM.AtomCollection", "$.Bond", "$.BondSet", "JS.T", "J.shape.Shape", "JU.BSUtil", "$.C", "$.ColorEncoder", "$.Edge", "$.Escape", "$.Font", "$.Logger", "JV.GlobalSettings", "$.JC", "$.StateManager", "$.Viewer"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -15801,11 +15881,13 @@ this.vwr = null;
 this.temp = null;
 this.temp2 = null;
 this.temp3 = null;
+this.temp4 = null;
 Clazz_instantialize(this, arguments);}, JV, "StateCreator", JV.JmolStateCreator);
 Clazz_prepareFields (c$, function(){
 this.temp =  new java.util.Hashtable();
 this.temp2 =  new java.util.Hashtable();
 this.temp3 =  new java.util.Hashtable();
+this.temp4 =  new java.util.Hashtable();
 });
 Clazz_makeConstructor(c$, 
 function(){
@@ -15979,7 +16061,7 @@ sb.append("  unitcell ").append(JU.Escape.eAP(m.simpleCage.getUnitCellVectors())
 this.getShapeStatePriv(sb, isAll, 33);
 }if (sb.length() > 0) commands.append("  frame " + ms.getModelNumberDotted(i) + ";\n").appendSB(sb);
 }
-commands.append("  set fontScaling " + this.vwr.getBoolean(603979845) + ";\n");
+commands.append("  set fontScaling " + this.vwr.getBoolean(603979847) + ";\n");
 }if (sfunc != null) commands.append("\n}\n\n");
 return commands.toString();
 }, "JU.SB,~B,~B");
@@ -16335,7 +16417,7 @@ sb.append(";\n");
 }, "~S,JU.SB,JM.TickInfo");
 c$.addTickInfo = Clazz_defineMethod(c$, "addTickInfo", 
 function(sb, tickInfo, addFirst){
-sb.append(" ticks ").append(tickInfo.type).append(" ").append(JU.Escape.eP(tickInfo.ticks));
+sb.append(" ticks ").appendC(tickInfo.type).append(" ").append(JU.Escape.eP(tickInfo.ticks));
 var isUnitCell = (tickInfo.scale != null && Float.isNaN(tickInfo.scale.x));
 if (isUnitCell) sb.append(" UNITCELL");
 if (tickInfo.tickLabelFormats != null) sb.append(" format ").append(JU.Escape.eAS(tickInfo.tickLabelFormats, false));
@@ -16493,9 +16575,11 @@ var es = shape;
 var sb =  new JU.SB();
 sb.append("\n  set echo off;set echo \"%SCALE\" off;\n");
 this.getEchoState(sb, es.scaleObject);
+var haveElementKey = false;
 for (var t, $t = es.objects.values().iterator (); $t.hasNext()&& ((t = $t.next ()) || true);) {
-this.getEchoState(sb, t);
+haveElementKey = new Boolean (haveElementKey | this.getEchoState(sb, t)).valueOf();
 }
+if (haveElementKey) sb.append("  modelkit OFF;//to check for element keys\n");
 s = sb.toString();
 break;
 case 8:
@@ -16520,7 +16604,10 @@ case 5:
 var l = shape;
 if (!l.isActive || l.bsSizeSet == null) return "";
 this.clearTemp();
+var bs = this.vwr.getAllAtoms();
+var isNeg = false;
 for (var i = l.bsSizeSet.nextSetBit(0); i >= 0; i = l.bsSizeSet.nextSetBit(i + 1)) {
+if (!bs.get(i)) continue;
 var t = l.getLabel(i);
 var cmd = "label ";
 if (t == null) {
@@ -16544,9 +16631,16 @@ if ((offsetFull & 32) != 0) JU.BSUtil.setMapBitSet(this.temp2, i, i, "set labelF
  else if ((offsetFull & 16) != 0) JU.BSUtil.setMapBitSet(this.temp2, i, i, "set labelGroup");
 if (align.length > 0) JU.BSUtil.setMapBitSet(this.temp3, i, i, "set labelAlignment " + align);
 }if (l.mads != null && l.mads[i] < 0) JU.BSUtil.setMapBitSet(this.temp2, i, i, "set toggleLabel");
-if (l.bsFontSet != null && l.bsFontSet.get(i)) JU.BSUtil.setMapBitSet(this.temp2, i, i, J.shape.Shape.getFontCommand("label", JU.Font.getFont3D(l.fids[i])));
-}
-s = this.getCommands(this.temp, this.temp2, "select") + this.getCommands(null, this.temp3, "select");
+if (l.bsFontSet != null && l.bsFontSet.get(i)) {
+var f = JU.Font.getFont3D(l.fids[i]);
+if (f.fontSizeAngstroms > 0) isNeg = true;
+JU.BSUtil.setMapBitSet(this.temp4, i, i, J.shape.Shape.getFontCommand("label", f));
+}}
+var sf = this.getCommands(null, this.temp4, "select");
+if (isNeg) {
+sf = "  try{\n" + sf + "  }catch{}\n";
+}s = this.getCommands(this.temp, this.temp2, "select") + sf + this.getCommands(null, this.temp3, "select");
+this.temp4.clear();
 this.temp3.clear();
 this.clearTemp();
 break;
@@ -16613,8 +16707,8 @@ return s;
 Clazz_defineMethod(c$, "getEchoState", 
 function(sb, t){
 var isScale = (t != null && t.barPixels > 0);
-var text = (t == null ? null : isScale ? t.textUnformatted : t.text);
-if (text == null || !t.isEcho || t.target.equals("error")) return;
+var text = (t == null ? null : isScale ? t.textUnformatted : t.getStateText());
+if (text == null || !t.isEcho || t.target.equals("error")) return false;
 var isImage = (t.image != null);
 var strOff = null;
 var echoCmd = "set echo ID " + JU.PT.esc(t.target);
@@ -16658,7 +16752,8 @@ sb.append(JU.C.getHexCode(t.bgcolix));
 if (t.hidden) {
 if (isScale) sb.append("  set echo \"%SCALE\" hidden;\n");
  else sb.append("  set echo ID ").append(JU.PT.esc(t.target)).append(" hidden;\n");
-}}, "JU.SB,JM.Text");
+}return (t.target.startsWith("_!_elkey_"));
+}, "JU.SB,JM.Text");
 Clazz_overrideMethod(c$, "getAllSettings", 
 function(prefix){
 var g = this.vwr.g;
@@ -16852,7 +16947,7 @@ return 0;
 Clazz_overrideMethod(c$, "undoMoveActionClear", 
 function(taintedAtom, type, clearRedo){
 if (!this.vwr.g.preserveState) return;
-var modelIndex = (taintedAtom >= 0 ? this.vwr.ms.at[taintedAtom].mi : this.vwr.ms.mc - 1);
+var modelIndex = (taintedAtom >= 0 && this.vwr.ms.at[taintedAtom] != null ? this.vwr.ms.at[taintedAtom].mi : this.vwr.ms.mc - 1);
 switch (type) {
 case 4140:
 case 4165:
@@ -16914,12 +17009,12 @@ this.actionStates.removeItemAt(99);
 this.undoWorking = !clearRedo;
 }, "~N,~N,~B");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("JV");
 (function(){
 var c$ = Clazz_declareType(JV, "JmolStateCreator", null);
 })();
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 })(Clazz
 ,Clazz.getClassName
 ,Clazz.newLongArray

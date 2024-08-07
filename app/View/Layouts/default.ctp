@@ -13,7 +13,7 @@
     echo $this->Html->css('sticky-footer-navbar');
     echo $this->Html->css('shadows');
     echo $this->Html->css('signin');
-    echo $this->Html->script('jquery');
+    echo $this->Html->script('jquery.min');
     echo $this->Html->script('jquery-ui');
     echo $this->Html->script('jqcake');
     echo $this->Html->script('bootstrap.min');

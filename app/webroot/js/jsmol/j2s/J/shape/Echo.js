@@ -9,7 +9,47 @@ this.setProperty("target", "top", null);
 });
 Clazz.overrideMethod(c$, "setProperty", 
 function(propertyName, value, bs){
-if ("thisID" === propertyName) {
+if ("target" === propertyName) {
+if ("%SCALE".equals(value)) {
+this.currentObject = this.scaleObject;
+this.thisID = "%SCALE";
+if (this.currentObject != null) return;
+}var target = (value).intern().toLowerCase();
+if (JU.PT.isWild(target)) {
+propertyName = "thisID";
+} else if (target !== "none" && target !== "all") {
+this.isAll = false;
+var text = (this.thisID === "%SCALE" ? this.scaleObject : this.objects.get(target));
+if (text == null) {
+var valign = 3;
+var halign = 4;
+if ("top" === target) {
+valign = 0;
+halign = 8;
+} else if ("middle" === target) {
+valign = 2;
+halign = 8;
+} else if ("bottom" === target) {
+valign = 1;
+} else if ("error" === target) {
+valign = 0;
+}text = JM.Text.newEcho(this.vwr, this.vwr.gdata.getFont3DFS("Serif", 20), target, 10, valign, halign, 0);
+text.adjustForWindow = true;
+if (this.thisID === "%SCALE") {
+this.scaleObject = text;
+} else {
+this.objects.put(target, text);
+if (target.startsWith("_!_")) {
+text.thisModelOnly = true;
+}}if (this.currentFont != null) text.setFont(this.currentFont, true);
+if (this.currentColor != null) text.colix = JU.C.getColixO(this.currentColor);
+if (this.currentBgColor != null) text.bgcolix = JU.C.getColixO(this.currentBgColor);
+if (this.currentTranslucentLevel != 0) text.setTranslucent(this.currentTranslucentLevel, false);
+if (this.currentBgTranslucentLevel != 0) text.setTranslucent(this.currentBgTranslucentLevel, true);
+}this.currentObject = text;
+if (this.thisID !== "%SCALE") this.thisID = null;
+return;
+}}if ("thisID" === propertyName) {
 if (value == null) {
 this.currentObject = null;
 this.thisID = null;
@@ -35,7 +75,7 @@ this.currentFont = f;
 this.currentColor = c;
 return;
 }}if ("off" === propertyName) {
-if (this.currentObject === this.scaleObject) {
+if (this.currentObject != null && this.currentObject === this.scaleObject) {
 this.currentObject = this.scaleObject = null;
 return;
 }}if ("text" === propertyName) {
@@ -45,40 +85,6 @@ this.setPropTS("text", value, null);
 this.scaleObject = this.currentObject;
 if (this.scaleObject != null && this.objects.get(this.scaleObject.target) === this.scaleObject) this.setPropTS("delete", this.scaleObject, null);
 this.currentObject = this.scaleObject;
-return;
-}}if ("target" === propertyName) {
-if ("%SCALE".equals(value)) {
-this.currentObject = this.scaleObject;
-this.thisID = "%SCALE";
-if (this.currentObject != null) return;
-}var target = (value).intern().toLowerCase();
-if (target !== "none" && target !== "all") {
-this.isAll = false;
-var text = (this.thisID === "%SCALE" ? this.scaleObject : this.objects.get(target));
-if (text == null) {
-var valign = 3;
-var halign = 4;
-if ("top" === target) {
-valign = 0;
-halign = 8;
-} else if ("middle" === target) {
-valign = 2;
-halign = 8;
-} else if ("bottom" === target) {
-valign = 1;
-} else if ("error" === target) {
-valign = 0;
-}text = JM.Text.newEcho(this.vwr, this.vwr.gdata.getFont3DFS("Serif", 20), target, 10, valign, halign, 0);
-text.adjustForWindow = true;
-if (this.thisID === "%SCALE") this.scaleObject = text;
- else this.objects.put(target, text);
-if (this.currentFont != null) text.setFont(this.currentFont, true);
-if (this.currentColor != null) text.colix = JU.C.getColixO(this.currentColor);
-if (this.currentBgColor != null) text.bgcolix = JU.C.getColixO(this.currentBgColor);
-if (this.currentTranslucentLevel != 0) text.setTranslucent(this.currentTranslucentLevel, false);
-if (this.currentBgTranslucentLevel != 0) text.setTranslucent(this.currentBgTranslucentLevel, true);
-}this.currentObject = text;
-if (this.thisID !== "%SCALE") this.thisID = null;
 return;
 }}if ("scalereference" === propertyName) {
 if (this.currentObject != null) {
@@ -92,9 +98,10 @@ t.pointerPt = (value == null ? null : value);
 t.pointer = (value == null ? 0 : 1);
 }return;
 }if ("xyz" === propertyName) {
-if (this.currentObject != null && this.vwr.getBoolean(603979845)) {
+if (this.currentObject != null) {
+if (this.vwr.getBoolean(603979847)) {
 this.currentObject.setScalePixelsPerMicron(this.vwr.getScalePixelsPerAngstrom(false) * 10000);
-this.currentObject.setXYZ(value, true);
+}this.currentObject.setXYZ(value, true);
 }}if ("scale" === propertyName) {
 if (this.currentObject != null) {
 (this.currentObject).setScale((value).floatValue());
@@ -207,4 +214,4 @@ lst2.addLast(lst);
 return lst2;
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

@@ -695,4 +695,4 @@ if (sb.length() == 0) sb.append("Line 1\nLine 2\n");
 }, "J.jvxl.data.VolumeData,JU.SB");
 c$.haveXMLUtil = false;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

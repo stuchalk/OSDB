@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>JSmol/Jmol IUCr 2023 Workshop Demo</title>
+<script type="text/javascript" src="../JSmol.min.js"></script>
+<script type="text/javascript" src="code.js"></script>
+
+<script type="text/javascript">
+	Jmol._isAsync = false;
+
+	// last update 2/18/2014 2:10:06 PM
+
+	var jmolApplet0; // set up in HTML table, below
+
+	// logic is set by indicating order of USE -- default is HTML5 for this test page, though
+
+	var s = document.location.search;
+
+	// Developers: The _debugCode flag is checked in j2s/core/core.z.js, 
+	// and, if TRUE, skips loading the core methods, forcing those
+	// to be read from their individual directories. Set this
+	// true if you want to do some code debugging by inserting
+	// System.out.println, document.title, or alert commands
+	// anywhere in the Java or Jmol code.
+
+	Jmol._debugCode = (s.indexOf("debugcode") >= 0);
+
+	jmol_isReady = function(applet) {
+		document.title = (applet._id + " - Jmol " + Jmol.___JmolVersion)
+		Jmol._getElement(applet, "appletdiv").style.border = "1px solid blue"
+
+	$("#demodiv").html(Demo.sections.join(""))
+	$("#cmddiv").html(Jmol.jmolCommandInput(jmolApplet0));
+
+	}
+
+	var Info = {
+		width : 600,
+		height : 600,
+		debug : false,
+		color : "0xFFFFFF",
+		addSelectionOptions : false,
+		use : "HTML5", // JAVA HTML5 WEBGL are all options
+		j2sPath : "../j2s", // this needs to point to where the j2s directory is.
+		jarPath : "../java",// this needs to point to where the java directory is.
+		jarFile : "JmolAppletSigned.jar",
+		isSigned : true,
+		script : "set zoomlarge false;set antialiasDisplay;load ../data/rabe.spt",
+		serverURL : "https://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
+		readyFunction : jmol_isReady,
+		disableJ2SLoadMonitor : true,
+		disableInitialConsole : true,
+		allowJavaScript : true
+	//defaultModel: "$dopamine",
+	//console: "none", // default will be jmolApplet0_infodiv, but you can designate another div here or "none"
+	}
+
+	$(document).ready(function() {
+		$("#appdiv").html(Jmol.getAppletHtml("jmolApplet0", Info))
+	})
+	var lastPrompt = 0;
+</script>
+</head>
+<body>
+	<table width=1100 cellpadding=10>
+		<tr>
+			<td colspan=2 style="font-size: 12pt"><b><a
+					href="http://jsmol.sourceforge.net">JSmol</a> is an
+					HTML5 version of <a
+					href="http://jmol.sourceforge.net">Jmol</a>.</b> 
+
+This page was written to accompany the article "Online tools for crystallographic symmetry handling and
+visualization". It demonstrates all of the Jmol scripting commands described in that paper. Drag the molecule around using the left mouse button. Scroll and click on 
+various links on the right, below. They are designed to be clicked sequentially from top to bottom, starting 
+at any link that is <b>in bold</b>. But you can try them in any order! Experiment!
+
+			</td>	
+		</tr>
+		<tr>
+			<td valign="top">
+				<div id="appdiv"></div> 
+
+			</td>
+			<td valign=top><div id=demodiv style="background:beige;width:600px;height:500px;overflow:auto">
+
+				</div>
+				<div id=cmddiv></div>
+				</td>
+		</tr>
+	</table>
+</body>
+
+
+</html>

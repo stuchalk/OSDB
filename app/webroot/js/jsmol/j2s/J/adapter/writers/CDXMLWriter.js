@@ -501,4 +501,4 @@ return null;
 }, "JV.Viewer,~S,~S");
 c$.cdxAttributes =  Clazz.newArray(-1, ["HashSpacing", "2.50", "MarginWidth", "1.60", "LineWidth", "0.60", "BoldWidth", "2", "BondLength", "14.40", "BondSpacing", "18"]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

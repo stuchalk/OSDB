@@ -8,11 +8,13 @@ this.vwr = null;
 this.temp = null;
 this.temp2 = null;
 this.temp3 = null;
+this.temp4 = null;
 Clazz.instantialize(this, arguments);}, JV, "StateCreator", JV.JmolStateCreator);
 Clazz.prepareFields (c$, function(){
 this.temp =  new java.util.Hashtable();
 this.temp2 =  new java.util.Hashtable();
 this.temp3 =  new java.util.Hashtable();
+this.temp4 =  new java.util.Hashtable();
 });
 Clazz.makeConstructor(c$, 
 function(){
@@ -186,7 +188,7 @@ sb.append("  unitcell ").append(JU.Escape.eAP(m.simpleCage.getUnitCellVectors())
 this.getShapeStatePriv(sb, isAll, 33);
 }if (sb.length() > 0) commands.append("  frame " + ms.getModelNumberDotted(i) + ";\n").appendSB(sb);
 }
-commands.append("  set fontScaling " + this.vwr.getBoolean(603979845) + ";\n");
+commands.append("  set fontScaling " + this.vwr.getBoolean(603979847) + ";\n");
 }if (sfunc != null) commands.append("\n}\n\n");
 return commands.toString();
 }, "JU.SB,~B,~B");
@@ -542,7 +544,7 @@ sb.append(";\n");
 }, "~S,JU.SB,JM.TickInfo");
 c$.addTickInfo = Clazz.defineMethod(c$, "addTickInfo", 
 function(sb, tickInfo, addFirst){
-sb.append(" ticks ").append(tickInfo.type).append(" ").append(JU.Escape.eP(tickInfo.ticks));
+sb.append(" ticks ").appendC(tickInfo.type).append(" ").append(JU.Escape.eP(tickInfo.ticks));
 var isUnitCell = (tickInfo.scale != null && Float.isNaN(tickInfo.scale.x));
 if (isUnitCell) sb.append(" UNITCELL");
 if (tickInfo.tickLabelFormats != null) sb.append(" format ").append(JU.Escape.eAS(tickInfo.tickLabelFormats, false));
@@ -700,9 +702,11 @@ var es = shape;
 var sb =  new JU.SB();
 sb.append("\n  set echo off;set echo \"%SCALE\" off;\n");
 this.getEchoState(sb, es.scaleObject);
+var haveElementKey = false;
 for (var t, $t = es.objects.values().iterator (); $t.hasNext()&& ((t = $t.next ()) || true);) {
-this.getEchoState(sb, t);
+haveElementKey = new Boolean (haveElementKey | this.getEchoState(sb, t)).valueOf();
 }
+if (haveElementKey) sb.append("  modelkit OFF;//to check for element keys\n");
 s = sb.toString();
 break;
 case 8:
@@ -727,7 +731,10 @@ case 5:
 var l = shape;
 if (!l.isActive || l.bsSizeSet == null) return "";
 this.clearTemp();
+var bs = this.vwr.getAllAtoms();
+var isNeg = false;
 for (var i = l.bsSizeSet.nextSetBit(0); i >= 0; i = l.bsSizeSet.nextSetBit(i + 1)) {
+if (!bs.get(i)) continue;
 var t = l.getLabel(i);
 var cmd = "label ";
 if (t == null) {
@@ -751,9 +758,16 @@ if ((offsetFull & 32) != 0) JU.BSUtil.setMapBitSet(this.temp2, i, i, "set labelF
  else if ((offsetFull & 16) != 0) JU.BSUtil.setMapBitSet(this.temp2, i, i, "set labelGroup");
 if (align.length > 0) JU.BSUtil.setMapBitSet(this.temp3, i, i, "set labelAlignment " + align);
 }if (l.mads != null && l.mads[i] < 0) JU.BSUtil.setMapBitSet(this.temp2, i, i, "set toggleLabel");
-if (l.bsFontSet != null && l.bsFontSet.get(i)) JU.BSUtil.setMapBitSet(this.temp2, i, i, J.shape.Shape.getFontCommand("label", JU.Font.getFont3D(l.fids[i])));
-}
-s = this.getCommands(this.temp, this.temp2, "select") + this.getCommands(null, this.temp3, "select");
+if (l.bsFontSet != null && l.bsFontSet.get(i)) {
+var f = JU.Font.getFont3D(l.fids[i]);
+if (f.fontSizeAngstroms > 0) isNeg = true;
+JU.BSUtil.setMapBitSet(this.temp4, i, i, J.shape.Shape.getFontCommand("label", f));
+}}
+var sf = this.getCommands(null, this.temp4, "select");
+if (isNeg) {
+sf = "  try{\n" + sf + "  }catch{}\n";
+}s = this.getCommands(this.temp, this.temp2, "select") + sf + this.getCommands(null, this.temp3, "select");
+this.temp4.clear();
 this.temp3.clear();
 this.clearTemp();
 break;
@@ -820,8 +834,8 @@ return s;
 Clazz.defineMethod(c$, "getEchoState", 
 function(sb, t){
 var isScale = (t != null && t.barPixels > 0);
-var text = (t == null ? null : isScale ? t.textUnformatted : t.text);
-if (text == null || !t.isEcho || t.target.equals("error")) return;
+var text = (t == null ? null : isScale ? t.textUnformatted : t.getStateText());
+if (text == null || !t.isEcho || t.target.equals("error")) return false;
 var isImage = (t.image != null);
 var strOff = null;
 var echoCmd = "set echo ID " + JU.PT.esc(t.target);
@@ -865,7 +879,8 @@ sb.append(JU.C.getHexCode(t.bgcolix));
 if (t.hidden) {
 if (isScale) sb.append("  set echo \"%SCALE\" hidden;\n");
  else sb.append("  set echo ID ").append(JU.PT.esc(t.target)).append(" hidden;\n");
-}}, "JU.SB,JM.Text");
+}return (t.target.startsWith("_!_elkey_"));
+}, "JU.SB,JM.Text");
 Clazz.overrideMethod(c$, "getAllSettings", 
 function(prefix){
 var g = this.vwr.g;
@@ -1059,7 +1074,7 @@ return 0;
 Clazz.overrideMethod(c$, "undoMoveActionClear", 
 function(taintedAtom, type, clearRedo){
 if (!this.vwr.g.preserveState) return;
-var modelIndex = (taintedAtom >= 0 ? this.vwr.ms.at[taintedAtom].mi : this.vwr.ms.mc - 1);
+var modelIndex = (taintedAtom >= 0 && this.vwr.ms.at[taintedAtom] != null ? this.vwr.ms.at[taintedAtom].mi : this.vwr.ms.mc - 1);
 switch (type) {
 case 4140:
 case 4165:
@@ -1121,4 +1136,4 @@ this.actionStates.removeItemAt(99);
 this.undoWorking = !clearRedo;
 }, "~N,~N,~B");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

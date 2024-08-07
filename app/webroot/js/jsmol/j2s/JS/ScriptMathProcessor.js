@@ -417,13 +417,22 @@ break;
 case 268438528:
 case 268438016:
 if (!this.wasSyntaxCheck && this.xPt < 0) return false;
-if (!this.wasSyntaxCheck && this.xStack[this.xPt].tok != 10 && this.xStack[this.xPt].tok != 7) {
+if (!this.wasSyntaxCheck) {
+switch (this.xStack[this.xPt].tok) {
+case 10:
+case 7:
+break;
+case 11:
+if (op.tok == 268438016) break;
+default:
 var tf = this.getX().asBoolean();
 this.addX(JS.SV.getBoolean(tf));
 if (tf == (op.tok == 268438016)) {
 this.chk = true;
 op = (op.tok == 268438016 ? JS.T.tokenOrTRUE : JS.T.tokenAndFALSE);
-}}this.wasX = false;
+}break;
+}
+}this.wasX = false;
 break;
 case 268441602:
 case 268441601:
@@ -592,10 +601,10 @@ case 268441602:
 x1 = x2;
 if (!this.chk) {
 if (this.ptx < this.pto) {
-x1 = JS.SV.newS("").setv(x2);
+x1 = JS.SV.copySafely(x2);
 }if (!x2.increment(op.tok == 268441602 ? 1 : -1)) return false;
 if (this.ptx > this.pto) {
-x1 = JS.SV.newS("").setv(x2);
+x1 = JS.SV.copySafely(x2);
 }}this.wasX = false;
 this.putX(x1);
 this.wasX = true;
@@ -776,7 +785,10 @@ if (bs == null) break;
 return this.addXBs(Clazz.instanceOf(x1.value,"JM.BondSet") ? JM.BondSet.newBS(bs) : bs);
 case 7:
 return this.addX(JS.SV.concatList(x1, x2, false));
-}
+case 11:
+if (x2.tok == 8) {
+return this.addXM4(JU.M4.newMV(x1.value, x2.value));
+}}
 return this.addXBool(x1.asBoolean() || x2.asBoolean());
 case 268438017:
 if (x1.tok == 10 && x2.tok == 10) {
@@ -1156,7 +1168,7 @@ if (bs.isEmpty() || Clazz.instanceOf(bs,"JM.BondSet")) break;
 if (bsRestrict != null) {
 bs = JU.BSUtil.copy(bs);
 bs.and(bsRestrict);
-}var o = (bs.isEmpty() ? null : this.eval.getBitsetProperty(bs, null, 1145047050, null, null, x.value, null, false, 2147483647, false));
+}var o = (bs.isEmpty() ? null : this.eval.getBitsetProperty(bs, null, 1145047049, null, null, x.value, null, false, 2147483647, false));
 return o;
 case 4:
 pt = JU.Escape.uP(JS.SV.sValue(x));
@@ -1266,17 +1278,19 @@ return this.addXFloat((x2.value).y);
 case 1111492611:
 case 1111492631:
 return this.addXFloat((x2.value).z);
-case 1145047050:
+case 1145047049:
 var pt = JU.P3.newP(x2.value);
 this.vwr.toCartesian(pt, false);
 return this.addXPt(pt);
 case 1111492612:
 case 1111492613:
 case 1111492614:
-case 1145047051:
+case 1145047050:
 var ptf = JU.P3.newP(x2.value);
 this.vwr.toFractional(ptf, false);
-return (op.intValue == 1145047051 ? this.addXPt(ptf) : this.addXFloat(op.intValue == 1111492612 ? ptf.x : op.intValue == 1111492613 ? ptf.y : ptf.z));
+return (op.intValue == 1145047050 ? this.addXPt(ptf) : this.addXFloat(op.intValue == 1111492612 ? ptf.x : op.intValue == 1111492613 ? ptf.y : ptf.z));
+case 1145045003:
+return this.addXStr(this.vwr.getSymStatic().staticToRationalXYZ(JU.P3.newP(x2.value), " "));
 case 1111492615:
 case 1111492616:
 case 1111492617:
@@ -1320,4 +1334,4 @@ return (isAtoms ? this.addXObj(val) : this.addXBs(JM.BondSet.newBS(val)));
 return false;
 }, "JS.T,JS.SV");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

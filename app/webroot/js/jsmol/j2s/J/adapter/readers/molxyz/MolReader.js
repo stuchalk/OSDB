@@ -350,4 +350,4 @@ if (this.haveAtomSerials) return this.asc.addNewBondFromNames(iAtom1, iAtom2, or
 return this.asc.addNewBondWithOrder(this.iatom0 + this.parseIntStr(iAtom1) - 1, this.iatom0 + this.parseIntStr(iAtom2) - 1, order);
 }, "~S,~S,~N,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

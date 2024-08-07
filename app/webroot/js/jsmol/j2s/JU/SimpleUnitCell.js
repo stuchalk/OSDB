@@ -97,9 +97,9 @@ fc *= fScale;
 }} else {
 fa = fb = fc = 1;
 }if (this.a <= 0 && this.c <= 0) {
-var va = JU.V3.new3(params[6], params[7], params[8]);
-var vb = JU.V3.new3(params[9], params[10], params[11]);
-var vc = JU.V3.new3(params[12], params[13], params[14]);
+var va = JU.SimpleUnitCell.newV(params, 6);
+var vb = JU.SimpleUnitCell.newV(params, 9);
+var vc = JU.SimpleUnitCell.newV(params, 12);
 this.setABC(va, vb, vc);
 if (this.c < 0) {
 var n = JU.AU.arrayCopyF(params, -1);
@@ -176,6 +176,10 @@ this.matrixCartesianToFractional = JU.M4.newM4(this.matrixFractionalToCartesian)
 }this.matrixCtoFNoOffset = this.matrixCartesianToFractional;
 this.matrixFtoCNoOffset = this.matrixFractionalToCartesian;
 }, "~A");
+c$.newV = Clazz.defineMethod(c$, "newV", 
+function(p, i){
+return JU.V3.new3(p[i++], p[i++], p[i]);
+}, "~A,~N");
 c$.newParams = Clazz.defineMethod(c$, "newParams", 
 function(params, slop){
 var p =  Clazz.newFloatArray (27, 0);
@@ -205,23 +209,34 @@ this.setCellParams();
 });
 Clazz.defineMethod(c$, "setABC", 
 function(va, vb, vc){
-this.a = va.length();
-this.b = vb.length();
-this.c = vc.length();
-if (this.a == 0) return;
-if (this.b == 0) this.b = this.c = -1;
- else if (this.c == 0) this.c = -1;
-this.alpha = (this.b < 0 || this.c < 0 ? 90 : vb.angle(vc) / 0.017453292519943295);
-this.beta = (this.c < 0 ? 90 : va.angle(vc) / 0.017453292519943295);
-this.gamma = (this.b < 0 ? 90 : va.angle(vb) / 0.017453292519943295);
+JU.SimpleUnitCell.fillParams(va, vb, vc, this.unitCellParams);
 var p = this.unitCellParams;
-p[0] = this.a;
-p[1] = this.b;
-p[2] = this.c;
-p[3] = this.alpha;
-p[4] = this.beta;
-p[5] = this.gamma;
+this.a = p[0];
+this.b = p[1];
+this.c = p[2];
+this.alpha = p[3];
+this.beta = p[4];
+this.gamma = p[5];
 }, "JU.V3,JU.V3,JU.V3");
+c$.fillParams = Clazz.defineMethod(c$, "fillParams", 
+function(va, vb, vc, p){
+if (va == null) {
+va = JU.SimpleUnitCell.newV(p, 6);
+vb = JU.SimpleUnitCell.newV(p, 9);
+vc = JU.SimpleUnitCell.newV(p, 12);
+}var a = va.length();
+var b = vb.length();
+var c = vc.length();
+if (a == 0) return;
+if (b == 0) b = c = -1;
+ else if (c == 0) c = -1;
+p[0] = a;
+p[1] = b;
+p[2] = c;
+p[3] = (b < 0 || c < 0 ? 90 : vb.angle(vc) / 0.017453292519943295);
+p[4] = (c < 0 ? 90 : va.angle(vc) / 0.017453292519943295);
+p[5] = (b < 0 ? 90 : va.angle(vb) / 0.017453292519943295);
+}, "JU.V3,JU.V3,JU.V3,~A");
 Clazz.defineMethod(c$, "setCellParams", 
 function(){
 this.cosAlpha = Math.cos(0.017453292519943295 * this.alpha);
@@ -398,7 +413,7 @@ break;
 Clazz.defineMethod(c$, "setTwelfths", 
 function(x){
 var i = this.twelfthsOf(x);
-return (i >= 0 ? i / 12 : x);
+return (i >= 0 ? i / 12 * (x < 0 ? -1 : 1) : x);
 }, "~N");
 c$.ijkToPoint3f = Clazz.defineMethod(c$, "ijkToPoint3f", 
 function(nnn, cell, offset, kcode){
@@ -458,9 +473,19 @@ c$.approx0 = Clazz.defineMethod(c$, "approx0",
 function(f){
 return (Math.abs(f) < 0.001);
 }, "~N");
+c$.getCellRange = Clazz.defineMethod(c$, "getCellRange", 
+function(fset, cellRange){
+var t3w = (Clazz.instanceOf(fset,"JU.T4") ? Clazz.floatToInt((fset).w) : 0);
+JU.SimpleUnitCell.ijkToPoint3f(Clazz.floatToInt(fset.x), cellRange[0], 0, t3w);
+JU.SimpleUnitCell.ijkToPoint3f(Clazz.floatToInt(fset.y), cellRange[1], 1, t3w);
+if (fset.z < 0) {
+cellRange[0].scale(-1 / fset.z);
+cellRange[1].scale(-1 / fset.z);
+}return t3w;
+}, "JU.T3,~A");
 Clazz.overrideMethod(c$, "toString", 
 function(){
 return "[" + this.a + " " + this.b + " " + this.c + " " + this.alpha + " " + this.beta + " " + this.gamma + "]";
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

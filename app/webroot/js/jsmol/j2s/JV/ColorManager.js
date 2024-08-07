@@ -65,13 +65,17 @@ case 84:
 return (this.colorData == null || atom.i >= this.colorData.length || Float.isNaN(this.colorData[atom.i]) ? 12 : this.ce.getColorIndex(this.colorData[atom.i]));
 case 0:
 case 1:
-id = atom.getAtomicAndIsotopeNumber();
-if (id < JU.Elements.elementNumberMax) return this.g3d.getChangeableColix(id, this.argbsCpk[id]);
-var id0 = id;
-id = JU.Elements.altElementIndexFromNumber(id);
-if (id > 0) return this.g3d.getChangeableColix(JU.Elements.elementNumberMax + id, this.altArgbsCpk[id]);
-id = JU.Elements.getElementNumber(id0);
-return this.g3d.getChangeableColix(id, this.argbsCpk[id]);
+var a = this.argbsCpk;
+var i = id = atom.getAtomicAndIsotopeNumber();
+if (i >= JU.Elements.elementNumberMax) {
+id = JU.Elements.altElementIndexFromNumber(i);
+if (id > 0) {
+i = id;
+id += JU.Elements.elementNumberMax;
+a = this.altArgbsCpk;
+} else {
+i = id = JU.Elements.getElementNumber(i);
+}}return this.g3d.getChangeableColix(id, a[i]);
 case 2:
 index = JU.ColorEncoder.quantize4(atom.getPartialCharge(), -1, 1, JV.JC.PARTIAL_CHARGE_RANGE_SIZE);
 return this.g3d.getChangeableColix(JV.JC.PARTIAL_CHARGE_COLIX_RED + index, JV.JC.argbsRwbScale[index]);
@@ -155,22 +159,35 @@ return argb;
 }
 return JV.JC.altArgbsCpk[JU.Elements.altElementIndexFromNumber(id)];
 }, "~N,~N");
+Clazz.defineMethod(c$, "getElementColix", 
+function(elemNo){
+var a = this.argbsCpk;
+var i = elemNo;
+if (i > JU.Elements.elementNumberMax) {
+var ialt = JU.Elements.altElementIndexFromNumber(i);
+if (ialt > 0) {
+i = ialt;
+a = this.altArgbsCpk;
+} else {
+i = JU.Elements.getElementNumber(i);
+}}return JU.C.getColix(a[i]);
+}, "~N");
 Clazz.defineMethod(c$, "setElementArgb", 
-function(id, argb){
-if (argb == 1073741991 && this.argbsCpk === J.c.PAL.argbsCpk) return 0;
-argb = this.getJmolOrRasmolArgb(id, argb);
+function(elemNo, argb){
+if (argb == 1073741991 && this.argbsCpk === J.c.PAL.argbsCpk) return;
+argb = this.getJmolOrRasmolArgb(elemNo, argb);
 if (this.argbsCpk === J.c.PAL.argbsCpk) {
 this.argbsCpk = JU.AU.arrayCopyRangeI(J.c.PAL.argbsCpk, 0, -1);
 this.altArgbsCpk = JU.AU.arrayCopyRangeI(JV.JC.altArgbsCpk, 0, -1);
-}if (id < JU.Elements.elementNumberMax) {
-if (argb == 2147483647) return JU.C.getColix(this.argbsCpk[id]);
+}var id = elemNo;
+if (id < JU.Elements.elementNumberMax) {
 this.argbsCpk[id] = argb;
-this.g3d.changeColixArgb(id, argb);
-return 0;
-}id = JU.Elements.altElementIndexFromNumber(id);
+} else {
+id = JU.Elements.altElementIndexFromNumber(elemNo);
 this.altArgbsCpk[id] = argb;
-this.g3d.changeColixArgb(JU.Elements.elementNumberMax + id, argb);
-return 0;
+id += JU.Elements.elementNumberMax;
+}this.g3d.changeColixArgb(id, argb);
+this.vwr.setModelkitPropertySafely("updatemodelkeys", null);
 }, "~N,~N");
 Clazz.defineMethod(c$, "getPropertyColorRange", 
 function(){
@@ -220,4 +237,4 @@ c.currentPalette = c.createColorScheme(colorScheme, false, true);
 return (c.currentPalette == 2147483647 ? null : c);
 }, "~S");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

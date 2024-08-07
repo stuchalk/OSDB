@@ -5,11 +5,8 @@ var c$ = Clazz.declareType(JU, "C", null);
 function(argb){
 if (argb == 0) return 0;
 var translucentFlag = 0;
-if ((argb & 0xFF000000) != (-16777216)) {
-translucentFlag = JU.C.getTranslucentFlag((argb >> 24) & 0xFF);
 argb |= 0xFF000000;
-}var c = JU.C.colixHash.get(argb);
-if ((c & 3) == 3) translucentFlag = 0;
+var c = JU.C.colixHash.get(argb);
 return ((c > 0 ? c : JU.C.allocateColix(argb, false)) | translucentFlag);
 }, "~N");
 c$.allocateColix = Clazz.defineMethod(c$, "allocateColix", 
@@ -18,6 +15,7 @@ var n;
 if (forceLast) {
 n = 2047;
 } else {
+if (argb == -74566) return 3;
 for (var i = JU.C.colixMax; --i >= 4; ) if ((argb & 0xFFFFFF) == (JU.C.argbs[i] & 0xFFFFFF)) return i;
 
 n = JU.C.colixMax;
@@ -191,11 +189,13 @@ return ((JU.CU.toFFGGGfromRGB(argb) & 0xFF) < 128 ? 8 : 4);
 }, "~N");
 c$.colixMax = 4;
 c$.argbs =  Clazz.newIntArray (128, 0);
-c$.argbsGreyscale = null;
+{
+JU.C.argbs[3] = -74566;
+}c$.argbsGreyscale = null;
 c$.colixHash =  new JU.Int2IntHash(256);
 {
 var predefinedArgbs =  Clazz.newIntArray(-1, [0xFF000000, 0xFFFFA500, 0xFFFFC0CB, 0xFF0000FF, 0xFFFFFFFF, 0xFF00FFFF, 0xFFFF0000, 0xFF008000, 0xFF808080, 0xFFC0C0C0, 0xFF00FF00, 0xFF800000, 0xFF000080, 0xFF808000, 0xFF800080, 0xFF008080, 0xFFFF00FF, 0xFFFFFF00, 0xFFFF69B4, 0xFFFFD700]);
 for (var i = 0; i < predefinedArgbs.length; ++i) JU.C.getColix(predefinedArgbs[i]);
 
 }});
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

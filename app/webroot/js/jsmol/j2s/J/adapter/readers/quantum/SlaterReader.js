@@ -11,7 +11,9 @@ J.adapter.readers.quantum.SlaterReader.$SlaterReader$OrbitalSorter$ ();
 Clazz.instantialize(this, arguments);}, J.adapter.readers.quantum, "SlaterReader", J.adapter.readers.quantum.MOReader);
 Clazz.defineMethod(c$, "addSlater", 
 function(iAtom, a, b, c, d, zeta, coef){
-this.getSlaters().addLast( new J.quantum.SlaterData(iAtom, a, b, c, d, zeta, coef));
+var sd =  new J.quantum.SlaterData(iAtom, a, b, c, d, zeta, coef);
+this.getSlaters().addLast(sd);
+return sd;
 }, "~N,~N,~N,~N,~N,~N,~N");
 Clazz.defineMethod(c$, "getSlaters", 
 function(){
@@ -85,16 +87,13 @@ return J.adapter.readers.quantum.SlaterReader.getSlaterConstCartesian(el + er + 
 }, "~N,~N,~N,~N,~N");
 c$.fact = Clazz.defineMethod(c$, "fact", 
 function(f, zeta, n){
-return Math.pow(2 * zeta, n + 0.5) * Math.sqrt(f * 0.07957747154594767 / J.adapter.readers.quantum.SlaterReader.fact1[n]);
+return Math.pow(2 * zeta, n + 0.5) * Math.sqrt(f * 0.07957747154594767 / J.adapter.readers.quantum.SlaterReader.fact_2n[n]);
 }, "~N,~N,~N");
 c$.getSlaterConstCartesian = Clazz.defineMethod(c$, "getSlaterConstCartesian", 
 function(n, zeta, el, ex, ey, ez){
-return J.adapter.readers.quantum.SlaterReader.fact(ez < 0 ? J.adapter.readers.quantum.SlaterReader.dfact2[el + 1] : J.adapter.readers.quantum.SlaterReader.dfact2[el + 1] / J.adapter.readers.quantum.SlaterReader.dfact2[ex] / J.adapter.readers.quantum.SlaterReader.dfact2[ey] / J.adapter.readers.quantum.SlaterReader.dfact2[ez], zeta, n);
+var f = ez < 0 ? J.adapter.readers.quantum.SlaterReader.dfact2[el + 1] : J.adapter.readers.quantum.SlaterReader.dfact2[el + 1] / J.adapter.readers.quantum.SlaterReader.dfact2[ex] / J.adapter.readers.quantum.SlaterReader.dfact2[ey] / J.adapter.readers.quantum.SlaterReader.dfact2[ez];
+return J.adapter.readers.quantum.SlaterReader.fact(f, zeta, n);
 }, "~N,~N,~N,~N,~N,~N");
-c$.getSlaterConstDSpherical = Clazz.defineMethod(c$, "getSlaterConstDSpherical", 
-function(n, zeta, ex, ey){
-return J.adapter.readers.quantum.SlaterReader.fact(Clazz.doubleToInt(15 / (ex < 0 ? 12 : ey < 0 ? 4 : 1)), zeta, n);
-}, "~N,~N,~N,~N");
 c$.$SlaterReader$SlaterSorter$ = function(){
 /*if4*/;(function(){
 var c$ = Clazz.decorateAsClass(function(){
@@ -119,7 +118,7 @@ return (e1 < e2 ? -1 : e2 < e1 ? 1 : 0);
 }, "java.util.Map,java.util.Map");
 /*eoif4*/})();
 };
-c$.fact1 =  Clazz.newDoubleArray(-1, [1.0, 2.0, 24.0, 720.0, 40320.0, 362880.0, 87178291200.0]);
+c$.fact_2n =  Clazz.newDoubleArray(-1, [1, 2, 24, 720, 40320, 3628800, 479001600]);
 c$.dfact2 =  Clazz.newDoubleArray(-1, [1, 1, 3, 15, 105]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

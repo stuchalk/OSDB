@@ -101,7 +101,6 @@ if (isTranslucent) this.bsColixSet.set(i);
 }
 return;
 }if (propertyName === "deleteModelAtoms") {
-var atoms = (value)[1];
 var info = (value)[2];
 var firstAtomDeleted = info[1];
 var nAtomsDeleted = info[2];
@@ -146,4 +145,4 @@ function(){
 return null;
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

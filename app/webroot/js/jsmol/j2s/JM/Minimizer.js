@@ -84,7 +84,7 @@ this.isQuick = (ff.indexOf("2D") >= 0 || (flags & 8) == 8);
 this.modelkitMinimizing = (bsBasis != null && this.vwr.getModelkitPropertySafely("minimizing") === Boolean.TRUE);
 if (bsBasis != null) {
 if (bsFixed == null) bsFixed =  new JU.BS();
-bsFixed.or(this.vwr.getMotionFixedAtoms(bsBasis.nextSetBit(0)));
+this.vwr.getMotionFixedAtoms(null, bsFixed);
 bsBasis.andNot(bsFixed);
 bsFixed.or(bsSelected);
 bsFixed.andNot(bsBasis);
@@ -573,4 +573,4 @@ return "[minimizer " + this.id + " step " + (this.pFF == null ? 0 : this.pFF.get
 });
 c$.staticID = 0;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

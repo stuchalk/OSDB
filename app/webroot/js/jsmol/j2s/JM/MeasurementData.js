@@ -1,5 +1,5 @@
 Clazz.declarePackage("JM");
-Clazz.load(["J.api.JmolMeasurementClient"], "JM.MeasurementData", ["JU.Lst", "JM.Measurement", "JU.BSUtil"], function(){
+Clazz.load(["J.api.JmolMeasurementClient"], "JM.MeasurementData", ["JU.Lst", "JM.Measurement"], function(){
 var c$ = Clazz.decorateAsClass(function(){
 this.client = null;
 this.bsSelected = null;
@@ -48,7 +48,7 @@ function(tokAction, htMin, radiusData, property, strFormat, units, tickInfo, mus
 this.ms = this.vwr.ms;
 this.tokAction = tokAction;
 if (this.points.size() >= 2 && Clazz.instanceOf(this.points.get(0),"JU.BS") && Clazz.instanceOf(this.points.get(1),"JU.BS")) {
-this.justOneModel = JU.BSUtil.haveCommon(this.vwr.ms.getModelBS(this.points.get(0), false), this.vwr.ms.getModelBS(this.points.get(1), false));
+this.justOneModel = this.vwr.ms.getModelBS(this.points.get(0), false).equals(this.vwr.ms.getModelBS(this.points.get(1), false));
 }this.bsSelected = bsSelected;
 this.htMin = htMin;
 this.radiusData = radiusData;
@@ -154,4 +154,4 @@ this.nextMeasure(thispt + 1, ptLastAtom, m, thisModel);
 if (!haveNext) this.nextMeasure(thispt + 1, ptLastAtom, m, thisModel);
 }, "~N,~N,JM.Measurement,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

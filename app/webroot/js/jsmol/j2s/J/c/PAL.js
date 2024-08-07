@@ -90,4 +90,4 @@ Clazz.defineEnumConstant(c$, "STRAIGHTNESS", 23, ["straightness", 86]);
 Clazz.defineEnumConstant(c$, "POLYMER", 24, ["polymer", 87]);
 Clazz.defineEnumConstant(c$, "NUCLEIC", 25, ["nucleic", 24]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

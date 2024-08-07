@@ -23,6 +23,7 @@ this.newWindowWidth = 0;
 this.newWindowHeight = 0;
 this.newAntialiasing = false;
 this.bgcolor = 0;
+this.contrastColix = 0;
 this.xLast = 0;
 this.yLast = 0;
 this.slab = 0;
@@ -90,6 +91,7 @@ if (id < this.changeableColixMap.length && this.changeableColixMap[id] != 0) thi
 }, "~N,~N");
 Clazz.defineMethod(c$, "getColorArgbOrGray", 
 function(colix){
+if (colix == 3) return JU.C.getArgb(this.contrastColix);
 if (colix < 0) colix = this.changeableColixMap[colix & 2047];
 return (this.inGreyscaleMode ? JU.C.getArgbGreyscale(colix) : JU.C.getArgb(colix));
 }, "~N");
@@ -245,11 +247,11 @@ return code;
 }, "~N");
 Clazz.defineMethod(c$, "getFont3D", 
 function(fontSize){
-return JU.Font.createFont3D(0, 0, fontSize, fontSize, this.apiPlatform, this.graphicsForMetrics);
+return JU.Font.createFont3D(0, 0, fontSize, fontSize, 0, this.apiPlatform, this.graphicsForMetrics);
 }, "~N");
 Clazz.defineMethod(c$, "getFont3DFS", 
 function(fontFace, fontSize){
-return JU.Font.createFont3D(JU.Font.getFontFaceID(fontFace), 0, fontSize, fontSize, this.apiPlatform, this.graphicsForMetrics);
+return JU.Font.createFont3D(JU.Font.getFontFaceID(fontFace), 0, fontSize, fontSize, 0, this.apiPlatform, this.graphicsForMetrics);
 }, "~S,~N");
 Clazz.defineMethod(c$, "getFontFidFS", 
 function(fontFace, fontSize){
@@ -259,12 +261,12 @@ Clazz.defineMethod(c$, "getFont3DFSS",
 function(fontFace, fontStyle, fontSize){
 var iStyle = JU.Font.getFontStyleID(fontStyle);
 if (iStyle < 0) iStyle = 0;
-return JU.Font.createFont3D(JU.Font.getFontFaceID(fontFace), iStyle, fontSize, fontSize, this.apiPlatform, this.graphicsForMetrics);
+return JU.Font.createFont3D(JU.Font.getFontFaceID(fontFace), iStyle, fontSize, fontSize, 0, this.apiPlatform, this.graphicsForMetrics);
 }, "~S,~S,~N");
 Clazz.defineMethod(c$, "getFont3DScaled", 
 function(font, scale){
 var newScale = font.fontSizeNominal * scale;
-return (newScale == font.fontSize ? font : JU.Font.createFont3D(font.idFontFace, font.idFontStyle, newScale, font.fontSizeNominal, this.apiPlatform, this.graphicsForMetrics));
+return (newScale == font.fontSize ? font : JU.Font.createFont3D(font.idFontFace, font.idFontStyle, newScale, font.fontSizeNominal, font.fontSizeAngstroms, this.apiPlatform, this.graphicsForMetrics));
 }, "JU.Font,~N");
 Clazz.defineMethod(c$, "getFontFidI", 
 function(fontSize){
@@ -472,4 +474,4 @@ return;
 }, "JU.P3i,JU.P3i,~N,~N");
 c$.normixCount = JU.Normix.getNormixCount();
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

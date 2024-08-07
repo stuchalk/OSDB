@@ -19,4 +19,4 @@ var energy = Math.round(-27888.0 / distAH - -27888.0 / distAD + -27888.0 / distC
 return energy;
 }, "~N,~N,~N,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

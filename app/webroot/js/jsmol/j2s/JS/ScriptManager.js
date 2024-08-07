@@ -175,14 +175,14 @@ this.startScriptQueue(true);
 }}});
 Clazz.overrideMethod(c$, "evalFile", 
 function(strFilename){
-var ptWait = strFilename.indexOf(" -noqueue");
-if (ptWait >= 0) {
-return this.evalStringWaitStatusQueued("String", "script " + JU.PT.esc(strFilename.substring(0, ptWait)), "", false, false);
-}return this.evalFileArgs(strFilename, null);
+return this.evalFileArgs(strFilename, null);
 }, "~S");
 Clazz.overrideMethod(c$, "evalFileArgs", 
 function(strFilename, args){
-return this.addScript("script " + JU.PT.esc(strFilename) + (args == null ? "" : "(" + args + ")"), null, false);
+var ptWait = strFilename.indexOf(" -noqueue");
+if (ptWait >= 0) {
+return this.evalStringWaitStatusQueued("String", "script " + JU.PT.esc(strFilename.substring(0, ptWait)), "", false, false);
+}return this.addScript("script " + JU.PT.esc(strFilename) + (args == null ? "" : "(" + args + ")"), null, false);
 }, "~S,~S");
 Clazz.overrideMethod(c$, "evalStringWaitStatusQueued", 
 function(returnType, strScript, statusList, isQuiet, isQueued){
@@ -233,7 +233,7 @@ function(strScript, isInsert){
 var str = strScript;
 var pt = str.indexOf("; ## GUI ##");
 if (pt >= 0) str = str.substring(0, pt);
- else if ((pt = str.indexOf("\u0001##")) >= 0) str = str.substring(0, pt);
+if ((pt = str.indexOf("\u0001##")) >= 0) str = str.substring(0, pt);
 if (this.checkResume(str)) return "script processing resumed";
 if (this.checkStepping(str)) return "script processing stepped";
 if (this.checkHalt(str, isInsert)) return "script execution halted";
@@ -398,8 +398,7 @@ cmd = JU.PT.rep(cmd, "%ALLOWCARTOONS", "" + pdbCartoons);
 if (cmd.toLowerCase().startsWith("zap") && (isCached || isAppend)) cmd = cmd.substring(3);
 if (isAppend) {
 cmd = JU.PT.rep(cmd, "load SYNC", "load append");
-}System.out.println("###\n" + cmd + "\n###");
-return;
+}return;
 }}if (cmd == null && !noScript && this.vwr.scriptEditorVisible) this.vwr.showEditor( Clazz.newArray(-1, [fname, this.vwr.getFileAsString3(fname, true, null)]));
  else cmd = (cmd == null ? "script " : cmd) + JU.PT.esc(fname);
 } finally {
@@ -463,7 +462,7 @@ vwr.stateScriptVersionInt = 2147483647;
 }, "JV.Viewer,~S");
 Clazz.overrideMethod(c$, "addHydrogensInline", 
 function(bsAtoms, vConnections, pts, htParams){
-var iatom = bsAtoms.nextSetBit(0);
+var iatom = (bsAtoms == null ? -1 : bsAtoms.nextSetBit(0));
 if (htParams == null) htParams =  new java.util.Hashtable();
 var modelIndex = (iatom < 0 ? this.vwr.am.cmi : this.vwr.ms.at[iatom].mi);
 if (modelIndex < 0) modelIndex = this.vwr.ms.mc - 1;
@@ -484,10 +483,15 @@ if (a != null) sbConnect.append(";  connect 0 100 ").append("({" + (atomIndex) +
 }
 var sb =  new JU.SB();
 sb.appendI(pts.length).append("\n").append("Viewer.AddHydrogens").append("#noautobond").append("\n");
-for (var i = 0; i < pts.length; i++) sb.append("H ").appendF(pts[i].x).append(" ").appendF(pts[i].y).append(" ").appendF(pts[i].z).append(" - - - - ").appendI(++atomno).appendC('\n');
+var sym = htParams.get("element");
+sym = (sym == null ? "H" : sym) + " ";
+for (var i = 0; i < pts.length; i++) sb.append(sym).appendF(pts[i].x).append(" ").appendF(pts[i].y).append(" ").appendF(pts[i].z).append(" - - - - ").appendI(++atomno).appendC('\n');
 
+var wasRefreshing = this.vwr.getBoolean(603979900);
+this.vwr.setBooleanProperty("refreshing", false);
 this.vwr.openStringInlineParamsAppend(sb.toString(), htParams, true);
 if (sbConnect.length() > 0) this.vwr.runScript(sbConnect.toString());
+this.vwr.setBooleanProperty("refreshing", wasRefreshing);
 var bsB = this.vwr.getModelUndeletedAtomsBitSet(modelIndex);
 bsB.andNot(bsA);
 this.vwr.g.appendNew = wasAppendNew;
@@ -514,4 +518,4 @@ this.evalStringWaitParamsStatusQueued(returnType, script, params, statusList, is
 }, "JU.Lst");
 c$.prevCovalentVersion = 0;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

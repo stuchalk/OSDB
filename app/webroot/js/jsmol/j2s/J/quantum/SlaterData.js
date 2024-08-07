@@ -3,6 +3,7 @@ Clazz.declarePackage("J.quantum");
 var c$ = Clazz.decorateAsClass(function(){
 this.isCore = false;
 this.atomNo = 0;
+this.elemNo = 0;
 this.x = 0;
 this.y = 0;
 this.z = 0;
@@ -26,4 +27,4 @@ function(){
 return "[" + this.atomNo + "," + this.x + "," + this.y + "," + this.z + "," + this.r + "," + this.zeta + "," + this.coef + "]";
 });
 })();
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

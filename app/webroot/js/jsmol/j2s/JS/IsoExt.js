@@ -197,6 +197,7 @@ var iConnect = 0;
 var iArray = -1;
 var iOn = -1;
 var isBest = false;
+var meshNoFill = false;
 var tok = 0;
 var lattice = null;
 for (var i = eval.iToken; i < this.slen; ++i) {
@@ -234,11 +235,15 @@ default:
 this.invArg();
 }
 break;
+case 1611272194:
+if (!this.chk) this.vwr.getModelkit(false).drawAxes(thisId, swidth);
+return;
 case 1073741994:
 case 1814695966:
 case 1812599299:
 lattice = null;
 var uc = null;
+var ucLattice = null;
 var bs = null;
 switch (tok) {
 case 1812599299:
@@ -271,11 +276,28 @@ if (isBest) this.invArg();
 if (eval.isArrayParameter(i + 1)) {
 uc = this.vwr.getSymTemp().getUnitCell(eval.getPointArray(i + 1, -1, false), false, null);
 i = eval.iToken;
+} else {
+switch (this.tokAt(i + 1)) {
+case 4:
+var tr = this.stringParameter(i + 1);
+if (tr.length > 0 && (uc = this.vwr.getCurrentUnitCell()) != null) {
+uc = this.vwr.getSymTemp().getUnitCell(uc.getV0abc(tr, null), false, "draw");
+}i = eval.iToken;
+break;
+case 8:
+case 1073742332:
+ucLattice = eval.getFractionalPoint(i + 1);
+i = eval.iToken;
+break;
+}
 }if (this.tokAt(i + 1) == 1073741994) {
 if (tokIntersectBox == 1814695966) tokIntersectBox = 1073741994;
 ++i;
 lattice = eval.checkHKL(eval.getPointOrPlane(++i, 3));
 i = eval.iToken;
+}if (this.tokAt(i + 1) == 1611272194) {
+if (ucLattice == null) ucLattice = JU.P3.new3(555, 555, 1);
+i++;
 }break;
 }
 if (this.chk) break;
@@ -285,7 +307,10 @@ uc = this.vwr.getSymTemp().getUnitCell(this.vwr.getOrientation(1814695966, "arra
 }} else if (isBest) {
 uc = this.vwr.getSymTemp().getUnitCell(this.vwr.getOrientation(1814695966, "array", null, pts), false, null);
 } else if (tok == 1814695966 && uc == null) {
-uc = this.vwr.getCurrentUnitCell();
+if (ucLattice != null) {
+this.vwr.getModelkit(false).drawUnitCell(thisId, ucLattice, swidth);
+return;
+}uc = this.vwr.getCurrentUnitCell();
 }if (lattice == null) {
 pts = this.getBoxPoints(uc != null ? 1814695966 : tok, uc, bs, intScale / 100);
 } else {
@@ -309,6 +334,7 @@ v.addLast(null);
 }propertyValue = v;
 havePoints = true;
 intScale = 0;
+meshNoFill = true;
 break;
 }if (this.tokAt(i + 1) == 1073742335) {
 iOn = ++i;
@@ -409,7 +435,7 @@ center = eval.centerParameter(++i, null);
 i = eval.iToken + 1;
 }}var type;
 switch (this.tokAt(i)) {
-case 536875009:
+case 536875059:
 type = "";
 break;
 case 1111490563:
@@ -444,7 +470,7 @@ var scale = (intScale == 0 ? 1 : intScale / 100);
 var index = 0;
 if (type.length > 0) {
 if (this.isFloatParameter(++i)) index = this.intParameter(i++);
-}if (this.tokAt(i) == 536875009) scale = this.floatParameter(++i);
+}if (this.tokAt(i) == 536875059) scale = this.floatParameter(++i);
 if (!this.chk) eval.runScript(this.vwr.ms.getPointGroupAsString(this.vwr.bsA(), type, index, scale, pts, center, thisId == null ? "" : thisId));
 return;
 case 4106:
@@ -531,6 +557,7 @@ if (nTriangles < 0) isPoints = true;
 break;
 default:
 if (polygons == null && !isPoints && !this.chk) polygons = (J.api.Interface.getInterface("JU.MeshCapper", this.vwr, "script")).set(null).triangulatePolygon(points, -1);
+break;
 }
 if (polygons == null && !isPoints) {
 polygons = JU.AU.newInt2(nTriangles);
@@ -567,7 +594,7 @@ case 4:
 xyz = this.stringParameter(i);
 break;
 case 12:
-xyz = JS.SV.sValue(this.getToken(i));
+xyz = this.vwr.getSymStatic().convertTransform("xyz", this.getToken(i).value);
 break;
 case 2:
 default:
@@ -602,7 +629,8 @@ i++;
 target = this.getPoint3f(i + 1, false);
 options = 1073742066;
 i = eval.iToken;
-}}
+}break;
+}
 } else if (this.tokAt(i + 1) == 1073742327) {
 nth = -2;
 eval.iToken = ++i;
@@ -617,16 +645,12 @@ var s = "";
 var iatom = (bsAtoms != null ? bsAtoms.nextSetBit(0) : -1);
 if (bsAtoms == null && this.vwr.am.cmi >= 0) bsAtoms = this.vwr.getModelUndeletedAtomsBitSet(this.vwr.am.cmi);
 if (bsAtoms != null) {
-s = null;
-if (options != 0) {
-var o = this.vwr.getSymmetryInfo(iatom, xyz, iSym, trans, center, target, 134217751, null, intScale / 100, nth, options, opList);
-if (Clazz.instanceOf(o,"JU.P3")) target = o;
- else s = "";
-}if (thisId == null) thisId = (isSymop ? "sym" : "sg");
-if (s == null) s = this.vwr.getSymmetryInfo(iatom, xyz, iSym, trans, center, target, 135176, thisId, intScale / 100, nth, options, opList);
-s = "draw ID " + (isSymop ? "sg" : "sym") + "* delete;" + s;
-s = "draw ID " + thisId + "* delete;" + s + ";draw *;";
-}eval.runBufferedSafely(s.length > 0 ? s : "draw ID \"" + thisId + "*\" delete", eval.outputBuffer);
+s = this.vwr.getModelkit(false).drawSymmetry(thisId, isSymop, iatom, xyz, iSym, trans, center, target, intScale, nth, options, opList, false);
+if (s == null) return;
+if (isSymop && Clazz.instanceOf(target,"JM.Atom") && Clazz.instanceOf(center,"JM.Atom")) {
+if (eval.fullCommand.indexOf("#quiet") >= 0) s = JU.PT.rep(s, "print", "#print");
+s += "\nmodelkit set atomset " + JU.PT.esc(thisId + "|" + (center).i + "|" + (target).i + "|" + eval.fullCommand) + ";";
+}}eval.runBufferedSafely(s.length > 0 ? s : "draw ID \"" + thisId + "*\" delete", eval.outputBuffer);
 return;
 case 4115:
 isFrame = true;
@@ -738,7 +762,7 @@ propertyValue = Integer.$valueOf(this.intParameter(i));
 } else {
 intScale = this.intParameter(i);
 }break;
-case 536875009:
+case 536875059:
 intScale = Math.round(this.floatParameter(++i) * (this.getToken(i).tok == 2 ? 1 : 100));
 continue;
 case 1073741974:
@@ -847,9 +871,12 @@ this.setShapeProperty(22, "points", Integer.$valueOf(intScale));
 isInitialized = true;
 intScale = 0;
 }if (havePoints && isWild) this.invArg();
-if (propertyName != null) this.setShapeProperty(22, propertyName, propertyValue);
-}
-this.finalizeObject(22, colorArgb[0], translucentLevel, intScale, havePoints, connections, iptDisplayProperty, null);
+if (propertyName != null) {
+this.setShapeProperty(22, propertyName, propertyValue);
+}}
+if (meshNoFill) {
+iptDisplayProperty = -1 - iptDisplayProperty;
+}this.finalizeObject(22, colorArgb[0], translucentLevel, intScale, havePoints, connections, iptDisplayProperty, null);
 });
 Clazz.defineMethod(c$, "mo", 
 function(isInitOnly, iShape){
@@ -960,7 +987,7 @@ this.addShapeProperty(propertyList, "randomSeed", this.tokAt(i + 2) == 2 ? Integ
 propertyName = "monteCarloCount";
 propertyValue = Integer.$valueOf(this.intParameter(i + 1));
 break;
-case 536875009:
+case 536875059:
 propertyName = "scale";
 propertyValue = Float.$valueOf(this.floatParameter(i + 1));
 break;
@@ -1647,7 +1674,7 @@ propertyValue = eval.planeParameter(i, isBest);
 i = eval.iToken;
 sbCommand.append(" plane ").append(JU.Escape.eP4(propertyValue));
 break;
-case 536875009:
+case 536875059:
 propertyName = "scale";
 propertyValue = Float.$valueOf(this.floatParameter(++i));
 sbCommand.append(" scale ").appendO(propertyValue);
@@ -2636,7 +2663,7 @@ propertyName = "selectType";
 propertyValue = this.paramAsStr(++i);
 if (propertyValue.equals("spacefill")) propertyValue = "cpk";
 }break;
-case 536875009:
+case 536875059:
 propertyName = "scale";
 propertyValue = Float.$valueOf(this.floatParameter(++i));
 break;
@@ -2913,7 +2940,7 @@ var ai =  Clazz.newIntArray(-1, [i, this.slen]);
 if (!eval.getShapePropertyData(23, "data",  Clazz.newArray(-1, [this.st, ai, data, this.vwr]))) this.invArg();
 i = ai[0];
 continue;
-case 536875009:
+case 536875059:
 if (++i >= this.slen) this.error(34);
 switch (this.getToken(i).tok) {
 case 2:
@@ -3307,4 +3334,4 @@ return null;
 }
 }, "~N,J.api.SymmetryInterface,JU.BS,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

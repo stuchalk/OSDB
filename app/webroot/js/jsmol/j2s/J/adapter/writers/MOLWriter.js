@@ -67,7 +67,7 @@ if (molData == null) molData =  new java.util.Hashtable();
 var sb =  new JU.SB();
 if (pc != null) {
 sb.appendI(nAtoms).appendC('\n');
-for (var i = bsAtoms.nextSetBit(0), n = 0; i >= 0; i = bsAtoms.nextSetBit(i + 1)) sb.appendI(++n).append(" ").appendD(pc[i]).appendC('\n');
+for (var i = bsAtoms.nextSetBit(0), n = 0; i >= 0; i = bsAtoms.nextSetBit(i + 1)) sb.appendI(++n).append(" ").appendF(pc[i]).appendC('\n');
 
 molData.put("jmol_partial_charges", sb.toString());
 }sb.setLength(0);
@@ -114,7 +114,7 @@ mol.append("{");
 if (a.getElementNumber() != 6) mol.append("\"l\":\"").append(a.getElementSymbol()).append("\",");
 if (charge != 0) mol.append("\"c\":").appendI(charge).append(",");
 if (isotope != 0) mol.append("\"m\":").appendI(isotope).append(",");
-mol.append("\"x\":").appendD(a.x).append(",\"y\":").appendD(a.y).append(",\"z\":").appendD(a.z).append("}");
+mol.append("\"x\":").appendF(a.x).append(",\"y\":").appendF(a.y).append(",\"z\":").appendF(a.z).append("}");
 } else {
 mol.append(JU.PT.sprintf("%10.4p%10.4p%10.4p", "p", o));
 mol.append(" ").append(sym);
@@ -223,7 +223,7 @@ mol.append("{\"b\":").appendI(a1 - 1).append(",\"e\":").appendI(a2 - 1);
 if (order != 1) {
 mol.append(",\"o\":");
 if (order < 0) {
-mol.appendD(-order / 2);
+mol.appendF(-order / 2);
 } else {
 mol.appendI(order);
 }}mol.append("}");
@@ -249,4 +249,4 @@ mol.append("\n");
 }
 }, "JU.SB,~S,~N");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

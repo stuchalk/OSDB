@@ -51,6 +51,10 @@ this.tok = v.tok;
 this.value = v.value;
 return this;
 }, "JS.SV");
+c$.copySafely = Clazz.defineMethod(c$, "copySafely", 
+function(v){
+return (v.myName == null ? v :  new JS.SV().setv(v));
+}, "JS.SV");
 c$.sizeOf = Clazz.defineMethod(c$, "sizeOf", 
 function(x){
 switch (x == null ? 0 : x.tok) {
@@ -667,7 +671,7 @@ case 15:
 case 4:
 break;
 default:
-return ((Clazz.instanceOf(tokenIn,"JS.SV")) && (tokenIn).myName != null ? JS.SV.newI(0).setv(tokenIn) : tokenIn);
+return ((Clazz.instanceOf(tokenIn,"JS.SV")) && (tokenIn).myName != null ? JS.SV.copySafely(tokenIn) : tokenIn);
 }
 var bs = null;
 var s = null;
@@ -1094,7 +1098,7 @@ if (m == null) {
 var x = this.getList();
 if (value == null || x == null) {
 return (x == null || x.size() == 0 ? JS.SV.newS("") : x.removeItemAt(x.size() - 1));
-}x.addLast(JS.SV.newI(0).setv(value));
+}x.addLast(JS.SV.copySafely(value));
 } else {
 if (value == null) {
 m.clear();
@@ -1116,7 +1120,7 @@ v = lst.removeItemAt(i);
 v = m.remove(mapKey.asString());
 }return (v == null ? JS.SV.newS("") : v);
 }if (m != null) {
-m.put(mapKey.asString(), JS.SV.newI(0).setv(value));
+m.put(mapKey.asString(), JS.SV.copySafely(value));
 }}return this;
 }, "JS.SV,JS.SV");
 c$.unEscapeBitSet = Clazz.defineMethod(c$, "unEscapeBitSet", 
@@ -1287,7 +1291,12 @@ return this.getMap().get(key);
 }, "~S");
 Clazz.defineMethod(c$, "mapPut", 
 function(key, v){
-this.getMap().put(key, v);
+switch (this.tok) {
+case 6:
+case 14:
+this.getMap().put(key, JS.SV.copySafely(v).setName(key));
+break;
+}
 }, "~S,JS.SV");
 Clazz.defineMethod(c$, "getMap", 
 function(){
@@ -1444,4 +1453,4 @@ c$.vF = JS.SV.newSV(1073742334, 0, "false");
 c$.vNaN = JS.SV.newSV(3, 2147483647, Float.$valueOf(NaN));
 c$.pt0 =  new JU.P3();
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

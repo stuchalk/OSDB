@@ -19,6 +19,7 @@ this.scale = 1;
 this.isScaleSet = false;
 this.fontID = -1;
 this.titleColor = null;
+this.thisModelOnly = false;
 Clazz.instantialize(this, arguments);}, J.shapespecial, "DrawMesh", J.shape.Mesh);
 Clazz.makeConstructor(c$, 
 function(vwr, thisID, colix, index){
@@ -96,4 +97,4 @@ return this.haveXyPoints;
 }
 });
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

@@ -569,7 +569,7 @@ case 2097194:
 rpn.addXBs(JU.BSUtil.copy(this.vwr.slm.getHiddenSet()));
 break;
 case 12293:
-rpn.addXBs(this.vwr.getMotionFixedAtoms(-1));
+rpn.addXBs(this.vwr.getMotionFixedAtoms(null, null));
 break;
 case 2097192:
 rpn.addXBs(JU.BSUtil.copyInvert(this.vwr.slm.getHiddenSet(), ac));
@@ -842,7 +842,7 @@ i++;
 if (this.tokAt(i++) != 268436482) this.invArg();
 var v = this.parameterExpression(i, 0, null, false, true, -1, false, null, null, false);
 if (v.size() == 0) this.invArg();
-ht.put(key, v.get(0));
+ht.put(key, JS.SV.copySafely(v.get(0)));
 i = this.iToken;
 if (this.tokAt(i) != 268436992) break;
 }
@@ -1115,9 +1115,9 @@ var isString = false;
 switch (tok) {
 case 1275068446:
 return (this.vwr.getModelSetAuxiliaryInfoForAtoms(bs)).get("models");
-case 1145047050:
+case 1145047049:
 case 1145047055:
-case 1145047051:
+case 1145047050:
 case 1145047053:
 case 1145045008:
 case 1145045006:
@@ -1135,6 +1135,9 @@ break;
 case 1086324754:
 isInt = (tokenValue === "color");
 isString = !isInt;
+break;
+case 1145045003:
+isString = true;
 break;
 default:
 isInt = JS.T.tokAttr(tok, 1094713344) && !JS.T.tokAttr(tok, 1111490560);
@@ -1303,7 +1306,7 @@ case 1094713349:
 this.errorStr(45, JS.T.nameOf(tok));
 break;
 case 1086324754:
-iv = (atom.getWyckoffPosition().charAt(0)).charCodeAt(0);
+iv = (atom.getWyckoffPosition(false).charAt(0)).charCodeAt(0);
 switch (iv) {
 case 63:
 iv = 0;
@@ -1412,7 +1415,7 @@ default:
 sum += fv;
 }
 break;
-case 1145047050:
+case 1145047049:
 switch (minmaxtype) {
 case 1073742327:
 pt.ave(bond.atom1, bond.atom2);
@@ -1590,7 +1593,7 @@ var v = this.parameterExpression(pt, ptMax, key, true, true, -1, false, null, nu
 nv = v.size();
 if (nv == 0) this.invArg();
 if (this.chk || v.get(0).tok == 0) return null;
-var tv = JS.SV.selectItemVar(JS.SV.newS("").setv(v.get(nv - 1)));
+var tv = JS.SV.selectItemVar(JS.SV.copySafely(v.get(nv - 1)));
 if (nv > 1) {
 var sel = (nv > 2 ? v.get(1) : null);
 t = v.get(0);
@@ -1699,8 +1702,8 @@ if (tokenValue.tok == 7) {
 sv = (tokenValue).getList();
 if ((nValues = sv.size()) == 0) return;
 }switch (tok) {
+case 1145047049:
 case 1145047050:
-case 1145047051:
 case 1145047053:
 case 1145047055:
 switch (tokenValue.tok) {
@@ -1937,4 +1940,4 @@ var f = (this.privateFuncs == null ? null : this.privateFuncs.get(sf));
 return (f == null ? this.vwr.getFunction(sf) : f);
 }, "~S");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

@@ -50,12 +50,12 @@ this.atomTypePt0 = 0;
 this.atomTypeLen = 0;
 this.isCourseGrained = false;
 this.isbiomol = false;
+this.$cryst1 = 0;
+this.fileSgName = null;
 this.htGroup1 = null;
 this.maxLength = 80;
 this.pdbID = null;
 this.haveDoubleBonds = false;
-this.$cryst1 = 0;
-this.fileSgName = null;
 this.dataT = null;
 this.tlsU = null;
 this.vConnect = null;
@@ -235,7 +235,7 @@ this.asc.getXSymmetry().applySymmetryBio(this.thisBiomolecule, this.applySymmetr
 this.vTlsModels = null;
 this.asc.xtalSymmetry = null;
 }}if (this.vTlsModels != null) {
-symmetry = this.getInterface("JS.Symmetry");
+symmetry = this.asc.newFileSymmetry();
 var n = this.asc.atomSetCount;
 if (n == this.vTlsModels.size()) {
 for (var i = n; --i >= 0; ) this.setTlsGroups(i, i, symmetry);
@@ -272,7 +272,10 @@ JU.Logger.info(this.sbIgnored.toString());
 }});
 Clazz.defineMethod(c$, "checkUnitCellParams", 
 function(){
-if (this.iHaveUnitCell) {
+if (this.isbiomol && (this.unitCellParams == null || Double.isNaN(this.unitCellParams[0]))) {
+this.setUnitCell(1, 1, 1, 90, 90, 90);
+this.addSpaceGroupName("P1");
+}if (this.iHaveUnitCell) {
 this.asc.setCurrentModelInfo("unitCellParams", this.unitCellParams);
 if (this.sgName != null) this.asc.setCurrentModelInfo("spaceGroup", this.sgName);
 }});
@@ -303,7 +306,7 @@ anisou = (entry.getKey().anisoBorU);
 if (anisou != null) JU.Logger.info("ANISOU: " + JU.Escape.eAF(anisou));
 }
 this.tlsU = null;
-}, "J.api.SymmetryInterface");
+}, "J.adapter.smarter.XtalSymmetry.FileSymmetry");
 Clazz.defineMethod(c$, "header", 
 function(){
 if (this.lineLength < 8) return;
@@ -783,10 +786,14 @@ function(){
 var a = this.$cryst1 = this.getFloat(6, 9);
 if (a == 1) a = NaN;
 this.setUnitCell(a, this.getFloat(15, 9), this.getFloat(24, 9), this.getFloat(33, 7), this.getFloat(40, 7), this.getFloat(47, 7));
-if (this.isbiomol) this.doConvertToFractional = false;
-if (this.sgName == null || this.sgName.equals("unspecified!")) this.setSpaceGroupName(JU.PT.parseTrimmedRange(this.line, 55, 66));
-this.fileSgName = this.sgName;
+this.addSpaceGroupName(JU.PT.parseTrimmedRange(this.line, 55, 66));
 });
+Clazz.defineMethod(c$, "addSpaceGroupName", 
+function(name){
+if (this.isbiomol) this.doConvertToFractional = false;
+if (this.sgName == null || this.sgName.equals("unspecified!")) this.setSpaceGroupName(name);
+this.fileSgName = this.sgName;
+}, "~S");
 Clazz.defineMethod(c$, "getFloat", 
 function(ich, cch){
 return this.parseFloatRange(this.line, ich, ich + cch);
@@ -1067,7 +1074,7 @@ this.setTlsTensor(atom, group, symmetry);
 this.asc.setAtomProperties("tlsGroup", data, iModel, true);
 this.asc.setModelInfoForSet("TLS", tlsGroupInfo, iModel);
 this.asc.setTensors();
-}, "~N,~N,J.api.SymmetryInterface");
+}, "~N,~N,J.adapter.smarter.XtalSymmetry.FileSymmetry");
 Clazz.defineMethod(c$, "findAtomForRange", 
 function(atom1, atom2, chain, resno, isLast){
 var iAtom = this.findAtom(atom1, atom2, chain, resno, true);
@@ -1122,7 +1129,7 @@ anisou[7] = bresidual;
 if (this.tlsU == null) this.tlsU =  new java.util.Hashtable();
 this.tlsU.put(atom, anisou);
 atom.addTensor(symmetry.getTensor(this.vwr, this.dataT).setType(null), "TLS-U", false);
-}, "J.adapter.smarter.Atom,java.util.Map,J.api.SymmetryInterface");
+}, "J.adapter.smarter.Atom,java.util.Map,J.adapter.smarter.XtalSymmetry.FileSymmetry");
 Clazz.defineMethod(c$, "tlsAddError", 
 function(error){
 if (this.sbTlsErrors == null) this.sbTlsErrors =  new JU.SB();
@@ -1179,4 +1186,4 @@ this.connectNextAtomSet = index + 1;
 this.connectNextAtomIndex = firstAtom;
 }, "~N,~B");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

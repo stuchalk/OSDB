@@ -63,7 +63,7 @@ var $t$;
 //var c$;
 Clazz_declarePackage("J.console");
 Clazz_declareInterface(J.console, "GenericTextArea");
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.console");
 Clazz_load(["J.api.JmolAppConsoleInterface", "$.JmolCallbackListener", "java.util.Hashtable"], "J.console.GenericConsole", ["JU.PT", "J.c.CBK", "J.i18n.GT", "JS.T", "JV.Viewer"], function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -218,7 +218,7 @@ Clazz_defineMethod(c$, "execute",
 function(strCommand){
 var cmd = (strCommand == null ? this.input.getText() : strCommand);
 if (strCommand == null) this.input.setText(null);
-var strErrorMessage = this.vwr.script(cmd + "; ## GUI ##" + "\u0001## EDITOR_IGNORE ##");
+var strErrorMessage = this.vwr.script(cmd + "; ## GUI ##\u0001## EDITOR_IGNORE ##; ## GUI ##");
 if (strErrorMessage != null && !strErrorMessage.equals("pending")) this.outputMsg(strErrorMessage);
 }, "~S");
 Clazz_defineMethod(c$, "destroyConsole", 
@@ -368,7 +368,9 @@ this.input.setText(JU.PT.escUnicode(cmd));
 }}, "~B,~B");
 Clazz_defineMethod(c$, "trimGUI", 
 function(cmd){
-var pt = cmd.indexOf("; ## GUI ##");
+var pt = cmd.indexOf("\u0001##");
+if (pt >= 0) cmd = cmd.substring(0, pt);
+pt = cmd.indexOf("; ## GUI ##");
 if (pt >= 0) cmd = cmd.substring(0, pt);
 return JU.PT.trim(cmd, "; ");
 }, "~S");
@@ -465,7 +467,7 @@ return sout;
 }, "~S");
 c$.labels = null;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 Clazz_declarePackage("J.consolejs");
 Clazz_load(["J.console.GenericConsole"], "J.consolejs.AppletConsole", null, function(){
 var c$ = Clazz_decorateAsClass(function(){
@@ -524,6 +526,9 @@ Clazz_overrideMethod(c$, "newJMenuItem",
 function(key){
 return null;
 }, "~S");
+Clazz_overrideMethod(c$, "regainFocus", 
+function(){
+});
 {
 {
 ;Jmol.Console = {
@@ -827,7 +832,7 @@ return s;
 }
 ;
 }}});
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
 })(Clazz
 ,Clazz.getClassName
 ,Clazz.newLongArray

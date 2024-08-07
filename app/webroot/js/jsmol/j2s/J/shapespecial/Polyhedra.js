@@ -76,7 +76,9 @@ return;
 if (!this.iHaveCenterBitSet && bs != null && !bs.isEmpty()) {
 this.centers = bs;
 this.iHaveCenterBitSet = true;
-}var info = this.info;
+}var modifyOnly = (value === Boolean.TRUE);
+if (modifyOnly) bs.and(this.vwr.getAtomBitSet("polyhedra"));
+var info = this.info;
 this.deletePolyhedra();
 this.info = info;
 this.buildPolyhedra();
@@ -275,7 +277,7 @@ this.center.scale(1 / n);
 Clazz.defineMethod(c$, "pointsPolyhedra", 
 function(bs, pointScale){
 bs = this.findPolyBS(this.thisID == null ? bs : null, false);
-for (var i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1)) this.polyhedrons[i].pointScale = pointScale;
+for (var i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1)) this.polyhedrons[i].setPointScale(pointScale);
 
 }, "JU.BS,~N");
 Clazz.defineMethod(c$, "scalePolyhedra", 
@@ -982,4 +984,4 @@ return s.toString();
 c$.randomPoint = JU.P3.new3(3141, 2718, 1414);
 c$.MAX_DISTANCE_TO_PLANE = 0.1;
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

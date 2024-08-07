@@ -622,4 +622,4 @@ return  Clazz.newArray(-1, [pt_a_prime, n, r, JU.P3.new3(theta, pitch, residuesP
 }, "JU.P3,JU.P3,JU.Quat");
 c$.axisY = JU.V3.new3(0, 1, 0);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

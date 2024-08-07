@@ -2,16 +2,17 @@ Clazz.declarePackage("J.render");
 Clazz.load(null, "J.render.TextRenderer", ["JM.Text"], function(){
 var c$ = Clazz.declareType(J.render, "TextRenderer", null);
 c$.render = Clazz.defineMethod(c$, "render", 
-function(tm, text, g3d, scalePixelsPerMicron, imageFontScaling, boxXY, temp, pTemp, pointerColix, pointerWidth, mode){
+function(vwr, text, g3d, scalePixelsPerMicron, imageFontScaling, boxXY, temp, pTemp, pointerColix, pointerWidth, mode){
 if (text == null || text.image == null && !text.doFormatText && text.lines == null) return false;
 var isAbsolute = ((mode & 64) != 0);
 var doPointer = ((mode & 1) != 0);
 var isAntialiased = ((mode & 4) != 0);
-var showText = g3d.setC(text.colix);
+var colix = text.colix;
+var showText = g3d.setC(colix);
 if (!showText && (text.image == null && (text.bgcolix == 0 || !g3d.setC(text.bgcolix)))) return false;
-if (tm != null && text.valign == 4) J.render.TextRenderer.calcBarPixelsXYZ(tm, text, pTemp, false);
+if (text.isEcho && text.valign == 4) J.render.TextRenderer.calcBarPixelsXYZ(vwr, text, pTemp, false);
 text.setPosition(scalePixelsPerMicron, imageFontScaling, isAbsolute, boxXY);
-var barPixels = (tm != null && text.valign == 4 ? J.render.TextRenderer.calcBarPixelsXYZ(tm, text, pTemp, false) : text.barPixels);
+var barPixels = (text.isEcho && text.valign == 4 ? J.render.TextRenderer.calcBarPixelsXYZ(vwr, text, pTemp, false) : text.barPixels);
 if (text.image == null) {
 if (text.bgcolix != 0) {
 if (g3d.setC(text.bgcolix)) J.render.TextRenderer.showBox(g3d, text.colix, Clazz.floatToInt(text.boxX) - (barPixels == 0 ? 0 : barPixels + 4), Clazz.floatToInt(text.boxY) + text.boxYoff2 * 2, text.z + 2, text.zSlab, Clazz.floatToInt(text.boxWidth) + barPixels, Clazz.floatToInt(text.boxHeight), text.fontScale, !text.isEcho);
@@ -28,18 +29,18 @@ g3d.drawImage(text.image, Clazz.floatToInt(text.boxX), Clazz.floatToInt(text.box
 }if (!doPointer) return true;
 J.render.TextRenderer.drawLineXYZ(g3d, text.atomX, text.atomY, text.atomZ, text.boxX, text.boxY, text.zSlab, text.boxWidth, text.boxHeight, pointerColix, pointerWidth * (isAntialiased ? 2 : 1));
 return true;
-}, "JV.TransformManager,JM.Text,J.api.JmolRendererInterface,~N,~N,~A,~A,JU.P3i,~N,~N,~N");
+}, "JV.Viewer,JM.Text,J.api.JmolRendererInterface,~N,~N,~A,~A,JU.P3i,~N,~N,~N");
 c$.calcBarPixelsXYZ = Clazz.defineMethod(c$, "calcBarPixelsXYZ", 
-function(tm, t, pTemp, andSet){
+function(vwr, t, pTemp, andSet){
 var barPixels = t.barPixels;
 if (t.xyz != null) {
-tm.transformPtScr(t.xyz, pTemp);
+vwr.tm.transformPtScr(t.xyz, pTemp);
 if (andSet) t.setXYZs(pTemp.x, pTemp.y, pTemp.z, pTemp.z);
-if (barPixels > 0 && tm.perspectiveDepth) {
-var d = tm.unscaleToScreen(pTemp.z, barPixels);
+if (barPixels > 0 && vwr.tm.perspectiveDepth) {
+var d = vwr.tm.unscaleToScreen(pTemp.z, barPixels);
 barPixels = t.barPixelsXYZ = Clazz.floatToInt(barPixels * t.barDistance / d);
 }}return barPixels;
-}, "JV.TransformManager,JM.Text,JU.P3i,~B");
+}, "JV.Viewer,JM.Text,JU.P3i,~B");
 c$.renderScale = Clazz.defineMethod(c$, "renderScale", 
 function(g3d, text, temp, barPixels, isAntialiased){
 var z = text.z;
@@ -106,4 +107,4 @@ g3d.drawRect(x + 3, y + 3, z - 1, zSlab, boxWidth - 6, boxHeight - 6);
 g3d.drawRect(x + 1, y + 1, z - 1, zSlab, boxWidth - 2, boxHeight - 2);
 }}, "J.api.JmolRendererInterface,~N,~N,~N,~N,~N,~N,~N,~N,~B");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

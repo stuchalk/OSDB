@@ -40,6 +40,7 @@ this.titleAtomSet = 1;
 this.addAtomLabelNumbers = false;
 this.ignoreGeomBonds = false;
 this.allowWyckoff = true;
+this.stopOn_SHELX_HKL = false;
 this.htCellTypes = null;
 this.modelMap = null;
 this.haveGlobalDummy = false;
@@ -79,6 +80,7 @@ this.key2col =  Clazz.newIntArray (100, 0);
 Clazz.overrideMethod(c$, "initializeReader", 
 function(){
 this.initSubclass();
+this.stopOn_SHELX_HKL = this.checkFilterKey("STOPONSHELXHKL");
 this.allowPDBFilter = true;
 this.appendedData = this.htParams.get("appendedData");
 var conf = this.getFilter("CONF ");
@@ -95,7 +97,6 @@ this.forceSymmetry(false);
 this.molecularType = "filter \"MOLECULAR\"";
 }this.checkNearAtoms = !this.checkFilterKey("NOSPECIAL");
 this.allowRotations = !this.checkFilterKey("NOSYM");
-if (this.strSupercell != null && this.strSupercell.indexOf(",") >= 0) this.addCellType("conventional", this.strSupercell, true);
 if (this.binaryDoc != null) return;
 this.readCifData();
 this.continuing = false;
@@ -118,7 +119,9 @@ while ((this.key = this.cifParser.peekToken()) != null) if (!this.readEntryOrLoo
 }});
 Clazz.defineMethod(c$, "continueWith", 
 function(key){
-var ret = (key != null && (this.ac == 0 || !key.equals("_shelx_hkl_file")));
+var isHKL = false;
+var ret = key != null && (!this.stopOn_SHELX_HKL || (this.ac == 0 || !key.equals("_shelx_hkl_file")));
+if (ret && isHKL) System.err.println("CIFReader reading _shelx_hkl_file; use FILTER 'StopOnShelxHKL' to stop when this is found");
 return ret;
 }, "~S");
 Clazz.defineMethod(c$, "getCifDataParser", 
@@ -240,6 +243,7 @@ isFrom = !isFrom;
 this.htCellTypes.put(type, cell);
 if (type.equalsIgnoreCase(this.strSupercell)) {
 this.strSupercell = cell;
+this.htCellTypes.put("super", (isFrom ? "!" : "") + data);
 this.htCellTypes.put("conventional", (isFrom ? "" : "!") + data);
 }}, "~S,~S,~B");
 Clazz.defineMethod(c$, "getModulationReader", 
@@ -603,6 +607,7 @@ function(isLigand){
 this.isLigand = isLigand;
 var pdbModelNo = -1;
 var haveCoord = true;
+var noPreviousReferences = this.asc.atomSymbolicMap.isEmpty();
 this.parseLoopParametersFor("_atom_site", J.adapter.readers.cif.CifReader.atomFields);
 if (this.key2col[55] != -1) {
 this.setFractionalCoordinates(false);
@@ -626,12 +631,14 @@ this.skipLoop(false);
 return false;
 }var modelField = this.key2col[17];
 var siteMult = 0;
+var atomLabels = (this.isMMCIF ? null : "");
 while (this.cifParser.getData()) {
 if (modelField >= 0) {
 pdbModelNo = this.checkPDBModelField(modelField, pdbModelNo);
 if (pdbModelNo < 0) break;
 if (this.skipping) continue;
 }var atom = null;
+var atomName = null;
 if (this.isMMCIF) {
 if (haveCoord) {
 atom =  new J.adapter.smarter.Atom();
@@ -643,13 +650,20 @@ continue;
 }}} else {
 var f = -1;
 var f0 = -1;
-if ((f0 = f = this.fieldProperty(this.key2col[1])) != -1 || (f = this.fieldProperty(this.key2col[49])) != -1 || (f = this.fieldProperty(this.key2col[73])) != -1 || (f = this.fieldProperty(this.key2col[20])) != -1 || (f = this.fieldProperty(this.key2col[21])) != -1 || (f = this.fieldProperty(this.key2col[63])) != -1) {
+if ((f0 = f = this.fieldProperty(this.key2col[1])) != -1 || (f = this.fieldProperty(this.key2col[49])) != -1 || (f = this.fieldProperty(this.key2col[73])) != -1 || (f0 = f = this.fieldProperty(this.key2col[20])) != -1 || (f = this.fieldProperty(this.key2col[21])) != -1 || (f = this.fieldProperty(this.key2col[63])) != -1) {
+if (f0 != -1 && atomLabels != null) {
 atom = this.asc.getAtomFromName(this.field);
-if (f0 != -1 && (this.addAtomLabelNumbers || atom != null)) {
-this.field = (this.field) + (this.asc.ac + 1);
+if (this.addAtomLabelNumbers || atom != null) {
+var key = ";" + this.field + ";";
+if (noPreviousReferences) {
+atomLabels += key;
+}if (atomLabels.indexOf(key) < 0) {
+atomLabels += key;
+} else {
+this.field = atomName = (this.field) + (this.asc.ac + 1);
 System.err.println("CifReader found duplicate atom_site_label! New label is " + this.field);
 atom = null;
-}}var field = this.field;
+}}}}var field = this.field;
 if (atom == null) {
 atom =  new J.adapter.smarter.Atom();
 if (f != -1) {
@@ -694,7 +708,7 @@ break;
 case 49:
 case 1:
 case 73:
-atom.atomName = field;
+atom.atomName = (atomName == null ? field : atomName);
 break;
 case 2:
 haveAuth = true;
@@ -721,7 +735,6 @@ break;
 case 74:
 if (this.allowWyckoff) {
 wyckoff = field;
-seqID = ((field.length > 0 ? field.charAt(0) : 0)).charCodeAt(0);
 }break;
 case 13:
 haveAuth = true;
@@ -795,8 +808,9 @@ if ("dum".equals(field)) {
 atom.x = NaN;
 continue;
 }break;
+case 75:
 case 61:
-if (this.modulated) siteMult = this.parseIntStr(field);
+siteMult = this.parseIntField();
 break;
 case 62:
 case 47:
@@ -868,7 +882,8 @@ if (!haveCoord) continue;
 if (Float.isNaN(atom.x) || Float.isNaN(atom.y) || Float.isNaN(atom.z)) {
 JU.Logger.warn("atom " + atom.atomName + " has invalid/unknown coordinates");
 continue;
-}var strChain = componentId;
+}if (siteMult > 0 && wyckoff != null && wyckoff.length > 0) seqID = (siteMult << 16) + (wyckoff.charAt(0)).charCodeAt(0);
+var strChain = componentId;
 if (haveAuth) {
 if (authAtom != null) atom.atomName = authAtom;
 if (authComp != null) atom.group3 = authComp;
@@ -1146,7 +1161,10 @@ var order = (o[4]).intValue();
 var a1 = this.getAtomFromNameCheckCase(o[0]);
 var a2 = this.getAtomFromNameCheckCase(o[1]);
 if (a1 == null || a2 == null) {
-a2 = this.getAtomFromNameCheckCase(o[1]);
+System.err.println("CifReader checking GEOM_BOND " + o[0] + "-" + o[1] + " found " + a1 + " " + a2);
+continue;
+}if (Float.isNaN(a1.x) || Float.isNaN(a2.x)) {
+System.err.println("CifReader checking GEOM_BOND " + o[0] + "-" + o[1] + " found x coord NaN");
 continue;
 }var iatom1 = a1.index;
 var iatom2 = a2.index;
@@ -1162,8 +1180,9 @@ if (bs1 == null || bs2 == null) continue;
 if (this.atoms[iatom1].elementNumber == 1 || this.atoms[iatom2].elementNumber == 1) haveH = true;
 for (var j = bs1.nextSetBit(0); j >= 0; j = bs1.nextSetBit(j + 1)) {
 for (var k = bs2.nextSetBit(0); k >= 0; k = bs2.nextSetBit(k + 1)) {
-if ((!this.isMolecular || !this.bsConnected[j + this.firstAtom].get(k)) && this.checkBondDistance(this.atoms[j + this.firstAtom], this.atoms[k + this.firstAtom], distance, dx)) this.addNewBond(j + this.firstAtom, k + this.firstAtom, order);
-}
+if ((!this.isMolecular || !this.bsConnected[j + this.firstAtom].get(k)) && this.checkBondDistance(this.atoms[j + this.firstAtom], this.atoms[k + this.firstAtom], distance, dx)) {
+this.addNewBond(j + this.firstAtom, k + this.firstAtom, order);
+}}
 }
 }
 if (!this.iHaveFractionalCoordinates) return false;
@@ -1303,9 +1322,9 @@ return this.parseFloatStr(this.cifParser.getColumnData(i));
 Clazz.declareInterface(J.adapter.readers.cif.CifReader, "Parser");
 c$.TransformFields =  Clazz.newArray(-1, ["x[1][1]", "x[1][2]", "x[1][3]", "r[1]", "x[2][1]", "x[2][2]", "x[2][3]", "r[2]", "x[3][1]", "x[3][2]", "x[3][3]", "r[3]"]);
 c$.atomTypeFields =  Clazz.newArray(-1, ["_atom_type_symbol", "_atom_type_oxidation_number", "_atom_type_radius_bond"]);
-c$.atomFields =  Clazz.newArray(-1, ["*_type_symbol", "*_label", "*_auth_atom_id", "*_fract_x", "*_fract_y", "*_fract_z", "*_cartn_x", "*_cartn_y", "*_cartn_z", "*_occupancy", "*_b_iso_or_equiv", "*_auth_comp_id", "*_auth_asym_id", "*_auth_seq_id", "*_pdbx_pdb_ins_code", "*_label_alt_id", "*_group_pdb", "*_pdbx_pdb_model_num", "*_calc_flag", "*_disorder_group", "*_aniso_label", "*_anisotrop_id", "*_aniso_u_11", "*_aniso_u_22", "*_aniso_u_33", "*_aniso_u_12", "*_aniso_u_13", "*_aniso_u_23", "*_anisotrop_u[1][1]", "*_anisotrop_u[2][2]", "*_anisotrop_u[3][3]", "*_anisotrop_u[1][2]", "*_anisotrop_u[1][3]", "*_anisotrop_u[2][3]", "*_u_iso_or_equiv", "*_aniso_b_11", "*_aniso_b_22", "*_aniso_b_33", "*_aniso_b_12", "*_aniso_b_13", "*_aniso_b_23", "*_aniso_beta_11", "*_aniso_beta_22", "*_aniso_beta_33", "*_aniso_beta_12", "*_aniso_beta_13", "*_aniso_beta_23", "*_adp_type", "_chem_comp_atom_comp_id", "_chem_comp_atom_atom_id", "_chem_comp_atom_type_symbol", "_chem_comp_atom_charge", "_chem_comp_atom_model_cartn_x", "_chem_comp_atom_model_cartn_y", "_chem_comp_atom_model_cartn_z", "_chem_comp_atom_pdbx_model_cartn_x_ideal", "_chem_comp_atom_pdbx_model_cartn_y_ideal", "_chem_comp_atom_pdbx_model_cartn_z_ideal", "*_disorder_assembly", "*_label_asym_id", "*_subsystem_code", "*_symmetry_multiplicity", "*_thermal_displace_type", "*_moment_label", "*_moment_crystalaxis_mx", "*_moment_crystalaxis_my", "*_moment_crystalaxis_mz", "*_moment_crystalaxis_x", "*_moment_crystalaxis_y", "*_moment_crystalaxis_z", "*_id", "*_label_seq_id", "*_label_comp_id", "*_label_atom_id", "*_wyckoff_label"]);
+c$.atomFields =  Clazz.newArray(-1, ["*_type_symbol", "*_label", "*_auth_atom_id", "*_fract_x", "*_fract_y", "*_fract_z", "*_cartn_x", "*_cartn_y", "*_cartn_z", "*_occupancy", "*_b_iso_or_equiv", "*_auth_comp_id", "*_auth_asym_id", "*_auth_seq_id", "*_pdbx_pdb_ins_code", "*_label_alt_id", "*_group_pdb", "*_pdbx_pdb_model_num", "*_calc_flag", "*_disorder_group", "*_aniso_label", "*_anisotrop_id", "*_aniso_u_11", "*_aniso_u_22", "*_aniso_u_33", "*_aniso_u_12", "*_aniso_u_13", "*_aniso_u_23", "*_anisotrop_u[1][1]", "*_anisotrop_u[2][2]", "*_anisotrop_u[3][3]", "*_anisotrop_u[1][2]", "*_anisotrop_u[1][3]", "*_anisotrop_u[2][3]", "*_u_iso_or_equiv", "*_aniso_b_11", "*_aniso_b_22", "*_aniso_b_33", "*_aniso_b_12", "*_aniso_b_13", "*_aniso_b_23", "*_aniso_beta_11", "*_aniso_beta_22", "*_aniso_beta_33", "*_aniso_beta_12", "*_aniso_beta_13", "*_aniso_beta_23", "*_adp_type", "_chem_comp_atom_comp_id", "_chem_comp_atom_atom_id", "_chem_comp_atom_type_symbol", "_chem_comp_atom_charge", "_chem_comp_atom_model_cartn_x", "_chem_comp_atom_model_cartn_y", "_chem_comp_atom_model_cartn_z", "_chem_comp_atom_pdbx_model_cartn_x_ideal", "_chem_comp_atom_pdbx_model_cartn_y_ideal", "_chem_comp_atom_pdbx_model_cartn_z_ideal", "*_disorder_assembly", "*_label_asym_id", "*_subsystem_code", "*_symmetry_multiplicity", "*_thermal_displace_type", "*_moment_label", "*_moment_crystalaxis_mx", "*_moment_crystalaxis_my", "*_moment_crystalaxis_mz", "*_moment_crystalaxis_x", "*_moment_crystalaxis_y", "*_moment_crystalaxis_z", "*_id", "*_label_seq_id", "*_label_comp_id", "*_label_atom_id", "*_wyckoff_label", "*_site_symmetry_multiplicity"]);
 c$.citationFields =  Clazz.newArray(-1, ["_citation_title"]);
 c$.symmetryOperationsFields =  Clazz.newArray(-1, ["*_operation_xyz", "*_magn_operation_xyz", "*_ssg_operation_algebraic", "*_magn_ssg_operation_algebraic", "_symmetry_equiv_pos_as_xyz", "_symmetry_ssg_equiv_pos_as_xyz", "*_magn_operation_timereversal", "*_magn_ssg_operation_timereversal", "*_operation_timereversal", "*_magn_centering_xyz", "*_magn_ssg_centering_algebraic", "*_magn_ssg_centering_xyz"]);
 c$.geomBondFields =  Clazz.newArray(-1, ["_geom_bond_atom_site_label_1", "_geom_bond_atom_site_label_2", "_geom_bond_distance", "_ccdc_geom_bond_type"]);
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

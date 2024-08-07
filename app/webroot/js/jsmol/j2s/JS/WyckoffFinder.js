@@ -1,15 +1,17 @@
 Clazz.declarePackage("JS");
-Clazz.load(["java.util.Hashtable", "JU.P3", "$.V3"], "JS.WyckoffFinder", ["JU.JSJSONParser", "$.M4", "$.Measure", "$.P4", "$.PT", "$.Rdr", "$.SB", "JV.FileManager"], function(){
+Clazz.load(["java.util.Hashtable", "JU.P3", "$.V3"], "JS.WyckoffFinder", ["JU.JSJSONParser", "$.M4", "$.Measure", "$.P4", "$.PT", "$.Rdr", "$.SB", "JS.SpaceGroup", "$.SymmetryOperation", "JV.FileManager"], function(){
 var c$ = Clazz.decorateAsClass(function(){
 this.positions = null;
 this.npos = 0;
 this.ncent = 0;
 this.centerings = null;
 this.centeringStr = null;
+this.gpos = null;
 Clazz.instantialize(this, arguments);}, JS, "WyckoffFinder", null);
 /*LV!1824 unnec constructor*/Clazz.makeConstructor(c$, 
 function(map){
 if (map != null) {
+this.gpos = map.get("gp");
 var wpos = map.get("wpos");
 this.positions = wpos.get("pos");
 this.npos = this.positions.size();
@@ -21,19 +23,19 @@ this.centerings =  new Array(this.ncent);
 for (var i = this.ncent; --i >= 0; ) {
 var s = cent.get(i);
 this.centeringStr[i] = s;
-this.centerings[i] = JS.WyckoffFinder.toPoint(s);
+this.centerings[i] = JS.SymmetryOperation.toPoint(s, null);
 }
 }}}, "java.util.Map");
 Clazz.defineMethod(c$, "getWyckoffFinder", 
-function(vwr, sgname){
-var helper = JS.WyckoffFinder.helpers.get(sgname);
+function(vwr, sg){
+var helper = JS.WyckoffFinder.helpers.get(sg.clegId);
 if (helper == null) {
-helper = JS.WyckoffFinder.createHelper(this, vwr, sgname);
+helper = JS.WyckoffFinder.createHelper(this, vwr, sg.clegId);
 }if (helper == null) {
 if (JS.WyckoffFinder.nullHelper == null) JS.WyckoffFinder.nullHelper =  new JS.WyckoffFinder(null);
-JS.WyckoffFinder.helpers.put(sgname, JS.WyckoffFinder.nullHelper);
+JS.WyckoffFinder.helpers.put(sg.clegId, JS.WyckoffFinder.nullHelper);
 }return helper;
-}, "JV.Viewer,~S");
+}, "JV.Viewer,JS.SpaceGroup");
 Clazz.defineMethod(c$, "findPositionFor", 
 function(p, letter){
 if (this.positions != null) {
@@ -48,42 +50,41 @@ return p;
 }}
 }return null;
 }, "JU.P3,~S");
-Clazz.defineMethod(c$, "getStringInfo", 
-function(uc, p, returnType){
-var info = this.createInfo(uc, p, returnType);
+Clazz.defineMethod(c$, "getInfo", 
+function(uc, p, returnType, withMult){
+var info = this.createInfo(uc, p, returnType, withMult);
 return (info == null ? "?" : info);
-}, "JS.UnitCell,JU.P3,~N");
-c$.toPoint = Clazz.defineMethod(c$, "toPoint", 
-function(xyz){
-var s = JU.PT.split(xyz, ",");
-return JU.P3.new3(JU.PT.parseFloatFraction(s[0]), JU.PT.parseFloatFraction(s[1]), JU.PT.parseFloatFraction(s[2]));
-}, "~S");
+}, "JS.UnitCell,JU.P3,~N,~B");
 c$.wrap = Clazz.defineMethod(c$, "wrap", 
 function(xyz, sb){
 return sb.appendC('(').append(xyz).appendC(')');
 }, "~S,JU.SB");
 Clazz.defineMethod(c$, "createInfo", 
-function(uc, p, returnType){
+function(uc, p, returnType, withMult){
 switch (returnType) {
+case 83:
+return this.getCenteringStr(-1, ' ', null).toString().trim();
+case 67:
+var ret =  new Array(this.centerings.length);
+for (var i = ret.length; --i >= 0; ) ret[i] = this.centerings[i];
+
+return ret;
 case 42:
 var sb =  new JU.SB();
-this.getCenteringStr(-1, sb);
+this.getCenteringStr(-1, '+', sb);
 for (var i = this.npos; --i >= 0; ) {
 var map = this.positions.get(i);
-var label = map.get("label");
+var label = (withMult ? "" + map.get("mult") : "") + map.get("label");
 sb.appendC('\n').append(label);
-if (i == 0) {
-sb.append(" (x,y,z)");
-} else {
-JS.WyckoffFinder.getList(map.get("coord"), label, sb);
-}}
+JS.WyckoffFinder.getList(i == 0 ? this.gpos : map.get("coord"), label, sb, (i == 0 ? this.ncent : 0));
+}
 return sb.toString();
 case -1:
 case -2:
 case -3:
 for (var i = this.npos; --i >= 0; ) {
 var map = this.positions.get(i);
-var label = map.get("label");
+var label = (withMult ? "" + map.get("mult") : "") + map.get("label");
 if (i == 0) {
 switch (returnType) {
 case -1:
@@ -91,7 +92,11 @@ return label;
 case -2:
 return "(x,y,z)";
 case -3:
-return map.get("label") + "  (x,y,z)";
+var sbc =  new JU.SB();
+sbc.append(label).appendC(' ');
+this.getCenteringStr(-1, '+', sbc).appendC(' ');
+JS.WyckoffFinder.getList(this.gpos, label, sbc, this.ncent);
+return sbc.toString();
 }
 }var coords = map.get("coord");
 for (var c = 0, n = coords.size(); c < n; c++) {
@@ -105,65 +110,92 @@ return coord.asString(null, true).toString();
 case -3:
 var sbc =  new JU.SB();
 sbc.append(label).appendC(' ');
-this.getCenteringStr(-1, sbc).appendC(' ');
-JS.WyckoffFinder.getList(coords, label, sbc);
+this.getCenteringStr(-1, '+', sbc).appendC(' ');
+JS.WyckoffFinder.getList(coords, label, sbc, 0);
 return sbc.toString();
 }
 }}
 }
 break;
+case 71:
 default:
 var letter = "" + String.fromCharCode(returnType);
-var isGeneral = (letter.charAt(0) == 'G');
+var isGeneral = (returnType == 71);
+var tempP =  new JU.P3();
 for (var i = isGeneral ? 1 : this.npos; --i >= 0; ) {
 var map = this.positions.get(i);
-if (isGeneral || map.get("label").equals(letter)) {
-return (i == 0 ? "(x,y,z)" : JS.WyckoffFinder.getList(map.get("coord"), letter, null).toString());
+var label = map.get("label");
+if (isGeneral || label.equals(letter)) {
+var sbc =  new JU.SB();
+if (isGeneral) sbc.append(label).appendC(' ');
+var coords = (i == 0 ? this.gpos : map.get("coord"));
+JS.WyckoffFinder.getList(coords, (withMult ? map.get("mult") : "") + letter, sbc, 0);
+if (i > 0 && this.ncent > 0) {
+var tempOp =  new JU.M4();
+for (var j = 0; j < this.ncent; j++) {
+this.addCentering(coords, this.centerings[j], tempOp, tempP, sbc);
+}
+}return sbc.toString();
 }}
 break;
 }
 return null;
-}, "JS.UnitCell,JU.P3,~N");
+}, "JS.UnitCell,JU.P3,~N,~B");
 c$.createHelper = Clazz.defineMethod(c$, "createHelper", 
-function(w, vwr, sgname){
-var itno = JU.PT.parseInt(JU.PT.split(sgname, ":")[0]);
+function(w, vwr, clegId){
+var sgname = clegId;
+var pt = sgname.indexOf(":");
+var itno = JU.PT.parseInt(pt < 0 ? sgname : sgname.substring(0, pt));
 if (itno >= 1 && itno <= 230) {
 var resource = JS.WyckoffFinder.getResource(w, vwr, "ita_" + itno + ".json");
 if (resource != null) {
 var its = resource.get("its");
-if (its != null) {
-for (var i = its.size(); --i >= 0; ) {
-var map = its.get(i);
-if (sgname.equals(map.get("itaFull"))) {
+var map = null;
+var haveMap = false;
+for (var i = 0, c = its.size(); i < c; i++) {
+map = its.get(i);
+if (sgname.equals(map.get("clegId"))) {
+haveMap = true;
+break;
+}}
+if (!haveMap || map.containsKey("more")) map = JS.SpaceGroup.fillMoreData(map, clegId, itno, its.get(0));
 var helper =  new JS.WyckoffFinder(map);
 JS.WyckoffFinder.helpers.put(sgname, helper);
 return helper;
-}}
-}}}return null;
+}}return null;
 }, "~O,JV.Viewer,~S");
 Clazz.defineMethod(c$, "getCenteringStr", 
-function(index, sb){
+function(index, sep, sb){
 if (sb == null) sb =  new JU.SB();
 if (this.ncent == 0) return sb;
 if (index >= 0) {
-sb.appendC('+');
+sb.appendC(sep);
 return JS.WyckoffFinder.wrap(this.centeringStr[index], sb);
 }for (var i = 0; i < this.ncent; i++) {
-sb.appendC('+');
+sb.appendC(sep);
 JS.WyckoffFinder.wrap(this.centeringStr[i], sb);
 }
 return sb;
-}, "~N,JU.SB");
+}, "~N,~S,JU.SB");
 c$.getList = Clazz.defineMethod(c$, "getList", 
-function(coords, letter, sb){
+function(coords, letter, sb, n){
 if (sb == null) sb =  new JU.SB();
-for (var c = 0, n = coords.size(); c < n; c++) {
+n = (n == 0 ? coords.size() : Clazz.doubleToInt(coords.size() / (n + 1)));
+for (var c = 0; c < n; c++) {
 var coord = JS.WyckoffFinder.getWyckoffCoord(coords, c, letter);
 sb.append(" ");
 coord.asString(sb, false);
 }
 return sb;
-}, "JU.Lst,~S,JU.SB");
+}, "JU.Lst,~S,JU.SB,~N");
+Clazz.defineMethod(c$, "addCentering", 
+function(coords, centering, tempOp, tempP, sb){
+for (var n = coords.size(), c = 0; c < n; c++) {
+var coord = coords.get(c);
+sb.append(" ");
+coord.asStringCentered(centering, tempOp, tempP, sb);
+}
+}, "JU.Lst,JU.P3,JU.M4,JU.P3,JU.SB");
 c$.getWyckoffCoord = Clazz.defineMethod(c$, "getWyckoffCoord", 
 function(coords, c, label){
 var coord = coords.get(c);
@@ -200,6 +232,21 @@ this.xyz = xyz;
 this.label = label;
 this.create(xyz);
 }, "~S,~S");
+Clazz.defineMethod(c$, "asStringCentered", 
+function(centering, tempOp, tempP, sb){
+tempOp.setM4(this.op);
+tempOp.add(centering);
+tempOp.getTranslation(tempP);
+tempP.x = tempP.x % 1;
+tempP.y = tempP.y % 1;
+tempP.z = tempP.z % 1;
+tempOp.setTranslation(tempP);
+sb.appendC(' ');
+var s = "," + JS.SymmetryOperation.getXYZFromMatrixFrac(tempOp, false, true, false, true) + ",";
+s = JU.PT.rep(s, ",,", ",0,");
+s = JU.PT.rep(s, ",+", ",");
+sb.appendC('(').append(s.substring(1, s.length - 1)).appendC(')');
+}, "JU.P3,JU.M4,JU.P3,JU.SB");
 Clazz.defineMethod(c$, "contains", 
 function(w, uc, p){
 var slop = uc.getPrecision();
@@ -272,13 +319,11 @@ case 3:
 d = Math.abs(JU.Measure.getPlaneProjection(p, this.plane, JS.WyckoffFinder.WyckoffCoord.vt, JS.WyckoffFinder.WyckoffCoord.vt));
 break;
 }
-if (d < slop) System.out.println("success! " + this.label + " " + this.xyz + " " + d + " " + p);
 return d < slop;
 }, "JU.P3,~N");
 Clazz.defineMethod(c$, "create", 
 function(p){
 var nxyz = (p.indexOf('x') >= 0 ? 1 : 0) + (p.indexOf('y') >= 0 ? 1 : 0) + (p.indexOf('z') >= 0 ? 1 : 0);
-if (nxyz == 1 || nxyz == 2) {
 var a =  Clazz.newFloatArray (16, 0);
 var v = JU.PT.split(this.xyz, ",");
 JS.WyckoffFinder.WyckoffCoord.getRow(v[0], a, 0);
@@ -286,16 +331,16 @@ JS.WyckoffFinder.WyckoffCoord.getRow(v[1], a, 4);
 JS.WyckoffFinder.WyckoffCoord.getRow(v[2], a, 8);
 a[15] = 1;
 this.op = JU.M4.newA16(a);
-}switch (nxyz) {
+switch (nxyz) {
 case 0:
 this.type = 1;
-this.point = JS.WyckoffFinder.toPoint(p);
+this.point = JS.SymmetryOperation.toPoint(p, null);
 break;
 case 1:
 this.type = 2;
 JS.WyckoffFinder.WyckoffCoord.p1.set(0.19, 0.53, 0.71);
 this.op.rotTrans(JS.WyckoffFinder.WyckoffCoord.p1);
-JS.WyckoffFinder.WyckoffCoord.p2.set(0.51, 0.27, 0.64);
+JS.WyckoffFinder.WyckoffCoord.p2.set(0.51, 0.27, 0.6);
 this.op.rotTrans(JS.WyckoffFinder.WyckoffCoord.p2);
 JS.WyckoffFinder.WyckoffCoord.p2.sub2(JS.WyckoffFinder.WyckoffCoord.p2, JS.WyckoffFinder.WyckoffCoord.p1);
 JS.WyckoffFinder.WyckoffCoord.p2.normalize();
@@ -308,7 +353,7 @@ JS.WyckoffFinder.WyckoffCoord.p1.set(0.19, 0.51, 0.73);
 this.op.rotTrans(JS.WyckoffFinder.WyckoffCoord.p1);
 JS.WyckoffFinder.WyckoffCoord.p2.set(0.23, 0.47, 0.86);
 this.op.rotTrans(JS.WyckoffFinder.WyckoffCoord.p2);
-JS.WyckoffFinder.WyckoffCoord.p3.set(0.1, 0.2, 0.);
+JS.WyckoffFinder.WyckoffCoord.p3.set(0.1, 0.2, 0.3);
 this.op.rotTrans(JS.WyckoffFinder.WyckoffCoord.p3);
 this.plane = JU.Measure.getPlaneThroughPoints(JS.WyckoffFinder.WyckoffCoord.p1, JS.WyckoffFinder.WyckoffCoord.p2, JS.WyckoffFinder.WyckoffCoord.p3, null, null,  new JU.P4());
 break;
@@ -392,4 +437,4 @@ c$.vt =  new JU.V3();
 c$.nullHelper = null;
 c$.helpers =  new java.util.Hashtable();
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024

@@ -198,7 +198,7 @@ if (this.thisMesh != null) this.thisMesh.meshColix = this.meshColix;
 return;
 }if ("offset" === propertyName) {
 var offset = JU.P3.newP(value);
-if (offset.equals(JV.JC.center)) offset = null;
+if (offset.lengthSquared() == 0) offset = null;
 if (this.thisMesh != null) {
 this.thisMesh.rotateTranslate(null, offset, true);
 this.thisMesh.altVertices = null;
@@ -1313,4 +1313,4 @@ function(mesh){
 return (mesh == null ? null : (mesh).getValidVertices(null));
 }, "J.shape.Mesh");
 });
-;//5.0.1-v2 Mon Feb 19 09:32:38 CST 2024
+;//5.0.1-v2 Tue Jul 23 17:25:20 CDT 2024
